@@ -67,3 +67,32 @@ test("falls back to restoration crew and finishes a run", async ({ page }) => {
   }
   await expect(page.getByText("복구 완료", { exact: true })).toBeVisible();
 });
+
+test("opens the built-in GFL operation, resolves combat, and restores the reward step", async ({ page }) => {
+  const browserErrors: string[] = [];
+  page.on("pageerror", (error) => browserErrors.push(error.message));
+  page.on("console", (message) => { if (message.type() === "error") browserErrors.push(message.text()); });
+  await page.goto("/");
+  await page.getByRole("button", { name: "작전 시작", exact: true }).click();
+  await expect(page.getByRole("heading", { name: "첫 제대를 편성하세요" })).toBeVisible();
+  await expect(page.locator(".doll-grid img")).toHaveCount(12);
+  await page.getByRole("button", { name: "화력 제대", exact: true }).click();
+  await page.getByRole("button", { name: "작전 지도 진입", exact: true }).click();
+  for (let depth = 0; depth < 3 && await page.locator(".route-node.battle, .route-node.elite").count() === 0; depth += 1) {
+    await page.locator(".route-node").first().click();
+    await page.locator(".reward-grid button").first().click();
+  }
+  await page.locator(".route-node.battle, .route-node.elite").first().click();
+  await expect(page.getByRole("heading", { name: /준비/ })).toBeVisible();
+  await page.getByRole("button", { name: "전투 영수증 확정", exact: true }).click();
+  await expect(page.locator("canvas.gfl-battle-canvas")).toBeVisible();
+  await page.getByRole("button", { name: "4×", exact: true }).click();
+  await expect(page.getByRole("button", { name: "전투 보고 확인", exact: true })).toBeEnabled();
+  await page.getByRole("button", { name: "전투 보고 확인", exact: true }).click();
+  await expect(page.getByRole("heading", { name: "하나를 회수하세요" })).toBeVisible();
+  await page.waitForTimeout(250);
+  await page.reload();
+  await page.getByRole("button", { name: "작전 시작", exact: true }).click();
+  await expect(page.getByRole("heading", { name: "하나를 회수하세요" })).toBeVisible();
+  expect(browserErrors).toEqual([]);
+});

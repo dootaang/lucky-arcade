@@ -1,0 +1,19 @@
+{
+  "name": "@lucky-arcade/gfl-ember",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": { ".": "./src/index.ts", "./react": "./src/react/gfl-ember-screen.tsx" },
+  "scripts": { "typecheck": "tsc -p tsconfig.json", "test": "vitest run" },
+  "dependencies": {
+    "@lucky-arcade/cabinet-sdk": "workspace:*",
+    "@lucky-arcade/engine": "workspace:*",
+    "@lucky-arcade/persistence": "workspace:*",
+    "@lucky-arcade/ui": "workspace:*",
+    "@tabler/icons-react": "3.45.0",
+    "littlejsengine": "1.18.24",
+    "react": "19.2.8",
+    "zod": "4.4.3"
+  },
+  "devDependencies": { "@types/react": "19.2.17" }
+}

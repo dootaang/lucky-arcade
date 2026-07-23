@@ -33,6 +33,13 @@ for (const file of allSourceFiles) {
   }
 }
 
+for (const file of await files(join(rootPath, "cabinets/gfl-ember/src"))) {
+  const normalized = file.replaceAll("\\", "/");
+  if (normalized.includes("/react/")) continue;
+  const source = await readFile(file, "utf8");
+  if (/littlejsengine|["']react["']/.test(source)) failures.push(`${relative(rootPath, file)}: GFL core cannot import presentation engines`);
+}
+
 for (const [folder, allowed] of rules) {
   for (const file of await files(join(rootPath, folder))) {
     const source = await readFile(file, "utf8");

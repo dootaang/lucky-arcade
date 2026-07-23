@@ -2,7 +2,7 @@ import type { AnalyzedCard, AnyAnalyzedCard } from "@lucky-arcade/contracts";
 import type { SnapshotRecord, StoredActionReceipt } from "@lucky-arcade/persistence";
 
 const DATABASE = "lucky-arcade";
-const VERSION = 1;
+const VERSION = 2;
 const STORES = { cards: "cards", sources: "sources", sessions: "sessions", actions: "actions" } as const;
 
 export interface StoredCard { fingerprint: string; importedAt: string; analyzed: AnyAnalyzedCard; }
@@ -62,7 +62,8 @@ function openDatabase(): Promise<IDBDatabase> {
       if (!db.objectStoreNames.contains(STORES.cards)) db.createObjectStore(STORES.cards, { keyPath: "fingerprint" });
       if (!db.objectStoreNames.contains(STORES.sources)) db.createObjectStore(STORES.sources);
       if (!db.objectStoreNames.contains(STORES.sessions)) db.createObjectStore(STORES.sessions, { keyPath: "sessionId" });
-      if (!db.objectStoreNames.contains(STORES.actions)) db.createObjectStore(STORES.actions, { keyPath: "key" });
+      const actions = db.objectStoreNames.contains(STORES.actions) ? opening.transaction!.objectStore(STORES.actions) : db.createObjectStore(STORES.actions, { keyPath: "key" });
+      if (!actions.indexNames.contains("by-session-sequence")) actions.createIndex("by-session-sequence", ["sessionId", "sequence"], { unique: true });
     };
     opening.onsuccess = () => resolve(opening.result);
     opening.onerror = () => reject(opening.error ?? new Error("indexeddb_open_failed"));

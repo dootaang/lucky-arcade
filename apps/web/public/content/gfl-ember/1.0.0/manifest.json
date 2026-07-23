@@ -1,0 +1,829 @@
+{
+  "contract": "gfl-content-manifest/0.1",
+  "packId": "gfl-ember",
+  "version": "1.0.0",
+  "assets": {
+    "portrait:ar-15:default": "/content/gfl-ember/1.0.0/portraits/ar-15/default.webp",
+    "portrait:ar-15:angry": "/content/gfl-ember/1.0.0/portraits/ar-15/angry.webp",
+    "portrait:ar-15:defeat": "/content/gfl-ember/1.0.0/portraits/ar-15/defeat.webp",
+    "portrait:ar-15:exhausted": "/content/gfl-ember/1.0.0/portraits/ar-15/exhausted.webp",
+    "portrait:ar-15:joy": "/content/gfl-ember/1.0.0/portraits/ar-15/joy.webp",
+    "portrait:ar-15:motivated": "/content/gfl-ember/1.0.0/portraits/ar-15/motivated.webp",
+    "portrait:ar-15:natural": "/content/gfl-ember/1.0.0/portraits/ar-15/natural.webp",
+    "portrait:ar-15:serious": "/content/gfl-ember/1.0.0/portraits/ar-15/serious.webp",
+    "portrait:ar-15:worry": "/content/gfl-ember/1.0.0/portraits/ar-15/worry.webp",
+    "portrait:dp-12:default": "/content/gfl-ember/1.0.0/portraits/dp-12/default.webp",
+    "portrait:dp-12:angry": "/content/gfl-ember/1.0.0/portraits/dp-12/angry.webp",
+    "portrait:dp-12:defeat": "/content/gfl-ember/1.0.0/portraits/dp-12/defeat.webp",
+    "portrait:dp-12:exhausted": "/content/gfl-ember/1.0.0/portraits/dp-12/exhausted.webp",
+    "portrait:dp-12:joy": "/content/gfl-ember/1.0.0/portraits/dp-12/joy.webp",
+    "portrait:dp-12:motivated": "/content/gfl-ember/1.0.0/portraits/dp-12/motivated.webp",
+    "portrait:dp-12:natural": "/content/gfl-ember/1.0.0/portraits/dp-12/natural.webp",
+    "portrait:dp-12:serious": "/content/gfl-ember/1.0.0/portraits/dp-12/serious.webp",
+    "portrait:dp-12:worry": "/content/gfl-ember/1.0.0/portraits/dp-12/worry.webp",
+    "portrait:grizzly-mkv:default": "/content/gfl-ember/1.0.0/portraits/grizzly-mkv/default.webp",
+    "portrait:grizzly-mkv:angry": "/content/gfl-ember/1.0.0/portraits/grizzly-mkv/angry.webp",
+    "portrait:grizzly-mkv:defeat": "/content/gfl-ember/1.0.0/portraits/grizzly-mkv/defeat.webp",
+    "portrait:grizzly-mkv:exhausted": "/content/gfl-ember/1.0.0/portraits/grizzly-mkv/exhausted.webp",
+    "portrait:grizzly-mkv:joy": "/content/gfl-ember/1.0.0/portraits/grizzly-mkv/joy.webp",
+    "portrait:grizzly-mkv:motivated": "/content/gfl-ember/1.0.0/portraits/grizzly-mkv/motivated.webp",
+    "portrait:grizzly-mkv:natural": "/content/gfl-ember/1.0.0/portraits/grizzly-mkv/natural.webp",
+    "portrait:grizzly-mkv:serious": "/content/gfl-ember/1.0.0/portraits/grizzly-mkv/serious.webp",
+    "portrait:grizzly-mkv:worry": "/content/gfl-ember/1.0.0/portraits/grizzly-mkv/worry.webp",
+    "portrait:m4a1:default": "/content/gfl-ember/1.0.0/portraits/m4a1/default.webp",
+    "portrait:m4a1:angry": "/content/gfl-ember/1.0.0/portraits/m4a1/angry.webp",
+    "portrait:m4a1:defeat": "/content/gfl-ember/1.0.0/portraits/m4a1/defeat.webp",
+    "portrait:m4a1:exhausted": "/content/gfl-ember/1.0.0/portraits/m4a1/exhausted.webp",
+    "portrait:m4a1:joy": "/content/gfl-ember/1.0.0/portraits/m4a1/joy.webp",
+    "portrait:m4a1:motivated": "/content/gfl-ember/1.0.0/portraits/m4a1/motivated.webp",
+    "portrait:m4a1:natural": "/content/gfl-ember/1.0.0/portraits/m4a1/natural.webp",
+    "portrait:m4a1:serious": "/content/gfl-ember/1.0.0/portraits/m4a1/serious.webp",
+    "portrait:m4a1:worry": "/content/gfl-ember/1.0.0/portraits/m4a1/worry.webp",
+    "portrait:m14:default": "/content/gfl-ember/1.0.0/portraits/m14/default.webp",
+    "portrait:m14:angry": "/content/gfl-ember/1.0.0/portraits/m14/angry.webp",
+    "portrait:m14:defeat": "/content/gfl-ember/1.0.0/portraits/m14/defeat.webp",
+    "portrait:m14:exhausted": "/content/gfl-ember/1.0.0/portraits/m14/exhausted.webp",
+    "portrait:m14:joy": "/content/gfl-ember/1.0.0/portraits/m14/joy.webp",
+    "portrait:m14:motivated": "/content/gfl-ember/1.0.0/portraits/m14/motivated.webp",
+    "portrait:m14:natural": "/content/gfl-ember/1.0.0/portraits/m14/natural.webp",
+    "portrait:m14:serious": "/content/gfl-ember/1.0.0/portraits/m14/serious.webp",
+    "portrait:m14:worry": "/content/gfl-ember/1.0.0/portraits/m14/worry.webp",
+    "portrait:m500:default": "/content/gfl-ember/1.0.0/portraits/m500/default.webp",
+    "portrait:m500:angry": "/content/gfl-ember/1.0.0/portraits/m500/angry.webp",
+    "portrait:m500:defeat": "/content/gfl-ember/1.0.0/portraits/m500/defeat.webp",
+    "portrait:m500:exhausted": "/content/gfl-ember/1.0.0/portraits/m500/exhausted.webp",
+    "portrait:m500:joy": "/content/gfl-ember/1.0.0/portraits/m500/joy.webp",
+    "portrait:m500:motivated": "/content/gfl-ember/1.0.0/portraits/m500/motivated.webp",
+    "portrait:m500:natural": "/content/gfl-ember/1.0.0/portraits/m500/natural.webp",
+    "portrait:m500:serious": "/content/gfl-ember/1.0.0/portraits/m500/serious.webp",
+    "portrait:m500:worry": "/content/gfl-ember/1.0.0/portraits/m500/worry.webp",
+    "portrait:m950a:default": "/content/gfl-ember/1.0.0/portraits/m950a/default.webp",
+    "portrait:m950a:angry": "/content/gfl-ember/1.0.0/portraits/m950a/angry.webp",
+    "portrait:m950a:defeat": "/content/gfl-ember/1.0.0/portraits/m950a/defeat.webp",
+    "portrait:m950a:exhausted": "/content/gfl-ember/1.0.0/portraits/m950a/exhausted.webp",
+    "portrait:m950a:joy": "/content/gfl-ember/1.0.0/portraits/m950a/joy.webp",
+    "portrait:m950a:motivated": "/content/gfl-ember/1.0.0/portraits/m950a/motivated.webp",
+    "portrait:m950a:natural": "/content/gfl-ember/1.0.0/portraits/m950a/natural.webp",
+    "portrait:m950a:serious": "/content/gfl-ember/1.0.0/portraits/m950a/serious.webp",
+    "portrait:m950a:worry": "/content/gfl-ember/1.0.0/portraits/m950a/worry.webp",
+    "portrait:m1918:default": "/content/gfl-ember/1.0.0/portraits/m1918/default.webp",
+    "portrait:m1918:angry": "/content/gfl-ember/1.0.0/portraits/m1918/angry.webp",
+    "portrait:m1918:defeat": "/content/gfl-ember/1.0.0/portraits/m1918/defeat.webp",
+    "portrait:m1918:exhausted": "/content/gfl-ember/1.0.0/portraits/m1918/exhausted.webp",
+    "portrait:m1918:joy": "/content/gfl-ember/1.0.0/portraits/m1918/joy.webp",
+    "portrait:m1918:motivated": "/content/gfl-ember/1.0.0/portraits/m1918/motivated.webp",
+    "portrait:m1918:natural": "/content/gfl-ember/1.0.0/portraits/m1918/natural.webp",
+    "portrait:m1918:serious": "/content/gfl-ember/1.0.0/portraits/m1918/serious.webp",
+    "portrait:m1918:worry": "/content/gfl-ember/1.0.0/portraits/m1918/worry.webp",
+    "portrait:mg5:default": "/content/gfl-ember/1.0.0/portraits/mg5/default.webp",
+    "portrait:mg5:angry": "/content/gfl-ember/1.0.0/portraits/mg5/angry.webp",
+    "portrait:mg5:defeat": "/content/gfl-ember/1.0.0/portraits/mg5/defeat.webp",
+    "portrait:mg5:exhausted": "/content/gfl-ember/1.0.0/portraits/mg5/exhausted.webp",
+    "portrait:mg5:joy": "/content/gfl-ember/1.0.0/portraits/mg5/joy.webp",
+    "portrait:mg5:motivated": "/content/gfl-ember/1.0.0/portraits/mg5/motivated.webp",
+    "portrait:mg5:natural": "/content/gfl-ember/1.0.0/portraits/mg5/natural.webp",
+    "portrait:mg5:serious": "/content/gfl-ember/1.0.0/portraits/mg5/serious.webp",
+    "portrait:mg5:worry": "/content/gfl-ember/1.0.0/portraits/mg5/worry.webp",
+    "portrait:ro635:default": "/content/gfl-ember/1.0.0/portraits/ro635/default.webp",
+    "portrait:ro635:angry": "/content/gfl-ember/1.0.0/portraits/ro635/angry.webp",
+    "portrait:ro635:defeat": "/content/gfl-ember/1.0.0/portraits/ro635/defeat.webp",
+    "portrait:ro635:exhausted": "/content/gfl-ember/1.0.0/portraits/ro635/exhausted.webp",
+    "portrait:ro635:joy": "/content/gfl-ember/1.0.0/portraits/ro635/joy.webp",
+    "portrait:ro635:motivated": "/content/gfl-ember/1.0.0/portraits/ro635/motivated.webp",
+    "portrait:ro635:natural": "/content/gfl-ember/1.0.0/portraits/ro635/natural.webp",
+    "portrait:ro635:serious": "/content/gfl-ember/1.0.0/portraits/ro635/serious.webp",
+    "portrait:ro635:worry": "/content/gfl-ember/1.0.0/portraits/ro635/worry.webp",
+    "portrait:scarecrow:default": "/content/gfl-ember/1.0.0/portraits/scarecrow/default.webp",
+    "portrait:scarecrow:angry": "/content/gfl-ember/1.0.0/portraits/scarecrow/angry.webp",
+    "portrait:scarecrow:defeat": "/content/gfl-ember/1.0.0/portraits/scarecrow/defeat.webp",
+    "portrait:scarecrow:exhausted": "/content/gfl-ember/1.0.0/portraits/scarecrow/exhausted.webp",
+    "portrait:scarecrow:joy": "/content/gfl-ember/1.0.0/portraits/scarecrow/joy.webp",
+    "portrait:scarecrow:motivated": "/content/gfl-ember/1.0.0/portraits/scarecrow/motivated.webp",
+    "portrait:scarecrow:natural": "/content/gfl-ember/1.0.0/portraits/scarecrow/natural.webp",
+    "portrait:scarecrow:serious": "/content/gfl-ember/1.0.0/portraits/scarecrow/serious.webp",
+    "portrait:scarecrow:worry": "/content/gfl-ember/1.0.0/portraits/scarecrow/worry.webp",
+    "portrait:ump45:default": "/content/gfl-ember/1.0.0/portraits/ump45/default.webp",
+    "portrait:ump45:angry": "/content/gfl-ember/1.0.0/portraits/ump45/angry.webp",
+    "portrait:ump45:defeat": "/content/gfl-ember/1.0.0/portraits/ump45/defeat.webp",
+    "portrait:ump45:exhausted": "/content/gfl-ember/1.0.0/portraits/ump45/exhausted.webp",
+    "portrait:ump45:joy": "/content/gfl-ember/1.0.0/portraits/ump45/joy.webp",
+    "portrait:ump45:motivated": "/content/gfl-ember/1.0.0/portraits/ump45/motivated.webp",
+    "portrait:ump45:natural": "/content/gfl-ember/1.0.0/portraits/ump45/natural.webp",
+    "portrait:ump45:serious": "/content/gfl-ember/1.0.0/portraits/ump45/serious.webp",
+    "portrait:ump45:worry": "/content/gfl-ember/1.0.0/portraits/ump45/worry.webp",
+    "portrait:wa2000:default": "/content/gfl-ember/1.0.0/portraits/wa2000/default.webp",
+    "portrait:wa2000:angry": "/content/gfl-ember/1.0.0/portraits/wa2000/angry.webp",
+    "portrait:wa2000:defeat": "/content/gfl-ember/1.0.0/portraits/wa2000/defeat.webp",
+    "portrait:wa2000:exhausted": "/content/gfl-ember/1.0.0/portraits/wa2000/exhausted.webp",
+    "portrait:wa2000:joy": "/content/gfl-ember/1.0.0/portraits/wa2000/joy.webp",
+    "portrait:wa2000:motivated": "/content/gfl-ember/1.0.0/portraits/wa2000/motivated.webp",
+    "portrait:wa2000:natural": "/content/gfl-ember/1.0.0/portraits/wa2000/natural.webp",
+    "portrait:wa2000:serious": "/content/gfl-ember/1.0.0/portraits/wa2000/serious.webp",
+    "portrait:wa2000:worry": "/content/gfl-ember/1.0.0/portraits/wa2000/worry.webp"
+  },
+  "files": [
+    {
+      "id": "portrait:ar-15:angry",
+      "path": "portraits/ar-15/angry.webp",
+      "bytes": 49896,
+      "mime": "image/webp"
+    },
+    {
+      "id": "portrait:ar-15:default",
+      "path": "portraits/ar-15/default.webp",
+      "bytes": 157030,
+      "mime": "image/webp"
+    },
+    {
+      "id": "portrait:ar-15:defeat",
+      "path": "portraits/ar-15/defeat.webp",
+      "bytes": 58394,
+      "mime": "image/webp"
+    },
+    {
+      "id": "portrait:ar-15:exhausted",
+      "path": "portraits/ar-15/exhausted.webp",
+      "bytes": 53334,
+      "mime": "image/webp"
+    },
+    {
+      "id": "portrait:ar-15:joy",
+      "path": "portraits/ar-15/joy.webp",
+      "bytes": 56484,
+      "mime": "image/webp"
+    },
+    {
+      "id": "portrait:ar-15:motivated",
+      "path": "portraits/ar-15/motivated.webp",
+      "bytes": 52570,
+      "mime": "image/webp"
+    },
+    {
+      "id": "portrait:ar-15:natural",
+      "path": "portraits/ar-15/natural.webp",
+      "bytes": 56776,
+      "mime": "image/webp"
+    },
+    {
+      "id": "portrait:ar-15:serious",
+      "path": "portraits/ar-15/serious.webp",
+      "bytes": 66550,
+      "mime": "image/webp"
+    },
+    {
+      "id": "portrait:ar-15:worry",
+      "path": "portraits/ar-15/worry.webp",
+      "bytes": 55360,
+      "mime": "image/webp"
+    },
+    {
+      "id": "portrait:dp-12:angry",
+      "path": "portraits/dp-12/angry.webp",
+      "bytes": 64198,
+      "mime": "image/webp"
+    },
+    {
+      "id": "portrait:dp-12:default",
+      "path": "portraits/dp-12/default.webp",
+      "bytes": 166348,
+      "mime": "image/webp"
+    },
+    {
+      "id": "portrait:dp-12:defeat",
+      "path": "portraits/dp-12/defeat.webp",
+      "bytes": 60280,
+      "mime": "image/webp"
+    },
+    {
+      "id": "portrait:dp-12:exhausted",
+      "path": "portraits/dp-12/exhausted.webp",
+      "bytes": 60500,
+      "mime": "image/webp"
+    },
+    {
+      "id": "portrait:dp-12:joy",
+      "path": "portraits/dp-12/joy.webp",
+      "bytes": 58510,
+      "mime": "image/webp"
+    },
+    {
+      "id": "portrait:dp-12:motivated",
+      "path": "portraits/dp-12/motivated.webp",
+      "bytes": 70050,
+      "mime": "image/webp"
+    },
+    {
+      "id": "portrait:dp-12:natural",
+      "path": "portraits/dp-12/natural.webp",
+      "bytes": 61838,
+      "mime": "image/webp"
+    },
+    {
+      "id": "portrait:dp-12:serious",
+      "path": "portraits/dp-12/serious.webp",
+      "bytes": 63988,
+      "mime": "image/webp"
+    },
+    {
+      "id": "portrait:dp-12:worry",
+      "path": "portraits/dp-12/worry.webp",
+      "bytes": 58880,
+      "mime": "image/webp"
+    },
+    {
+      "id": "portrait:grizzly-mkv:angry",
+      "path": "portraits/grizzly-mkv/angry.webp",
+      "bytes": 64990,
+      "mime": "image/webp"
+    },
+    {
+      "id": "portrait:grizzly-mkv:default",
+      "path": "portraits/grizzly-mkv/default.webp",
+      "bytes": 206876,
+      "mime": "image/webp"
+    },
+    {
+      "id": "portrait:grizzly-mkv:defeat",
+      "path": "portraits/grizzly-mkv/defeat.webp",
+      "bytes": 74238,
+      "mime": "image/webp"
+    },
+    {
+      "id": "portrait:grizzly-mkv:exhausted",
+      "path": "portraits/grizzly-mkv/exhausted.webp",
+      "bytes": 66832,
+      "mime": "image/webp"
+    },
+    {
+      "id": "portrait:grizzly-mkv:joy",
+      "path": "portraits/grizzly-mkv/joy.webp",
+      "bytes": 74004,
+      "mime": "image/webp"
+    },
+    {
+      "id": "portrait:grizzly-mkv:motivated",
+      "path": "portraits/grizzly-mkv/motivated.webp",
+      "bytes": 73966,
+      "mime": "image/webp"
+    },
+    {
+      "id": "portrait:grizzly-mkv:natural",
+      "path": "portraits/grizzly-mkv/natural.webp",
+      "bytes": 74732,
+      "mime": "image/webp"
+    },
+    {
+      "id": "portrait:grizzly-mkv:serious",
+      "path": "portraits/grizzly-mkv/serious.webp",
+      "bytes": 65550,
+      "mime": "image/webp"
+    },
+    {
+      "id": "portrait:grizzly-mkv:worry",
+      "path": "portraits/grizzly-mkv/worry.webp",
+      "bytes": 73438,
+      "mime": "image/webp"
+    },
+    {
+      "id": "portrait:m14:angry",
+      "path": "portraits/m14/angry.webp",
+      "bytes": 68530,
+      "mime": "image/webp"
+    },
+    {
+      "id": "portrait:m14:default",
+      "path": "portraits/m14/default.webp",
+      "bytes": 183504,
+      "mime": "image/webp"
+    },
+    {
+      "id": "portrait:m14:defeat",
+      "path": "portraits/m14/defeat.webp",
+      "bytes": 80450,
+      "mime": "image/webp"
+    },
+    {
+      "id": "portrait:m14:exhausted",
+      "path": "portraits/m14/exhausted.webp",
+      "bytes": 78120,
+      "mime": "image/webp"
+    },
+    {
+      "id": "portrait:m14:joy",
+      "path": "portraits/m14/joy.webp",
+      "bytes": 68746,
+      "mime": "image/webp"
+    },
+    {
+      "id": "portrait:m14:motivated",
+      "path": "portraits/m14/motivated.webp",
+      "bytes": 65602,
+      "mime": "image/webp"
+    },
+    {
+      "id": "portrait:m14:natural",
+      "path": "portraits/m14/natural.webp",
+      "bytes": 62906,
+      "mime": "image/webp"
+    },
+    {
+      "id": "portrait:m14:serious",
+      "path": "portraits/m14/serious.webp",
+      "bytes": 75876,
+      "mime": "image/webp"
+    },
+    {
+      "id": "portrait:m14:worry",
+      "path": "portraits/m14/worry.webp",
+      "bytes": 73010,
+      "mime": "image/webp"
+    },
+    {
+      "id": "portrait:m1918:angry",
+      "path": "portraits/m1918/angry.webp",
+      "bytes": 64852,
+      "mime": "image/webp"
+    },
+    {
+      "id": "portrait:m1918:default",
+      "path": "portraits/m1918/default.webp",
+      "bytes": 196664,
+      "mime": "image/webp"
+    },
+    {
+      "id": "portrait:m1918:defeat",
+      "path": "portraits/m1918/defeat.webp",
+      "bytes": 76140,
+      "mime": "image/webp"
+    },
+    {
+      "id": "portrait:m1918:exhausted",
+      "path": "portraits/m1918/exhausted.webp",
+      "bytes": 64608,
+      "mime": "image/webp"
+    },
+    {
+      "id": "portrait:m1918:joy",
+      "path": "portraits/m1918/joy.webp",
+      "bytes": 61050,
+      "mime": "image/webp"
+    },
+    {
+      "id": "portrait:m1918:motivated",
+      "path": "portraits/m1918/motivated.webp",
+      "bytes": 67176,
+      "mime": "image/webp"
+    },
+    {
+      "id": "portrait:m1918:natural",
+      "path": "portraits/m1918/natural.webp",
+      "bytes": 52390,
+      "mime": "image/webp"
+    },
+    {
+      "id": "portrait:m1918:serious",
+      "path": "portraits/m1918/serious.webp",
+      "bytes": 66904,
+      "mime": "image/webp"
+    },
+    {
+      "id": "portrait:m1918:worry",
+      "path": "portraits/m1918/worry.webp",
+      "bytes": 65970,
+      "mime": "image/webp"
+    },
+    {
+      "id": "portrait:m4a1:angry",
+      "path": "portraits/m4a1/angry.webp",
+      "bytes": 71740,
+      "mime": "image/webp"
+    },
+    {
+      "id": "portrait:m4a1:default",
+      "path": "portraits/m4a1/default.webp",
+      "bytes": 161436,
+      "mime": "image/webp"
+    },
+    {
+      "id": "portrait:m4a1:defeat",
+      "path": "portraits/m4a1/defeat.webp",
+      "bytes": 64274,
+      "mime": "image/webp"
+    },
+    {
+      "id": "portrait:m4a1:exhausted",
+      "path": "portraits/m4a1/exhausted.webp",
+      "bytes": 61060,
+      "mime": "image/webp"
+    },
+    {
+      "id": "portrait:m4a1:joy",
+      "path": "portraits/m4a1/joy.webp",
+      "bytes": 71970,
+      "mime": "image/webp"
+    },
+    {
+      "id": "portrait:m4a1:motivated",
+      "path": "portraits/m4a1/motivated.webp",
+      "bytes": 75306,
+      "mime": "image/webp"
+    },
+    {
+      "id": "portrait:m4a1:natural",
+      "path": "portraits/m4a1/natural.webp",
+      "bytes": 71766,
+      "mime": "image/webp"
+    },
+    {
+      "id": "portrait:m4a1:serious",
+      "path": "portraits/m4a1/serious.webp",
+      "bytes": 62254,
+      "mime": "image/webp"
+    },
+    {
+      "id": "portrait:m4a1:worry",
+      "path": "portraits/m4a1/worry.webp",
+      "bytes": 63766,
+      "mime": "image/webp"
+    },
+    {
+      "id": "portrait:m500:angry",
+      "path": "portraits/m500/angry.webp",
+      "bytes": 56204,
+      "mime": "image/webp"
+    },
+    {
+      "id": "portrait:m500:default",
+      "path": "portraits/m500/default.webp",
+      "bytes": 184510,
+      "mime": "image/webp"
+    },
+    {
+      "id": "portrait:m500:defeat",
+      "path": "portraits/m500/defeat.webp",
+      "bytes": 79926,
+      "mime": "image/webp"
+    },
+    {
+      "id": "portrait:m500:exhausted",
+      "path": "portraits/m500/exhausted.webp",
+      "bytes": 66054,
+      "mime": "image/webp"
+    },
+    {
+      "id": "portrait:m500:joy",
+      "path": "portraits/m500/joy.webp",
+      "bytes": 61660,
+      "mime": "image/webp"
+    },
+    {
+      "id": "portrait:m500:motivated",
+      "path": "portraits/m500/motivated.webp",
+      "bytes": 77580,
+      "mime": "image/webp"
+    },
+    {
+      "id": "portrait:m500:natural",
+      "path": "portraits/m500/natural.webp",
+      "bytes": 66634,
+      "mime": "image/webp"
+    },
+    {
+      "id": "portrait:m500:serious",
+      "path": "portraits/m500/serious.webp",
+      "bytes": 66684,
+      "mime": "image/webp"
+    },
+    {
+      "id": "portrait:m500:worry",
+      "path": "portraits/m500/worry.webp",
+      "bytes": 68364,
+      "mime": "image/webp"
+    },
+    {
+      "id": "portrait:m950a:angry",
+      "path": "portraits/m950a/angry.webp",
+      "bytes": 82140,
+      "mime": "image/webp"
+    },
+    {
+      "id": "portrait:m950a:default",
+      "path": "portraits/m950a/default.webp",
+      "bytes": 194048,
+      "mime": "image/webp"
+    },
+    {
+      "id": "portrait:m950a:defeat",
+      "path": "portraits/m950a/defeat.webp",
+      "bytes": 77092,
+      "mime": "image/webp"
+    },
+    {
+      "id": "portrait:m950a:exhausted",
+      "path": "portraits/m950a/exhausted.webp",
+      "bytes": 86496,
+      "mime": "image/webp"
+    },
+    {
+      "id": "portrait:m950a:joy",
+      "path": "portraits/m950a/joy.webp",
+      "bytes": 82830,
+      "mime": "image/webp"
+    },
+    {
+      "id": "portrait:m950a:motivated",
+      "path": "portraits/m950a/motivated.webp",
+      "bytes": 82784,
+      "mime": "image/webp"
+    },
+    {
+      "id": "portrait:m950a:natural",
+      "path": "portraits/m950a/natural.webp",
+      "bytes": 82438,
+      "mime": "image/webp"
+    },
+    {
+      "id": "portrait:m950a:serious",
+      "path": "portraits/m950a/serious.webp",
+      "bytes": 81474,
+      "mime": "image/webp"
+    },
+    {
+      "id": "portrait:m950a:worry",
+      "path": "portraits/m950a/worry.webp",
+      "bytes": 73760,
+      "mime": "image/webp"
+    },
+    {
+      "id": "portrait:mg5:angry",
+      "path": "portraits/mg5/angry.webp",
+      "bytes": 65684,
+      "mime": "image/webp"
+    },
+    {
+      "id": "portrait:mg5:default",
+      "path": "portraits/mg5/default.webp",
+      "bytes": 133608,
+      "mime": "image/webp"
+    },
+    {
+      "id": "portrait:mg5:defeat",
+      "path": "portraits/mg5/defeat.webp",
+      "bytes": 63762,
+      "mime": "image/webp"
+    },
+    {
+      "id": "portrait:mg5:exhausted",
+      "path": "portraits/mg5/exhausted.webp",
+      "bytes": 63682,
+      "mime": "image/webp"
+    },
+    {
+      "id": "portrait:mg5:joy",
+      "path": "portraits/mg5/joy.webp",
+      "bytes": 67852,
+      "mime": "image/webp"
+    },
+    {
+      "id": "portrait:mg5:motivated",
+      "path": "portraits/mg5/motivated.webp",
+      "bytes": 68900,
+      "mime": "image/webp"
+    },
+    {
+      "id": "portrait:mg5:natural",
+      "path": "portraits/mg5/natural.webp",
+      "bytes": 67134,
+      "mime": "image/webp"
+    },
+    {
+      "id": "portrait:mg5:serious",
+      "path": "portraits/mg5/serious.webp",
+      "bytes": 65852,
+      "mime": "image/webp"
+    },
+    {
+      "id": "portrait:mg5:worry",
+      "path": "portraits/mg5/worry.webp",
+      "bytes": 70372,
+      "mime": "image/webp"
+    },
+    {
+      "id": "portrait:ro635:angry",
+      "path": "portraits/ro635/angry.webp",
+      "bytes": 66330,
+      "mime": "image/webp"
+    },
+    {
+      "id": "portrait:ro635:default",
+      "path": "portraits/ro635/default.webp",
+      "bytes": 174366,
+      "mime": "image/webp"
+    },
+    {
+      "id": "portrait:ro635:defeat",
+      "path": "portraits/ro635/defeat.webp",
+      "bytes": 79618,
+      "mime": "image/webp"
+    },
+    {
+      "id": "portrait:ro635:exhausted",
+      "path": "portraits/ro635/exhausted.webp",
+      "bytes": 67950,
+      "mime": "image/webp"
+    },
+    {
+      "id": "portrait:ro635:joy",
+      "path": "portraits/ro635/joy.webp",
+      "bytes": 80006,
+      "mime": "image/webp"
+    },
+    {
+      "id": "portrait:ro635:motivated",
+      "path": "portraits/ro635/motivated.webp",
+      "bytes": 70836,
+      "mime": "image/webp"
+    },
+    {
+      "id": "portrait:ro635:natural",
+      "path": "portraits/ro635/natural.webp",
+      "bytes": 84770,
+      "mime": "image/webp"
+    },
+    {
+      "id": "portrait:ro635:serious",
+      "path": "portraits/ro635/serious.webp",
+      "bytes": 79616,
+      "mime": "image/webp"
+    },
+    {
+      "id": "portrait:ro635:worry",
+      "path": "portraits/ro635/worry.webp",
+      "bytes": 76666,
+      "mime": "image/webp"
+    },
+    {
+      "id": "portrait:scarecrow:angry",
+      "path": "portraits/scarecrow/angry.webp",
+      "bytes": 80786,
+      "mime": "image/webp"
+    },
+    {
+      "id": "portrait:scarecrow:default",
+      "path": "portraits/scarecrow/default.webp",
+      "bytes": 180020,
+      "mime": "image/webp"
+    },
+    {
+      "id": "portrait:scarecrow:defeat",
+      "path": "portraits/scarecrow/defeat.webp",
+      "bytes": 76382,
+      "mime": "image/webp"
+    },
+    {
+      "id": "portrait:scarecrow:exhausted",
+      "path": "portraits/scarecrow/exhausted.webp",
+      "bytes": 80528,
+      "mime": "image/webp"
+    },
+    {
+      "id": "portrait:scarecrow:joy",
+      "path": "portraits/scarecrow/joy.webp",
+      "bytes": 68908,
+      "mime": "image/webp"
+    },
+    {
+      "id": "portrait:scarecrow:motivated",
+      "path": "portraits/scarecrow/motivated.webp",
+      "bytes": 74164,
+      "mime": "image/webp"
+    },
+    {
+      "id": "portrait:scarecrow:natural",
+      "path": "portraits/scarecrow/natural.webp",
+      "bytes": 74212,
+      "mime": "image/webp"
+    },
+    {
+      "id": "portrait:scarecrow:serious",
+      "path": "portraits/scarecrow/serious.webp",
+      "bytes": 74854,
+      "mime": "image/webp"
+    },
+    {
+      "id": "portrait:scarecrow:worry",
+      "path": "portraits/scarecrow/worry.webp",
+      "bytes": 82588,
+      "mime": "image/webp"
+    },
+    {
+      "id": "portrait:ump45:angry",
+      "path": "portraits/ump45/angry.webp",
+      "bytes": 80448,
+      "mime": "image/webp"
+    },
+    {
+      "id": "portrait:ump45:default",
+      "path": "portraits/ump45/default.webp",
+      "bytes": 185150,
+      "mime": "image/webp"
+    },
+    {
+      "id": "portrait:ump45:defeat",
+      "path": "portraits/ump45/defeat.webp",
+      "bytes": 76178,
+      "mime": "image/webp"
+    },
+    {
+      "id": "portrait:ump45:exhausted",
+      "path": "portraits/ump45/exhausted.webp",
+      "bytes": 67532,
+      "mime": "image/webp"
+    },
+    {
+      "id": "portrait:ump45:joy",
+      "path": "portraits/ump45/joy.webp",
+      "bytes": 53686,
+      "mime": "image/webp"
+    },
+    {
+      "id": "portrait:ump45:motivated",
+      "path": "portraits/ump45/motivated.webp",
+      "bytes": 71884,
+      "mime": "image/webp"
+    },
+    {
+      "id": "portrait:ump45:natural",
+      "path": "portraits/ump45/natural.webp",
+      "bytes": 85276,
+      "mime": "image/webp"
+    },
+    {
+      "id": "portrait:ump45:serious",
+      "path": "portraits/ump45/serious.webp",
+      "bytes": 65948,
+      "mime": "image/webp"
+    },
+    {
+      "id": "portrait:ump45:worry",
+      "path": "portraits/ump45/worry.webp",
+      "bytes": 81066,
+      "mime": "image/webp"
+    },
+    {
+      "id": "portrait:wa2000:angry",
+      "path": "portraits/wa2000/angry.webp",
+      "bytes": 63420,
+      "mime": "image/webp"
+    },
+    {
+      "id": "portrait:wa2000:default",
+      "path": "portraits/wa2000/default.webp",
+      "bytes": 162548,
+      "mime": "image/webp"
+    },
+    {
+      "id": "portrait:wa2000:defeat",
+      "path": "portraits/wa2000/defeat.webp",
+      "bytes": 66218,
+      "mime": "image/webp"
+    },
+    {
+      "id": "portrait:wa2000:exhausted",
+      "path": "portraits/wa2000/exhausted.webp",
+      "bytes": 71772,
+      "mime": "image/webp"
+    },
+    {
+      "id": "portrait:wa2000:joy",
+      "path": "portraits/wa2000/joy.webp",
+      "bytes": 66612,
+      "mime": "image/webp"
+    },
+    {
+      "id": "portrait:wa2000:motivated",
+      "path": "portraits/wa2000/motivated.webp",
+      "bytes": 67904,
+      "mime": "image/webp"
+    },
+    {
+      "id": "portrait:wa2000:natural",
+      "path": "portraits/wa2000/natural.webp",
+      "bytes": 76136,
+      "mime": "image/webp"
+    },
+    {
+      "id": "portrait:wa2000:serious",
+      "path": "portraits/wa2000/serious.webp",
+      "bytes": 62948,
+      "mime": "image/webp"
+    },
+    {
+      "id": "portrait:wa2000:worry",
+      "path": "portraits/wa2000/worry.webp",
+      "bytes": 76182,
+      "mime": "image/webp"
+    }
+  ],
+  "totalBytes": 9512714
+}

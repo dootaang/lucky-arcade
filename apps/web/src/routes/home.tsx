@@ -28,7 +28,7 @@ export function Home() {
     return () => { alive = false; };
   }, []);
   useEffect(() => { document.documentElement.dataset.theme = light ? "light" : "dark"; }, [light]);
-  if (activeCabinet && selected) return <CabinetHost cabinetId={activeCabinet} analyzed={selected.analyzed} onExit={() => setActiveCabinet(null)} />;
+  if (activeCabinet) return <CabinetHost cabinetId={activeCabinet} {...(selected?{analyzed:selected.analyzed}:{})} onExit={() => setActiveCabinet(null)} />;
   const imported = (card: StoredCard) => {
     setCards((current) => [card, ...current.filter((item) => item.fingerprint !== card.fingerprint)]);
     setSelected(card);
@@ -47,6 +47,7 @@ export function Home() {
     <main className="dashboard">
       <header className="topbar"><div><span className="eyebrow">100% 로컬 · 무LLM</span><h1>카드 한 장, 새로운 오락실</h1></div><button className="icon-button" onClick={() => setLight((value) => !value)} aria-label={light ? "어두운 테마" : "밝은 테마"}>{light ? <IconMoon /> : <IconSun />}</button></header>
       <CardImporter onImported={imported} />
+      <section className="built-in-hero"><div><span className="eyebrow">FEATURED OPERATION</span><h2>소녀전선: 잔불 작전</h2><p>카드 업로드 없이 바로 편성하고, 7개 구간을 돌파하는 전술 오토배틀 로그라이트입니다.</p><ul><li>12명 제대 편성</li><li>결정론 8라운드 전투</li><li>10~20분 런</li></ul></div><button onClick={() => setActiveCabinet("gfl-ember")}><IconDeviceGamepad2/> 작전 시작</button></section>
       {cards.length > 0 && <section className="library-strip"><div><span className="eyebrow">내 카드 보관함</span><h2>{cards.length}장의 카트리지</h2></div><div className="card-pills">{cards.map((card) => <button className={selected?.fingerprint === card.fingerprint ? "active" : ""} key={card.fingerprint} onClick={() => setSelected(card)}><strong>{card.analyzed.report.card.name}</strong><small>{card.analyzed.report.lore.verifiedPuzzleCount}개 퍼즐</small></button>)}</div></section>}
       {selected ? <ReportView card={selected} onPlay={setActiveCabinet} /> : <EmptyState />}
     </main>

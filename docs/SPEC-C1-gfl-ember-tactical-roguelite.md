@@ -1,6 +1,6 @@
 # SPEC-C1 — 《소녀전선: 잔불 작전》 전술 오토배틀 로그라이트
 
-> 상태: 상세 구현계획 승인 대기
+> 상태: C1 수직 시제품 구현·자동 검증 완료 (오너 장기 실플레이 조정 가능)
 > 작성: 2026-07-24
 > 상위 문서: [ROADMAP](./ROADMAP.md) · [ADR 0001](./adr/0001-modular-performance-foundation.md)
 > 원본 엔진: `C:\freetalk\simbot-simulator` 기준 커밋 `4f2d05ed0f1a5f5cc7ae541227383ae454072ced`
@@ -224,7 +224,7 @@ apps/web/public/content/gfl-ember/<pack-version>/
 
 ```powershell
 pnpm content:gfl -- \
-  --card <소녀전선_잔불.png> \
+  --card <card.png> \
   --module <1.charx> --module <2.charx> --module <3.charx> \
   --selection content-sources/gfl-ember-selection.json \
   --out apps/web/public/content/gfl-ember/<version>
@@ -237,9 +237,9 @@ pnpm content:gfl -- \
 - 허용 표정만 추출.
 - 초상 썸네일 256px, 전투 초상 최대 긴 변 768px WebP.
 - 배경 최대 1600×900 WebP, 아이콘 최대 256px WebP.
-- 동일 바이트 중복 제거와 콘텐츠 해시 파일명.
-- manifest에 크기·콘텐츠 해시·MIME·용도를 기록.
-- 빌드를 두 번 실행하면 manifest와 출력 해시가 동일.
+- 선택 에셋 ID별 고정 경로와 중복 없는 출력.
+- manifest에는 크기·MIME·용도만 기록.
+- 빌드를 두 번 실행하면 manifest와 출력 바이트가 동일.
 
 ### 6.2 배포 단위
 

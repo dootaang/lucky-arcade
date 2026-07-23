@@ -24,6 +24,19 @@ importers:
         specifier: 4.1.10
         version: 4.1.10(@types/node@24.13.3)(vite@8.1.5(@types/node@24.13.3)(esbuild@0.28.1)(jiti@2.7.0)(tsx@4.23.1))
 
+  apps/content-cli:
+    dependencies:
+      '@lucky-arcade/card-io':
+        specifier: workspace:*
+        version: link:../../packages/card-io
+      '@lucky-arcade/gfl-ember':
+        specifier: workspace:*
+        version: link:../../cabinets/gfl-ember
+    devDependencies:
+      tsx:
+        specifier: 4.23.1
+        version: 4.23.1
+
   apps/report-cli:
     dependencies:
       '@lucky-arcade/card-io':
@@ -57,6 +70,9 @@ importers:
       '@lucky-arcade/favorite-cup':
         specifier: workspace:*
         version: link:../../cabinets/favorite-cup
+      '@lucky-arcade/gfl-ember':
+        specifier: workspace:*
+        version: link:../../cabinets/gfl-ember
       '@lucky-arcade/lore-circuit':
         specifier: workspace:*
         version: link:../../cabinets/lore-circuit
@@ -121,6 +137,37 @@ importers:
       react:
         specifier: 19.2.8
         version: 19.2.8
+    devDependencies:
+      '@types/react':
+        specifier: 19.2.17
+        version: 19.2.17
+
+  cabinets/gfl-ember:
+    dependencies:
+      '@lucky-arcade/cabinet-sdk':
+        specifier: workspace:*
+        version: link:../../packages/cabinet-sdk
+      '@lucky-arcade/engine':
+        specifier: workspace:*
+        version: link:../../packages/engine
+      '@lucky-arcade/persistence':
+        specifier: workspace:*
+        version: link:../../packages/persistence
+      '@lucky-arcade/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
+      '@tabler/icons-react':
+        specifier: 3.45.0
+        version: 3.45.0(react@19.2.8)
+      littlejsengine:
+        specifier: 1.18.24
+        version: 1.18.24
+      react:
+        specifier: 19.2.8
+        version: 19.2.8
+      zod:
+        specifier: 4.4.3
+        version: 4.4.3
     devDependencies:
       '@types/react':
         specifier: 19.2.17
@@ -1045,6 +1092,10 @@ packages:
     resolution: {integrity: sha512-WkUDrojuJs0xkgGf2udWxa3yGBRxPtxUkB79i6aCZLRgc7PM8fZe9TosfPDcvEpQZbuFASnHYmRLBLUbmLOIIA==}
     engines: {node: '>= 12.0.0'}
 
+  littlejsengine@1.18.24:
+    resolution: {integrity: sha512-LmtAsbwU39x5JZv30eaFnLSZn7m5a/sxulvYPGpI8pH7JPpprTlfrKjBqBpYEjJ73Nhq9VMDuRdGZ9F4E0Pjqw==}
+    engines: {node: '>=18'}
+
   magic-string@0.30.21:
     resolution: {integrity: sha512-vd2F4YUyEXKGcLHoq+TEyCjxueSeHnFxyyjNp80yg0XV4vUhnDer/lvvlqM/arB5bXQN5K2/3oinyCRyx8T2CQ==}
 
@@ -1817,6 +1868,8 @@ snapshots:
       lightningcss-linux-x64-musl: 1.33.0
       lightningcss-win32-arm64-msvc: 1.33.0
       lightningcss-win32-x64-msvc: 1.33.0
+
+  littlejsengine@1.18.24: {}
 
   magic-string@0.30.21:
     dependencies:

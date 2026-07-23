@@ -20,6 +20,7 @@ export interface SnapshotRecord<State = unknown> {
   stateHash: string;
   engineVersion: string;
   cabinetVersion: string;
+  packVersion?: string;
 }
 
 export interface SnapshotStore<State = unknown> {

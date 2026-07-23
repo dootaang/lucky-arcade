@@ -28,6 +28,8 @@
 
 ### 직접 의존 오픈소스
 
+- LittleJS 1.18.24(MIT): `gfl-ember` 캐비닛의 전투 영수증 재생용 Canvas 표현 엔진. 게임 판정과 상태 변경에는 사용하지 않는다.
+
 - React 19.2.8, React Router 8.3.0, Vite 8.1.5, Tailwind CSS 4.3.3: 각 패키지 공식 라이선스 조건으로 웹 셸에 사용.
 - Zod 4.4.3(MIT): 외부 카드·보고서 런타임 계약 검증.
 - fflate 0.8.3(MIT): 필요한 ZIP 항목의 DEFLATE 해제.

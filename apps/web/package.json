@@ -15,6 +15,7 @@
     "@lucky-arcade/engine": "workspace:*",
     "@lucky-arcade/extract": "workspace:*",
     "@lucky-arcade/favorite-cup": "workspace:*",
+    "@lucky-arcade/gfl-ember": "workspace:*",
     "@lucky-arcade/lore-circuit": "workspace:*",
     "@lucky-arcade/persistence": "workspace:*",
     "@lucky-arcade/restoration-crew": "workspace:*",
