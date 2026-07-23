@@ -1,0 +1,8 @@
+@import "tailwindcss";
+@source "../../../packages/ui/src";
+
+* { box-sizing: border-box; }
+html { background: var(--canvas); }
+body { margin: 0; min-width: 320px; font-family: Inter, Pretendard, "Noto Sans KR", system-ui, sans-serif; }
+button { font: inherit; }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } }

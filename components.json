@@ -1,0 +1,9 @@
+{
+  "$schema": "https://ui.shadcn.com/schema.json",
+  "style": "new-york",
+  "rsc": false,
+  "tsx": true,
+  "tailwind": { "css": "apps/web/src/styles.css", "baseColor": "neutral", "cssVariables": true },
+  "aliases": { "components": "@lucky-arcade/ui", "utils": "@lucky-arcade/ui", "ui": "@lucky-arcade/ui" },
+  "iconLibrary": "tabler"
+}
