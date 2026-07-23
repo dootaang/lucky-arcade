@@ -1,0 +1,13 @@
+node_modules/
+dist/
+coverage/
+*.local
+.env
+.env.*
+.DS_Store
+Thumbs.db
+*.charx
+*.risum
+*.risup
+cards/
+reports/*.local.*
