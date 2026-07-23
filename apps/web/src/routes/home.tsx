@@ -1,27 +1,34 @@
-import { IconDeviceGamepad2, IconFileAnalytics, IconLock } from "@tabler/icons-react";
-import { Button } from "@lucky-arcade/ui";
-import type { ReactNode } from "react";
+import { IconCards, IconDeviceGamepad2, IconHelpCircle, IconHome, IconMenu2, IconMoon, IconSettings, IconSun, IconTrophy, IconX } from "@tabler/icons-react";
+import { useEffect, useState } from "react";
+import { CardImporter } from "../features/cards/card-importer.tsx";
+import { ReportView } from "../features/cards/report-view.tsx";
+import { LoreCircuitScreen } from "../features/lore-circuit/lore-circuit-screen.tsx";
+import { listCards, type StoredCard } from "../lib/database.ts";
 
 export function Home() {
-  return <main className="min-h-dvh bg-[var(--canvas)] px-6 py-10 text-[var(--text)]">
-    <div className="mx-auto grid max-w-5xl gap-8">
-      <header className="grid gap-3">
-        <span className="text-sm font-semibold text-[var(--accent)]">100% 로컬 · 무LLM</span>
-        <h1 className="text-4xl font-black tracking-tight">럭키★오락실</h1>
-        <p className="max-w-2xl text-[var(--muted)]">봇카드가 게임 카트리지가 됩니다. 지금은 카드 적합도 검사 코어를 검증하는 단계입니다.</p>
-      </header>
-      <section className="grid gap-4 md:grid-cols-3">
-        <Info icon={<IconFileAnalytics />} title="재료부터 검사" text="카드에 실제로 있는 로어·NPC·에셋만 사용합니다." />
-        <Info icon={<IconDeviceGamepad2 />} title="결정론 판정" text="같은 카드와 시드는 언제나 같은 결과를 냅니다." />
-        <Info icon={<IconLock />} title="기기 밖으로 전송 안 함" text="카드 분석과 게임 판정은 브라우저 안에서 처리합니다." />
-      </section>
-      <div><Button disabled>카드 넣기 · 코어 관문 통과 후 연결</Button></div>
-    </div>
-  </main>;
+  const [cards, setCards] = useState<StoredCard[]>([]), [selected, setSelected] = useState<StoredCard | null>(null), [playing, setPlaying] = useState(false), [menu, setMenu] = useState(false), [light, setLight] = useState(false);
+  useEffect(() => { void listCards().then((items) => { setCards(items); setSelected(items[0] ?? null); }); }, []);
+  useEffect(() => { document.documentElement.dataset.theme = light ? "light" : "dark"; }, [light]);
+  if (playing && selected) return <LoreCircuitScreen cartridge={selected.analyzed.loreCircuit} onExit={() => setPlaying(false)} />;
+  const imported = (card: StoredCard) => { setCards((current) => [card, ...current.filter((item) => item.fingerprint !== card.fingerprint)]); setSelected(card); };
+  return <div className="app-layout">
+    <button className="mobile-menu" onClick={() => setMenu(true)} aria-label="메뉴 열기"><IconMenu2 /></button>
+    {menu && <button className="sidebar-scrim" onClick={() => setMenu(false)} aria-label="메뉴 닫기" />}
+    <aside className={`sidebar ${menu ? "open" : ""}`}>
+      <div className="brand"><span>★</span><div><strong>럭키 오락실</strong><small>BOT CARD ARCADE</small></div><button className="close-menu" onClick={() => setMenu(false)} aria-label="메뉴 닫기"><IconX /></button></div>
+      <nav aria-label="주 메뉴"><Nav icon={<IconHome />} active label="로비" /><Nav icon={<IconCards />} label="카드 보관함" /><Nav icon={<IconDeviceGamepad2 />} label="캐비닛" /><Nav icon={<IconTrophy />} label="기록" /></nav>
+      <div className="sidebar-bottom"><Nav icon={<IconSettings />} label="설정" /><Nav icon={<IconHelpCircle />} label="도움말" />
+        {selected && <div className="selected-card"><span>현재 카드</span><strong>{selected.analyzed.report.card.name}</strong><small>{selected.analyzed.report.card.fingerprintShort}</small></div>}
+      </div>
+    </aside>
+    <main className="dashboard">
+      <header className="topbar"><div><span className="eyebrow">100% 로컬 · 무LLM</span><h1>카드 한 장, 새로운 오락실</h1></div><button className="icon-button" onClick={() => setLight((value) => !value)} aria-label={light ? "어두운 테마" : "밝은 테마"}>{light ? <IconMoon /> : <IconSun />}</button></header>
+      <CardImporter onImported={imported} />
+      {cards.length > 0 && <section className="library-strip"><div><span className="eyebrow">내 카드 보관함</span><h2>{cards.length}장의 카트리지</h2></div><div className="card-pills">{cards.map((card) => <button className={selected?.fingerprint === card.fingerprint ? "active" : ""} key={card.fingerprint} onClick={() => setSelected(card)}><strong>{card.analyzed.report.card.name}</strong><small>{card.analyzed.report.lore.verifiedPuzzleCount}개 퍼즐</small></button>)}</div></section>}
+      {selected ? <ReportView card={selected} onPlay={() => setPlaying(true)} /> : <EmptyState />}
+    </main>
+  </div>;
 }
 
-function Info({ icon, title, text }: { icon: ReactNode; title: string; text: string }) {
-  return <article className="grid gap-3 rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-5">
-    <span className="text-[var(--accent)]">{icon}</span><h2 className="font-bold">{title}</h2><p className="text-sm leading-6 text-[var(--muted)]">{text}</p>
-  </article>;
-}
+function Nav({ icon, label, active = false }: { icon: React.ReactNode; label: string; active?: boolean }) { return <button className={active ? "active" : ""}>{icon}<span>{label}</span></button>; }
+function EmptyState() { return <section className="empty-state"><div className="empty-orbit"><IconDeviceGamepad2 size={42} /></div><h2>첫 카트리지를 꽂아보세요</h2><p>카드가 가진 로어 연결망, NPC와 에셋을 검사해<br />플레이 가능한 미니게임만 열어드립니다.</p></section>; }

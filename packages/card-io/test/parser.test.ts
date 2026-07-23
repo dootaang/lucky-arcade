@@ -1,8 +1,13 @@
 import { zipSync, strToU8 } from "fflate";
 import { describe, expect, it } from "vitest";
-import { MemoryBinarySource, parseCardSource, type BinarySource } from "../src/index.ts";
+import { BlobBinarySource, MemoryBinarySource, parseCardSource, type BinarySource } from "../src/index.ts";
 
 describe("lazy card parser", () => {
+  it("reads browser blobs through bounded slices", async () => {
+    const source = new BlobBinarySource("slice.bin", new Blob([new Uint8Array([1, 2, 3, 4])]));
+    expect([...await source.read(1, 2)]).toEqual([2, 3]);
+    await expect(source.read(3, 2)).rejects.toThrow("binary_source_range_invalid");
+  });
   it("parses JSON without retaining source bytes", async () => {
     const bytes = strToU8(JSON.stringify({ spec: "chara_card_v3", data: { name: "시험", assets: [] } }));
     const parsed = await parseCardSource(new MemoryBinarySource("test.json", bytes));

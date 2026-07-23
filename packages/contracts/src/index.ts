@@ -116,3 +116,43 @@ export const suitabilityReportSchema = z.object({
   warnings: z.array(z.string()),
 });
 export type SuitabilityReport = z.infer<typeof suitabilityReportSchema>;
+
+export const loreCircuitClueSchema = z.object({
+  keyword: z.string().min(1),
+  targetLoreIds: z.array(z.string()).min(1),
+});
+export type LoreCircuitClue = z.infer<typeof loreCircuitClueSchema>;
+
+export const loreCircuitNodeSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  content: z.string(),
+  clues: z.array(loreCircuitClueSchema),
+});
+export type LoreCircuitNode = z.infer<typeof loreCircuitNodeSchema>;
+
+export const loreCircuitPuzzleSchema = z.object({
+  id: z.string(),
+  startKeyword: z.string(),
+  startLoreId: z.string(),
+  targetLoreId: z.string(),
+  targetName: z.string(),
+  optimalHops: z.number().int().min(2).max(4),
+});
+export type LoreCircuitPuzzle = z.infer<typeof loreCircuitPuzzleSchema>;
+
+export const loreCircuitCartridgeSchema = z.object({
+  contract: z.literal("lore-circuit-cartridge/0.1"),
+  cardFingerprint: z.string().regex(/^[a-f0-9]{64}$/),
+  cardName: z.string(),
+  nodes: z.array(loreCircuitNodeSchema),
+  puzzles: z.array(loreCircuitPuzzleSchema),
+});
+export type LoreCircuitCartridge = z.infer<typeof loreCircuitCartridgeSchema>;
+
+export const analyzedCardSchema = z.object({
+  contract: z.literal("analyzed-card/0.1"),
+  report: suitabilityReportSchema,
+  loreCircuit: loreCircuitCartridgeSchema,
+});
+export type AnalyzedCard = z.infer<typeof analyzedCardSchema>;

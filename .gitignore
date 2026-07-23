@@ -17,3 +17,5 @@ Thumbs.db
 cards/
 reports/*.local.*
 reports/
+test-results/
+playwright-report/

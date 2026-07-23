@@ -4,7 +4,9 @@
   "private": true,
   "type": "module",
   "packageManager": "pnpm@11.16.0",
-  "engines": { "node": ">=24.0.0" },
+  "engines": {
+    "node": ">=24.0.0"
+  },
   "scripts": {
     "build": "pnpm -r --if-present build",
     "check": "pnpm boundaries && pnpm -r typecheck && pnpm -r test && pnpm -r --if-present build",
@@ -12,9 +14,11 @@
     "dev": "pnpm --filter @lucky-arcade/web dev",
     "report": "pnpm --filter @lucky-arcade/report-cli start --",
     "test": "pnpm boundaries && pnpm -r test",
-    "typecheck": "pnpm -r typecheck"
+    "typecheck": "pnpm -r typecheck",
+    "test:e2e": "playwright test"
   },
   "devDependencies": {
+    "@playwright/test": "1.61.1",
     "@types/node": "24.13.3",
     "tsx": "4.23.1",
     "typescript": "7.0.2",

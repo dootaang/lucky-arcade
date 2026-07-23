@@ -2,7 +2,8 @@ import type { GraphMetrics, PuzzleCandidate } from "@lucky-arcade/contracts";
 import { activateLore, type LoreEntry } from "./lore.ts";
 
 export interface LoreGraph { nodes: LoreEntry[]; edges: Map<string, Set<string>>; excludedRegex: string[]; }
-export interface PuzzleVerification { puzzles: PuzzleCandidate[]; runs: number; candidateStarts: number; exhausted: boolean; }
+export interface VerifiedPuzzleDetail { puzzle: PuzzleCandidate; startLoreId: string; }
+export interface PuzzleVerification { puzzles: PuzzleCandidate[]; details: VerifiedPuzzleDetail[]; runs: number; candidateStarts: number; exhausted: boolean; }
 
 export function buildLoreGraph(entries: LoreEntry[]): LoreGraph {
   const nodes = entries.filter((entry) => entry.enabled && !entry.isFolder && entry.content.trim());
@@ -56,7 +57,7 @@ export function verifiedPuzzles(graph: LoreGraph, allEntries: LoreEntry[], limit
 
 export function verifyPuzzles(graph: LoreGraph, allEntries: LoreEntry[], options: { limit?: number; maxRuns?: number } = {}): PuzzleVerification {
   const limit = options.limit ?? 200, maxRuns = options.maxRuns ?? 64;
-  const output: PuzzleCandidate[] = [];
+  const output: PuzzleCandidate[] = [], details: VerifiedPuzzleDetail[] = [];
   const starts = graph.nodes.flatMap((start) => {
     if (start.useRegex || start.constant) return [];
     const keyword = start.keys.find((key) => key.length >= 2 && key.length <= 80);
@@ -74,12 +75,13 @@ export function verifyPuzzles(graph: LoreGraph, allEntries: LoreEntry[], options
       if (distance < 2 || distance > 4) continue;
       const activationPass = activated.get(target);
       if (activationPass !== undefined && activationPass >= 2 && activationPass <= 4) {
-        output.push({ startKeyword: keyword, targetLoreId: target, activationHops: activationPass, verified: true });
-        if (output.length >= limit) return { puzzles: output, runs, candidateStarts: starts.length, exhausted: starts.length > maxRuns };
+        const puzzle = { startKeyword: keyword, targetLoreId: target, activationHops: activationPass, verified: true } satisfies PuzzleCandidate;
+        output.push(puzzle); details.push({ puzzle, startLoreId: start.id });
+        if (output.length >= limit) return { puzzles: output, details, runs, candidateStarts: starts.length, exhausted: starts.length > maxRuns };
       }
     }
   }
-  return { puzzles: output, runs: selected.length, candidateStarts: starts.length, exhausted: starts.length > maxRuns };
+  return { puzzles: output, details, runs: selected.length, candidateStarts: starts.length, exhausted: starts.length > maxRuns };
 }
 
 function includes(text: string, key: string, caseSensitive: boolean): boolean { return caseSensitive ? text.includes(key) : text.toLocaleLowerCase().includes(key.toLocaleLowerCase()); }

@@ -18,6 +18,16 @@ export class MemoryBinarySource implements BinarySource {
   async fingerprint(): Promise<string> { return bytesToHex(sha256(this.bytes)); }
 }
 
+/** Browser-backed source that reads only the requested slice of a File/Blob. */
+export class BlobBinarySource implements BinarySource {
+  readonly size: number;
+  constructor(readonly name: string, readonly blob: Blob) { this.size = blob.size; }
+  async read(offset: number, length: number): Promise<Uint8Array> {
+    assertRange(this.size, offset, length);
+    return new Uint8Array(await this.blob.slice(offset, offset + length).arrayBuffer());
+  }
+}
+
 export function assertRange(size: number, offset: number, length: number): void {
   if (!Number.isSafeInteger(offset) || !Number.isSafeInteger(length) || offset < 0 || length < 0 || offset + length > size) {
     throw new Error("binary_source_range_invalid");
