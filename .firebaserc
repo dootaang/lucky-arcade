@@ -1,0 +1,12 @@
+{
+  "projects": {
+    "default": "luckyarcade-a3fd7"
+  },
+  "targets": {
+    "luckyarcade-a3fd7": {
+      "hosting": {
+        "arcade": ["luckyarcade"]
+      }
+    }
+  }
+}
