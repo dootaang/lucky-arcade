@@ -23,37 +23,60 @@
 저장소 교체, 프레임워크 이주)가 구조적으로 불가능하거나 국소 수술로 끝나게 한다.
 
 ```
-packages/contract  공용 타입만 (의존 0)
-packages/card-io   카드 파일 파싱 (contract에만 의존)
-packages/extract   카드→놀이 재료 (card-io에 의존)
-packages/engine    소형 판정 코어 (의존 0, DOM 금지)
-packages/cabinets  캐비닛 게임 로직 — UI 없음, 캐비닛 계약 구현 + 순수 리듀서
-apps/web           Vite React 앱 — React·DOM은 여기(와 공용 UI 부품)에만 존재
-tools/report       적합도 측정기 CLI (extract+engine 재사용, UI 무관)
+packages/contracts    버전 스키마·타입·마이그레이션 (도메인 의존 0)
+packages/card-io      BinarySource 기반 카드 파싱·에셋 지연 색인
+packages/extract      카드→놀이 재료 (로어·NPC·경제표·적합도)
+packages/engine       소형 판정 코어 (시드·입력·해시, DOM 금지)
+packages/persistence  행동 WAL·스냅샷·에셋 캐시 포트
+packages/cabinet-sdk  캐비닛 매니페스트·생명주기 계약
+packages/ui           shadcn·디자인 토큰·공용 React 부품
+cabinets/*/core       게임별 순수 리듀서 (DOM 금지)
+cabinets/*/react      게임별 화면·입력·선택형 렌더러
+apps/web              Vite React 앱 — 선언형 캐비닛 조립
+apps/report-cli       적합도 측정기 (extract 재사용, UI 무관)
 ```
 
-1. **의존 방향 단방향**: contract ← card-io ← extract ← cabinets. engine 독립.
-   React/DOM import는 apps 밖에서 금지. 위반은 CI 실패(dependency-cruiser 또는 eslint import 규칙).
+1. **의존 방향 단방향**: card-io→contracts, extract→card-io/contracts,
+   cabinet core→contracts/engine/cabinet-sdk, cabinet react→자기 core/ui/React, apps→모든 조립 계층.
+   캐비닛 core는 extract 구현을 호출하지 않고 계약 데이터만 받는다. React/DOM import는
+   `packages/ui`, `cabinets/*/react`, `apps/web` 밖에서 금지한다. 위반은 CI 실패한다.
 2. **TypeScript strict를 첫 커밋부터**, 예외 없음. "타입만 .ts, 로직은 .js" 금지.
-3. **코어 테스트는 Node에서 브라우저 없이 실행** — cabinets/engine/extract에 jsdom 의존이 생기면 설계 위반.
-4. **저장은 StorageAdapter 인터페이스 뒤에** IndexedDB로 시작. 교체는 어댑터 구현 추가로만.
-5. **캐비닛 추가 = cabinets/ 폴더 + 계약 등록으로 끝** — 앱 코드 수정이 필요하면 설계 위반.
+3. **코어 테스트는 Node에서 브라우저 없이 실행** — cabinet core/engine/extract에 jsdom 의존이 생기면 설계 위반.
+4. **저장은 용도별 포트 뒤에 둔다** — `ActionLogStore`, `SnapshotStore`, `AssetCache`,
+   `CardSourceStore`를 분리한다. 큰 스냅샷·이미지 작업이 작은 행동 영수증을 막지 않아야 한다.
+5. **캐비닛 추가 = 독립 폴더 + 선언형 매니페스트** — 앱 셸에 장르별 조건문이나 전용 배선을
+   추가하지 않는다. 빌드 등록은 매니페스트 또는 자동 생성 등록부만 사용한다.
    캐비닛 계약: 필요 재료·최소 데이터 수·요구 신뢰도·시드 규칙·입력 기록·점수 계산·
    공유 가능 정보·카드 원문 공개 범위 선언.
-6. **외부 렌더링 라이브러리(Phaser/KAPLAY/Matter/Cytoscape)는 해당 캐비닛 폴더 안 + dynamic import로 격리.**
+6. **외부 렌더링 라이브러리(Phaser/KAPLAY/Matter/Cytoscape)는 해당 캐비닛의 `react` 계층 + dynamic import로 격리.**
 7. 패키지 간 참조는 workspace protocol + `exports` 공개 API만. 내부 파일 직접 import 금지.
+
+## 성능·저장 계약 (럭키 시뮬레이터 장기 회차 교훈 — ★강제)
+
+- 카드 파일 공용 입구는 `BinarySource { size, read(offset,length) }`다. 전체 파일을 공용 상태의
+  거대한 `Uint8Array`로 보관하지 않는다. 에셋은 메타데이터와 지연 참조를 우선 반환한다.
+- 카드 해제·그래프 분석·썸네일 생성은 Worker 경계를 전제로 JSON/구조화 복제 가능한 DTO만 사용한다.
+  게임 판정 전체 Worker 이전은 실측이 8~10ms 관문을 넘을 때만 시행한다.
+- 행동은 공용 직렬 대기열에서 판정하고 소형 WAL을 먼저 확정한다. 전체 스냅샷·통계·캐시 정리는
+  유휴 차선에서 병합하며, 과거 전체를 매 행동마다 직렬화·재해시하지 않는다.
+- 목록은 최대 192px WebP 썸네일을 사용한다. 화면 근처만 로딩하고 낡은 요청은 취소한다.
+  Object URL·메모리·영구 캐시는 모두 상한과 퇴출 시 해제 규칙을 가진다.
+- 완료 관문: 버튼 눌림 표시 p95≤50ms(데스크톱), 준비된 로컬 행동 결과 p95≤100ms,
+  50→1,000행동 p95 성장≤1.2배, 50ms 초과 메인 스레드 장기 작업 없음, 대형 목록 전체 DOM 생성 금지.
+- 성능 진단은 버튼 페인트·대기열·판정·WAL·상태 반영·결과 페인트·백그라운드 저장을 분리 계측한다.
 
 ## 단계 (합의된 첫 지시 범위 = 1~5)
 
-1. **저장소 기초** — GPL-3.0-or-later, 프로그램/카드 권리 분리, PROVENANCE, 원칙 문서,
-   React+Vite+TypeScript+Tailwind+shadcn 툴체인. ✅ 2026-07-23 (이 커밋)
-2. **코드 이식 경계** — 카드 파싱·로어 정규화/활성화·카드 지문의 순수 함수만 선별 이식.
+1. **저장소 기초** — GPL-3.0-or-later, 프로그램/카드 권리 분리, Firebase, 원칙 문서,
+   React 19+Vite 8+TypeScript 7 strict+Tailwind 4+shadcn 모노레포 셸. ✅ 2026-07-23
+2. **코드 이식 경계** — 카드 파싱·로어 정규화/활성화·카드 지문의 순수 함수만 선별 이식. ✅ 2026-07-23
    UI·PlaySession·LLM·대형 저장 엔진 이식 금지. 출처 문서 기록.
-3. **공용 데이터 계약** — 전 추출물에 value/source/confidence/evidence/derived.
-4. **적합도 측정기** — 게임 UI 없이 카드별 보고서: 로어 노드·연결, SCC 압축 깊이·도달률·
+3. **공용 데이터 계약** — Zod 런타임 스키마, source/confidence/evidence/derived, 버전 계약. ✅ 2026-07-23
+4. **적합도 측정기** — 게임 UI 없이 카드별 보고서: 로어 노드·연결, SCC 압축 깊이·도달률· ✅ 2026-07-23
    최단거리 지름·고립률, 생성 가능 퍼즐 수, NPC 그룹 정확도 후보, 스프라이트 그룹 수,
    경제표 존재 여부, 가능한 캐비닛과 불가 사유.
-5. **로어 회로 go/no-go** — 유형별 실카드 표본(단순·로어 대형·모듈 결합·확률/재귀·에셋 대형)으로
+5. **로어 회로 go/no-go** — 진행 중. 실카드 5종 1차 측정에서 2종은 검증 연쇄 200개 관문 통과,
+   3종은 0개 또는 표본 0개로 미통과했다. 유형별 실카드 표본(단순·로어 대형·모듈 결합·확률/재귀·에셋 대형)으로
    측정. 각 퍼즐을 실제 `activateLore` 재실행으로 자동 검증. 통과 시에만 1호 캐비닛 UI 착수.
 
 ## 그래프 지표 정의 (합의 확정)

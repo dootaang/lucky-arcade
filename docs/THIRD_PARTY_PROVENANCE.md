@@ -14,16 +14,30 @@
 
 ### simbot-simulator (GPL-3.0-or-later, 자매 프로젝트)
 
-- 원본: https://github.com/dootaang/sim-simulator
-- 대상(예정): `packages/card/src`(카드 컨테이너 파싱·zip 색인·카드 지문),
-  `packages/risu/src/lore.ts`·`tokens.ts`(로어 정규화·활성화 판정·토큰 추정)
-- 원칙: 순수 함수만 이식한다. UI·PlaySession·LLM 경로·대형 저장 엔진은 이식 금지.
-- 이식 시 이 절에 커밋 해시와 파일 목록·변경 내용을 확정 기록한다.
+- 원본: https://github.com/dootaang/lucky-simulator
+- 기준 커밋: `a1d74c6` (2026-07-20). 아래 원본 파일은 이 커밋부터 2026-07-23 HEAD까지 내용 차이가 없음.
+- 라이선스: GPL-3.0-or-later.
+- 원본 `packages/risu/src/lore.ts`, `tokens.ts` → `packages/extract/src/lore.ts`, `tokens.ts`:
+  `normalizeLoreEntries`, `activateLore`, 토큰 예산 판정 의미를 유지해 이식하고 포맷만 정리했다.
+- 원본 `packages/card/src/{index,zip-index,png}.ts` → `packages/card-io/src/{parser,zip,source}.ts`:
+  형식 판별·PNG 메타데이터·CharX 중앙 디렉터리 규칙을 참고하되, 전체 압축 해제 대신
+  `BinarySource` 구간 읽기와 에셋 지연 참조로 재설계했다.
+- 원본 `apps/web/src/player/npc-gallery.ts`의 `parseSpriteName`/`buildNpcClusters` →
+  `packages/extract/src/npc.ts`: 파일명 구조 그룹화만 이식하고 confidence/evidence 계약을 추가했다.
+- 가져오지 않음: UI, PlaySession, LLM·프롬프트, 세션 저장, Lua/JS 실행, 카드 원문 재배포 경로.
 
-### shadcn/ui dashboard-01 블록 (MIT)
+### 직접 의존 오픈소스
+
+- React 19.2.8, React Router 8.3.0, Vite 8.1.5, Tailwind CSS 4.3.3: 각 패키지 공식 라이선스 조건으로 웹 셸에 사용.
+- Zod 4.4.3(MIT): 외부 카드·보고서 런타임 계약 검증.
+- fflate 0.8.3(MIT): 필요한 ZIP 항목의 DEFLATE 해제.
+- @noble/hashes 2.2.0(MIT): 브라우저·Node 공용 SHA-256 결과 해시.
+- Tabler Icons 3.45.0(MIT): 웹 셸 아이콘.
+
+### shadcn/ui 구조 (MIT)
 
 - 원본: https://github.com/shadcn-ui/ui — 대시보드 예제 블록(사이드바·통계 카드·차트·데이터 테이블)
-- 용도: 앱 셸 레이아웃 골격. 컴포넌트는 shadcn CLI로 생성 후 우리 화면에 맞게 수정.
+- 현재 적용: 모노레포 `packages/ui` 배치와 `components.json` 규격. dashboard-01 화면 코드는 아직 이식하지 않음.
 
 ### Uiverse.io 마이크로 인터랙션 스니펫 (MIT)
 

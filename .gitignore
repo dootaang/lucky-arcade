@@ -1,6 +1,11 @@
 node_modules/
 dist/
 coverage/
+.pnpm-store/
+.firebase/
+.vite-dev*.log
+apps/web/dist/
+*.tsbuildinfo
 *.local
 .env
 .env.*
@@ -11,3 +16,4 @@ Thumbs.db
 *.risup
 cards/
 reports/*.local.*
+reports/
