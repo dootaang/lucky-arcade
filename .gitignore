@@ -14,7 +14,7 @@ Thumbs.db
 *.charx
 *.risum
 *.risup
-cards/
+/cards/
 reports/*.local.*
 reports/
 test-results/
