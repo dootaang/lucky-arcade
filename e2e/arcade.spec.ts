@@ -38,6 +38,16 @@ test("mobile navigation remains reachable", async ({ page }, testInfo) => {
   await expect(page.getByRole("button", { name: "카드 보관함" })).toBeVisible();
 });
 
+test("mobile favorite choice does not stay highlighted in the next round", async ({ page }, testInfo) => {
+  test.skip(!testInfo.project.name.includes("mobile"));
+  await page.goto("/");
+  await page.locator('input[type="file"]').setInputFiles({ name: "favorite-mobile.json", mimeType: "application/json", buffer: Buffer.from(portraitCard(8, 3, "모바일 월드컵 카드")) });
+  await expect(page.getByRole("heading", { name: "최애 월드컵" })).toBeVisible();
+  await page.locator(".favorite-choice").first().click();
+  await expect(page.locator(".favorite-choice:focus")).toHaveCount(0);
+  await expect.poll(() => page.locator(".favorite-choice").first().evaluate((element) => getComputedStyle(element).transform)).toBe("none");
+});
+
 test("opens a card into the favorite cup and completes every round", async ({ page }) => {
   await page.goto("/");
   await page.locator('input[type="file"]').setInputFiles({ name: "favorite.json", mimeType: "application/json", buffer: Buffer.from(portraitCard(8, 3, "E2E 월드컵 카드")) });
