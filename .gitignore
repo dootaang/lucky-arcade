@@ -17,5 +17,9 @@ Thumbs.db
 /cards/
 reports/*.local.*
 reports/
+!reports/
+reports/*
+!reports/npc-accuracy-2026-07-23.md
+/apps/report-cli/reports/
 test-results/
 playwright-report/

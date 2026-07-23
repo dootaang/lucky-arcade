@@ -7,6 +7,7 @@
   "scripts": { "typecheck": "tsc -p tsconfig.json", "test": "vitest run" },
   "dependencies": {
     "@lucky-arcade/card-io": "workspace:*",
-    "@lucky-arcade/contracts": "workspace:*"
+    "@lucky-arcade/contracts": "workspace:*",
+    "@lucky-arcade/engine": "workspace:*"
   }
 }

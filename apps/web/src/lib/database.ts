@@ -1,11 +1,11 @@
-import type { AnalyzedCard } from "@lucky-arcade/contracts";
+import type { AnalyzedCard, AnyAnalyzedCard } from "@lucky-arcade/contracts";
 import type { SnapshotRecord, StoredActionReceipt } from "@lucky-arcade/persistence";
 
 const DATABASE = "lucky-arcade";
 const VERSION = 1;
 const STORES = { cards: "cards", sources: "sources", sessions: "sessions", actions: "actions" } as const;
 
-export interface StoredCard { fingerprint: string; importedAt: string; analyzed: AnalyzedCard; }
+export interface StoredCard { fingerprint: string; importedAt: string; analyzed: AnyAnalyzedCard; }
 
 export async function saveCard(analyzed: AnalyzedCard, source: File): Promise<StoredCard> {
   const record = { fingerprint: analyzed.report.card.fingerprint, importedAt: new Date().toISOString(), analyzed } satisfies StoredCard;
@@ -17,7 +17,21 @@ export async function saveCard(analyzed: AnalyzedCard, source: File): Promise<St
 export async function listCards(): Promise<StoredCard[]> {
   const db = await openDatabase(), transaction = db.transaction(STORES.cards, "readonly");
   const output = await request<StoredCard[]>(transaction.objectStore(STORES.cards).getAll());
-  await complete(transaction); db.close(); return output.sort((a, b) => b.importedAt.localeCompare(a.importedAt));
+  await complete(transaction); db.close();
+  return output
+    .filter((item) => item?.analyzed?.contract === "analyzed-card/0.1" || item?.analyzed?.contract === "analyzed-card/0.2")
+    .sort((a, b) => b.importedAt.localeCompare(a.importedAt));
+}
+export async function loadCardSource(fingerprint: string): Promise<File | null> {
+  const db = await openDatabase(), transaction = db.transaction(STORES.sources, "readonly");
+  const output = await request<File | undefined>(transaction.objectStore(STORES.sources).get(fingerprint));
+  await complete(transaction); db.close(); return output ?? null;
+}
+export async function replaceAnalyzedCard(previous: StoredCard, analyzed: AnalyzedCard): Promise<StoredCard> {
+  const record = { ...previous, analyzed } satisfies StoredCard;
+  const db = await openDatabase(), transaction = db.transaction(STORES.cards, "readwrite");
+  transaction.objectStore(STORES.cards).put(record);
+  await complete(transaction); db.close(); return record;
 }
 export async function saveSnapshot<State>(snapshot: SnapshotRecord<State>): Promise<void> {
   const db = await openDatabase(), transaction = db.transaction(STORES.sessions, "readwrite");

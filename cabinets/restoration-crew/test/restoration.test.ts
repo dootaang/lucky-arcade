@@ -1,0 +1,6 @@
+import { describe, expect, it } from "vitest";
+import { generateRestorationDeck } from "@lucky-arcade/extract";
+import { createRestorationState, reduceRestoration, restorationGrade, restorationResultHash } from "../src/index.ts";
+const candidates = Array.from({ length: 6 }, (_, i) => ({ npcId:`n${i}`,displayName:`N${i}`,displayNameSource:"asset-filename" as const,representativeAssetId:`a${i}`,variantAssetIds:[`a${i}`,`a${i}x`,`a${i}y`],confidence:1,evidence:[] }));
+const deck = generateRestorationDeck({ contract:"favorite-cup-cartridge/0.1",cardFingerprint:"c".repeat(64),cardName:"t",candidates }, "seed");
+describe("restoration state", () => { it("scores deterministic answers and grades the completed run", () => { const play=()=>{let state=createRestorationState(deck); while(state.status==="playing"){const p=deck.problems[state.index]; if(state.phase==="question"&&p) state=reduceRestoration(state,{type:"answer",selection:p.type==="expression-intruder"?p.intruderAssetId:p.correctPart,elapsedMs:1000},deck); else state=reduceRestoration(state,{type:"next"},deck);} return state;}; const state=play(),replay=play(); expect(restorationGrade(state)).toBe("S"); expect(state.answers).toHaveLength(deck.problems.length); expect(restorationResultHash(state)).toBe(restorationResultHash(replay)); }); });

@@ -7,7 +7,7 @@ const rootPath = fileURLToPath(rootUrl);
 const rules = new Map([
   ["packages/contracts", []],
   ["packages/card-io", ["@lucky-arcade/contracts"]],
-  ["packages/extract", ["@lucky-arcade/contracts", "@lucky-arcade/card-io"]],
+  ["packages/extract", ["@lucky-arcade/contracts", "@lucky-arcade/card-io", "@lucky-arcade/engine"]],
   ["packages/engine", ["@lucky-arcade/contracts"]],
   ["packages/persistence", ["@lucky-arcade/contracts"]],
   ["packages/cabinet-sdk", ["@lucky-arcade/contracts", "@lucky-arcade/engine"]],

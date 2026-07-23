@@ -1,11 +1,18 @@
-import { analyzedCardSchema, loreCircuitCartridgeSchema, type AnalyzedCard, type LoreCircuitCartridge, type ParsedCard } from "@lucky-arcade/contracts";
+import { analyzedCardSchema, favoriteCupCartridgeSchema, loreCircuitCartridgeSchema, type AnalyzedCard, type FavoriteCupCartridge, type LoreCircuitCartridge, type ParsedCard } from "@lucky-arcade/contracts";
+import { extractNpcGroups } from "./npc.ts";
 import { buildLoreGraph, verifyPuzzles, type LoreGraph } from "./graph.ts";
 import { loreInputsFromCard, normalizeLoreEntries, type LoreEntry } from "./lore.ts";
 import { createSuitabilityReport } from "./report.ts";
+import { favoriteCupCartridgeFromGroups } from "./favorite-cup.ts";
 
 export function createAnalyzedCard(card: ParsedCard, now = new Date()): AnalyzedCard {
   const report = createSuitabilityReport(card, now);
-  return analyzedCardSchema.parse({ contract: "analyzed-card/0.1", report, loreCircuit: createLoreCircuitCartridge(card) });
+  return analyzedCardSchema.parse({ contract: "analyzed-card/0.2", report, loreCircuit: createLoreCircuitCartridge(card), favoriteCup: createFavoriteCupCartridge(card) });
+}
+
+export function createFavoriteCupCartridge(card: ParsedCard): FavoriteCupCartridge {
+  const { groups } = extractNpcGroups(card.assets);
+  return favoriteCupCartridgeSchema.parse(favoriteCupCartridgeFromGroups(card.fingerprint, card.name, groups));
 }
 
 export function createLoreCircuitCartridge(card: ParsedCard): LoreCircuitCartridge {

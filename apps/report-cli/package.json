@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "scripts": { "start": "tsx src/index.ts", "typecheck": "tsc -p tsconfig.json", "test": "vitest run --passWithNoTests" },
+  "scripts": { "start": "tsx src/index.ts", "measure:npc": "tsx src/npc-measure.ts", "typecheck": "tsc -p tsconfig.json", "test": "vitest run --passWithNoTests" },
   "dependencies": {
     "@lucky-arcade/card-io": "workspace:*",
     "@lucky-arcade/contracts": "workspace:*",

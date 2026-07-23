@@ -71,12 +71,18 @@ export const puzzleCandidateSchema = z.object({
 });
 export type PuzzleCandidate = z.infer<typeof puzzleCandidateSchema>;
 
-export const npcGroupSchema = z.object({
+const npcGroupV1Schema = z.object({
   id: z.string(),
   spriteCount: z.number().int().positive(),
   emotions: z.array(z.string()),
   confidence: z.number().min(0).max(1),
   evidence: z.array(z.string()),
+});
+export const npcGroupSchema = npcGroupV1Schema.extend({
+  displayName: z.string().min(1),
+  displayNameSource: z.enum(["card-explicit", "asset-filename", "technical-id"]),
+  representativeAssetId: z.string().min(1),
+  variantAssetIds: z.array(z.string().min(1)).min(1),
 });
 export type NpcGroup = z.infer<typeof npcGroupSchema>;
 
@@ -88,7 +94,7 @@ export const cabinetAssessmentSchema = z.object({
 });
 export type CabinetAssessment = z.infer<typeof cabinetAssessmentSchema>;
 
-export const suitabilityReportSchema = z.object({
+const suitabilityReportBaseSchema = z.object({
   contract: z.literal("suitability-report/0.1"),
   generatedAt: z.string(),
   card: z.object({
@@ -109,13 +115,38 @@ export const suitabilityReportSchema = z.object({
   npcs: z.object({
     groupCount: z.number().int().nonnegative(),
     ungroupedImageCount: z.number().int().nonnegative(),
-    groups: z.array(npcGroupSchema),
+    groups: z.array(npcGroupV1Schema),
   }),
   economy: sourcedSchema(z.boolean()),
   cabinets: z.array(cabinetAssessmentSchema),
   warnings: z.array(z.string()),
 });
+export const suitabilityReportV1Schema = suitabilityReportBaseSchema;
+export const suitabilityReportSchema = suitabilityReportBaseSchema.extend({
+  contract: z.literal("suitability-report/0.2"),
+  npcs: suitabilityReportBaseSchema.shape.npcs.extend({ groups: z.array(npcGroupSchema) }),
+});
 export type SuitabilityReport = z.infer<typeof suitabilityReportSchema>;
+export type SuitabilityReportV1 = z.infer<typeof suitabilityReportV1Schema>;
+
+export const favoriteCupCandidateSchema = z.object({
+  npcId: z.string().min(1),
+  displayName: z.string().min(1),
+  displayNameSource: z.enum(["card-explicit", "asset-filename", "technical-id"]),
+  representativeAssetId: z.string().min(1),
+  variantAssetIds: z.array(z.string().min(1)).min(1),
+  confidence: z.number().min(0).max(1),
+  evidence: z.array(z.string()),
+});
+export type FavoriteCupCandidate = z.infer<typeof favoriteCupCandidateSchema>;
+
+export const favoriteCupCartridgeSchema = z.object({
+  contract: z.literal("favorite-cup-cartridge/0.1"),
+  cardFingerprint: z.string().regex(/^[a-f0-9]{64}$/),
+  cardName: z.string(),
+  candidates: z.array(favoriteCupCandidateSchema),
+});
+export type FavoriteCupCartridge = z.infer<typeof favoriteCupCartridgeSchema>;
 
 export const loreCircuitClueSchema = z.object({
   keyword: z.string().min(1),
@@ -150,9 +181,19 @@ export const loreCircuitCartridgeSchema = z.object({
 });
 export type LoreCircuitCartridge = z.infer<typeof loreCircuitCartridgeSchema>;
 
-export const analyzedCardSchema = z.object({
+export const analyzedCardV1Schema = z.object({
   contract: z.literal("analyzed-card/0.1"),
-  report: suitabilityReportSchema,
+  report: suitabilityReportV1Schema,
   loreCircuit: loreCircuitCartridgeSchema,
 });
+export type AnalyzedCardV1 = z.infer<typeof analyzedCardV1Schema>;
+
+export const analyzedCardSchema = z.object({
+  contract: z.literal("analyzed-card/0.2"),
+  report: suitabilityReportSchema,
+  loreCircuit: loreCircuitCartridgeSchema,
+  favoriteCup: favoriteCupCartridgeSchema,
+});
 export type AnalyzedCard = z.infer<typeof analyzedCardSchema>;
+export const anyAnalyzedCardSchema = z.union([analyzedCardSchema, analyzedCardV1Schema]);
+export type AnyAnalyzedCard = z.infer<typeof anyAnalyzedCardSchema>;

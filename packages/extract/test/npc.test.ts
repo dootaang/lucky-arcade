@@ -9,7 +9,7 @@ describe("NPC filename grouping", () => {
       { ...base, id: "2", name: "Alice_smile", path: "Alice_smile.png" },
       { ...base, id: "3", name: "scenery", path: "scenery.png" },
     ]);
-    expect(result.groups[0]).toMatchObject({ id: "Alice", spriteCount: 2 });
+    expect(result.groups[0]).toMatchObject({ id: "Alice", displayName: "Alice", spriteCount: 2, representativeAssetId: "1", variantAssetIds: ["1", "2"] });
     expect(result.ungroupedImageCount).toBe(1);
   });
 });

@@ -4,5 +4,5 @@ import { defineConfig } from "vite";
 
 export default defineConfig({
   plugins: [react(), tailwindcss()],
-  build: { target: "es2022", sourcemap: true },
+  build: { target: "es2022", sourcemap: true, manifest: true },
 });

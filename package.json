@@ -13,6 +13,7 @@
     "boundaries": "node scripts/check-boundaries.mjs",
     "dev": "pnpm --filter @lucky-arcade/web dev",
     "report": "pnpm --filter @lucky-arcade/report-cli start --",
+    "measure:npc": "pnpm --filter @lucky-arcade/report-cli measure:npc --",
     "test": "pnpm boundaries && pnpm -r test",
     "typecheck": "pnpm -r typecheck",
     "test:e2e": "playwright test"
