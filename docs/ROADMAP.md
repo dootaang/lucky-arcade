@@ -17,6 +17,32 @@
 - 모든 추출 결과는 `{ value, source, confidence, evidence, derived }` 공통 계약을 따른다.
 - 판정·점수·정답은 항상 판정 코어가 소유한다. 렌더링 라이브러리는 표현·입력만 담당한다.
 
+## 모듈화·무이주 계약 (2026-07-23 오너 조건 — ★강제)
+
+패키지 구조와 의존 방향을 처음부터 다음으로 고정한다. 목적: 나중에 갈아엎는 이주(JS→TS,
+저장소 교체, 프레임워크 이주)가 구조적으로 불가능하거나 국소 수술로 끝나게 한다.
+
+```
+packages/contract  공용 타입만 (의존 0)
+packages/card-io   카드 파일 파싱 (contract에만 의존)
+packages/extract   카드→놀이 재료 (card-io에 의존)
+packages/engine    소형 판정 코어 (의존 0, DOM 금지)
+packages/cabinets  캐비닛 게임 로직 — UI 없음, 캐비닛 계약 구현 + 순수 리듀서
+apps/web           Vite React 앱 — React·DOM은 여기(와 공용 UI 부품)에만 존재
+tools/report       적합도 측정기 CLI (extract+engine 재사용, UI 무관)
+```
+
+1. **의존 방향 단방향**: contract ← card-io ← extract ← cabinets. engine 독립.
+   React/DOM import는 apps 밖에서 금지. 위반은 CI 실패(dependency-cruiser 또는 eslint import 규칙).
+2. **TypeScript strict를 첫 커밋부터**, 예외 없음. "타입만 .ts, 로직은 .js" 금지.
+3. **코어 테스트는 Node에서 브라우저 없이 실행** — cabinets/engine/extract에 jsdom 의존이 생기면 설계 위반.
+4. **저장은 StorageAdapter 인터페이스 뒤에** IndexedDB로 시작. 교체는 어댑터 구현 추가로만.
+5. **캐비닛 추가 = cabinets/ 폴더 + 계약 등록으로 끝** — 앱 코드 수정이 필요하면 설계 위반.
+   캐비닛 계약: 필요 재료·최소 데이터 수·요구 신뢰도·시드 규칙·입력 기록·점수 계산·
+   공유 가능 정보·카드 원문 공개 범위 선언.
+6. **외부 렌더링 라이브러리(Phaser/KAPLAY/Matter/Cytoscape)는 해당 캐비닛 폴더 안 + dynamic import로 격리.**
+7. 패키지 간 참조는 workspace protocol + `exports` 공개 API만. 내부 파일 직접 import 금지.
+
 ## 단계 (합의된 첫 지시 범위 = 1~5)
 
 1. **저장소 기초** — GPL-3.0-or-later, 프로그램/카드 권리 분리, PROVENANCE, 원칙 문서,
