@@ -41,7 +41,7 @@ test("mobile navigation remains reachable", async ({ page }, testInfo) => {
 test("opens built-in quick cabinets without a card", async ({ page }) => {
   await page.goto("/");
   await expect(page.getByRole("heading", { name: "기다리는 동안, 바로 한 판" })).toBeVisible();
-  await expect(page.locator(".arcade-entry")).toHaveCount(4);
+  await expect(page.locator(".arcade-entry")).toHaveCount(5);
   await page.locator(".arcade-entry").filter({ hasText: "소녀전선 최애 월드컵" }).getByRole("button", { name: "바로 시작" }).click();
   await expect(page.getByRole("heading", { name: "최애 월드컵" })).toBeVisible();
   for (let pick = 0; pick < 11; pick += 1) await page.locator(".favorite-choice").first().click();
@@ -114,7 +114,7 @@ test("opens the built-in GFL operation, resolves combat, and restores the reward
   page.on("pageerror", (error) => browserErrors.push(error.message));
   page.on("console", (message) => { if (message.type() === "error") browserErrors.push(message.text()); });
   await page.goto("/");
-  await page.getByRole("button", { name: "작전 시작", exact: true }).click();
+  await page.locator(".arcade-entry").filter({ hasText: "소녀전선: 잔불" }).getByRole("button", { name: "작전 시작", exact: true }).click();
   await expect(page.getByRole("heading", { name: "첫 제대를 편성하세요" })).toBeVisible();
   await expect(page.locator(".doll-grid img")).toHaveCount(12);
   await page.getByRole("button", { name: "화력 제대", exact: true }).click();
@@ -138,3 +138,51 @@ test("opens the built-in GFL operation, resolves combat, and restores the reward
   await expect(page.getByRole("heading", { name: "하나를 회수하세요" })).toBeVisible();
   expect(browserErrors).toEqual([]);
 });
+
+test("becomes a provisional navigator and restores the chosen Temerosa party", async ({ page }) => {
+  await page.goto("/");
+  await page.locator(".arcade-entry").filter({ hasText: "테메로세: 여백" }).getByRole("button", { name: "작전 시작" }).click();
+  await expect(page.getByRole("heading", { name: "테메로세: 여백" })).toBeVisible();
+
+  await page.getByRole("button", { name: /살펴본다/ }).click();
+  await advanceDialogue(page, 3);
+  await page.getByRole("button", { name: /무슨 일이 생겼는지/ }).click();
+  await advanceDialogue(page, 4);
+  await advanceDialogue(page, 4);
+  await page.getByRole("button", { name: /A\.T\.272 발신 기록/ }).click();
+  await advanceDialogue(page, 4);
+  await page.getByRole("button", { name: /직접 서명한다/ }).click();
+  await advanceDialogue(page, 5);
+
+  await expect(page.getByRole("heading", { name: "함께 갈 두 사람" })).toBeVisible();
+  await page.getByRole("button", { name: /페일/ }).click();
+  await page.getByRole("button", { name: /카노/ }).click();
+  await page.getByRole("button", { name: /동행 조건 확인/ }).click();
+  await page.getByRole("button", { name: /그 기분은 단서로만/ }).click();
+  await page.getByRole("button", { name: /두 조건을 확인하고 수락/ }).click();
+  await advanceDialogue(page, 3);
+
+  await expect(page.getByRole("heading", { name: "임시 항해사의 첫 편성이 끝났습니다." })).toBeVisible();
+  await expect(page.getByText("자동 저장됨")).toBeVisible();
+  await page.reload();
+  await expect(page.getByRole("region", { name: "이어하기" })).toContainText("첫 편성 완료");
+  await page.getByRole("button", { name: "첫 항로 이어하기", exact: true }).click();
+  await expect(page.getByRole("heading", { name: "임시 항해사의 첫 편성이 끝났습니다." })).toBeVisible();
+  await expect(page.locator(".temerosa-selected-party")).toContainText("페일");
+  await expect(page.locator(".temerosa-selected-party")).toContainText("카노");
+});
+
+test("mobile Temerosa pilot keeps the first choice and dialogue controls reachable", async ({ page }, testInfo) => {
+  test.skip(testInfo.project.metadata.mobile !== true);
+  await page.goto("/");
+  await page.locator(".arcade-entry").filter({ hasText: "테메로세: 여백" }).getByRole("button", { name: "작전 시작" }).click();
+  await expect(page.getByRole("button", { name: /손을 뻗는다/ })).toBeInViewport();
+  await page.getByRole("button", { name: /손을 뻗는다/ }).click();
+  await page.getByRole("button", { name: "계속", exact: true }).click();
+  await expect(page.locator(".temerosa-communication-frame img")).toBeVisible();
+  await expect(page.getByRole("button", { name: "계속", exact: true })).toBeInViewport();
+});
+
+async function advanceDialogue(page: import("@playwright/test").Page, count: number) {
+  for (let index = 0; index < count; index += 1) await page.getByRole("button", { name: "계속", exact: true }).click();
+}

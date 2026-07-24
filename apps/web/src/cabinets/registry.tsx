@@ -18,6 +18,15 @@ type CabinetView = LazyExoticComponent<ComponentType<CabinetViewContext>>;
 const registrations: readonly WebCabinetRegistration[] = [
   {
     manifest: {
+      id: "temerosa-margin", version: "temerosa-margin/0.1", title: "테메로세: 여백 — 첫 항로",
+      description: "죽은 단말기를 깨우고 임시 항해사가 되어, 함께 갈 두 사람과 첫 계약을 맺습니다.", requiredCapabilities: [],
+      sessionKind: "deep", launchKind: "built-in", resumeLabel: "첫 항로 이어하기", estimatedMinutes: { min: 5, max: 10 },
+    },
+    openingRank: null, world: "테메로세", badge: "감정 항해 JRPG",
+    load: async () => { const module = await import("../features/temerosa-margin/temerosa-margin-view.tsx"); return { default: ({ onExit }) => <module.default onExit={onExit} /> }; },
+  },
+  {
+    manifest: {
       id: "lucky-derby-lab", version: "lucky-derby/0.1", title: "럭키★더비 엔진 실험장",
       description: "같은 8인 경주를 네 게임 엔진으로 달려 보고 손맛과 속도를 직접 비교합니다.", requiredCapabilities: [],
       sessionKind: "repeat", launchKind: "built-in", resumeLabel: "엔진 비교 이어하기", estimatedMinutes: { min: 2, max: 5 },
