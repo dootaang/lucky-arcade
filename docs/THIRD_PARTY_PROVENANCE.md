@@ -28,7 +28,10 @@
 
 ### 직접 의존 오픈소스
 
-- LittleJS 1.18.24(MIT): `gfl-ember` 캐비닛의 전투 영수증 재생용 Canvas 표현 엔진. 게임 판정과 상태 변경에는 사용하지 않는다.
+- LittleJS 1.18.24(MIT): `gfl-ember` 전투와 `lucky-derby` 기준선의 Canvas 표현 계층. 게임 판정과 상태 변경에는 사용하지 않는다.
+- Phaser 4.2.1(MIT): `lucky-derby`의 대형 2D 엔진 비교 렌더러. 경주 판정에는 사용하지 않는다.
+- melonJS 19.9.0(MIT): `lucky-derby`의 경량 2D 엔진 비교 렌더러. 경주 판정에는 사용하지 않는다.
+- Excalibur 0.32.0(BSD-2-Clause): `lucky-derby`의 TypeScript 2D 엔진 비교 렌더러. 경주 판정에는 사용하지 않는다.
 
 - React 19.2.8, React Router 8.3.0, Vite 8.1.5, Tailwind CSS 4.3.3: 각 패키지 공식 라이선스 조건으로 웹 셸에 사용.
 - Zod 4.4.3(MIT): 외부 카드·보고서 런타임 계약 검증.

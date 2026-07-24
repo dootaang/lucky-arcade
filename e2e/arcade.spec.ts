@@ -41,7 +41,7 @@ test("mobile navigation remains reachable", async ({ page }, testInfo) => {
 test("opens built-in quick cabinets without a card", async ({ page }) => {
   await page.goto("/");
   await expect(page.getByRole("heading", { name: "기다리는 동안, 바로 한 판" })).toBeVisible();
-  await expect(page.locator(".arcade-entry")).toHaveCount(3);
+  await expect(page.locator(".arcade-entry")).toHaveCount(4);
   await page.locator(".arcade-entry").filter({ hasText: "소녀전선 최애 월드컵" }).getByRole("button", { name: "바로 시작" }).click();
   await expect(page.getByRole("heading", { name: "최애 월드컵" })).toBeVisible();
   for (let pick = 0; pick < 11; pick += 1) await page.locator(".favorite-choice").first().click();
@@ -51,6 +51,31 @@ test("opens built-in quick cabinets without a card", async ({ page }) => {
   await page.getByRole("button", { name: "시작", exact: true }).click();
   await expect(page.locator(".memory-portrait img")).toBeVisible();
   await expect(page.locator(".memory-grid")).toBeVisible({ timeout: 4_000 });
+});
+
+test("replays one deterministic derby through all four rendering engines", async ({ page }) => {
+  const browserErrors: string[] = [];
+  page.on("pageerror", (error) => browserErrors.push(error.message));
+  await page.goto("/");
+  await page.locator(".arcade-entry").filter({ hasText: "럭키★더비 엔진 실험장" }).getByRole("button", { name: "바로 시작" }).click();
+  await expect(page.getByRole("heading", { name: "럭키★더비 엔진 실험장" })).toBeVisible();
+  for (const engine of ["Phaser 4", "melonJS", "Excalibur", "LittleJS"]) {
+    await page.getByRole("tab", { name: new RegExp(`^${engine}`) }).click();
+    await expect(page.getByText("완주 · 결과가 모든 엔진에서 동일합니다")).toBeVisible({ timeout: 12_000 });
+    await expect(page.locator(".derby-stage canvas").first()).toBeVisible();
+    await expect.poll(() => page.locator(".derby-stage canvas").count()).toBeLessThanOrEqual(2);
+  }
+  await expect(page.locator(".derby-metrics article").filter({ hasText: "완주 검증" })).toHaveCount(4);
+  expect(browserErrors).toEqual([]);
+});
+
+test("mobile derby keeps the race and controls on screen", async ({ page }, testInfo) => {
+  test.skip(!testInfo.project.name.includes("mobile"));
+  await page.goto("/");
+  await page.locator(".arcade-entry").filter({ hasText: "럭키★더비 엔진 실험장" }).getByRole("button", { name: "바로 시작" }).click();
+  await expect(page.getByRole("heading", { name: "럭키★더비 엔진 실험장" })).toBeVisible();
+  await expect(page.locator(".derby-stage")).toBeInViewport();
+  await expect(page.getByRole("button", { name: "4엔진 자동 비교" })).toBeVisible();
 });
 
 test("mobile favorite choice does not stay highlighted in the next round", async ({ page }, testInfo) => {

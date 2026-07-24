@@ -85,6 +85,9 @@ importers:
       '@lucky-arcade/lore-circuit':
         specifier: workspace:*
         version: link:../../cabinets/lore-circuit
+      '@lucky-arcade/lucky-derby':
+        specifier: workspace:*
+        version: link:../../cabinets/lucky-derby
       '@lucky-arcade/persistence':
         specifier: workspace:*
         version: link:../../packages/persistence
@@ -199,6 +202,43 @@ importers:
       '@lucky-arcade/engine':
         specifier: workspace:*
         version: link:../../packages/engine
+
+  cabinets/lucky-derby:
+    dependencies:
+      '@lucky-arcade/cabinet-sdk':
+        specifier: workspace:*
+        version: link:../../packages/cabinet-sdk
+      '@lucky-arcade/contracts':
+        specifier: workspace:*
+        version: link:../../packages/contracts
+      '@lucky-arcade/engine':
+        specifier: workspace:*
+        version: link:../../packages/engine
+      '@lucky-arcade/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
+      '@tabler/icons-react':
+        specifier: 3.45.0
+        version: 3.45.0(react@19.2.8)
+      excalibur:
+        specifier: 0.32.0
+        version: 0.32.0
+      littlejsengine:
+        specifier: 1.18.24
+        version: 1.18.24
+      melonjs:
+        specifier: 19.9.0
+        version: 19.9.0
+      phaser:
+        specifier: 4.2.1
+        version: 4.2.1
+      react:
+        specifier: 19.2.8
+        version: 19.2.8
+    devDependencies:
+      '@types/react':
+        specifier: 19.2.17
+        version: 19.2.17
 
   cabinets/restoration-crew:
     dependencies:
@@ -929,6 +969,9 @@ packages:
   cookie-es@3.1.1:
     resolution: {integrity: sha512-UaXxwISYJPTr9hwQxMFYZ7kNhSXboMXP+Z3TRX6f1/NyaGPfuNUZOWP1pUEb75B2HjfklIYLVRfWiFZJyC6Npg==}
 
+  core-js@3.49.0:
+    resolution: {integrity: sha512-es1U2+YTtzpwkxVLwAFdSpaIMyQaq0PBgm3YD1W3Qpsn1NAmO3KSgZfu+oGSWVu6NvLHoHCV/aYcsE5wiB7ALg==}
+
   csstype@3.2.3:
     resolution: {integrity: sha512-z1HGKcYy2xA8AGQfwrn0PAy+PB7X/GSj3UVJW9qKyn43xWa+gl5nXmU4qqLMRzWVLFC8KusUX8T/0kCiOYpAIQ==}
 
@@ -950,6 +993,12 @@ packages:
 
   estree-walker@3.0.3:
     resolution: {integrity: sha512-7RUKfXgSMMkzt6ZuXmqapOurLGPPfgj6l9uRZ7lRGolvk0y2yocc35LdcxKC5PQZdn2DMqioAQ2NoWcrTKmm6g==}
+
+  eventemitter3@5.0.4:
+    resolution: {integrity: sha512-mlsTRyGaPBjPedk6Bvw+aqbsXDtoAyAzm5MO7JgU+yVRyMQ5O8bD4Kcci7BS85f93veegeCPkL8R4GLClnjLFw==}
+
+  excalibur@0.32.0:
+    resolution: {integrity: sha512-anCvsZK2Dh3BTlw/ERHr3fvfqF2vdJHw88soCs3r6EIwxbhibNRILMZw3Ae6GMTY8FkzRfkGLyk7DlEZVesUaw==}
 
   expect-type@1.4.0:
     resolution: {integrity: sha512-KfYbmpRm0VbLjEvVa9yGwCi9GI34xvi7A/HXYWQO65CSD2u3MczUJSuwXKFIxlGsgBQizV9q5J9NHj4VG0n+pA==}
@@ -979,6 +1028,9 @@ packages:
 
   graceful-fs@4.2.11:
     resolution: {integrity: sha512-RbJ5/jmFcNNCcDV5o9eTnBLJ/HszWV0P73bc+Ff4nS/rJj+YaS6IGyiOL0VoBYX+l1Wrl3k63h/KrH+nhJ0XvQ==}
+
+  howler@2.2.4:
+    resolution: {integrity: sha512-iARIBPgcQrwtEr+tALF+rapJ8qSc+Set2GJQl7xT1MQzWaVkFebdJhR3alVlSiUf5U7nAANKuj3aWpwerocD5w==}
 
   jiti@2.7.0:
     resolution: {integrity: sha512-AC/7JofJvZGrrneWNaEnJeOLUx+JlGt7tNa0wZiRPT4MY1wmfKjt2+6O2p2uz2+skll8OZZmJMNqeke7kKbNgQ==}
@@ -1139,6 +1191,10 @@ packages:
   magic-string@0.30.21:
     resolution: {integrity: sha512-vd2F4YUyEXKGcLHoq+TEyCjxueSeHnFxyyjNp80yg0XV4vUhnDer/lvvlqM/arB5bXQN5K2/3oinyCRyx8T2CQ==}
 
+  melonjs@19.9.0:
+    resolution: {integrity: sha512-y1Is2b0FWgDljXjjUYAofQu2GV472GVFdKJPcdUA/A9y6aGUWYt8pypNrllc67Kq6yhFHJpX8jT3ECNaZBbX0Q==}
+    engines: {node: '>=24.0.0'}
+
   nanoid@3.3.16:
     resolution: {integrity: sha512-bzlKTyNJ7+LdGIIwy8ijFpIqEQIvafahV7eYykJ8Cvh42EdJeODoJ6gUJXpQJvej1BddH8OqTXZNE/KfbWAu8Q==}
     engines: {node: ^10 || ^12 || ^13.7 || ^14 || >=15.0.1}
@@ -1150,6 +1206,9 @@ packages:
 
   pathe@2.0.3:
     resolution: {integrity: sha512-WUjGcAqP1gQacoQe+OBJsFA7Ld4DyXuUIjZ5cc75cLHvJ7dtNsTugphxIADwspS+AraAUePCKrSVtPLFj/F88w==}
+
+  phaser@4.2.1:
+    resolution: {integrity: sha512-WUNwCPJpdjvZiuT6SgCfYVW8Qw/3j0jJ4ws7P2QkhFLFu74sbGuyHJcbFueGkY/AYO4Pi47bNQXn1OCJeLX//w==}
 
   picocolors@1.1.1:
     resolution: {integrity: sha512-xceH2snhtb5M9liqDsmEw56le376mTZkEX/jEb/RxNFyegNul7eNslCXP9FDj/Lcu0X8KEyMceP2ntpaHrDEVA==}
@@ -1749,6 +1808,8 @@ snapshots:
 
   cookie-es@3.1.1: {}
 
+  core-js@3.49.0: {}
+
   csstype@3.2.3: {}
 
   detect-libc@2.1.2: {}
@@ -1793,6 +1854,10 @@ snapshots:
     dependencies:
       '@types/estree': 1.0.9
 
+  eventemitter3@5.0.4: {}
+
+  excalibur@0.32.0: {}
+
   expect-type@1.4.0: {}
 
   fdir@6.5.0(picomatch@4.0.5):
@@ -1808,6 +1873,8 @@ snapshots:
     optional: true
 
   graceful-fs@4.2.11: {}
+
+  howler@2.2.4: {}
 
   jiti@2.7.0: {}
 
@@ -1915,11 +1982,20 @@ snapshots:
     dependencies:
       '@jridgewell/sourcemap-codec': 1.5.5
 
+  melonjs@19.9.0:
+    dependencies:
+      core-js: 3.49.0
+      howler: 2.2.4
+
   nanoid@3.3.16: {}
 
   obug@2.1.4: {}
 
   pathe@2.0.3: {}
+
+  phaser@4.2.1:
+    dependencies:
+      eventemitter3: 5.0.4
 
   picocolors@1.1.1: {}
 

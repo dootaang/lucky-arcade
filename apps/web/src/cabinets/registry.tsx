@@ -18,6 +18,15 @@ type CabinetView = LazyExoticComponent<ComponentType<CabinetViewContext>>;
 const registrations: readonly WebCabinetRegistration[] = [
   {
     manifest: {
+      id: "lucky-derby-lab", version: "lucky-derby/0.1", title: "럭키★더비 엔진 실험장",
+      description: "같은 8인 경주를 네 게임 엔진으로 달려 보고 손맛과 속도를 직접 비교합니다.", requiredCapabilities: [],
+      sessionKind: "repeat", launchKind: "built-in", resumeLabel: "엔진 비교 이어하기", estimatedMinutes: { min: 2, max: 5 },
+    },
+    openingRank: null, world: "소녀전선: 잔불", badge: "엔진 실험",
+    load: async () => { const module = await import("../features/built-in/lucky-derby-view.tsx"); return { default: ({ onExit }) => <module.default onExit={onExit} /> }; },
+  },
+  {
+    manifest: {
       id: "gfl-favorite-cup", version: "gfl-favorite-cup/0.1", title: "소녀전선 최애 월드컵",
       description: "잔불 작전의 12명 중 오늘의 최애를 고릅니다.", requiredCapabilities: [],
       sessionKind: "instant", launchKind: "built-in", resumeLabel: "새 대진 시작", estimatedMinutes: { min: 1, max: 3 },

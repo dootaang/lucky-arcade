@@ -4,6 +4,7 @@ packages:
   - "cabinets/*"
 
 allowBuilds:
+  core-js: true
   esbuild: true
 
 minimumReleaseAgeExclude:

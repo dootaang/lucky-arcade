@@ -13,6 +13,35 @@ export interface CabinetManifest {
   estimatedMinutes: { min: number; max: number };
 }
 
+export interface RuntimeViewport {
+  width: number;
+  height: number;
+  devicePixelRatio: number;
+}
+
+export interface RuntimeDiagnostics {
+  engine: string;
+  mountedAt: number | null;
+  firstFrameAt: number | null;
+  frames: number;
+  slowFrames: number;
+  longestFrameMs: number;
+  destroyed: boolean;
+}
+
+/** Presentation engines implement this contract; game rules never do. */
+export interface ArcadeRuntimeAdapter<Host, Transcript, PlayOptions = void> {
+  mount(host: Host): Promise<void>;
+  preload?(assetIds: readonly string[]): Promise<void>;
+  play(transcript: Transcript, options: PlayOptions): Promise<void>;
+  pause(): void;
+  resume(): void;
+  resize?(viewport: RuntimeViewport): void;
+  snapshot?(): unknown;
+  diagnostics(): RuntimeDiagnostics;
+  destroy(): void;
+}
+
 export interface CabinetDefinition<Facts, State, Action, ViewModel> {
   manifest: CabinetManifest;
   assess(facts: Facts): CabinetAssessment;

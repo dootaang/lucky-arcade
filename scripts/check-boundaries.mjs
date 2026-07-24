@@ -33,11 +33,11 @@ for (const file of allSourceFiles) {
   }
 }
 
-for (const file of await files(join(rootPath, "cabinets/gfl-ember/src"))) {
+for (const file of await files(join(rootPath, "cabinets"))) {
   const normalized = file.replaceAll("\\", "/");
-  if (normalized.includes("/react/")) continue;
+  if (normalized.includes("/react/") || !normalized.includes("/src/")) continue;
   const source = await readFile(file, "utf8");
-  if (/littlejsengine|["']react["']/.test(source)) failures.push(`${relative(rootPath, file)}: GFL core cannot import presentation engines`);
+  if (/littlejsengine|["'](?:phaser|melonjs|excalibur|matter-js|planck-js|rot-js|pixi\.js)["']|["']react["']/.test(source)) failures.push(`${relative(rootPath, file)}: cabinet core cannot import presentation engines`);
 }
 
 for (const [folder, allowed] of rules) {
