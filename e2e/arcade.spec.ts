@@ -31,7 +31,7 @@ test("imports a local card, plays a deterministic puzzle, and restores it", asyn
 });
 
 test("mobile navigation remains reachable", async ({ page }, testInfo) => {
-  test.skip(!testInfo.project.name.includes("mobile"));
+  test.skip(testInfo.project.metadata.mobile !== true);
   await page.goto("/");
   await page.getByRole("button", { name: "메뉴 열기" }).click();
   await expect(page.getByRole("navigation", { name: "주 메뉴" })).toBeVisible();
@@ -71,7 +71,7 @@ test("replays one deterministic derby through all four rendering engines", async
 });
 
 test("mobile derby keeps the race and controls on screen", async ({ page }, testInfo) => {
-  test.skip(!testInfo.project.name.includes("mobile"));
+  test.skip(testInfo.project.metadata.mobile !== true);
   await page.goto("/");
   await page.locator(".arcade-entry").filter({ hasText: "럭키★더비 엔진 실험장" }).getByRole("button", { name: "바로 시작" }).click();
   await expect(page.getByRole("heading", { name: "럭키★더비 엔진 실험장" })).toBeVisible();
@@ -80,7 +80,7 @@ test("mobile derby keeps the race and controls on screen", async ({ page }, test
 });
 
 test("mobile favorite choice does not stay highlighted in the next round", async ({ page }, testInfo) => {
-  test.skip(!testInfo.project.name.includes("mobile"));
+  test.skip(testInfo.project.metadata.mobile !== true);
   await page.goto("/");
   await page.locator('input[type="file"]').setInputFiles({ name: "favorite-mobile.json", mimeType: "application/json", buffer: Buffer.from(portraitCard(8, 3, "모바일 월드컵 카드")) });
   await expect(page.getByRole("heading", { name: "최애 월드컵" })).toBeVisible();

@@ -9,6 +9,6 @@ export default defineConfig({
   webServer: { command: "corepack pnpm --filter @lucky-arcade/web dev --host 127.0.0.1 --port 4173", url: "http://127.0.0.1:4173", reuseExistingServer: true },
   projects: [
     { name: "desktop-chromium", use: { ...devices["Desktop Chrome"] } },
-    { name: "mobile-chromium", use: { ...devices["Pixel 7"] }, grep: /mobile/ },
+    { name: "phone-chromium", metadata: { mobile: true }, use: { ...devices["Pixel 7"] }, grep: /mobile/ },
   ],
 });
