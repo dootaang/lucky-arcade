@@ -1,6 +1,6 @@
 # SPEC-C1 — 《소녀전선: 잔불 작전》 전술 오토배틀 로그라이트
 
-> 상태: C1 수직 시제품 구현·자동 검증 완료 (오너 장기 실플레이 조정 가능)
+> 상태: C1 수직 시제품 구현·자동 검증 완료. A 제품 흐름 검증 전 대규모 확장 동결, 사소한 디버깅·손맛 조정만 허용.
 > 작성: 2026-07-24
 > 상위 문서: [ROADMAP](./ROADMAP.md) · [ADR 0001](./adr/0001-modular-performance-foundation.md)
 > 원본 엔진: `C:\freetalk\simbot-simulator` 기준 커밋 `4f2d05ed0f1a5f5cc7ae541227383ae454072ced`
