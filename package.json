@@ -15,6 +15,8 @@
     "report": "pnpm --filter @lucky-arcade/report-cli start --",
     "measure:npc": "pnpm --filter @lucky-arcade/report-cli measure:npc --",
     "content:gfl": "pnpm --filter @lucky-arcade/content-cli start --",
+    "content:temerosa": "pnpm --filter @lucky-arcade/content-cli temerosa --",
+    "content:temerosa:audit": "pnpm --filter @lucky-arcade/content-cli temerosa:audit --",
     "content:validate": "pnpm --filter @lucky-arcade/content-cli validate --",
     "test": "pnpm boundaries && pnpm -r test",
     "typecheck": "pnpm -r typecheck",

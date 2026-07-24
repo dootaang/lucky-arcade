@@ -8,7 +8,8 @@ export const ASSET_LIMITS = {
   maxDecodedBytes: 32 * 1024 * 1024,
 } as const;
 
-const DISPLAY_MIME = new Set(["image/png", "image/jpeg", "image/webp", "image/gif", "image/avif"]);
+export const DISPLAY_IMAGE_MIME = ["image/png", "image/jpeg", "image/webp", "image/gif", "image/avif"] as const;
+export type DisplayImageMime = (typeof DISPLAY_IMAGE_MIME)[number];
 
 export interface ResolvedAsset {
   assetId: string;
@@ -41,7 +42,6 @@ export async function openAssetResolver(source: BinarySource): Promise<AssetReso
       abort(signal);
       const asset = card.assets.find((candidate) => candidate.id === assetId);
       if (!asset) throw new Error("asset_missing");
-      if (!DISPLAY_MIME.has(asset.mime)) throw new Error("asset_mime_not_displayable");
       const definition = rawById.get(asset.id);
       let bytes: Uint8Array;
       if (asset.container === "zip-entry") {
@@ -61,8 +61,9 @@ export async function openAssetResolver(source: BinarySource): Promise<AssetReso
       }
       abort(signal);
       if (bytes.byteLength > ASSET_LIMITS.maxDecodedBytes) throw new Error("asset_decoded_too_large");
-      assertSignature(asset.mime, bytes);
-      return { assetId, bytes, mime: asset.mime };
+      const actualMime = sniffDisplayImageMime(bytes);
+      if (!actualMime) throw new Error("asset_mime_signature_not_displayable");
+      return { assetId, bytes, mime: actualMime };
     },
     dispose() { disposed = true; rawById.clear(); zipByPath?.clear(); },
   };
@@ -98,14 +99,23 @@ function decodeDataUri(uri: string): Uint8Array {
   } catch { throw new Error("asset_data_uri_invalid"); }
 }
 
-function assertSignature(mime: string, bytes: Uint8Array): void {
-  const png = bytes[0] === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4e && bytes[3] === 0x47;
-  const jpeg = bytes[0] === 0xff && bytes[1] === 0xd8;
-  const gif = bytes[0] === 0x47 && bytes[1] === 0x49 && bytes[2] === 0x46;
-  const webp = bytes[8] === 0x57 && bytes[9] === 0x45 && bytes[10] === 0x42 && bytes[11] === 0x50;
-  const avif = bytes[4] === 0x66 && bytes[5] === 0x74 && bytes[6] === 0x79 && bytes[7] === 0x70;
-  const valid = mime === "image/png" ? png : mime === "image/jpeg" ? jpeg : mime === "image/gif" ? gif : mime === "image/webp" ? webp : mime === "image/avif" ? avif : false;
-  if (!valid) throw new Error("asset_mime_signature_mismatch");
+export function sniffDisplayImageMime(bytes: Uint8Array): DisplayImageMime | null {
+  const pngSignature = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a];
+  const png = pngSignature.every((value, index) => bytes[index] === value);
+  const jpeg = bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff;
+  const gifHeader = String.fromCharCode(...bytes.subarray(0, 6));
+  const gif = gifHeader === "GIF87a" || gifHeader === "GIF89a";
+  const riff = bytes[0] === 0x52 && bytes[1] === 0x49 && bytes[2] === 0x46 && bytes[3] === 0x46;
+  const webp = riff && bytes[8] === 0x57 && bytes[9] === 0x45 && bytes[10] === 0x42 && bytes[11] === 0x50;
+  const ftyp = bytes[4] === 0x66 && bytes[5] === 0x74 && bytes[6] === 0x79 && bytes[7] === 0x70;
+  const brands = Array.from({ length: Math.max(0, Math.floor((Math.min(bytes.length, 32) - 8) / 4)) }, (_, index) => String.fromCharCode(...bytes.subarray(8 + index * 4, 12 + index * 4)));
+  const avif = ftyp && brands.some((brand) => brand === "avif" || brand === "avis");
+  if (png) return "image/png";
+  if (jpeg) return "image/jpeg";
+  if (gif) return "image/gif";
+  if (webp) return "image/webp";
+  if (avif) return "image/avif";
+  return null;
 }
 
 function abort(signal?: AbortSignal): void { if (signal?.aborted) throw new DOMException("Aborted", "AbortError"); }

@@ -1,0 +1,60 @@
+{
+  "contract": "temerosa-content-selection/0.1",
+  "packId": "temerosa-margin",
+  "version": "0.1.0",
+  "assets": [
+    { "id": "nieun-standing", "source": "finale", "sourcePath": "assets/other/image/Nieun_standing.png", "role": "portrait", "chunk": "bootstrap", "characterId": "nieun", "expression": "standing" },
+    { "id": "nieun-smile", "source": "finale", "sourcePath": "assets/other/image/Nieun_smile.png", "role": "portrait", "chunk": "bootstrap", "characterId": "nieun", "expression": "smile" },
+    { "id": "nieun-angry", "source": "finale", "sourcePath": "assets/other/image/Nieun_angry.png", "role": "portrait", "chunk": "bootstrap", "characterId": "nieun", "expression": "angry" },
+    { "id": "nieun-surprised", "source": "finale", "sourcePath": "assets/other/image/Nieun_surprised.png", "role": "portrait", "chunk": "bootstrap", "characterId": "nieun", "expression": "surprised" },
+
+    { "id": "alger-standing", "source": "finale", "sourcePath": "assets/other/image/Alger_standing.png", "role": "portrait", "chunk": "pequod", "characterId": "alger", "expression": "standing" },
+    { "id": "alger-smirk", "source": "finale", "sourcePath": "assets/other/image/Alger_smirk.png", "role": "portrait", "chunk": "pequod", "characterId": "alger", "expression": "smirk" },
+    { "id": "alger-sad", "source": "finale", "sourcePath": "assets/other/image/Alger_sad.png", "role": "portrait", "chunk": "pequod", "characterId": "alger", "expression": "sad" },
+    { "id": "alger-surprised", "source": "finale", "sourcePath": "assets/other/image/Alger_surprised.png", "role": "portrait", "chunk": "pequod", "characterId": "alger", "expression": "surprised" },
+
+    { "id": "pale-standing", "source": "finale", "sourcePath": "assets/other/image/Pale_standing.png", "role": "portrait", "chunk": "pequod", "characterId": "pale", "expression": "standing" },
+    { "id": "pale-smile", "source": "finale", "sourcePath": "assets/other/image/Pale_smile.png", "role": "portrait", "chunk": "pequod", "characterId": "pale", "expression": "smile" },
+    { "id": "pale-sad", "source": "finale", "sourcePath": "assets/other/image/Pale_sad.png", "role": "portrait", "chunk": "pequod", "characterId": "pale", "expression": "sad" },
+    { "id": "pale-angry", "source": "finale", "sourcePath": "assets/other/image/Pale_angry.png", "role": "portrait", "chunk": "pequod", "characterId": "pale", "expression": "angry" },
+    { "id": "pale-combat", "source": "finale", "sourcePath": "assets/other/image/Pale_combat_stance.png", "role": "cutin", "chunk": "pequod", "characterId": "pale", "expression": "combat" },
+
+    { "id": "kano-standing", "source": "finale", "sourcePath": "assets/other/image/Kano_standing.png", "role": "portrait", "chunk": "pequod", "characterId": "kano", "expression": "standing" },
+    { "id": "kano-smile", "source": "finale", "sourcePath": "assets/other/image/Kano_smile.png", "role": "portrait", "chunk": "pequod", "characterId": "kano", "expression": "smile" },
+    { "id": "kano-sad", "source": "finale", "sourcePath": "assets/other/image/Kano_sad.png", "role": "portrait", "chunk": "pequod", "characterId": "kano", "expression": "sad" },
+    { "id": "kano-angry", "source": "finale", "sourcePath": "assets/other/image/Kano_angry.png", "role": "portrait", "chunk": "pequod", "characterId": "kano", "expression": "angry" },
+    { "id": "kano-combat", "source": "finale", "sourcePath": "assets/other/image/Kano_combat_stance.png", "role": "cutin", "chunk": "pequod", "characterId": "kano", "expression": "combat" },
+
+    { "id": "bacikal-standing", "source": "finale", "sourcePath": "assets/other/image/Bacikal_standing.png", "role": "portrait", "chunk": "pequod", "characterId": "bacikal", "expression": "standing" },
+    { "id": "bacikal-smile", "source": "finale", "sourcePath": "assets/other/image/Bacikal_smile.png", "role": "portrait", "chunk": "pequod", "characterId": "bacikal", "expression": "smile" },
+    { "id": "bacikal-sad", "source": "finale", "sourcePath": "assets/other/image/Bacikal_sad.png", "role": "portrait", "chunk": "pequod", "characterId": "bacikal", "expression": "sad" },
+    { "id": "bacikal-angry", "source": "finale", "sourcePath": "assets/other/image/Bacikal_angry.png", "role": "portrait", "chunk": "pequod", "characterId": "bacikal", "expression": "angry" },
+    { "id": "bacikal-combat", "source": "finale", "sourcePath": "assets/other/image/Bacikal_combat_stance.png", "role": "cutin", "chunk": "pequod", "characterId": "bacikal", "expression": "combat" },
+
+    { "id": "wares-standing", "source": "finale", "sourcePath": "assets/other/image/Wares_standing.png", "role": "portrait", "chunk": "margin", "characterId": "wares", "expression": "standing" },
+    { "id": "wares-smile", "source": "finale", "sourcePath": "assets/other/image/Wares_smile.png", "role": "portrait", "chunk": "margin", "characterId": "wares", "expression": "smile" },
+    { "id": "wares-sad", "source": "finale", "sourcePath": "assets/other/image/Wares_sad.png", "role": "portrait", "chunk": "margin", "characterId": "wares", "expression": "sad" },
+    { "id": "wares-surprised", "source": "finale", "sourcePath": "assets/other/image/Wares_surprised.png", "role": "portrait", "chunk": "margin", "characterId": "wares", "expression": "surprised" },
+
+    { "id": "lyla-natural", "source": "bestiaization", "sourcePath": "assets/other/image/297.png", "role": "portrait", "chunk": "records", "characterId": "lyla", "expression": "natural" },
+    { "id": "lyla-smile", "source": "bestiaization", "sourcePath": "assets/other/image/292.png", "role": "portrait", "chunk": "records", "characterId": "lyla", "expression": "smile" },
+    { "id": "lyla-angry", "source": "bestiaization", "sourcePath": "assets/other/image/296.png", "role": "portrait", "chunk": "records", "characterId": "lyla", "expression": "angry" },
+    { "id": "riel-natural", "source": "bestiaization", "sourcePath": "assets/other/image/305.png", "role": "portrait", "chunk": "records", "characterId": "riel", "expression": "natural" },
+    { "id": "riel-smile", "source": "bestiaization", "sourcePath": "assets/other/image/300.png", "role": "portrait", "chunk": "records", "characterId": "riel", "expression": "smile" },
+    { "id": "riel-sad", "source": "bestiaization", "sourcePath": "assets/other/image/302.png", "role": "portrait", "chunk": "records", "characterId": "riel", "expression": "sad" },
+    { "id": "nemo-natural", "source": "bestiaization", "sourcePath": "assets/other/image/322.png", "role": "portrait", "chunk": "records", "characterId": "nemo", "expression": "natural" },
+    { "id": "nemo-smile", "source": "bestiaization", "sourcePath": "assets/other/image/323.png", "role": "portrait", "chunk": "records", "characterId": "nemo", "expression": "smile" },
+    { "id": "nemo-angry", "source": "bestiaization", "sourcePath": "assets/other/image/324.png", "role": "portrait", "chunk": "records", "characterId": "nemo", "expression": "angry" },
+
+    { "id": "rabbitbee", "source": "finale", "sourcePath": "assets/other/image/Rabbitbee.png", "role": "enemy", "chunk": "pequod" },
+    { "id": "eye-eye-wolf", "source": "finale", "sourcePath": "assets/other/image/Eye-Eye_Wolf.png", "role": "enemy", "chunk": "pequod" },
+    { "id": "nervetree", "source": "finale", "sourcePath": "assets/other/image/Nervetree.png", "role": "enemy", "chunk": "pequod" },
+    { "id": "trainhead", "source": "finale", "sourcePath": "assets/other/image/Trainhead.png", "role": "enemy", "chunk": "trainhead" },
+
+    { "id": "pequod-ruins", "source": "finale", "sourcePath": "assets/other/image/Pequod_Ruins.png", "role": "background", "chunk": "pequod" },
+    { "id": "line-13-train", "source": "bestiaization", "sourcePath": "assets/other/image/40.png", "role": "background", "chunk": "metro" },
+    { "id": "pequod-record", "source": "bestiaization", "sourcePath": "assets/other/image/13.png", "role": "background", "chunk": "records" },
+    { "id": "margin", "source": "finale", "sourcePath": "assets/other/image/Margin.png", "role": "background", "chunk": "margin" },
+    { "id": "white-flame", "source": "finale", "sourcePath": "assets/other/image/the_white_flame.png", "role": "effect", "chunk": "margin" }
+  ]
+}

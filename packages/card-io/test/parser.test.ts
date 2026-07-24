@@ -1,8 +1,9 @@
 import { zipSync, strToU8 } from "fflate";
 import { describe, expect, it } from "vitest";
-import { BlobBinarySource, MemoryBinarySource, openAssetResolver, parseCardSource, type BinarySource } from "../src/index.ts";
+import { BlobBinarySource, MemoryBinarySource, openAssetResolver, parseCardSource, sniffDisplayImageMime, type BinarySource } from "../src/index.ts";
 
 const tinyPng = Uint8Array.from(atob("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII="), (value) => value.charCodeAt(0));
+const webpSignature = Uint8Array.from([0x52, 0x49, 0x46, 0x46, 0x04, 0, 0, 0, 0x57, 0x45, 0x42, 0x50]);
 
 describe("lazy card parser", () => {
   it("reads browser blobs through bounded slices", async () => {
@@ -46,5 +47,22 @@ describe("lazy card parser", () => {
     const bytes = strToU8(JSON.stringify({ spec: "chara_card_v3", data: { name: "Inline", assets: [{ name: "Alice_default", uri: `data:image/png;base64,${encoded}`, ext: "png" }] } }));
     const resolver = await openAssetResolver(new MemoryBinarySource("inline.json", bytes));
     expect((await resolver.read(resolver.assets[0]!.id)).bytes).toEqual(tinyPng);
+  });
+
+  it("uses the payload signature when a card declares the wrong image extension", async () => {
+    const card = { spec: "chara_card_v3", data: { name: "Mismatched", assets: [{ name: "hero", uri: "assets/hero.png", ext: "png" }] } };
+    const bytes = zipSync({ "card.json": strToU8(JSON.stringify(card)), "assets/hero.png": webpSignature }, { level: 0 });
+    const resolver = await openAssetResolver(new MemoryBinarySource("mismatched.charx", bytes));
+    const resolved = await resolver.read(resolver.assets[0]!.id);
+    expect(resolver.assets[0]?.mime).toBe("image/png");
+    expect(resolved.mime).toBe("image/webp");
+  });
+
+  it("rejects payloads that are not a displayable image", async () => {
+    expect(sniffDisplayImageMime(new TextEncoder().encode("not-an-image"))).toBeNull();
+    const card = { spec: "chara_card_v3", data: { name: "Unsafe", assets: [{ name: "hero", uri: "assets/hero.png", ext: "png" }] } };
+    const bytes = zipSync({ "card.json": strToU8(JSON.stringify(card)), "assets/hero.png": strToU8("not-an-image") }, { level: 0 });
+    const resolver = await openAssetResolver(new MemoryBinarySource("unsafe.charx", bytes));
+    await expect(resolver.read(resolver.assets[0]!.id)).rejects.toThrow("asset_mime_signature_not_displayable");
   });
 });

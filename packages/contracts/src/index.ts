@@ -215,3 +215,59 @@ export const builtInContentPackSchema = z.object({
   loreEntryCount: z.number().int().nonnegative().default(0),
 });
 export type BuiltInContentPack = z.infer<typeof builtInContentPackSchema>;
+
+export const temerosaContentChunkSchema = z.enum(["bootstrap", "pequod", "metro", "records", "trainhead", "margin"]);
+export type TemerosaContentChunk = z.infer<typeof temerosaContentChunkSchema>;
+
+export const temerosaAssetRoleSchema = z.enum(["portrait", "cutin", "enemy", "background", "effect"]);
+export type TemerosaAssetRole = z.infer<typeof temerosaAssetRoleSchema>;
+
+export const temerosaContentVariantSchema = z.object({
+  size: z.enum(["sm", "md", "lg"]),
+  path: z.string().min(1),
+  mime: z.literal("image/webp"),
+  width: z.number().int().positive(),
+  height: z.number().int().positive(),
+  bytes: z.number().int().positive(),
+});
+export type TemerosaContentVariant = z.infer<typeof temerosaContentVariantSchema>;
+
+export const temerosaContentAssetSchema = z.object({
+  id: z.string().regex(/^[a-z0-9][a-z0-9-]*$/),
+  role: temerosaAssetRoleSchema,
+  chunk: temerosaContentChunkSchema,
+  characterId: z.string().regex(/^[a-z0-9][a-z0-9-]*$/).optional(),
+  expression: z.string().regex(/^[a-z0-9][a-z0-9-]*$/).optional(),
+  variants: z.array(temerosaContentVariantSchema).min(1),
+});
+export type TemerosaContentAsset = z.infer<typeof temerosaContentAssetSchema>;
+
+export const temerosaContentManifestSchema = z.object({
+  contract: z.literal("temerosa-content-manifest/0.1"),
+  packId: z.literal("temerosa-margin"),
+  version: z.string().regex(/^\d+\.\d+\.\d+$/),
+  assets: z.array(temerosaContentAssetSchema).min(1),
+  totalBytes: z.number().int().positive(),
+  safety: z.object({
+    policy: z.literal("explicit-sfw-allowlist/0.1"),
+    selectedAssetCount: z.number().int().positive(),
+    forbiddenAssetCount: z.literal(0),
+  }),
+});
+export type TemerosaContentManifest = z.infer<typeof temerosaContentManifestSchema>;
+
+export const temerosaContentSelectionSchema = z.object({
+  contract: z.literal("temerosa-content-selection/0.1"),
+  packId: z.literal("temerosa-margin"),
+  version: z.string().regex(/^\d+\.\d+\.\d+$/),
+  assets: z.array(z.object({
+    id: z.string().regex(/^[a-z0-9][a-z0-9-]*$/),
+    source: z.enum(["finale", "bestiaization"]),
+    sourcePath: z.string().min(1),
+    role: temerosaAssetRoleSchema,
+    chunk: temerosaContentChunkSchema,
+    characterId: z.string().regex(/^[a-z0-9][a-z0-9-]*$/).optional(),
+    expression: z.string().regex(/^[a-z0-9][a-z0-9-]*$/).optional(),
+  })).min(1),
+});
+export type TemerosaContentSelection = z.infer<typeof temerosaContentSelectionSchema>;

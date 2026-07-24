@@ -1,0 +1,1112 @@
+{
+  "contract": "temerosa-content-manifest/0.1",
+  "packId": "temerosa-margin",
+  "version": "0.1.0",
+  "assets": [
+    {
+      "id": "alger-sad",
+      "role": "portrait",
+      "chunk": "pequod",
+      "characterId": "alger",
+      "expression": "sad",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/pequod/alger-sad/sm.webp",
+          "mime": "image/webp",
+          "width": 96,
+          "height": 192,
+          "bytes": 5392
+        },
+        {
+          "size": "md",
+          "path": "assets/pequod/alger-sad/md.webp",
+          "mime": "image/webp",
+          "width": 191,
+          "height": 384,
+          "bytes": 14982
+        }
+      ]
+    },
+    {
+      "id": "alger-smirk",
+      "role": "portrait",
+      "chunk": "pequod",
+      "characterId": "alger",
+      "expression": "smirk",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/pequod/alger-smirk/sm.webp",
+          "mime": "image/webp",
+          "width": 96,
+          "height": 192,
+          "bytes": 5454
+        },
+        {
+          "size": "md",
+          "path": "assets/pequod/alger-smirk/md.webp",
+          "mime": "image/webp",
+          "width": 191,
+          "height": 384,
+          "bytes": 14852
+        }
+      ]
+    },
+    {
+      "id": "alger-standing",
+      "role": "portrait",
+      "chunk": "pequod",
+      "characterId": "alger",
+      "expression": "standing",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/pequod/alger-standing/sm.webp",
+          "mime": "image/webp",
+          "width": 96,
+          "height": 192,
+          "bytes": 5414
+        },
+        {
+          "size": "md",
+          "path": "assets/pequod/alger-standing/md.webp",
+          "mime": "image/webp",
+          "width": 191,
+          "height": 384,
+          "bytes": 14966
+        }
+      ]
+    },
+    {
+      "id": "alger-surprised",
+      "role": "portrait",
+      "chunk": "pequod",
+      "characterId": "alger",
+      "expression": "surprised",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/pequod/alger-surprised/sm.webp",
+          "mime": "image/webp",
+          "width": 96,
+          "height": 192,
+          "bytes": 5574
+        },
+        {
+          "size": "md",
+          "path": "assets/pequod/alger-surprised/md.webp",
+          "mime": "image/webp",
+          "width": 191,
+          "height": 384,
+          "bytes": 15954
+        }
+      ]
+    },
+    {
+      "id": "bacikal-angry",
+      "role": "portrait",
+      "chunk": "pequod",
+      "characterId": "bacikal",
+      "expression": "angry",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/pequod/bacikal-angry/sm.webp",
+          "mime": "image/webp",
+          "width": 144,
+          "height": 192,
+          "bytes": 5064
+        },
+        {
+          "size": "md",
+          "path": "assets/pequod/bacikal-angry/md.webp",
+          "mime": "image/webp",
+          "width": 288,
+          "height": 384,
+          "bytes": 14046
+        }
+      ]
+    },
+    {
+      "id": "bacikal-combat",
+      "role": "cutin",
+      "chunk": "pequod",
+      "characterId": "bacikal",
+      "expression": "combat",
+      "variants": [
+        {
+          "size": "md",
+          "path": "assets/pequod/bacikal-combat/md.webp",
+          "mime": "image/webp",
+          "width": 384,
+          "height": 288,
+          "bytes": 19750
+        },
+        {
+          "size": "lg",
+          "path": "assets/pequod/bacikal-combat/lg.webp",
+          "mime": "image/webp",
+          "width": 768,
+          "height": 576,
+          "bytes": 51562
+        }
+      ]
+    },
+    {
+      "id": "bacikal-sad",
+      "role": "portrait",
+      "chunk": "pequod",
+      "characterId": "bacikal",
+      "expression": "sad",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/pequod/bacikal-sad/sm.webp",
+          "mime": "image/webp",
+          "width": 144,
+          "height": 192,
+          "bytes": 4816
+        },
+        {
+          "size": "md",
+          "path": "assets/pequod/bacikal-sad/md.webp",
+          "mime": "image/webp",
+          "width": 288,
+          "height": 384,
+          "bytes": 13356
+        }
+      ]
+    },
+    {
+      "id": "bacikal-smile",
+      "role": "portrait",
+      "chunk": "pequod",
+      "characterId": "bacikal",
+      "expression": "smile",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/pequod/bacikal-smile/sm.webp",
+          "mime": "image/webp",
+          "width": 144,
+          "height": 192,
+          "bytes": 5000
+        },
+        {
+          "size": "md",
+          "path": "assets/pequod/bacikal-smile/md.webp",
+          "mime": "image/webp",
+          "width": 288,
+          "height": 384,
+          "bytes": 14176
+        }
+      ]
+    },
+    {
+      "id": "bacikal-standing",
+      "role": "portrait",
+      "chunk": "pequod",
+      "characterId": "bacikal",
+      "expression": "standing",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/pequod/bacikal-standing/sm.webp",
+          "mime": "image/webp",
+          "width": 144,
+          "height": 192,
+          "bytes": 4516
+        },
+        {
+          "size": "md",
+          "path": "assets/pequod/bacikal-standing/md.webp",
+          "mime": "image/webp",
+          "width": 288,
+          "height": 384,
+          "bytes": 12642
+        }
+      ]
+    },
+    {
+      "id": "eye-eye-wolf",
+      "role": "enemy",
+      "chunk": "pequod",
+      "variants": [
+        {
+          "size": "md",
+          "path": "assets/pequod/eye-eye-wolf/md.webp",
+          "mime": "image/webp",
+          "width": 384,
+          "height": 256,
+          "bytes": 17922
+        },
+        {
+          "size": "lg",
+          "path": "assets/pequod/eye-eye-wolf/lg.webp",
+          "mime": "image/webp",
+          "width": 768,
+          "height": 512,
+          "bytes": 44460
+        }
+      ]
+    },
+    {
+      "id": "kano-angry",
+      "role": "portrait",
+      "chunk": "pequod",
+      "characterId": "kano",
+      "expression": "angry",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/pequod/kano-angry/sm.webp",
+          "mime": "image/webp",
+          "width": 108,
+          "height": 192,
+          "bytes": 6650
+        },
+        {
+          "size": "md",
+          "path": "assets/pequod/kano-angry/md.webp",
+          "mime": "image/webp",
+          "width": 217,
+          "height": 384,
+          "bytes": 19918
+        }
+      ]
+    },
+    {
+      "id": "kano-combat",
+      "role": "cutin",
+      "chunk": "pequod",
+      "characterId": "kano",
+      "expression": "combat",
+      "variants": [
+        {
+          "size": "md",
+          "path": "assets/pequod/kano-combat/md.webp",
+          "mime": "image/webp",
+          "width": 384,
+          "height": 288,
+          "bytes": 18560
+        },
+        {
+          "size": "lg",
+          "path": "assets/pequod/kano-combat/lg.webp",
+          "mime": "image/webp",
+          "width": 768,
+          "height": 576,
+          "bytes": 52870
+        }
+      ]
+    },
+    {
+      "id": "kano-sad",
+      "role": "portrait",
+      "chunk": "pequod",
+      "characterId": "kano",
+      "expression": "sad",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/pequod/kano-sad/sm.webp",
+          "mime": "image/webp",
+          "width": 108,
+          "height": 192,
+          "bytes": 6078
+        },
+        {
+          "size": "md",
+          "path": "assets/pequod/kano-sad/md.webp",
+          "mime": "image/webp",
+          "width": 217,
+          "height": 384,
+          "bytes": 18096
+        }
+      ]
+    },
+    {
+      "id": "kano-smile",
+      "role": "portrait",
+      "chunk": "pequod",
+      "characterId": "kano",
+      "expression": "smile",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/pequod/kano-smile/sm.webp",
+          "mime": "image/webp",
+          "width": 108,
+          "height": 192,
+          "bytes": 6476
+        },
+        {
+          "size": "md",
+          "path": "assets/pequod/kano-smile/md.webp",
+          "mime": "image/webp",
+          "width": 217,
+          "height": 384,
+          "bytes": 19812
+        }
+      ]
+    },
+    {
+      "id": "kano-standing",
+      "role": "portrait",
+      "chunk": "pequod",
+      "characterId": "kano",
+      "expression": "standing",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/pequod/kano-standing/sm.webp",
+          "mime": "image/webp",
+          "width": 192,
+          "height": 144,
+          "bytes": 6858
+        },
+        {
+          "size": "md",
+          "path": "assets/pequod/kano-standing/md.webp",
+          "mime": "image/webp",
+          "width": 384,
+          "height": 288,
+          "bytes": 19984
+        }
+      ]
+    },
+    {
+      "id": "line-13-train",
+      "role": "background",
+      "chunk": "metro",
+      "variants": [
+        {
+          "size": "md",
+          "path": "assets/metro/line-13-train/md.webp",
+          "mime": "image/webp",
+          "width": 960,
+          "height": 512,
+          "bytes": 12902
+        }
+      ]
+    },
+    {
+      "id": "lyla-angry",
+      "role": "portrait",
+      "chunk": "records",
+      "characterId": "lyla",
+      "expression": "angry",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/records/lyla-angry/sm.webp",
+          "mime": "image/webp",
+          "width": 131,
+          "height": 192,
+          "bytes": 11080
+        },
+        {
+          "size": "md",
+          "path": "assets/records/lyla-angry/md.webp",
+          "mime": "image/webp",
+          "width": 263,
+          "height": 384,
+          "bytes": 30518
+        }
+      ]
+    },
+    {
+      "id": "lyla-natural",
+      "role": "portrait",
+      "chunk": "records",
+      "characterId": "lyla",
+      "expression": "natural",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/records/lyla-natural/sm.webp",
+          "mime": "image/webp",
+          "width": 192,
+          "height": 131,
+          "bytes": 10398
+        },
+        {
+          "size": "md",
+          "path": "assets/records/lyla-natural/md.webp",
+          "mime": "image/webp",
+          "width": 384,
+          "height": 263,
+          "bytes": 27950
+        }
+      ]
+    },
+    {
+      "id": "lyla-smile",
+      "role": "portrait",
+      "chunk": "records",
+      "characterId": "lyla",
+      "expression": "smile",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/records/lyla-smile/sm.webp",
+          "mime": "image/webp",
+          "width": 131,
+          "height": 192,
+          "bytes": 9724
+        },
+        {
+          "size": "md",
+          "path": "assets/records/lyla-smile/md.webp",
+          "mime": "image/webp",
+          "width": 263,
+          "height": 384,
+          "bytes": 27522
+        }
+      ]
+    },
+    {
+      "id": "margin",
+      "role": "background",
+      "chunk": "margin",
+      "variants": [
+        {
+          "size": "md",
+          "path": "assets/margin/margin/md.webp",
+          "mime": "image/webp",
+          "width": 810,
+          "height": 540,
+          "bytes": 17808
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/margin/lg.webp",
+          "mime": "image/webp",
+          "width": 1350,
+          "height": 900,
+          "bytes": 35328
+        }
+      ]
+    },
+    {
+      "id": "nemo-angry",
+      "role": "portrait",
+      "chunk": "records",
+      "characterId": "nemo",
+      "expression": "angry",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/records/nemo-angry/sm.webp",
+          "mime": "image/webp",
+          "width": 131,
+          "height": 192,
+          "bytes": 8826
+        },
+        {
+          "size": "md",
+          "path": "assets/records/nemo-angry/md.webp",
+          "mime": "image/webp",
+          "width": 263,
+          "height": 384,
+          "bytes": 26040
+        }
+      ]
+    },
+    {
+      "id": "nemo-natural",
+      "role": "portrait",
+      "chunk": "records",
+      "characterId": "nemo",
+      "expression": "natural",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/records/nemo-natural/sm.webp",
+          "mime": "image/webp",
+          "width": 131,
+          "height": 192,
+          "bytes": 8058
+        },
+        {
+          "size": "md",
+          "path": "assets/records/nemo-natural/md.webp",
+          "mime": "image/webp",
+          "width": 263,
+          "height": 384,
+          "bytes": 23778
+        }
+      ]
+    },
+    {
+      "id": "nemo-smile",
+      "role": "portrait",
+      "chunk": "records",
+      "characterId": "nemo",
+      "expression": "smile",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/records/nemo-smile/sm.webp",
+          "mime": "image/webp",
+          "width": 131,
+          "height": 192,
+          "bytes": 8632
+        },
+        {
+          "size": "md",
+          "path": "assets/records/nemo-smile/md.webp",
+          "mime": "image/webp",
+          "width": 263,
+          "height": 384,
+          "bytes": 24810
+        }
+      ]
+    },
+    {
+      "id": "nervetree",
+      "role": "enemy",
+      "chunk": "pequod",
+      "variants": [
+        {
+          "size": "md",
+          "path": "assets/pequod/nervetree/md.webp",
+          "mime": "image/webp",
+          "width": 384,
+          "height": 384,
+          "bytes": 25372
+        },
+        {
+          "size": "lg",
+          "path": "assets/pequod/nervetree/lg.webp",
+          "mime": "image/webp",
+          "width": 768,
+          "height": 768,
+          "bytes": 76202
+        }
+      ]
+    },
+    {
+      "id": "nieun-angry",
+      "role": "portrait",
+      "chunk": "bootstrap",
+      "characterId": "nieun",
+      "expression": "angry",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/bootstrap/nieun-angry/sm.webp",
+          "mime": "image/webp",
+          "width": 192,
+          "height": 192,
+          "bytes": 10464
+        },
+        {
+          "size": "md",
+          "path": "assets/bootstrap/nieun-angry/md.webp",
+          "mime": "image/webp",
+          "width": 384,
+          "height": 384,
+          "bytes": 29940
+        }
+      ]
+    },
+    {
+      "id": "nieun-smile",
+      "role": "portrait",
+      "chunk": "bootstrap",
+      "characterId": "nieun",
+      "expression": "smile",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/bootstrap/nieun-smile/sm.webp",
+          "mime": "image/webp",
+          "width": 96,
+          "height": 192,
+          "bytes": 7066
+        },
+        {
+          "size": "md",
+          "path": "assets/bootstrap/nieun-smile/md.webp",
+          "mime": "image/webp",
+          "width": 191,
+          "height": 384,
+          "bytes": 19728
+        }
+      ]
+    },
+    {
+      "id": "nieun-standing",
+      "role": "portrait",
+      "chunk": "bootstrap",
+      "characterId": "nieun",
+      "expression": "standing",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/bootstrap/nieun-standing/sm.webp",
+          "mime": "image/webp",
+          "width": 96,
+          "height": 192,
+          "bytes": 6888
+        },
+        {
+          "size": "md",
+          "path": "assets/bootstrap/nieun-standing/md.webp",
+          "mime": "image/webp",
+          "width": 191,
+          "height": 384,
+          "bytes": 19518
+        }
+      ]
+    },
+    {
+      "id": "nieun-surprised",
+      "role": "portrait",
+      "chunk": "bootstrap",
+      "characterId": "nieun",
+      "expression": "surprised",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/bootstrap/nieun-surprised/sm.webp",
+          "mime": "image/webp",
+          "width": 192,
+          "height": 192,
+          "bytes": 9386
+        },
+        {
+          "size": "md",
+          "path": "assets/bootstrap/nieun-surprised/md.webp",
+          "mime": "image/webp",
+          "width": 384,
+          "height": 384,
+          "bytes": 27496
+        }
+      ]
+    },
+    {
+      "id": "pale-angry",
+      "role": "portrait",
+      "chunk": "pequod",
+      "characterId": "pale",
+      "expression": "angry",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/pequod/pale-angry/sm.webp",
+          "mime": "image/webp",
+          "width": 96,
+          "height": 192,
+          "bytes": 5514
+        },
+        {
+          "size": "md",
+          "path": "assets/pequod/pale-angry/md.webp",
+          "mime": "image/webp",
+          "width": 191,
+          "height": 384,
+          "bytes": 16132
+        }
+      ]
+    },
+    {
+      "id": "pale-combat",
+      "role": "cutin",
+      "chunk": "pequod",
+      "characterId": "pale",
+      "expression": "combat",
+      "variants": [
+        {
+          "size": "md",
+          "path": "assets/pequod/pale-combat/md.webp",
+          "mime": "image/webp",
+          "width": 384,
+          "height": 288,
+          "bytes": 21106
+        },
+        {
+          "size": "lg",
+          "path": "assets/pequod/pale-combat/lg.webp",
+          "mime": "image/webp",
+          "width": 768,
+          "height": 576,
+          "bytes": 58612
+        }
+      ]
+    },
+    {
+      "id": "pale-sad",
+      "role": "portrait",
+      "chunk": "pequod",
+      "characterId": "pale",
+      "expression": "sad",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/pequod/pale-sad/sm.webp",
+          "mime": "image/webp",
+          "width": 96,
+          "height": 192,
+          "bytes": 5304
+        },
+        {
+          "size": "md",
+          "path": "assets/pequod/pale-sad/md.webp",
+          "mime": "image/webp",
+          "width": 191,
+          "height": 384,
+          "bytes": 15746
+        }
+      ]
+    },
+    {
+      "id": "pale-smile",
+      "role": "portrait",
+      "chunk": "pequod",
+      "characterId": "pale",
+      "expression": "smile",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/pequod/pale-smile/sm.webp",
+          "mime": "image/webp",
+          "width": 96,
+          "height": 192,
+          "bytes": 5610
+        },
+        {
+          "size": "md",
+          "path": "assets/pequod/pale-smile/md.webp",
+          "mime": "image/webp",
+          "width": 191,
+          "height": 384,
+          "bytes": 16722
+        }
+      ]
+    },
+    {
+      "id": "pale-standing",
+      "role": "portrait",
+      "chunk": "pequod",
+      "characterId": "pale",
+      "expression": "standing",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/pequod/pale-standing/sm.webp",
+          "mime": "image/webp",
+          "width": 96,
+          "height": 192,
+          "bytes": 6636
+        },
+        {
+          "size": "md",
+          "path": "assets/pequod/pale-standing/md.webp",
+          "mime": "image/webp",
+          "width": 191,
+          "height": 384,
+          "bytes": 18830
+        }
+      ]
+    },
+    {
+      "id": "pequod-record",
+      "role": "background",
+      "chunk": "records",
+      "variants": [
+        {
+          "size": "md",
+          "path": "assets/records/pequod-record/md.webp",
+          "mime": "image/webp",
+          "width": 789,
+          "height": 540,
+          "bytes": 36674
+        },
+        {
+          "size": "lg",
+          "path": "assets/records/pequod-record/lg.webp",
+          "mime": "image/webp",
+          "width": 1216,
+          "height": 832,
+          "bytes": 58912
+        }
+      ]
+    },
+    {
+      "id": "pequod-ruins",
+      "role": "background",
+      "chunk": "pequod",
+      "variants": [
+        {
+          "size": "md",
+          "path": "assets/pequod/pequod-ruins/md.webp",
+          "mime": "image/webp",
+          "width": 789,
+          "height": 540,
+          "bytes": 47102
+        },
+        {
+          "size": "lg",
+          "path": "assets/pequod/pequod-ruins/lg.webp",
+          "mime": "image/webp",
+          "width": 1216,
+          "height": 832,
+          "bytes": 79066
+        }
+      ]
+    },
+    {
+      "id": "rabbitbee",
+      "role": "enemy",
+      "chunk": "pequod",
+      "variants": [
+        {
+          "size": "md",
+          "path": "assets/pequod/rabbitbee/md.webp",
+          "mime": "image/webp",
+          "width": 314,
+          "height": 384,
+          "bytes": 16090
+        },
+        {
+          "size": "lg",
+          "path": "assets/pequod/rabbitbee/lg.webp",
+          "mime": "image/webp",
+          "width": 628,
+          "height": 768,
+          "bytes": 38026
+        }
+      ]
+    },
+    {
+      "id": "riel-natural",
+      "role": "portrait",
+      "chunk": "records",
+      "characterId": "riel",
+      "expression": "natural",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/records/riel-natural/sm.webp",
+          "mime": "image/webp",
+          "width": 131,
+          "height": 192,
+          "bytes": 6962
+        },
+        {
+          "size": "md",
+          "path": "assets/records/riel-natural/md.webp",
+          "mime": "image/webp",
+          "width": 263,
+          "height": 384,
+          "bytes": 19514
+        }
+      ]
+    },
+    {
+      "id": "riel-sad",
+      "role": "portrait",
+      "chunk": "records",
+      "characterId": "riel",
+      "expression": "sad",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/records/riel-sad/sm.webp",
+          "mime": "image/webp",
+          "width": 131,
+          "height": 192,
+          "bytes": 7046
+        },
+        {
+          "size": "md",
+          "path": "assets/records/riel-sad/md.webp",
+          "mime": "image/webp",
+          "width": 263,
+          "height": 384,
+          "bytes": 19036
+        }
+      ]
+    },
+    {
+      "id": "riel-smile",
+      "role": "portrait",
+      "chunk": "records",
+      "characterId": "riel",
+      "expression": "smile",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/records/riel-smile/sm.webp",
+          "mime": "image/webp",
+          "width": 131,
+          "height": 192,
+          "bytes": 7448
+        },
+        {
+          "size": "md",
+          "path": "assets/records/riel-smile/md.webp",
+          "mime": "image/webp",
+          "width": 263,
+          "height": 384,
+          "bytes": 20272
+        }
+      ]
+    },
+    {
+      "id": "trainhead",
+      "role": "enemy",
+      "chunk": "trainhead",
+      "variants": [
+        {
+          "size": "md",
+          "path": "assets/trainhead/trainhead/md.webp",
+          "mime": "image/webp",
+          "width": 256,
+          "height": 384,
+          "bytes": 7822
+        },
+        {
+          "size": "lg",
+          "path": "assets/trainhead/trainhead/lg.webp",
+          "mime": "image/webp",
+          "width": 512,
+          "height": 768,
+          "bytes": 18214
+        }
+      ]
+    },
+    {
+      "id": "wares-sad",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "wares",
+      "expression": "sad",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/wares-sad/sm.webp",
+          "mime": "image/webp",
+          "width": 144,
+          "height": 192,
+          "bytes": 7452
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/wares-sad/md.webp",
+          "mime": "image/webp",
+          "width": 288,
+          "height": 384,
+          "bytes": 21094
+        }
+      ]
+    },
+    {
+      "id": "wares-smile",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "wares",
+      "expression": "smile",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/wares-smile/sm.webp",
+          "mime": "image/webp",
+          "width": 144,
+          "height": 192,
+          "bytes": 6374
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/wares-smile/md.webp",
+          "mime": "image/webp",
+          "width": 288,
+          "height": 384,
+          "bytes": 18340
+        }
+      ]
+    },
+    {
+      "id": "wares-standing",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "wares",
+      "expression": "standing",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/wares-standing/sm.webp",
+          "mime": "image/webp",
+          "width": 144,
+          "height": 192,
+          "bytes": 7894
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/wares-standing/md.webp",
+          "mime": "image/webp",
+          "width": 288,
+          "height": 384,
+          "bytes": 22262
+        }
+      ]
+    },
+    {
+      "id": "wares-surprised",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "wares",
+      "expression": "surprised",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/wares-surprised/sm.webp",
+          "mime": "image/webp",
+          "width": 144,
+          "height": 192,
+          "bytes": 7024
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/wares-surprised/md.webp",
+          "mime": "image/webp",
+          "width": 288,
+          "height": 384,
+          "bytes": 19762
+        }
+      ]
+    },
+    {
+      "id": "white-flame",
+      "role": "effect",
+      "chunk": "margin",
+      "variants": [
+        {
+          "size": "md",
+          "path": "assets/margin/white-flame/md.webp",
+          "mime": "image/webp",
+          "width": 384,
+          "height": 256,
+          "bytes": 3086
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/white-flame/lg.webp",
+          "mime": "image/webp",
+          "width": 768,
+          "height": 512,
+          "bytes": 9542
+        }
+      ]
+    }
+  ],
+  "totalBytes": 1655860,
+  "safety": {
+    "policy": "explicit-sfw-allowlist/0.1",
+    "selectedAssetCount": 45,
+    "forbiddenAssetCount": 0
+  }
+}

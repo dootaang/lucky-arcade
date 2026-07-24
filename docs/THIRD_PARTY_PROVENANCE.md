@@ -51,3 +51,9 @@
   하트 좋아요 버튼(catraco), 체크리스트 완료 애니메이션(JkHuger), 글래스 클릭 카드(SteveBloX),
   네온 스트로크 버튼(satyamchaudharydev), 플립 카드(joe-watson-sbf, ElSombrero2),
   3D 틸트 카드(kennyotsu — 데스크톱 한정), 토글 스위치(namecho) 등.
+
+### sharp 0.35.3 (Apache-2.0)
+
+- 공식 배포: https://www.npmjs.com/package/sharp
+- 내장 콘텐츠팩을 만들 때만 이미지 디코딩·리사이즈·WebP 파생본 생성에 사용한다.
+- 브라우저 런타임과 초기 JavaScript 번들에는 포함하지 않는다.
