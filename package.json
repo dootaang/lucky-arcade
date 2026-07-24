@@ -17,6 +17,7 @@
     "content:gfl": "pnpm --filter @lucky-arcade/content-cli start --",
     "content:temerosa": "pnpm --filter @lucky-arcade/content-cli temerosa --",
     "content:temerosa:audit": "pnpm --filter @lucky-arcade/content-cli temerosa:audit --",
+    "content:temerosa:expressions": "pnpm --filter @lucky-arcade/content-cli temerosa:expressions --",
     "content:validate": "pnpm --filter @lucky-arcade/content-cli validate --",
     "test": "pnpm boundaries && pnpm -r test",
     "typecheck": "pnpm -r typecheck",

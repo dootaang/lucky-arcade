@@ -1,6 +1,6 @@
 import type { TemerosaContentSelection } from "@lucky-arcade/contracts";
 
-export const TEMEROSA_FORBIDDEN_ASSET_NAME = /(?:^|[_.\-/\s])(adult|masturbation|naked|nude|sex)(?:$|[_.\-/\s])/i;
+export const TEMEROSA_FORBIDDEN_ASSET_NAME = /(?:^|[_.\-/\s])(adult|aroused|masturbation|naked|nude|sex|orgasm|cowgirl|doggy|missionary|handjob|footjob|fellatio|blowjob|anal|cum|position)(?:$|[_.\-/\s])/i;
 
 export function assertTemerosaSelection(selection: TemerosaContentSelection): void {
   const ids = new Set<string>();

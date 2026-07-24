@@ -1,0 +1,813 @@
+{
+  "contract": "temerosa-content-manifest/0.1",
+  "packId": "temerosa-margin",
+  "version": "0.2.0",
+  "assets": [
+    {
+      "id": "review-alger-angry",
+      "role": "portrait",
+      "chunk": "pequod",
+      "characterId": "alger",
+      "expression": "angry",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/pequod/review-alger-angry/sm.webp",
+          "mime": "image/webp",
+          "width": 144,
+          "height": 192,
+          "bytes": 6574
+        },
+        {
+          "size": "md",
+          "path": "assets/pequod/review-alger-angry/md.webp",
+          "mime": "image/webp",
+          "width": 288,
+          "height": 384,
+          "bytes": 18122
+        }
+      ]
+    },
+    {
+      "id": "review-alger-disappointed",
+      "role": "portrait",
+      "chunk": "pequod",
+      "characterId": "alger",
+      "expression": "disappointed",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/pequod/review-alger-disappointed/sm.webp",
+          "mime": "image/webp",
+          "width": 96,
+          "height": 192,
+          "bytes": 5358
+        },
+        {
+          "size": "md",
+          "path": "assets/pequod/review-alger-disappointed/md.webp",
+          "mime": "image/webp",
+          "width": 191,
+          "height": 384,
+          "bytes": 14744
+        }
+      ]
+    },
+    {
+      "id": "review-alger-smile",
+      "role": "portrait",
+      "chunk": "pequod",
+      "characterId": "alger",
+      "expression": "smile",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/pequod/review-alger-smile/sm.webp",
+          "mime": "image/webp",
+          "width": 96,
+          "height": 192,
+          "bytes": 5570
+        },
+        {
+          "size": "md",
+          "path": "assets/pequod/review-alger-smile/md.webp",
+          "mime": "image/webp",
+          "width": 191,
+          "height": 384,
+          "bytes": 15542
+        }
+      ]
+    },
+    {
+      "id": "review-alger-smirk",
+      "role": "portrait",
+      "chunk": "pequod",
+      "characterId": "alger",
+      "expression": "smirk",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/pequod/review-alger-smirk/sm.webp",
+          "mime": "image/webp",
+          "width": 96,
+          "height": 192,
+          "bytes": 5454
+        },
+        {
+          "size": "md",
+          "path": "assets/pequod/review-alger-smirk/md.webp",
+          "mime": "image/webp",
+          "width": 191,
+          "height": 384,
+          "bytes": 14852
+        }
+      ]
+    },
+    {
+      "id": "review-alger-standing",
+      "role": "portrait",
+      "chunk": "pequod",
+      "characterId": "alger",
+      "expression": "standing",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/pequod/review-alger-standing/sm.webp",
+          "mime": "image/webp",
+          "width": 96,
+          "height": 192,
+          "bytes": 5414
+        },
+        {
+          "size": "md",
+          "path": "assets/pequod/review-alger-standing/md.webp",
+          "mime": "image/webp",
+          "width": 191,
+          "height": 384,
+          "bytes": 14966
+        }
+      ]
+    },
+    {
+      "id": "review-alger-surprised",
+      "role": "portrait",
+      "chunk": "pequod",
+      "characterId": "alger",
+      "expression": "surprised",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/pequod/review-alger-surprised/sm.webp",
+          "mime": "image/webp",
+          "width": 96,
+          "height": 192,
+          "bytes": 5574
+        },
+        {
+          "size": "md",
+          "path": "assets/pequod/review-alger-surprised/md.webp",
+          "mime": "image/webp",
+          "width": 191,
+          "height": 384,
+          "bytes": 15954
+        }
+      ]
+    },
+    {
+      "id": "review-alger-upset",
+      "role": "portrait",
+      "chunk": "pequod",
+      "characterId": "alger",
+      "expression": "upset",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/pequod/review-alger-upset/sm.webp",
+          "mime": "image/webp",
+          "width": 96,
+          "height": 192,
+          "bytes": 5608
+        },
+        {
+          "size": "md",
+          "path": "assets/pequod/review-alger-upset/md.webp",
+          "mime": "image/webp",
+          "width": 191,
+          "height": 384,
+          "bytes": 15900
+        }
+      ]
+    },
+    {
+      "id": "review-bacikal-angry",
+      "role": "portrait",
+      "chunk": "pequod",
+      "characterId": "bacikal",
+      "expression": "angry",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/pequod/review-bacikal-angry/sm.webp",
+          "mime": "image/webp",
+          "width": 144,
+          "height": 192,
+          "bytes": 5064
+        },
+        {
+          "size": "md",
+          "path": "assets/pequod/review-bacikal-angry/md.webp",
+          "mime": "image/webp",
+          "width": 288,
+          "height": 384,
+          "bytes": 14046
+        }
+      ]
+    },
+    {
+      "id": "review-bacikal-disappointed",
+      "role": "portrait",
+      "chunk": "pequod",
+      "characterId": "bacikal",
+      "expression": "disappointed",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/pequod/review-bacikal-disappointed/sm.webp",
+          "mime": "image/webp",
+          "width": 144,
+          "height": 192,
+          "bytes": 4648
+        },
+        {
+          "size": "md",
+          "path": "assets/pequod/review-bacikal-disappointed/md.webp",
+          "mime": "image/webp",
+          "width": 288,
+          "height": 384,
+          "bytes": 12894
+        }
+      ]
+    },
+    {
+      "id": "review-bacikal-sad",
+      "role": "portrait",
+      "chunk": "pequod",
+      "characterId": "bacikal",
+      "expression": "sad",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/pequod/review-bacikal-sad/sm.webp",
+          "mime": "image/webp",
+          "width": 144,
+          "height": 192,
+          "bytes": 4816
+        },
+        {
+          "size": "md",
+          "path": "assets/pequod/review-bacikal-sad/md.webp",
+          "mime": "image/webp",
+          "width": 288,
+          "height": 384,
+          "bytes": 13356
+        }
+      ]
+    },
+    {
+      "id": "review-bacikal-standing",
+      "role": "portrait",
+      "chunk": "pequod",
+      "characterId": "bacikal",
+      "expression": "standing",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/pequod/review-bacikal-standing/sm.webp",
+          "mime": "image/webp",
+          "width": 144,
+          "height": 192,
+          "bytes": 4516
+        },
+        {
+          "size": "md",
+          "path": "assets/pequod/review-bacikal-standing/md.webp",
+          "mime": "image/webp",
+          "width": 288,
+          "height": 384,
+          "bytes": 12642
+        }
+      ]
+    },
+    {
+      "id": "review-bacikal-surprised",
+      "role": "portrait",
+      "chunk": "pequod",
+      "characterId": "bacikal",
+      "expression": "surprised",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/pequod/review-bacikal-surprised/sm.webp",
+          "mime": "image/webp",
+          "width": 144,
+          "height": 192,
+          "bytes": 4984
+        },
+        {
+          "size": "md",
+          "path": "assets/pequod/review-bacikal-surprised/md.webp",
+          "mime": "image/webp",
+          "width": 288,
+          "height": 384,
+          "bytes": 14166
+        }
+      ]
+    },
+    {
+      "id": "review-bacikal-upset",
+      "role": "portrait",
+      "chunk": "pequod",
+      "characterId": "bacikal",
+      "expression": "upset",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/pequod/review-bacikal-upset/sm.webp",
+          "mime": "image/webp",
+          "width": 144,
+          "height": 192,
+          "bytes": 5944
+        },
+        {
+          "size": "md",
+          "path": "assets/pequod/review-bacikal-upset/md.webp",
+          "mime": "image/webp",
+          "width": 288,
+          "height": 384,
+          "bytes": 16296
+        }
+      ]
+    },
+    {
+      "id": "review-kano-angry",
+      "role": "portrait",
+      "chunk": "pequod",
+      "characterId": "kano",
+      "expression": "angry",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/pequod/review-kano-angry/sm.webp",
+          "mime": "image/webp",
+          "width": 108,
+          "height": 192,
+          "bytes": 6650
+        },
+        {
+          "size": "md",
+          "path": "assets/pequod/review-kano-angry/md.webp",
+          "mime": "image/webp",
+          "width": 217,
+          "height": 384,
+          "bytes": 19918
+        }
+      ]
+    },
+    {
+      "id": "review-kano-disappointed",
+      "role": "portrait",
+      "chunk": "pequod",
+      "characterId": "kano",
+      "expression": "disappointed",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/pequod/review-kano-disappointed/sm.webp",
+          "mime": "image/webp",
+          "width": 108,
+          "height": 192,
+          "bytes": 5286
+        },
+        {
+          "size": "md",
+          "path": "assets/pequod/review-kano-disappointed/md.webp",
+          "mime": "image/webp",
+          "width": 217,
+          "height": 384,
+          "bytes": 16220
+        }
+      ]
+    },
+    {
+      "id": "review-kano-smirk",
+      "role": "portrait",
+      "chunk": "pequod",
+      "characterId": "kano",
+      "expression": "smirk",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/pequod/review-kano-smirk/sm.webp",
+          "mime": "image/webp",
+          "width": 109,
+          "height": 192,
+          "bytes": 6126
+        },
+        {
+          "size": "md",
+          "path": "assets/pequod/review-kano-smirk/md.webp",
+          "mime": "image/webp",
+          "width": 218,
+          "height": 384,
+          "bytes": 18960
+        }
+      ]
+    },
+    {
+      "id": "review-kano-standing",
+      "role": "portrait",
+      "chunk": "pequod",
+      "characterId": "kano",
+      "expression": "standing",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/pequod/review-kano-standing/sm.webp",
+          "mime": "image/webp",
+          "width": 192,
+          "height": 144,
+          "bytes": 6858
+        },
+        {
+          "size": "md",
+          "path": "assets/pequod/review-kano-standing/md.webp",
+          "mime": "image/webp",
+          "width": 384,
+          "height": 288,
+          "bytes": 19984
+        }
+      ]
+    },
+    {
+      "id": "review-kano-surprised",
+      "role": "portrait",
+      "chunk": "pequod",
+      "characterId": "kano",
+      "expression": "surprised",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/pequod/review-kano-surprised/sm.webp",
+          "mime": "image/webp",
+          "width": 108,
+          "height": 192,
+          "bytes": 6152
+        },
+        {
+          "size": "md",
+          "path": "assets/pequod/review-kano-surprised/md.webp",
+          "mime": "image/webp",
+          "width": 215,
+          "height": 384,
+          "bytes": 18904
+        }
+      ]
+    },
+    {
+      "id": "review-kano-upset",
+      "role": "portrait",
+      "chunk": "pequod",
+      "characterId": "kano",
+      "expression": "upset",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/pequod/review-kano-upset/sm.webp",
+          "mime": "image/webp",
+          "width": 108,
+          "height": 192,
+          "bytes": 6360
+        },
+        {
+          "size": "md",
+          "path": "assets/pequod/review-kano-upset/md.webp",
+          "mime": "image/webp",
+          "width": 217,
+          "height": 384,
+          "bytes": 18968
+        }
+      ]
+    },
+    {
+      "id": "review-nieun-angry",
+      "role": "portrait",
+      "chunk": "bootstrap",
+      "characterId": "nieun",
+      "expression": "angry",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/bootstrap/review-nieun-angry/sm.webp",
+          "mime": "image/webp",
+          "width": 192,
+          "height": 192,
+          "bytes": 10464
+        },
+        {
+          "size": "md",
+          "path": "assets/bootstrap/review-nieun-angry/md.webp",
+          "mime": "image/webp",
+          "width": 384,
+          "height": 384,
+          "bytes": 29940
+        }
+      ]
+    },
+    {
+      "id": "review-nieun-disappointed",
+      "role": "portrait",
+      "chunk": "bootstrap",
+      "characterId": "nieun",
+      "expression": "disappointed",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/bootstrap/review-nieun-disappointed/sm.webp",
+          "mime": "image/webp",
+          "width": 192,
+          "height": 192,
+          "bytes": 7350
+        },
+        {
+          "size": "md",
+          "path": "assets/bootstrap/review-nieun-disappointed/md.webp",
+          "mime": "image/webp",
+          "width": 384,
+          "height": 384,
+          "bytes": 20696
+        }
+      ]
+    },
+    {
+      "id": "review-nieun-sad",
+      "role": "portrait",
+      "chunk": "bootstrap",
+      "characterId": "nieun",
+      "expression": "sad",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/bootstrap/review-nieun-sad/sm.webp",
+          "mime": "image/webp",
+          "width": 192,
+          "height": 192,
+          "bytes": 11546
+        },
+        {
+          "size": "md",
+          "path": "assets/bootstrap/review-nieun-sad/md.webp",
+          "mime": "image/webp",
+          "width": 384,
+          "height": 384,
+          "bytes": 32488
+        }
+      ]
+    },
+    {
+      "id": "review-nieun-smirk",
+      "role": "portrait",
+      "chunk": "bootstrap",
+      "characterId": "nieun",
+      "expression": "smirk",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/bootstrap/review-nieun-smirk/sm.webp",
+          "mime": "image/webp",
+          "width": 96,
+          "height": 192,
+          "bytes": 6126
+        },
+        {
+          "size": "md",
+          "path": "assets/bootstrap/review-nieun-smirk/md.webp",
+          "mime": "image/webp",
+          "width": 191,
+          "height": 384,
+          "bytes": 16676
+        }
+      ]
+    },
+    {
+      "id": "review-nieun-standing",
+      "role": "portrait",
+      "chunk": "bootstrap",
+      "characterId": "nieun",
+      "expression": "standing",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/bootstrap/review-nieun-standing/sm.webp",
+          "mime": "image/webp",
+          "width": 96,
+          "height": 192,
+          "bytes": 6888
+        },
+        {
+          "size": "md",
+          "path": "assets/bootstrap/review-nieun-standing/md.webp",
+          "mime": "image/webp",
+          "width": 191,
+          "height": 384,
+          "bytes": 19518
+        }
+      ]
+    },
+    {
+      "id": "review-nieun-surprised",
+      "role": "portrait",
+      "chunk": "bootstrap",
+      "characterId": "nieun",
+      "expression": "surprised",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/bootstrap/review-nieun-surprised/sm.webp",
+          "mime": "image/webp",
+          "width": 192,
+          "height": 192,
+          "bytes": 9386
+        },
+        {
+          "size": "md",
+          "path": "assets/bootstrap/review-nieun-surprised/md.webp",
+          "mime": "image/webp",
+          "width": 384,
+          "height": 384,
+          "bytes": 27496
+        }
+      ]
+    },
+    {
+      "id": "review-nieun-upset",
+      "role": "portrait",
+      "chunk": "bootstrap",
+      "characterId": "nieun",
+      "expression": "upset",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/bootstrap/review-nieun-upset/sm.webp",
+          "mime": "image/webp",
+          "width": 88,
+          "height": 192,
+          "bytes": 6086
+        },
+        {
+          "size": "md",
+          "path": "assets/bootstrap/review-nieun-upset/md.webp",
+          "mime": "image/webp",
+          "width": 177,
+          "height": 384,
+          "bytes": 16430
+        }
+      ]
+    },
+    {
+      "id": "review-pale-disappointed",
+      "role": "portrait",
+      "chunk": "pequod",
+      "characterId": "pale",
+      "expression": "disappointed",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/pequod/review-pale-disappointed/sm.webp",
+          "mime": "image/webp",
+          "width": 96,
+          "height": 192,
+          "bytes": 5638
+        },
+        {
+          "size": "md",
+          "path": "assets/pequod/review-pale-disappointed/md.webp",
+          "mime": "image/webp",
+          "width": 191,
+          "height": 384,
+          "bytes": 16424
+        }
+      ]
+    },
+    {
+      "id": "review-pale-smile",
+      "role": "portrait",
+      "chunk": "pequod",
+      "characterId": "pale",
+      "expression": "smile",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/pequod/review-pale-smile/sm.webp",
+          "mime": "image/webp",
+          "width": 96,
+          "height": 192,
+          "bytes": 5610
+        },
+        {
+          "size": "md",
+          "path": "assets/pequod/review-pale-smile/md.webp",
+          "mime": "image/webp",
+          "width": 191,
+          "height": 384,
+          "bytes": 16722
+        }
+      ]
+    },
+    {
+      "id": "review-pale-smirk",
+      "role": "portrait",
+      "chunk": "pequod",
+      "characterId": "pale",
+      "expression": "smirk",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/pequod/review-pale-smirk/sm.webp",
+          "mime": "image/webp",
+          "width": 96,
+          "height": 192,
+          "bytes": 5564
+        },
+        {
+          "size": "md",
+          "path": "assets/pequod/review-pale-smirk/md.webp",
+          "mime": "image/webp",
+          "width": 191,
+          "height": 384,
+          "bytes": 16210
+        }
+      ]
+    },
+    {
+      "id": "review-pale-standing",
+      "role": "portrait",
+      "chunk": "pequod",
+      "characterId": "pale",
+      "expression": "standing",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/pequod/review-pale-standing/sm.webp",
+          "mime": "image/webp",
+          "width": 96,
+          "height": 192,
+          "bytes": 6636
+        },
+        {
+          "size": "md",
+          "path": "assets/pequod/review-pale-standing/md.webp",
+          "mime": "image/webp",
+          "width": 191,
+          "height": 384,
+          "bytes": 18830
+        }
+      ]
+    },
+    {
+      "id": "review-pale-surprised",
+      "role": "portrait",
+      "chunk": "pequod",
+      "characterId": "pale",
+      "expression": "surprised",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/pequod/review-pale-surprised/sm.webp",
+          "mime": "image/webp",
+          "width": 96,
+          "height": 192,
+          "bytes": 5696
+        },
+        {
+          "size": "md",
+          "path": "assets/pequod/review-pale-surprised/md.webp",
+          "mime": "image/webp",
+          "width": 191,
+          "height": 384,
+          "bytes": 16634
+        }
+      ]
+    },
+    {
+      "id": "review-pale-upset",
+      "role": "portrait",
+      "chunk": "pequod",
+      "characterId": "pale",
+      "expression": "upset",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/pequod/review-pale-upset/sm.webp",
+          "mime": "image/webp",
+          "width": 96,
+          "height": 192,
+          "bytes": 6310
+        },
+        {
+          "size": "md",
+          "path": "assets/pequod/review-pale-upset/md.webp",
+          "mime": "image/webp",
+          "width": 191,
+          "height": 384,
+          "bytes": 18780
+        }
+      ]
+    }
+  ],
+  "totalBytes": 773534,
+  "safety": {
+    "policy": "explicit-sfw-allowlist/0.1",
+    "selectedAssetCount": 32,
+    "forbiddenAssetCount": 0
+  }
+}

@@ -7,6 +7,7 @@
     "start": "tsx src/gfl-ember.ts",
     "temerosa": "tsx src/temerosa.ts",
     "temerosa:audit": "tsx src/audit-temerosa.ts",
+    "temerosa:expressions": "tsx src/audit-temerosa-expressions.ts",
     "validate": "tsx src/validate-pack.ts",
     "typecheck": "tsc -p tsconfig.json",
     "test": "vitest run"

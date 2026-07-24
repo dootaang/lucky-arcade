@@ -5,6 +5,7 @@ import { describe, expect, it } from "vitest";
 import { assertTemerosaSelection, TEMEROSA_FORBIDDEN_ASSET_NAME } from "../src/temerosa-policy.ts";
 
 const selectionPath = fileURLToPath(new URL("../src/temerosa-d1-selection.json", import.meta.url));
+const reviewSelectionPath = fileURLToPath(new URL("../src/temerosa-d1-review-selection.json", import.meta.url));
 describe("Temerosa D1 content selection", () => {
   it("is an explicit, unique SFW allowlist", async () => {
     const selection = temerosaContentSelectionSchema.parse(JSON.parse(await readFile(selectionPath, "utf8")));
@@ -20,5 +21,17 @@ describe("Temerosa D1 content selection", () => {
     const selection = temerosaContentSelectionSchema.parse(JSON.parse(await readFile(selectionPath, "utf8")));
     const unsafe = { ...selection, assets: [{ ...selection.assets[0]!, id: "nieun-naked", expression: "naked" }] };
     expect(() => assertTemerosaSelection(unsafe)).toThrow("selected_asset_forbidden");
+  });
+
+  it.each(["pale-naked", "pale-aroused", "kano-cowgirl-position", "nieun-masturbation", "wares-fellatio", "pale-missionary-position-cum"])("rejects known adult expression name %s", (name) => {
+    expect(TEMEROSA_FORBIDDEN_ASSET_NAME.test(name)).toBe(true);
+  });
+
+  it("keeps the owner review shortlist explicit, unique, and SFW by name", async () => {
+    const selection = temerosaContentSelectionSchema.parse(JSON.parse(await readFile(reviewSelectionPath, "utf8")));
+    expect(selection.version).toBe("0.2.0");
+    expect(selection.assets).toHaveLength(32);
+    expect(new Set(selection.assets.map((asset) => asset.id)).size).toBe(selection.assets.length);
+    expect(() => assertTemerosaSelection(selection)).not.toThrow();
   });
 });
