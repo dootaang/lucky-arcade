@@ -17,9 +17,12 @@ export function useLoreSession(cartridge: LoreCircuitCartridge) {
   }, [cartridge]);
   useEffect(() => {
     if (!runtime) return;
-    const timer = window.setTimeout(() => void saveSnapshot({ contract: "snapshot-record/0.1", sessionId: runtime.state.sessionId, sequence: runtime.sequence, state: runtime.state, stateHash: resultHash(runtime.state), engineVersion: ENGINE_VERSION, cabinetVersion: LORE_CIRCUIT_VERSION }), 750);
+    const timer = window.setTimeout(() => void saveSnapshot(
+      { contract: "snapshot-record/0.1", sessionId: runtime.state.sessionId, sequence: runtime.sequence, state: runtime.state, stateHash: resultHash(runtime.state), engineVersion: ENGINE_VERSION, cabinetVersion: LORE_CIRCUIT_VERSION },
+      { contract: "recent-play/0.1", cabinetId: "lore-circuit", sessionId: runtime.state.sessionId, cardFingerprint: cartridge.cardFingerprint, title: `${cartridge.cardName} · 로어 회로`, progressLabel: loreProgress(runtime.state), updatedAt: new Date().toISOString() },
+    ), 750);
     return () => window.clearTimeout(timer);
-  }, [runtime]);
+  }, [cartridge.cardName, runtime]);
 
   const dispatch = useCallback((action: LoreCircuitAction) => {
     setBusy(true);
@@ -36,6 +39,13 @@ export function useLoreSession(cartridge: LoreCircuitCartridge) {
     }).finally(() => setBusy(false));
   }, [cartridge]);
   return { runtime, busy, dispatch };
+}
+
+function loreProgress(state: LoreCircuitState): string {
+  if (state.status === "ready") return "발굴 준비";
+  if (state.status === "won") return `${state.score}점으로 발굴 완료`;
+  if (state.status === "lost") return "탐사 종료";
+  return `${state.moves}번 이동 · 실수 ${state.mistakes}/3`;
 }
 
 async function restore(cartridge: LoreCircuitCartridge): Promise<Runtime> {

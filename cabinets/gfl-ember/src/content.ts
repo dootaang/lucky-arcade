@@ -1,3 +1,4 @@
+import type { BuiltInContentPack } from "@lucky-arcade/contracts";
 import type { GflContentPack } from "./contracts.ts";
 
 const dolls: GflContentPack["dolls"] = [
@@ -37,3 +38,21 @@ export const bundledPack: GflContentPack = {
     {id:"ac4",name:"AC4 소음기",power:250,description:"은폐성과 회피를 높이는 소음기입니다."},
   ],assets:{},
 };
+
+export function toBuiltInContentPack(pack: GflContentPack): BuiltInContentPack {
+  return {
+    contract: "built-in-content-pack/0.1",
+    packId: pack.packId,
+    version: pack.version,
+    title: "소녀전선: 잔불",
+    loreEntryCount: pack.missions.length,
+    characters: pack.dolls.map((doll) => ({
+      id: doll.id,
+      name: doll.name,
+      description: doll.description,
+      assets: Object.fromEntries(Object.entries(pack.assets)
+        .filter(([key]) => key.startsWith(`portrait:${doll.id}:`))
+        .map(([key, value]) => [key.slice(`portrait:${doll.id}:`.length), value])),
+    })),
+  };
+}

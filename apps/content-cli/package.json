@@ -1,6 +1,6 @@
 {
   "name":"@lucky-arcade/content-cli","version":"0.1.0","private":true,"type":"module",
-  "scripts":{"start":"tsx src/gfl-ember.ts","typecheck":"tsc -p tsconfig.json","test":"vitest run --passWithNoTests"},
-  "dependencies":{"@lucky-arcade/card-io":"workspace:*","@lucky-arcade/gfl-ember":"workspace:*"},
+  "scripts":{"start":"tsx src/gfl-ember.ts","validate":"tsx src/validate-pack.ts","typecheck":"tsc -p tsconfig.json","test":"vitest run --passWithNoTests"},
+  "dependencies":{"@lucky-arcade/cabinet-sdk":"workspace:*","@lucky-arcade/card-io":"workspace:*","@lucky-arcade/contracts":"workspace:*","@lucky-arcade/gfl-ember":"workspace:*"},
   "devDependencies":{"tsx":"4.23.1"}
 }

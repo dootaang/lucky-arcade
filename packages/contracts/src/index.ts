@@ -197,3 +197,21 @@ export const analyzedCardSchema = z.object({
 export type AnalyzedCard = z.infer<typeof analyzedCardSchema>;
 export const anyAnalyzedCardSchema = z.union([analyzedCardSchema, analyzedCardV1Schema]);
 export type AnyAnalyzedCard = z.infer<typeof anyAnalyzedCardSchema>;
+
+export const builtInCharacterSchema = z.object({
+  id: z.string().min(1),
+  name: z.string().min(1),
+  description: z.string().optional(),
+  assets: z.record(z.string(), z.string().min(1)),
+});
+export type BuiltInCharacter = z.infer<typeof builtInCharacterSchema>;
+
+export const builtInContentPackSchema = z.object({
+  contract: z.literal("built-in-content-pack/0.1"),
+  packId: z.string().min(1),
+  version: z.string().min(1),
+  title: z.string().min(1),
+  characters: z.array(builtInCharacterSchema).min(1),
+  loreEntryCount: z.number().int().nonnegative().default(0),
+});
+export type BuiltInContentPack = z.infer<typeof builtInContentPackSchema>;

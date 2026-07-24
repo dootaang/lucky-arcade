@@ -1,4 +1,4 @@
-import type { CabinetAssessment } from "@lucky-arcade/contracts";
+import type { BuiltInContentPack, CabinetAssessment } from "@lucky-arcade/contracts";
 import type { XorShift32 } from "@lucky-arcade/engine";
 
 export interface CabinetManifest {
@@ -7,6 +7,10 @@ export interface CabinetManifest {
   title: string;
   description: string;
   requiredCapabilities: string[];
+  sessionKind: "instant" | "repeat" | "deep";
+  launchKind: "built-in" | "card" | "both";
+  resumeLabel: string;
+  estimatedMinutes: { min: number; max: number };
 }
 
 export interface CabinetDefinition<Facts, State, Action, ViewModel> {
@@ -41,4 +45,27 @@ export function createCabinetRegistry<Facts>(entries: readonly CabinetCatalogEnt
     get: (id) => byId.get(id),
     firstAvailable: (facts) => frozen.find((entry) => entry.assess(facts).available),
   };
+}
+
+export interface BuiltInPackCapabilities {
+  characterCount: number;
+  charactersWithPortrait: number;
+  minimumExpressions: number;
+  loreEntryCount: number;
+}
+
+export function inspectBuiltInContentPack(pack: BuiltInContentPack): BuiltInPackCapabilities {
+  const expressionCounts = pack.characters.map((character) => Object.keys(character.assets).length);
+  return {
+    characterCount: pack.characters.length,
+    charactersWithPortrait: expressionCounts.filter((count) => count > 0).length,
+    minimumExpressions: expressionCounts.length ? Math.min(...expressionCounts) : 0,
+    loreEntryCount: pack.loreEntryCount,
+  };
+}
+
+export function supportsBuiltInCabinet(pack: BuiltInContentPack, cabinetId: "favorite-cup" | "sprite-memory"): boolean {
+  const capabilities = inspectBuiltInContentPack(pack);
+  if (cabinetId === "favorite-cup") return capabilities.charactersWithPortrait >= 8;
+  return capabilities.charactersWithPortrait >= 6 && capabilities.minimumExpressions >= 2;
 }

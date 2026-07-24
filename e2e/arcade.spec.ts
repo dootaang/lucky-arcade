@@ -35,7 +35,22 @@ test("mobile navigation remains reachable", async ({ page }, testInfo) => {
   await page.goto("/");
   await page.getByRole("button", { name: "메뉴 열기" }).click();
   await expect(page.getByRole("navigation", { name: "주 메뉴" })).toBeVisible();
-  await expect(page.getByRole("button", { name: "카드 보관함" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "내 카드" })).toBeVisible();
+});
+
+test("opens built-in quick cabinets without a card", async ({ page }) => {
+  await page.goto("/");
+  await expect(page.getByRole("heading", { name: "기다리는 동안, 바로 한 판" })).toBeVisible();
+  await expect(page.locator(".arcade-entry")).toHaveCount(3);
+  await page.locator(".arcade-entry").filter({ hasText: "소녀전선 최애 월드컵" }).getByRole("button", { name: "바로 시작" }).click();
+  await expect(page.getByRole("heading", { name: "최애 월드컵" })).toBeVisible();
+  for (let pick = 0; pick < 11; pick += 1) await page.locator(".favorite-choice").first().click();
+  await expect(page.getByText("오늘의 최애", { exact: true })).toBeVisible();
+  await page.getByRole("button", { name: "다른 놀이 보기" }).click();
+  await page.locator(".arcade-entry").filter({ hasText: "작전 암호 기억" }).getByRole("button", { name: "바로 시작" }).click();
+  await page.getByRole("button", { name: "시작", exact: true }).click();
+  await expect(page.locator(".memory-portrait img")).toBeVisible();
+  await expect(page.locator(".memory-grid")).toBeVisible({ timeout: 4_000 });
 });
 
 test("mobile favorite choice does not stay highlighted in the next round", async ({ page }, testInfo) => {
@@ -92,7 +107,8 @@ test("opens the built-in GFL operation, resolves combat, and restores the reward
   await expect(page.getByRole("heading", { name: "하나를 회수하세요" })).toBeVisible();
   await page.waitForTimeout(250);
   await page.reload();
-  await page.getByRole("button", { name: "작전 시작", exact: true }).click();
+  await expect(page.getByRole("region", { name: "이어하기" })).toContainText("보상 선택");
+  await page.getByRole("button", { name: "잔불 작전 이어하기", exact: true }).click();
   await expect(page.getByRole("heading", { name: "하나를 회수하세요" })).toBeVisible();
   expect(browserErrors).toEqual([]);
 });

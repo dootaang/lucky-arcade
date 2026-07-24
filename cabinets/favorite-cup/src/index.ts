@@ -6,6 +6,7 @@ export const FAVORITE_CUP_VERSION = "favorite-cup/0.1" as const;
 export const favoriteCupManifest: CabinetManifest = {
   id: "favorite-cup", version: FAVORITE_CUP_VERSION, title: "최애 월드컵",
   description: "카드 속 인물들을 한 명씩 골라 오늘의 최애를 정합니다.", requiredCapabilities: ["distinct-npc-portraits>=8"],
+  sessionKind: "instant", launchKind: "both", resumeLabel: "새 대진 시작", estimatedMinutes: { min: 1, max: 3 },
 };
 
 export type FavoriteCupStatus = "playing" | "won";

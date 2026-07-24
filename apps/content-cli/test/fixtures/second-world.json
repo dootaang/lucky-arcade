@@ -1,0 +1,17 @@
+{
+  "contract": "built-in-content-pack/0.1",
+  "packId": "second-world-fixture",
+  "version": "1.0.0",
+  "title": "두 번째 세계 검증팩",
+  "loreEntryCount": 4,
+  "characters": [
+    { "id": "a", "name": "인물 A", "assets": { "natural": "/fixture/a.webp", "joy": "/fixture/a-joy.webp" } },
+    { "id": "b", "name": "인물 B", "assets": { "natural": "/fixture/b.webp", "joy": "/fixture/b-joy.webp" } },
+    { "id": "c", "name": "인물 C", "assets": { "natural": "/fixture/c.webp", "joy": "/fixture/c-joy.webp" } },
+    { "id": "d", "name": "인물 D", "assets": { "natural": "/fixture/d.webp", "joy": "/fixture/d-joy.webp" } },
+    { "id": "e", "name": "인물 E", "assets": { "natural": "/fixture/e.webp", "joy": "/fixture/e-joy.webp" } },
+    { "id": "f", "name": "인물 F", "assets": { "natural": "/fixture/f.webp", "joy": "/fixture/f-joy.webp" } },
+    { "id": "g", "name": "인물 G", "assets": { "natural": "/fixture/g.webp", "joy": "/fixture/g-joy.webp" } },
+    { "id": "h", "name": "인물 H", "assets": { "natural": "/fixture/h.webp", "joy": "/fixture/h-joy.webp" } }
+  ]
+}

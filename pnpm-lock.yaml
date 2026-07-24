@@ -26,9 +26,15 @@ importers:
 
   apps/content-cli:
     dependencies:
+      '@lucky-arcade/cabinet-sdk':
+        specifier: workspace:*
+        version: link:../../packages/cabinet-sdk
       '@lucky-arcade/card-io':
         specifier: workspace:*
         version: link:../../packages/card-io
+      '@lucky-arcade/contracts':
+        specifier: workspace:*
+        version: link:../../packages/contracts
       '@lucky-arcade/gfl-ember':
         specifier: workspace:*
         version: link:../../cabinets/gfl-ember
@@ -55,6 +61,9 @@ importers:
 
   apps/web:
     dependencies:
+      '@lucky-arcade/cabinet-sdk':
+        specifier: workspace:*
+        version: link:../../packages/cabinet-sdk
       '@lucky-arcade/card-io':
         specifier: workspace:*
         version: link:../../packages/card-io
@@ -82,6 +91,9 @@ importers:
       '@lucky-arcade/restoration-crew':
         specifier: workspace:*
         version: link:../../cabinets/restoration-crew
+      '@lucky-arcade/sprite-memory':
+        specifier: workspace:*
+        version: link:../../cabinets/sprite-memory
       '@lucky-arcade/ui':
         specifier: workspace:*
         version: link:../../packages/ui
@@ -147,6 +159,9 @@ importers:
       '@lucky-arcade/cabinet-sdk':
         specifier: workspace:*
         version: link:../../packages/cabinet-sdk
+      '@lucky-arcade/contracts':
+        specifier: workspace:*
+        version: link:../../packages/contracts
       '@lucky-arcade/engine':
         specifier: workspace:*
         version: link:../../packages/engine
@@ -196,6 +211,31 @@ importers:
       '@lucky-arcade/extract':
         specifier: workspace:*
         version: link:../../packages/extract
+      '@lucky-arcade/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
+      '@tabler/icons-react':
+        specifier: 3.45.0
+        version: 3.45.0(react@19.2.8)
+      react:
+        specifier: 19.2.8
+        version: 19.2.8
+    devDependencies:
+      '@types/react':
+        specifier: 19.2.17
+        version: 19.2.17
+
+  cabinets/sprite-memory:
+    dependencies:
+      '@lucky-arcade/cabinet-sdk':
+        specifier: workspace:*
+        version: link:../../packages/cabinet-sdk
+      '@lucky-arcade/contracts':
+        specifier: workspace:*
+        version: link:../../packages/contracts
+      '@lucky-arcade/engine':
+        specifier: workspace:*
+        version: link:../../packages/engine
       '@lucky-arcade/ui':
         specifier: workspace:*
         version: link:../../packages/ui

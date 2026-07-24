@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@lucky-arcade/card-io": "workspace:*",
+    "@lucky-arcade/cabinet-sdk": "workspace:*",
     "@lucky-arcade/contracts": "workspace:*",
     "@lucky-arcade/engine": "workspace:*",
     "@lucky-arcade/extract": "workspace:*",
@@ -19,6 +20,7 @@
     "@lucky-arcade/lore-circuit": "workspace:*",
     "@lucky-arcade/persistence": "workspace:*",
     "@lucky-arcade/restoration-crew": "workspace:*",
+    "@lucky-arcade/sprite-memory": "workspace:*",
     "@lucky-arcade/ui": "workspace:*",
     "@tabler/icons-react": "3.45.0",
     "react": "19.2.8",

@@ -9,6 +9,10 @@ export const loreCircuitManifest: CabinetManifest = {
   title: "로어 회로",
   description: "카드 원문 속 단어를 따라 숨은 기록을 발굴하세요.",
   requiredCapabilities: ["verified-lore-puzzles>=3"],
+  sessionKind: "repeat",
+  launchKind: "card",
+  resumeLabel: "발굴 이어하기",
+  estimatedMinutes: { min: 3, max: 8 },
 };
 
 export type LoreCircuitStatus = "ready" | "playing" | "won" | "lost";

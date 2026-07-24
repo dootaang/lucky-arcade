@@ -41,3 +41,19 @@ export interface CardSourceStore {
   put(id: string, value: Blob): Promise<void>;
   remove(id: string): Promise<void>;
 }
+
+export interface RecentPlay {
+  contract: "recent-play/0.1";
+  cabinetId: string;
+  sessionId: string;
+  cardFingerprint?: string;
+  title: string;
+  progressLabel: string;
+  updatedAt: string;
+}
+
+export interface RecentPlayStore {
+  list(): Promise<RecentPlay[]>;
+  touch(play: RecentPlay): Promise<void>;
+  remove(cabinetId: string): Promise<void>;
+}

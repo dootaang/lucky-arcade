@@ -1,9 +1,9 @@
 import type { AnalyzedCard, AnyAnalyzedCard } from "@lucky-arcade/contracts";
-import type { SnapshotRecord, StoredActionReceipt } from "@lucky-arcade/persistence";
+import type { RecentPlay, SnapshotRecord, StoredActionReceipt } from "@lucky-arcade/persistence";
 
 const DATABASE = "lucky-arcade";
-const VERSION = 2;
-const STORES = { cards: "cards", sources: "sources", sessions: "sessions", actions: "actions" } as const;
+const VERSION = 3;
+const STORES = { cards: "cards", sources: "sources", sessions: "sessions", actions: "actions", recent: "recent" } as const;
 
 export interface StoredCard { fingerprint: string; importedAt: string; analyzed: AnyAnalyzedCard; }
 
@@ -33,9 +33,12 @@ export async function replaceAnalyzedCard(previous: StoredCard, analyzed: Analyz
   transaction.objectStore(STORES.cards).put(record);
   await complete(transaction); db.close(); return record;
 }
-export async function saveSnapshot<State>(snapshot: SnapshotRecord<State>): Promise<void> {
-  const db = await openDatabase(), transaction = db.transaction(STORES.sessions, "readwrite");
-  transaction.objectStore(STORES.sessions).put(snapshot); await complete(transaction); db.close();
+export async function saveSnapshot<State>(snapshot: SnapshotRecord<State>, recent?: RecentPlay): Promise<void> {
+  const stores = recent ? [STORES.sessions, STORES.recent] : [STORES.sessions];
+  const db = await openDatabase(), transaction = db.transaction(stores, "readwrite");
+  transaction.objectStore(STORES.sessions).put(snapshot);
+  if (recent) transaction.objectStore(STORES.recent).put(recent);
+  await complete(transaction); db.close();
 }
 export async function loadSnapshot<State>(sessionId: string): Promise<SnapshotRecord<State> | null> {
   const db = await openDatabase(), transaction = db.transaction(STORES.sessions, "readonly");
@@ -53,6 +56,12 @@ export async function listActionsAfter<Action>(sessionId: string, sequence: numb
   await complete(transaction); db.close();
   return all.filter((item) => item.sessionId === sessionId && item.sequence > sequence).sort((a, b) => a.sequence - b.sequence);
 }
+export async function listRecentPlays(): Promise<RecentPlay[]> {
+  const db = await openDatabase(), transaction = db.transaction(STORES.recent, "readonly");
+  const output = await request<RecentPlay[]>(transaction.objectStore(STORES.recent).getAll());
+  await complete(transaction); db.close();
+  return output.filter((item) => item?.contract === "recent-play/0.1").sort((left, right) => right.updatedAt.localeCompare(left.updatedAt));
+}
 
 function openDatabase(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
@@ -62,6 +71,7 @@ function openDatabase(): Promise<IDBDatabase> {
       if (!db.objectStoreNames.contains(STORES.cards)) db.createObjectStore(STORES.cards, { keyPath: "fingerprint" });
       if (!db.objectStoreNames.contains(STORES.sources)) db.createObjectStore(STORES.sources);
       if (!db.objectStoreNames.contains(STORES.sessions)) db.createObjectStore(STORES.sessions, { keyPath: "sessionId" });
+      if (!db.objectStoreNames.contains(STORES.recent)) db.createObjectStore(STORES.recent, { keyPath: "cabinetId" });
       const actions = db.objectStoreNames.contains(STORES.actions) ? opening.transaction!.objectStore(STORES.actions) : db.createObjectStore(STORES.actions, { keyPath: "key" });
       if (!actions.indexNames.contains("by-session-sequence")) actions.createIndex("by-session-sequence", ["sessionId", "sequence"], { unique: true });
     };
