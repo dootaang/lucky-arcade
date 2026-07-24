@@ -1,0 +1,403 @@
+{
+  "contract": "temerosa-content-manifest/0.1",
+  "packId": "temerosa-margin",
+  "version": "0.3.0",
+  "assets": [
+    {
+      "id": "passport-nieun-bestiaization-information-broker",
+      "role": "portrait",
+      "chunk": "bootstrap",
+      "characterId": "nieun",
+      "expression": "natural",
+      "appearanceSet": "nieun/bestiaization/information-broker",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/bootstrap/passport-nieun-bestiaization-information-broker/sm.webp",
+          "mime": "image/webp",
+          "width": 192,
+          "height": 192,
+          "bytes": 8566
+        },
+        {
+          "size": "md",
+          "path": "assets/bootstrap/passport-nieun-bestiaization-information-broker/md.webp",
+          "mime": "image/webp",
+          "width": 768,
+          "height": 768,
+          "bytes": 54486
+        }
+      ]
+    },
+    {
+      "id": "passport-nieun-bestiaization-pluto",
+      "role": "portrait",
+      "chunk": "bootstrap",
+      "characterId": "nieun",
+      "expression": "pluto-natural",
+      "appearanceSet": "nieun/bestiaization/pluto",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/bootstrap/passport-nieun-bestiaization-pluto/sm.webp",
+          "mime": "image/webp",
+          "width": 192,
+          "height": 192,
+          "bytes": 11888
+        },
+        {
+          "size": "md",
+          "path": "assets/bootstrap/passport-nieun-bestiaization-pluto/md.webp",
+          "mime": "image/webp",
+          "width": 768,
+          "height": 768,
+          "bytes": 78946
+        }
+      ]
+    },
+    {
+      "id": "passport-nieun-finale-current",
+      "role": "portrait",
+      "chunk": "bootstrap",
+      "characterId": "nieun",
+      "expression": "standing",
+      "appearanceSet": "nieun/finale/event-horizon-magical-girl",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/bootstrap/passport-nieun-finale-current/sm.webp",
+          "mime": "image/webp",
+          "width": 96,
+          "height": 192,
+          "bytes": 6888
+        },
+        {
+          "size": "md",
+          "path": "assets/bootstrap/passport-nieun-finale-current/md.webp",
+          "mime": "image/webp",
+          "width": 382,
+          "height": 768,
+          "bytes": 50830
+        }
+      ]
+    },
+    {
+      "id": "passport-nieun-root2-purification-team",
+      "role": "portrait",
+      "chunk": "bootstrap",
+      "characterId": "nieun",
+      "expression": "natural",
+      "appearanceSet": "nieun/root2/purification-team",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/bootstrap/passport-nieun-root2-purification-team/sm.webp",
+          "mime": "image/webp",
+          "width": 128,
+          "height": 192,
+          "bytes": 5522
+        },
+        {
+          "size": "md",
+          "path": "assets/bootstrap/passport-nieun-root2-purification-team/md.webp",
+          "mime": "image/webp",
+          "width": 512,
+          "height": 768,
+          "bytes": 40980
+        }
+      ]
+    },
+    {
+      "id": "review-alger-surprised",
+      "role": "portrait",
+      "chunk": "pequod",
+      "characterId": "alger",
+      "expression": "surprised",
+      "appearanceSet": "alger/finale/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/pequod/review-alger-surprised/sm.webp",
+          "mime": "image/webp",
+          "width": 96,
+          "height": 192,
+          "bytes": 5574
+        },
+        {
+          "size": "md",
+          "path": "assets/pequod/review-alger-surprised/md.webp",
+          "mime": "image/webp",
+          "width": 382,
+          "height": 768,
+          "bytes": 43566
+        }
+      ]
+    },
+    {
+      "id": "review-bacikal-angry",
+      "role": "portrait",
+      "chunk": "pequod",
+      "characterId": "bacikal",
+      "expression": "angry",
+      "appearanceSet": "bacikal/finale/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/pequod/review-bacikal-angry/sm.webp",
+          "mime": "image/webp",
+          "width": 144,
+          "height": 192,
+          "bytes": 5064
+        },
+        {
+          "size": "md",
+          "path": "assets/pequod/review-bacikal-angry/md.webp",
+          "mime": "image/webp",
+          "width": 576,
+          "height": 768,
+          "bytes": 38828
+        }
+      ]
+    },
+    {
+      "id": "review-kano-smirk",
+      "role": "portrait",
+      "chunk": "pequod",
+      "characterId": "kano",
+      "expression": "smirk",
+      "appearanceSet": "kano/finale/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/pequod/review-kano-smirk/sm.webp",
+          "mime": "image/webp",
+          "width": 109,
+          "height": 192,
+          "bytes": 6126
+        },
+        {
+          "size": "md",
+          "path": "assets/pequod/review-kano-smirk/md.webp",
+          "mime": "image/webp",
+          "width": 435,
+          "height": 768,
+          "bytes": 52884
+        }
+      ]
+    },
+    {
+      "id": "review-nieun-current-angry",
+      "role": "portrait",
+      "chunk": "bootstrap",
+      "characterId": "nieun",
+      "expression": "angry",
+      "appearanceSet": "nieun/finale/event-horizon-magical-girl",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/bootstrap/review-nieun-current-angry/sm.webp",
+          "mime": "image/webp",
+          "width": 88,
+          "height": 192,
+          "bytes": 6098
+        },
+        {
+          "size": "md",
+          "path": "assets/bootstrap/review-nieun-current-angry/md.webp",
+          "mime": "image/webp",
+          "width": 354,
+          "height": 768,
+          "bytes": 42676
+        }
+      ]
+    },
+    {
+      "id": "review-nieun-current-combat",
+      "role": "portrait",
+      "chunk": "bootstrap",
+      "characterId": "nieun",
+      "expression": "combat-stance",
+      "appearanceSet": "nieun/finale/event-horizon-magical-girl",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/bootstrap/review-nieun-current-combat/sm.webp",
+          "mime": "image/webp",
+          "width": 89,
+          "height": 192,
+          "bytes": 6790
+        },
+        {
+          "size": "md",
+          "path": "assets/bootstrap/review-nieun-current-combat/md.webp",
+          "mime": "image/webp",
+          "width": 354,
+          "height": 768,
+          "bytes": 51796
+        }
+      ]
+    },
+    {
+      "id": "review-nieun-current-looking-back",
+      "role": "portrait",
+      "chunk": "bootstrap",
+      "characterId": "nieun",
+      "expression": "looking-back",
+      "appearanceSet": "nieun/finale/event-horizon-magical-girl",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/bootstrap/review-nieun-current-looking-back/sm.webp",
+          "mime": "image/webp",
+          "width": 128,
+          "height": 192,
+          "bytes": 7104
+        },
+        {
+          "size": "md",
+          "path": "assets/bootstrap/review-nieun-current-looking-back/md.webp",
+          "mime": "image/webp",
+          "width": 512,
+          "height": 768,
+          "bytes": 52124
+        }
+      ]
+    },
+    {
+      "id": "review-nieun-current-smirk",
+      "role": "portrait",
+      "chunk": "bootstrap",
+      "characterId": "nieun",
+      "expression": "smirk",
+      "appearanceSet": "nieun/finale/event-horizon-magical-girl",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/bootstrap/review-nieun-current-smirk/sm.webp",
+          "mime": "image/webp",
+          "width": 96,
+          "height": 192,
+          "bytes": 6126
+        },
+        {
+          "size": "md",
+          "path": "assets/bootstrap/review-nieun-current-smirk/md.webp",
+          "mime": "image/webp",
+          "width": 382,
+          "height": 768,
+          "bytes": 43898
+        }
+      ]
+    },
+    {
+      "id": "review-nieun-current-smirk-alt",
+      "role": "portrait",
+      "chunk": "bootstrap",
+      "characterId": "nieun",
+      "expression": "smirk",
+      "appearanceSet": "nieun/finale/event-horizon-magical-girl",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/bootstrap/review-nieun-current-smirk-alt/sm.webp",
+          "mime": "image/webp",
+          "width": 96,
+          "height": 192,
+          "bytes": 6238
+        },
+        {
+          "size": "md",
+          "path": "assets/bootstrap/review-nieun-current-smirk-alt/md.webp",
+          "mime": "image/webp",
+          "width": 382,
+          "height": 768,
+          "bytes": 45804
+        }
+      ]
+    },
+    {
+      "id": "review-nieun-current-upset",
+      "role": "portrait",
+      "chunk": "bootstrap",
+      "characterId": "nieun",
+      "expression": "upset",
+      "appearanceSet": "nieun/finale/event-horizon-magical-girl",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/bootstrap/review-nieun-current-upset/sm.webp",
+          "mime": "image/webp",
+          "width": 88,
+          "height": 192,
+          "bytes": 6086
+        },
+        {
+          "size": "md",
+          "path": "assets/bootstrap/review-nieun-current-upset/md.webp",
+          "mime": "image/webp",
+          "width": 354,
+          "height": 768,
+          "bytes": 43068
+        }
+      ]
+    },
+    {
+      "id": "review-nieun-current-upset-alt",
+      "role": "portrait",
+      "chunk": "bootstrap",
+      "characterId": "nieun",
+      "expression": "upset",
+      "appearanceSet": "nieun/finale/event-horizon-magical-girl",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/bootstrap/review-nieun-current-upset-alt/sm.webp",
+          "mime": "image/webp",
+          "width": 88,
+          "height": 192,
+          "bytes": 6686
+        },
+        {
+          "size": "md",
+          "path": "assets/bootstrap/review-nieun-current-upset-alt/md.webp",
+          "mime": "image/webp",
+          "width": 354,
+          "height": 768,
+          "bytes": 48860
+        }
+      ]
+    },
+    {
+      "id": "review-pale-smile",
+      "role": "portrait",
+      "chunk": "pequod",
+      "characterId": "pale",
+      "expression": "smile",
+      "appearanceSet": "pale/finale/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/pequod/review-pale-smile/sm.webp",
+          "mime": "image/webp",
+          "width": 96,
+          "height": 192,
+          "bytes": 5610
+        },
+        {
+          "size": "md",
+          "path": "assets/pequod/review-pale-smile/md.webp",
+          "mime": "image/webp",
+          "width": 382,
+          "height": 768,
+          "bytes": 46506
+        }
+      ]
+    }
+  ],
+  "totalBytes": 835618,
+  "safety": {
+    "policy": "explicit-sfw-allowlist/0.1",
+    "selectedAssetCount": 15,
+    "forbiddenAssetCount": 0
+  }
+}

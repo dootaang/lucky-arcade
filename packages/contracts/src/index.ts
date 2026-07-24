@@ -238,6 +238,7 @@ export const temerosaContentAssetSchema = z.object({
   chunk: temerosaContentChunkSchema,
   characterId: z.string().regex(/^[a-z0-9][a-z0-9-]*$/).optional(),
   expression: z.string().regex(/^[a-z0-9][a-z0-9-]*$/).optional(),
+  appearanceSet: z.string().regex(/^[a-z0-9][a-z0-9-/]*$/).optional(),
   variants: z.array(temerosaContentVariantSchema).min(1),
 });
 export type TemerosaContentAsset = z.infer<typeof temerosaContentAssetSchema>;
@@ -262,12 +263,13 @@ export const temerosaContentSelectionSchema = z.object({
   version: z.string().regex(/^\d+\.\d+\.\d+$/),
   assets: z.array(z.object({
     id: z.string().regex(/^[a-z0-9][a-z0-9-]*$/),
-    source: z.enum(["finale", "bestiaization"]),
+    source: z.enum(["overture", "root2", "finale", "bestiaization"]),
     sourcePath: z.string().min(1),
     role: temerosaAssetRoleSchema,
     chunk: temerosaContentChunkSchema,
     characterId: z.string().regex(/^[a-z0-9][a-z0-9-]*$/).optional(),
     expression: z.string().regex(/^[a-z0-9][a-z0-9-]*$/).optional(),
+    appearanceSet: z.string().regex(/^[a-z0-9][a-z0-9-/]*$/).optional(),
   })).min(1),
 });
 export type TemerosaContentSelection = z.infer<typeof temerosaContentSelectionSchema>;

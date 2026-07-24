@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { initialReviewChoices, reviewBeats, reviewExport, sanitizeReviewChoices } from "./temerosa-review-data.ts";
+import { initialReviewChoices, reviewBeats, reviewExport, sanitizeReviewChoices, validateReviewManifest } from "./temerosa-review-data.ts";
 
 describe("Temerosa owner review state", () => {
   it("keeps every beat on an allowed candidate", () => {
@@ -9,11 +9,29 @@ describe("Temerosa owner review state", () => {
   });
 
   it("rejects stale or injected local choices", () => {
-    const state = sanitizeReviewChoices({ "pale-familiar": { selectedAssetId: "not-an-asset", status: "approved" } });
-    expect(state["pale-familiar"]?.status).toBe("unreviewed");
+    const state = sanitizeReviewChoices({ "nieun-first-contact": { selectedAssetId: "not-an-asset", status: "approved" } });
+    expect(state["nieun-first-contact"]?.status).toBe("unreviewed");
+  });
+
+  it("preserves the four decisions the owner already approved", () => {
+    const state = initialReviewChoices();
+    for (const id of ["alger-terminal", "pale-familiar", "kano-supervisor", "bacikal-warning"]) {
+      expect(state[id]?.status).toBe("approved");
+    }
   });
 
   it("exports a versioned compact review result", () => {
     expect(JSON.parse(reviewExport(initialReviewChoices())).contract).toBe("temerosa-expression-review/0.1");
+  });
+
+  it("rejects an expression candidate from another appearance set", () => {
+    const assets = [...new Set(reviewBeats.flatMap((beat) => beat.candidates.map((candidate) => candidate.assetId)))].map((id) => ({
+      id,
+      appearanceSet: reviewBeats.find((beat) => beat.candidates.some((candidate) => candidate.assetId === id))!.appearanceSet,
+      variants: [{ size: "md" as const, path: `${id}.webp`, width: 1, height: 1 }],
+    }));
+    const target = assets.find((asset) => asset.id === "review-nieun-current-angry")!;
+    target.appearanceSet = "nieun/bestiaization/pluto";
+    expect(() => validateReviewManifest({ version: "0.3.0", assets })).toThrow("temerosa_review_appearance_mismatch");
   });
 });

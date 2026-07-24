@@ -5,6 +5,7 @@ import { pathToFileURL } from "node:url";
 import { openAssetResolver, type AssetResolver } from "@lucky-arcade/card-io";
 import { NodeFileSource } from "@lucky-arcade/card-io/node";
 import sharp from "sharp";
+import { classifyTemerosaAppearance } from "./temerosa-appearance-passport.ts";
 import { TEMEROSA_FORBIDDEN_ASSET_NAME } from "./temerosa-policy.ts";
 
 const SOURCE_IDS = ["overture", "root2", "bestiaization", "finale"] as const;
@@ -101,7 +102,10 @@ async function main(): Promise<void> {
         candidates: items.length,
         exactUnique: new Set(items.map((item) => item.duplicateGroup)).size,
         expressionLabels: [...new Set(items.map((item) => item.expression))].sort(),
-        assets: items.map(({ previewBytes: _previewBytes, ...item }) => item),
+        assets: items.map(({ previewBytes: _previewBytes, ...item }) => ({
+          ...item,
+          passport: classifyTemerosaAppearance(item),
+        })),
       }];
     }));
     const report = {
@@ -115,6 +119,7 @@ async function main(): Promise<void> {
         excludedByName: Object.values(sourceSummary).reduce((sum, item) => sum + item.excludedByName, 0),
         safeCandidates: candidates.length,
         exactUnique: new Set(candidates.map((candidate) => candidate.duplicateGroup)).size,
+        blockedFromSceneUse: candidates.filter((candidate) => classifyTemerosaAppearance(candidate).sceneUse === "blocked").length,
       },
       characters,
     };

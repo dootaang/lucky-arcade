@@ -17,8 +17,8 @@ import { assertTemerosaSelection, assertTemerosaSourceAssetSafe } from "./temero
 const DEFAULT_SELECTION = fileURLToPath(new URL("./temerosa-d1-selection.json", import.meta.url));
 const MAX_INPUT_PIXELS = 40_000_000;
 
-type SourceKey = "finale" | "bestiaization";
-type CliArguments = { finale: string; bestiaization: string; selection: string; out: string };
+type SourceKey = "overture" | "root2" | "finale" | "bestiaization";
+type CliArguments = { sources: Partial<Record<SourceKey, string>>; selection: string; out: string };
 type VariantPlan = { size: TemerosaContentVariant["size"]; maxWidth: number; maxHeight: number };
 
 async function main(): Promise<void> {
@@ -32,15 +32,19 @@ async function main(): Promise<void> {
   await rm(staging, { recursive: true, force: true });
   await mkdir(staging, { recursive: true });
 
-  const resolvers: Record<SourceKey, AssetResolver> = {
-    finale: await openAssetResolver(await NodeFileSource.open(args.finale)),
-    bestiaization: await openAssetResolver(await NodeFileSource.open(args.bestiaization)),
-  };
+  const requiredSources = [...new Set(selection.assets.map((asset) => asset.source))];
+  const resolvers = {} as Partial<Record<SourceKey, AssetResolver>>;
+  for (const source of requiredSources) {
+    const sourcePath = args.sources[source];
+    if (!sourcePath) throw new Error(`temerosa_source_argument_missing:${source}`);
+    resolvers[source] = await openAssetResolver(await NodeFileSource.open(sourcePath));
+  }
 
   try {
     const assets: TemerosaContentAsset[] = [];
     for (const selected of selection.assets) {
       const resolver = resolvers[selected.source];
+      if (!resolver) throw new Error(`temerosa_source_not_open:${selected.source}`);
       const matches = resolver.assets.filter((asset) => normalize(asset.path ?? "") === normalize(selected.sourcePath));
       if (matches.length !== 1) throw new Error(`selected_asset_path_${matches.length === 0 ? "missing" : "ambiguous"}:${selected.id}`);
       const sourceAsset = matches[0]!;
@@ -53,6 +57,7 @@ async function main(): Promise<void> {
         chunk: selected.chunk,
         ...(selected.characterId ? { characterId: selected.characterId } : {}),
         ...(selected.expression ? { expression: selected.expression } : {}),
+        ...(selected.appearanceSet ? { appearanceSet: selected.appearanceSet } : {}),
         variants,
       });
     }
@@ -79,8 +84,7 @@ async function main(): Promise<void> {
     await rm(staging, { recursive: true, force: true });
     throw error;
   } finally {
-    resolvers.finale.dispose();
-    resolvers.bestiaization.dispose();
+    for (const resolver of Object.values(resolvers)) resolver?.dispose();
   }
 }
 
@@ -107,7 +111,7 @@ async function createVariants(output: string, id: string, chunk: string, role: T
 }
 
 function variantPlans(role: TemerosaAssetRole): readonly VariantPlan[] {
-  if (role === "portrait") return [{ size: "sm", maxWidth: 192, maxHeight: 192 }, { size: "md", maxWidth: 384, maxHeight: 384 }];
+  if (role === "portrait") return [{ size: "sm", maxWidth: 192, maxHeight: 192 }, { size: "md", maxWidth: 768, maxHeight: 768 }];
   if (role === "background") return [{ size: "md", maxWidth: 960, maxHeight: 540 }, { size: "lg", maxWidth: 1600, maxHeight: 900 }];
   return [{ size: "md", maxWidth: 384, maxHeight: 384 }, { size: "lg", maxWidth: 768, maxHeight: 768 }];
 }
@@ -119,19 +123,21 @@ function safeOutputPath(value: string, selection: TemerosaContentSelection): str
 }
 
 function parseArgs(values: string[]): CliArguments {
-  const output: CliArguments = { finale: "", bestiaization: "", selection: DEFAULT_SELECTION, out: "" };
+  const output: CliArguments = { sources: {}, selection: DEFAULT_SELECTION, out: "" };
   for (let index = 0; index < values.length; index += 1) {
     const key = values[index];
     const value = values[index + 1];
     if (!value) continue;
-    if (key === "--finale") output.finale = value;
-    else if (key === "--bestiaization") output.bestiaization = value;
+    if (key === "--finale") output.sources.finale = value;
+    else if (key === "--bestiaization") output.sources.bestiaization = value;
+    else if (key === "--root2") output.sources.root2 = value;
+    else if (key === "--overture") output.sources.overture = value;
     else if (key === "--selection") output.selection = value;
     else if (key === "--out") output.out = value;
     else continue;
     index += 1;
   }
-  if (!output.finale || !output.bestiaization || !output.out) throw new Error("usage: --finale <charx> --bestiaization <charx> [--selection <json>] --out <temerosa-margin/version>");
+  if (!output.out) throw new Error("usage: [--overture <charx>] [--root2 <charx>] [--finale <charx>] [--bestiaization <charx>] [--selection <json>] --out <temerosa-margin/version>");
   return output;
 }
 

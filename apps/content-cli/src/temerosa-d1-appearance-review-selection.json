@@ -1,0 +1,24 @@
+{
+  "contract": "temerosa-content-selection/0.1",
+  "packId": "temerosa-margin",
+  "version": "0.3.0",
+  "assets": [
+    { "id": "passport-nieun-finale-current", "source": "finale", "sourcePath": "assets/other/image/Nieun_standing.png", "role": "portrait", "chunk": "bootstrap", "characterId": "nieun", "expression": "standing", "appearanceSet": "nieun/finale/event-horizon-magical-girl" },
+    { "id": "passport-nieun-bestiaization-information-broker", "source": "bestiaization", "sourcePath": "assets/other/image/347.png", "role": "portrait", "chunk": "bootstrap", "characterId": "nieun", "expression": "natural", "appearanceSet": "nieun/bestiaization/information-broker" },
+    { "id": "passport-nieun-bestiaization-pluto", "source": "bestiaization", "sourcePath": "assets/other/image/351.png", "role": "portrait", "chunk": "bootstrap", "characterId": "nieun", "expression": "pluto-natural", "appearanceSet": "nieun/bestiaization/pluto" },
+    { "id": "passport-nieun-root2-purification-team", "source": "root2", "sourcePath": "assets/other/image/32.png", "role": "portrait", "chunk": "bootstrap", "characterId": "nieun", "expression": "natural", "appearanceSet": "nieun/root2/purification-team" },
+
+    { "id": "review-nieun-current-angry", "source": "finale", "sourcePath": "assets/other/image/Nieun_angry_1.png", "role": "portrait", "chunk": "bootstrap", "characterId": "nieun", "expression": "angry", "appearanceSet": "nieun/finale/event-horizon-magical-girl" },
+    { "id": "review-nieun-current-upset", "source": "finale", "sourcePath": "assets/other/image/Nieun_upset.png", "role": "portrait", "chunk": "bootstrap", "characterId": "nieun", "expression": "upset", "appearanceSet": "nieun/finale/event-horizon-magical-girl" },
+    { "id": "review-nieun-current-upset-alt", "source": "finale", "sourcePath": "assets/other/image/Nieun_upset_1.png", "role": "portrait", "chunk": "bootstrap", "characterId": "nieun", "expression": "upset", "appearanceSet": "nieun/finale/event-horizon-magical-girl" },
+    { "id": "review-nieun-current-smirk", "source": "finale", "sourcePath": "assets/other/image/Nieun_smirk.png", "role": "portrait", "chunk": "bootstrap", "characterId": "nieun", "expression": "smirk", "appearanceSet": "nieun/finale/event-horizon-magical-girl" },
+    { "id": "review-nieun-current-smirk-alt", "source": "finale", "sourcePath": "assets/other/image/Nieun_smirk_1.png", "role": "portrait", "chunk": "bootstrap", "characterId": "nieun", "expression": "smirk", "appearanceSet": "nieun/finale/event-horizon-magical-girl" },
+    { "id": "review-nieun-current-looking-back", "source": "finale", "sourcePath": "assets/other/image/Nieun_looking_back.png", "role": "portrait", "chunk": "bootstrap", "characterId": "nieun", "expression": "looking-back", "appearanceSet": "nieun/finale/event-horizon-magical-girl" },
+    { "id": "review-nieun-current-combat", "source": "finale", "sourcePath": "assets/other/image/Nieun_combat_stance.png", "role": "portrait", "chunk": "bootstrap", "characterId": "nieun", "expression": "combat-stance", "appearanceSet": "nieun/finale/event-horizon-magical-girl" },
+
+    { "id": "review-alger-surprised", "source": "finale", "sourcePath": "assets/other/image/Alger_surprised.png", "role": "portrait", "chunk": "pequod", "characterId": "alger", "expression": "surprised", "appearanceSet": "alger/finale/current" },
+    { "id": "review-pale-smile", "source": "finale", "sourcePath": "assets/other/image/Pale_smile.png", "role": "portrait", "chunk": "pequod", "characterId": "pale", "expression": "smile", "appearanceSet": "pale/finale/current" },
+    { "id": "review-kano-smirk", "source": "finale", "sourcePath": "assets/other/image/Kano_smirk.png", "role": "portrait", "chunk": "pequod", "characterId": "kano", "expression": "smirk", "appearanceSet": "kano/finale/current" },
+    { "id": "review-bacikal-angry", "source": "finale", "sourcePath": "assets/other/image/Bacikal_angry.png", "role": "portrait", "chunk": "pequod", "characterId": "bacikal", "expression": "angry", "appearanceSet": "bacikal/finale/current" }
+  ]
+}

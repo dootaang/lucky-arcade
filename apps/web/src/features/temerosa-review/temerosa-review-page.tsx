@@ -14,6 +14,7 @@ import {
   reviewBeats,
   reviewExport,
   sanitizeReviewChoices,
+  TEMEROSA_PREVIOUS_REVIEW_STORAGE_KEY,
   TEMEROSA_REVIEW_STORAGE_KEY,
   TEMEROSA_REVIEW_VERSION,
   type ReviewChoice,
@@ -25,7 +26,7 @@ type ReviewManifest = Awaited<ReturnType<typeof loadTemerosaReviewManifest>>;
 
 function readStoredChoices(): Record<string, ReviewChoice> {
   try {
-    const stored = localStorage.getItem(TEMEROSA_REVIEW_STORAGE_KEY);
+    const stored = localStorage.getItem(TEMEROSA_REVIEW_STORAGE_KEY) ?? localStorage.getItem(TEMEROSA_PREVIOUS_REVIEW_STORAGE_KEY);
     return stored ? sanitizeReviewChoices(JSON.parse(stored)) : initialReviewChoices();
   } catch {
     return initialReviewChoices();
@@ -117,7 +118,7 @@ export function TemerosaReviewPage() {
         </button>
         <div>
           <span>TEMEROSA · EXPRESSION REVIEW {TEMEROSA_REVIEW_VERSION}</span>
-          <h1>대사에 맞는 표정을 골라주세요</h1>
+          <h1>시대를 확인한 뒤 대사 표정을 골라주세요</h1>
         </div>
         <div className="temerosa-review-progress" aria-label={`${reviewedCount}개 검수 완료`}>
           <strong>{reviewedCount}</strong><span>/ {reviewBeats.length}</span>
@@ -158,7 +159,7 @@ export function TemerosaReviewPage() {
             </div>
             <div className="temerosa-review-dialogue">
               <strong>{beat.characterName}</strong>
-              <p>“{beat.line}”</p>
+              <p>{beat.kind === "expression" ? `“${beat.line}”` : beat.line}</p>
             </div>
           </div>
 
@@ -169,7 +170,10 @@ export function TemerosaReviewPage() {
 
           <section className="temerosa-review-candidates">
             <div className="temerosa-review-section-title">
-              <div><span>표정 후보</span><h2>가장 어울리는 한 장을 선택하세요</h2></div>
+              <div>
+                <span>{beat.kind === "appearance" ? "외형 여권" : "표정 후보"}</span>
+                <h2>{beat.kind === "appearance" ? "현재 장면에 맞는 시대·복장을 확인하세요" : "가장 어울리는 한 장을 선택하세요"}</h2>
+              </div>
               <small>{beat.appearanceSet}</small>
             </div>
             <div className="temerosa-review-candidate-grid">
