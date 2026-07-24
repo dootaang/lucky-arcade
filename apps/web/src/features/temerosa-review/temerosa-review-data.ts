@@ -147,10 +147,18 @@ export function reviewAssetUrl(manifest: ReviewManifest, assetId: string): strin
 }
 
 export function initialReviewChoices(): Record<string, ReviewChoice> {
-  const ownerApproved = new Set(["alger-terminal", "pale-familiar", "kano-supervisor", "bacikal-warning"]);
+  const ownerApproved: Record<string, string> = {
+    "nieun-appearance-anchor": "passport-nieun-finale-current",
+    "nieun-first-contact": "review-nieun-current-angry",
+    "nieun-horizon": "review-nieun-current-smirk-alt",
+    "alger-terminal": "review-alger-surprised",
+    "pale-familiar": "review-pale-smile",
+    "kano-supervisor": "review-kano-smirk",
+    "bacikal-warning": "review-bacikal-angry",
+  };
   return Object.fromEntries(reviewBeats.map((beat) => [beat.id, {
-    selectedAssetId: beat.candidates[0]!.assetId,
-    status: ownerApproved.has(beat.id) ? "approved" as const : "unreviewed" as const,
+    selectedAssetId: ownerApproved[beat.id] ?? beat.candidates[0]!.assetId,
+    status: ownerApproved[beat.id] ? "approved" as const : "unreviewed" as const,
   }]));
 }
 

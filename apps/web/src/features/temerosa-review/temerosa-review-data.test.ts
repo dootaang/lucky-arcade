@@ -10,14 +10,16 @@ describe("Temerosa owner review state", () => {
 
   it("rejects stale or injected local choices", () => {
     const state = sanitizeReviewChoices({ "nieun-first-contact": { selectedAssetId: "not-an-asset", status: "approved" } });
-    expect(state["nieun-first-contact"]?.status).toBe("unreviewed");
+    expect(state["nieun-first-contact"]).toEqual({ selectedAssetId: "review-nieun-current-angry", status: "approved" });
   });
 
-  it("preserves the four decisions the owner already approved", () => {
+  it("preserves all seven decisions the owner approved", () => {
     const state = initialReviewChoices();
-    for (const id of ["alger-terminal", "pale-familiar", "kano-supervisor", "bacikal-warning"]) {
+    for (const id of reviewBeats.map((beat) => beat.id)) {
       expect(state[id]?.status).toBe("approved");
     }
+    expect(state["nieun-first-contact"]?.selectedAssetId).toBe("review-nieun-current-angry");
+    expect(state["nieun-horizon"]?.selectedAssetId).toBe("review-nieun-current-smirk-alt");
   });
 
   it("exports a versioned compact review result", () => {
