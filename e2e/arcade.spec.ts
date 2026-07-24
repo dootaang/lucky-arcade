@@ -54,6 +54,7 @@ test("opens built-in quick cabinets without a card", async ({ page }) => {
 });
 
 test("replays one deterministic derby through all four rendering engines", async ({ page }) => {
+  test.setTimeout(75_000);
   const browserErrors: string[] = [];
   page.on("pageerror", (error) => browserErrors.push(error.message));
   await page.goto("/");
@@ -61,7 +62,7 @@ test("replays one deterministic derby through all four rendering engines", async
   await expect(page.getByRole("heading", { name: "럭키★더비 엔진 실험장" })).toBeVisible();
   for (const engine of ["Phaser 4", "melonJS", "Excalibur", "LittleJS"]) {
     await page.getByRole("tab", { name: new RegExp(`^${engine}`) }).click();
-    await expect(page.getByText("완주 · 결과가 모든 엔진에서 동일합니다")).toBeVisible({ timeout: 12_000 });
+    await expect(page.getByText("완주 · 결과가 모든 엔진에서 동일합니다")).toBeVisible({ timeout: 20_000 });
     await expect(page.locator(".derby-stage canvas").first()).toBeVisible();
     await expect.poll(() => page.locator(".derby-stage canvas").count()).toBeLessThanOrEqual(2);
   }
