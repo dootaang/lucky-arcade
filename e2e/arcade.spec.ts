@@ -223,7 +223,7 @@ test("plays and restores a complete Temerosa old maid table", async ({ page }, t
   await expect(page.getByRole("button", { name: "같은 판 다시 하기" })).toBeVisible();
 });
 
-test("starts a hidden-hand four-NPC Temerosa spectator table", async ({ page }, testInfo) => {
+test("starts an open-hand four-NPC Temerosa spectator table", async ({ page }, testInfo) => {
   test.skip(testInfo.project.metadata.mobile === true);
   await page.goto("/");
   await page.locator(".arcade-entry").filter({ hasText: "테메로세 도둑잡기" }).getByRole("button", { name: "바로 시작" }).click();
@@ -233,7 +233,8 @@ test("starts a hidden-hand four-NPC Temerosa spectator table", async ({ page }, 
   await expect(page.getByText("카드를 나누는 중…")).toBeVisible();
   await expect(page.locator(".old-maid-spectator-seat")).toBeVisible({ timeout: 20_000 });
   await expect(page.getByText("상대끼리 뽑은 카드는 비공개")).toHaveCount(0);
-  await expect(page.locator(".old-maid-reveal-stage .old-maid-card.back").first()).toBeVisible({ timeout: 30_000 });
+  await expect(page.locator(".old-maid-spectator-hand .old-maid-card.face").first()).toBeVisible();
+  await expect(page.locator(".old-maid-reveal-stage .old-maid-card.face").first()).toBeVisible({ timeout: 30_000 });
   await expect(page.getByRole("button", { name: "이 카드를 내 손으로 가져오기" })).toHaveCount(0);
   const rightColumn = await page.locator(".old-maid-table").evaluate((table) => {
     const seat = table.querySelector(".seat-cpu-3")?.getBoundingClientRect();
