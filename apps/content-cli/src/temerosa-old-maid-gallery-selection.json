@@ -1,0 +1,547 @@
+{
+    "contract":  "temerosa-content-selection/0.1",
+    "packId":  "temerosa-margin",
+    "version":  "0.6.0",
+    "assets":  [
+                   {
+                       "id":  "gallery-bestiaization-alger-neutral",
+                       "source":  "bestiaization",
+                       "sourcePath":  "assets/other/image/320.png",
+                       "role":  "portrait",
+                       "chunk":  "margin",
+                       "characterId":  "alger",
+                       "expression":  "neutral",
+                       "appearanceSet":  "alger/bestiaization/executive"
+                   },
+                   {
+                       "id":  "gallery-bestiaization-alger-pleased",
+                       "source":  "bestiaization",
+                       "sourcePath":  "assets/other/image/316.png",
+                       "role":  "portrait",
+                       "chunk":  "margin",
+                       "characterId":  "alger",
+                       "expression":  "pleased",
+                       "appearanceSet":  "alger/bestiaization/executive"
+                   },
+                   {
+                       "id":  "gallery-bestiaization-alger-tense",
+                       "source":  "bestiaization",
+                       "sourcePath":  "assets/other/image/315.png",
+                       "role":  "portrait",
+                       "chunk":  "margin",
+                       "characterId":  "alger",
+                       "expression":  "tense",
+                       "appearanceSet":  "alger/bestiaization/executive"
+                   },
+                   {
+                       "id":  "gallery-bestiaization-bacikal-neutral",
+                       "source":  "bestiaization",
+                       "sourcePath":  "assets/other/image/374.png",
+                       "role":  "portrait",
+                       "chunk":  "margin",
+                       "characterId":  "bacikal",
+                       "expression":  "neutral",
+                       "appearanceSet":  "bacikal/bestiaization/bacikal"
+                   },
+                   {
+                       "id":  "gallery-bestiaization-bacikal-pleased",
+                       "source":  "bestiaization",
+                       "sourcePath":  "assets/other/image/379.png",
+                       "role":  "portrait",
+                       "chunk":  "margin",
+                       "characterId":  "bacikal",
+                       "expression":  "pleased",
+                       "appearanceSet":  "bacikal/bestiaization/bacikal"
+                   },
+                   {
+                       "id":  "gallery-bestiaization-bacikal-tense",
+                       "source":  "bestiaization",
+                       "sourcePath":  "assets/other/image/375.png",
+                       "role":  "portrait",
+                       "chunk":  "margin",
+                       "characterId":  "bacikal",
+                       "expression":  "tense",
+                       "appearanceSet":  "bacikal/bestiaization/bacikal"
+                   },
+                   {
+                       "id":  "gallery-bestiaization-lyla-neutral",
+                       "source":  "bestiaization",
+                       "sourcePath":  "assets/other/image/297.png",
+                       "role":  "portrait",
+                       "chunk":  "margin",
+                       "characterId":  "lyla",
+                       "expression":  "neutral",
+                       "appearanceSet":  "lyla/bestiaization/ruler"
+                   },
+                   {
+                       "id":  "gallery-bestiaization-lyla-pleased",
+                       "source":  "bestiaization",
+                       "sourcePath":  "assets/other/image/292.png",
+                       "role":  "portrait",
+                       "chunk":  "margin",
+                       "characterId":  "lyla",
+                       "expression":  "pleased",
+                       "appearanceSet":  "lyla/bestiaization/ruler"
+                   },
+                   {
+                       "id":  "gallery-bestiaization-lyla-tense",
+                       "source":  "bestiaization",
+                       "sourcePath":  "assets/other/image/296.png",
+                       "role":  "portrait",
+                       "chunk":  "margin",
+                       "characterId":  "lyla",
+                       "expression":  "tense",
+                       "appearanceSet":  "lyla/bestiaization/ruler"
+                   },
+                   {
+                       "id":  "gallery-bestiaization-nieun-neutral",
+                       "source":  "bestiaization",
+                       "sourcePath":  "assets/other/image/347.png",
+                       "role":  "portrait",
+                       "chunk":  "margin",
+                       "characterId":  "nieun",
+                       "expression":  "neutral",
+                       "appearanceSet":  "nieun/bestiaization/information-broker"
+                   },
+                   {
+                       "id":  "gallery-bestiaization-nieun-pleased",
+                       "source":  "bestiaization",
+                       "sourcePath":  "assets/other/image/342.png",
+                       "role":  "portrait",
+                       "chunk":  "margin",
+                       "characterId":  "nieun",
+                       "expression":  "pleased",
+                       "appearanceSet":  "nieun/bestiaization/information-broker"
+                   },
+                   {
+                       "id":  "gallery-bestiaization-nieun-tense",
+                       "source":  "bestiaization",
+                       "sourcePath":  "assets/other/image/343.png",
+                       "role":  "portrait",
+                       "chunk":  "margin",
+                       "characterId":  "nieun",
+                       "expression":  "tense",
+                       "appearanceSet":  "nieun/bestiaization/information-broker"
+                   },
+                   {
+                       "id":  "gallery-bestiaization-riel-neutral",
+                       "source":  "bestiaization",
+                       "sourcePath":  "assets/other/image/305.png",
+                       "role":  "portrait",
+                       "chunk":  "margin",
+                       "characterId":  "riel",
+                       "expression":  "neutral",
+                       "appearanceSet":  "riel/bestiaization/record"
+                   },
+                   {
+                       "id":  "gallery-bestiaization-riel-pleased",
+                       "source":  "bestiaization",
+                       "sourcePath":  "assets/other/image/300.png",
+                       "role":  "portrait",
+                       "chunk":  "margin",
+                       "characterId":  "riel",
+                       "expression":  "pleased",
+                       "appearanceSet":  "riel/bestiaization/record"
+                   },
+                   {
+                       "id":  "gallery-bestiaization-riel-tense",
+                       "source":  "bestiaization",
+                       "sourcePath":  "assets/other/image/301.png",
+                       "role":  "portrait",
+                       "chunk":  "margin",
+                       "characterId":  "riel",
+                       "expression":  "tense",
+                       "appearanceSet":  "riel/bestiaization/record"
+                   },
+                   {
+                       "id":  "gallery-finale-alger-neutral",
+                       "source":  "finale",
+                       "sourcePath":  "assets/other/image/Alger_standing.png",
+                       "role":  "portrait",
+                       "chunk":  "margin",
+                       "characterId":  "alger",
+                       "expression":  "neutral",
+                       "appearanceSet":  "alger/finale/current"
+                   },
+                   {
+                       "id":  "gallery-finale-alger-pleased",
+                       "source":  "finale",
+                       "sourcePath":  "assets/other/image/Alger_smile.png",
+                       "role":  "portrait",
+                       "chunk":  "margin",
+                       "characterId":  "alger",
+                       "expression":  "pleased",
+                       "appearanceSet":  "alger/finale/current"
+                   },
+                   {
+                       "id":  "gallery-finale-alger-tense",
+                       "source":  "finale",
+                       "sourcePath":  "assets/other/image/Alger_angry.png",
+                       "role":  "portrait",
+                       "chunk":  "margin",
+                       "characterId":  "alger",
+                       "expression":  "tense",
+                       "appearanceSet":  "alger/finale/current"
+                   },
+                   {
+                       "id":  "gallery-finale-bacikal-neutral",
+                       "source":  "finale",
+                       "sourcePath":  "assets/other/image/Bacikal_standing.png",
+                       "role":  "portrait",
+                       "chunk":  "margin",
+                       "characterId":  "bacikal",
+                       "expression":  "neutral",
+                       "appearanceSet":  "bacikal/finale/current"
+                   },
+                   {
+                       "id":  "gallery-finale-bacikal-pleased",
+                       "source":  "finale",
+                       "sourcePath":  "assets/other/image/Bacikal_smile.png",
+                       "role":  "portrait",
+                       "chunk":  "margin",
+                       "characterId":  "bacikal",
+                       "expression":  "pleased",
+                       "appearanceSet":  "bacikal/finale/current"
+                   },
+                   {
+                       "id":  "gallery-finale-bacikal-tense",
+                       "source":  "finale",
+                       "sourcePath":  "assets/other/image/Bacikal_angry.png",
+                       "role":  "portrait",
+                       "chunk":  "margin",
+                       "characterId":  "bacikal",
+                       "expression":  "tense",
+                       "appearanceSet":  "bacikal/finale/current"
+                   },
+                   {
+                       "id":  "gallery-finale-kano-neutral",
+                       "source":  "finale",
+                       "sourcePath":  "assets/other/image/Kano_standing.png",
+                       "role":  "portrait",
+                       "chunk":  "margin",
+                       "characterId":  "kano",
+                       "expression":  "neutral",
+                       "appearanceSet":  "kano/finale/current"
+                   },
+                   {
+                       "id":  "gallery-finale-kano-pleased",
+                       "source":  "finale",
+                       "sourcePath":  "assets/other/image/Kano_smile.png",
+                       "role":  "portrait",
+                       "chunk":  "margin",
+                       "characterId":  "kano",
+                       "expression":  "pleased",
+                       "appearanceSet":  "kano/finale/current"
+                   },
+                   {
+                       "id":  "gallery-finale-kano-tense",
+                       "source":  "finale",
+                       "sourcePath":  "assets/other/image/Kano_angry.png",
+                       "role":  "portrait",
+                       "chunk":  "margin",
+                       "characterId":  "kano",
+                       "expression":  "tense",
+                       "appearanceSet":  "kano/finale/current"
+                   },
+                   {
+                       "id":  "gallery-finale-nieun-neutral",
+                       "source":  "finale",
+                       "sourcePath":  "assets/other/image/Nieun_standing.png",
+                       "role":  "portrait",
+                       "chunk":  "margin",
+                       "characterId":  "nieun",
+                       "expression":  "neutral",
+                       "appearanceSet":  "nieun/finale/event-horizon-magical-girl"
+                   },
+                   {
+                       "id":  "gallery-finale-nieun-pleased",
+                       "source":  "finale",
+                       "sourcePath":  "assets/other/image/Nieun_smile.png",
+                       "role":  "portrait",
+                       "chunk":  "margin",
+                       "characterId":  "nieun",
+                       "expression":  "pleased",
+                       "appearanceSet":  "nieun/finale/event-horizon-magical-girl"
+                   },
+                   {
+                       "id":  "gallery-finale-nieun-tense",
+                       "source":  "finale",
+                       "sourcePath":  "assets/other/image/Nieun_angry_1.png",
+                       "role":  "portrait",
+                       "chunk":  "margin",
+                       "characterId":  "nieun",
+                       "expression":  "tense",
+                       "appearanceSet":  "nieun/finale/event-horizon-magical-girl"
+                   },
+                   {
+                       "id":  "gallery-finale-pale-neutral",
+                       "source":  "finale",
+                       "sourcePath":  "assets/other/image/Pale_standing.png",
+                       "role":  "portrait",
+                       "chunk":  "margin",
+                       "characterId":  "pale",
+                       "expression":  "neutral",
+                       "appearanceSet":  "pale/finale/current"
+                   },
+                   {
+                       "id":  "gallery-finale-pale-pleased",
+                       "source":  "finale",
+                       "sourcePath":  "assets/other/image/Pale_smile.png",
+                       "role":  "portrait",
+                       "chunk":  "margin",
+                       "characterId":  "pale",
+                       "expression":  "pleased",
+                       "appearanceSet":  "pale/finale/current"
+                   },
+                   {
+                       "id":  "gallery-finale-pale-tense",
+                       "source":  "finale",
+                       "sourcePath":  "assets/other/image/Pale_angry.png",
+                       "role":  "portrait",
+                       "chunk":  "margin",
+                       "characterId":  "pale",
+                       "expression":  "tense",
+                       "appearanceSet":  "pale/finale/current"
+                   },
+                   {
+                       "id":  "gallery-finale-wares-neutral",
+                       "source":  "finale",
+                       "sourcePath":  "assets/other/image/Wares_standing.png",
+                       "role":  "portrait",
+                       "chunk":  "margin",
+                       "characterId":  "wares",
+                       "expression":  "neutral",
+                       "appearanceSet":  "wares/finale/margin"
+                   },
+                   {
+                       "id":  "gallery-finale-wares-pleased",
+                       "source":  "finale",
+                       "sourcePath":  "assets/other/image/Wares_smile.png",
+                       "role":  "portrait",
+                       "chunk":  "margin",
+                       "characterId":  "wares",
+                       "expression":  "pleased",
+                       "appearanceSet":  "wares/finale/margin"
+                   },
+                   {
+                       "id":  "gallery-finale-wares-tense",
+                       "source":  "finale",
+                       "sourcePath":  "assets/other/image/Wares_angry.png",
+                       "role":  "portrait",
+                       "chunk":  "margin",
+                       "characterId":  "wares",
+                       "expression":  "tense",
+                       "appearanceSet":  "wares/finale/margin"
+                   },
+                   {
+                       "id":  "gallery-overture-kano-pleased",
+                       "source":  "overture",
+                       "sourcePath":  "assets/other/image/135.png",
+                       "role":  "portrait",
+                       "chunk":  "margin",
+                       "characterId":  "kano",
+                       "expression":  "pleased",
+                       "appearanceSet":  "kano/overture/ice-goddess"
+                   },
+                   {
+                       "id":  "gallery-overture-kano-tense",
+                       "source":  "overture",
+                       "sourcePath":  "assets/other/image/132.png",
+                       "role":  "portrait",
+                       "chunk":  "margin",
+                       "characterId":  "kano",
+                       "expression":  "tense",
+                       "appearanceSet":  "kano/overture/ice-goddess"
+                   },
+                   {
+                       "id":  "gallery-overture-lyla-pleased",
+                       "source":  "overture",
+                       "sourcePath":  "assets/other/image/63.png",
+                       "role":  "portrait",
+                       "chunk":  "margin",
+                       "characterId":  "lyla",
+                       "expression":  "pleased",
+                       "appearanceSet":  "lyla/overture/founder"
+                   },
+                   {
+                       "id":  "gallery-overture-lyla-tense",
+                       "source":  "overture",
+                       "sourcePath":  "assets/other/image/65.png",
+                       "role":  "portrait",
+                       "chunk":  "margin",
+                       "characterId":  "lyla",
+                       "expression":  "tense",
+                       "appearanceSet":  "lyla/overture/founder"
+                   },
+                   {
+                       "id":  "gallery-overture-pale-pleased",
+                       "source":  "overture",
+                       "sourcePath":  "assets/other/image/6.png",
+                       "role":  "portrait",
+                       "chunk":  "margin",
+                       "characterId":  "pale",
+                       "expression":  "pleased",
+                       "appearanceSet":  "pale/overture/origin-voyage"
+                   },
+                   {
+                       "id":  "gallery-overture-pale-tense",
+                       "source":  "overture",
+                       "sourcePath":  "assets/other/image/2.png",
+                       "role":  "portrait",
+                       "chunk":  "margin",
+                       "characterId":  "pale",
+                       "expression":  "tense",
+                       "appearanceSet":  "pale/overture/origin-voyage"
+                   },
+                   {
+                       "id":  "gallery-root2-kano-neutral",
+                       "source":  "root2",
+                       "sourcePath":  "assets/other/image/16.png",
+                       "role":  "portrait",
+                       "chunk":  "margin",
+                       "characterId":  "kano",
+                       "expression":  "neutral",
+                       "appearanceSet":  "kano/root2/purification-chief"
+                   },
+                   {
+                       "id":  "gallery-root2-kano-pleased",
+                       "source":  "root2",
+                       "sourcePath":  "assets/other/image/17.png",
+                       "role":  "portrait",
+                       "chunk":  "margin",
+                       "characterId":  "kano",
+                       "expression":  "pleased",
+                       "appearanceSet":  "kano/root2/purification-chief"
+                   },
+                   {
+                       "id":  "gallery-root2-kano-tense",
+                       "source":  "root2",
+                       "sourcePath":  "assets/other/image/12.png",
+                       "role":  "portrait",
+                       "chunk":  "margin",
+                       "characterId":  "kano",
+                       "expression":  "tense",
+                       "appearanceSet":  "kano/root2/purification-chief"
+                   },
+                   {
+                       "id":  "gallery-root2-lyla-neutral",
+                       "source":  "root2",
+                       "sourcePath":  "assets/other/image/51.png",
+                       "role":  "portrait",
+                       "chunk":  "margin",
+                       "characterId":  "lyla",
+                       "expression":  "neutral",
+                       "appearanceSet":  "lyla/root2/alternate"
+                   },
+                   {
+                       "id":  "gallery-root2-lyla-pleased",
+                       "source":  "root2",
+                       "sourcePath":  "assets/other/image/56.png",
+                       "role":  "portrait",
+                       "chunk":  "margin",
+                       "characterId":  "lyla",
+                       "expression":  "pleased",
+                       "appearanceSet":  "lyla/root2/alternate"
+                   },
+                   {
+                       "id":  "gallery-root2-lyla-tense",
+                       "source":  "root2",
+                       "sourcePath":  "assets/other/image/55.png",
+                       "role":  "portrait",
+                       "chunk":  "margin",
+                       "characterId":  "lyla",
+                       "expression":  "tense",
+                       "appearanceSet":  "lyla/root2/alternate"
+                   },
+                   {
+                       "id":  "gallery-root2-nieun-neutral",
+                       "source":  "root2",
+                       "sourcePath":  "assets/other/image/32.png",
+                       "role":  "portrait",
+                       "chunk":  "margin",
+                       "characterId":  "nieun",
+                       "expression":  "neutral",
+                       "appearanceSet":  "nieun/root2/purification-team"
+                   },
+                   {
+                       "id":  "gallery-root2-nieun-pleased",
+                       "source":  "root2",
+                       "sourcePath":  "assets/other/image/33.png",
+                       "role":  "portrait",
+                       "chunk":  "margin",
+                       "characterId":  "nieun",
+                       "expression":  "pleased",
+                       "appearanceSet":  "nieun/root2/purification-team"
+                   },
+                   {
+                       "id":  "gallery-root2-nieun-tense",
+                       "source":  "root2",
+                       "sourcePath":  "assets/other/image/37.png",
+                       "role":  "portrait",
+                       "chunk":  "margin",
+                       "characterId":  "nieun",
+                       "expression":  "tense",
+                       "appearanceSet":  "nieun/root2/purification-team"
+                   },
+                   {
+                       "id":  "gallery-root2-pale-neutral",
+                       "source":  "root2",
+                       "sourcePath":  "assets/other/image/249.png",
+                       "role":  "portrait",
+                       "chunk":  "margin",
+                       "characterId":  "pale",
+                       "expression":  "neutral",
+                       "appearanceSet":  "pale/root2/mayor"
+                   },
+                   {
+                       "id":  "gallery-root2-pale-pleased",
+                       "source":  "root2",
+                       "sourcePath":  "assets/other/image/242.png",
+                       "role":  "portrait",
+                       "chunk":  "margin",
+                       "characterId":  "pale",
+                       "expression":  "pleased",
+                       "appearanceSet":  "pale/root2/mayor"
+                   },
+                   {
+                       "id":  "gallery-root2-pale-tense",
+                       "source":  "root2",
+                       "sourcePath":  "assets/other/image/244.png",
+                       "role":  "portrait",
+                       "chunk":  "margin",
+                       "characterId":  "pale",
+                       "expression":  "tense",
+                       "appearanceSet":  "pale/root2/mayor"
+                   },
+                   {
+                       "id":  "gallery-root2-wares-neutral",
+                       "source":  "root2",
+                       "sourcePath":  "assets/other/image/150.png",
+                       "role":  "portrait",
+                       "chunk":  "margin",
+                       "characterId":  "wares",
+                       "expression":  "neutral",
+                       "appearanceSet":  "wares/root2/observer"
+                   },
+                   {
+                       "id":  "gallery-root2-wares-pleased",
+                       "source":  "root2",
+                       "sourcePath":  "assets/other/image/149.png",
+                       "role":  "portrait",
+                       "chunk":  "margin",
+                       "characterId":  "wares",
+                       "expression":  "pleased",
+                       "appearanceSet":  "wares/root2/observer"
+                   },
+                   {
+                       "id":  "gallery-root2-wares-tense",
+                       "source":  "root2",
+                       "sourcePath":  "assets/other/image/151.png",
+                       "role":  "portrait",
+                       "chunk":  "margin",
+                       "characterId":  "wares",
+                       "expression":  "tense",
+                       "appearanceSet":  "wares/root2/observer"
+                   }
+               ]
+}

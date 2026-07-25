@@ -19,19 +19,19 @@ function autoplay(seed: string): { state: OldMaidState; actions: OldMaidAction[]
 }
 
 describe("old maid deterministic engine", () => {
-  it("validates nine pairs, eight possible opponents, and exactly one joker", () => {
+  it("validates the expanded face pool, nine possible opponents, and exactly one joker", () => {
     expect(() => validateCartridge(temerosaOldMaidCartridge)).not.toThrow();
-    expect(temerosaOldMaidCartridge.cards).toHaveLength(19);
+    expect(temerosaOldMaidCartridge.cards.length).toBeGreaterThan(60);
     expect(temerosaOldMaidCartridge.cards.filter((card) => card.pairId === null)).toEqual([
       expect.objectContaining({ faceId: "joker" }),
     ]);
-    expect(temerosaOldMaidCartridge.characters).toHaveLength(8);
+    expect(temerosaOldMaidCartridge.characters).toHaveLength(9);
     expect(temerosaOldMaidCartridge.characters.find((character) => character.id === "nemo")?.portraits.neutral).toBe("nemo-magical-neutral");
   });
 
   it("does not begin play until the visible deal has completed", () => {
     let state = createOldMaidState(temerosaOldMaidCartridge, "deal-phase", "test-session");
-    expect(state.dealOrder).toHaveLength(19);
+    expect(state.dealOrder).toHaveLength(25);
     expect(new Set(Object.values(state.characters)).size).toBe(3);
     state = reduceOldMaid(temerosaOldMaidCartridge, state, { type: "start" });
     expect(state.status).toBe("dealing");
@@ -39,10 +39,20 @@ describe("old maid deterministic engine", () => {
     expect(state.status).toBe("discarding");
   });
 
+  it("uses an explicitly selected set of three opponents", () => {
+    let state = createOldMaidState(temerosaOldMaidCartridge, "chosen-opponents", "test-session");
+    state = reduceOldMaid(temerosaOldMaidCartridge, state, { type: "start", characterIds: ["nemo", "pale", "bacikal"] });
+    expect(Object.values(state.characters)).toEqual(["nemo", "pale", "bacikal"]);
+  });
+
   it("keeps initial pairs until each visible discard action", () => {
-    let state = createOldMaidState(temerosaOldMaidCartridge, "initial-pairs", "test-session");
-    state = reduceOldMaid(temerosaOldMaidCartridge, state, { type: "start" });
-    state = reduceOldMaid(temerosaOldMaidCartridge, state, { type: "finish_deal" });
+    let state = createOldMaidState(temerosaOldMaidCartridge, "initial-pairs-0", "test-session");
+    for (let seed = 0; seed < 100; seed += 1) {
+      state = createOldMaidState(temerosaOldMaidCartridge, `initial-pairs-${seed}`, "test-session");
+      state = reduceOldMaid(temerosaOldMaidCartridge, state, { type: "start" });
+      state = reduceOldMaid(temerosaOldMaidCartridge, state, { type: "finish_deal" });
+      if (state.status === "discarding") break;
+    }
     expect(state.status).toBe("discarding");
     expect(availablePairs(temerosaOldMaidCartridge, state).length).toBeGreaterThan(0);
     while (state.status === "discarding") state = reduceOldMaid(temerosaOldMaidCartridge, state, { type: "discard_pair", cardIds: availablePairs(temerosaOldMaidCartridge, state)[0] as [string, string] });
@@ -69,7 +79,8 @@ describe("old maid deterministic engine", () => {
     for (let seed = 0; seed < 10_000; seed += 1) {
       const run = autoplay(`stress-${seed}`);
       expect(run.state.status, `seed ${seed}`).toBe("complete");
-      expect(run.state.loserId, `seed ${seed}`).not.toBeNull();
+    expect(run.state.loserId, `seed ${seed}`).not.toBeNull();
+      expect(run.state.history.length, `seed ${seed}`).toBeGreaterThan(0);
       expect(Object.values(run.state.hands).filter((hand) => hand.length > 0), `seed ${seed}`).toHaveLength(1);
     }
   });

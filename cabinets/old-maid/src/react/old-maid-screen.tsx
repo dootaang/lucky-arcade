@@ -15,6 +15,7 @@ export interface OldMaidScreenProps {
 export function OldMaidScreen({ cartridge, assets, initialState, onPersist, onExit }: OldMaidScreenProps) {
   const [state, setState] = useState(() => initialState ?? createOldMaidState(cartridge, dailySeed()));
   const [detail, setDetail] = useState<OldMaidFace | null>(null);
+  const [opponentIds, setOpponentIds] = useState<string[]>(() => Object.values(state.characters));
   const stateRef = useRef(state);
   const persistQueueRef = useRef<Promise<void>>(Promise.resolve());
   const saveRevisionRef = useRef(0);
@@ -41,6 +42,10 @@ export function OldMaidScreen({ cartridge, assets, initialState, onPersist, onEx
   }, [state.currentPlayerId, state.status, state.turn]);
 
   useEffect(() => {
+    if (state.status === "ready") setOpponentIds(Object.values(state.characters));
+  }, [state.sequence, state.status]);
+
+  useEffect(() => {
     if (!detail) return;
     const close = (event: KeyboardEvent) => { if (event.key === "Escape") setDetail(null); };
     window.addEventListener("keydown", close);
@@ -53,7 +58,12 @@ export function OldMaidScreen({ cartridge, assets, initialState, onPersist, onEx
   const discardPairs = state.status === "discarding" ? availablePairs(cartridge, state, discardOwner) : [];
   const discardableIds = new Set(discardOwner === "player" ? discardPairs.flat() : []);
   const handVisible = !["ready", "dealing"].includes(state.status);
+  const spectating = state.safeOrder.includes("player") && state.hands.player.length === 0 && state.status !== "complete";
   const background = assets["pequod-ruins"];
+
+  function toggleOpponent(characterId: string) {
+    setOpponentIds((current) => current.includes(characterId) ? current.filter((id) => id !== characterId) : current.length < 3 ? [...current, characterId] : [...current.slice(1), characterId]);
+  }
 
   return <main className="old-maid-shell" style={background ? { "--old-maid-bg": `url(${JSON.stringify(background)})` } as React.CSSProperties : undefined}>
     <header className="old-maid-header">
@@ -67,7 +77,7 @@ export function OldMaidScreen({ cartridge, assets, initialState, onPersist, onEx
         {(["cpu-1", "cpu-2", "cpu-3"] as const).map((seatId) => {
           const character = characters.get(state.characters[seatId]);
           const portraitId = character?.portraits[state.reactions[seatId]];
-          return <SeatPanel key={seatId} seatId={seatId} state={state} name={nameOf(seatId)} portrait={portraitId ? assets[portraitId] ?? null : null} reaction={state.reactions[seatId]} active={state.currentPlayerId === seatId} />;
+          return <SeatPanel key={seatId} seatId={seatId} state={state} name={nameOf(seatId)} portrait={portraitId ? assets[portraitId] ?? null : null} reaction={state.reactions[seatId]} active={state.currentPlayerId === seatId} spectating={spectating} cards={cards} faces={faces} assets={assets} onDetail={setDetail} />;
         })}
       </div>
 
@@ -76,14 +86,16 @@ export function OldMaidScreen({ cartridge, assets, initialState, onPersist, onEx
           <IconCards size={48} />
           <span className="eyebrow">테메로세 캐릭터 카드 게임</span>
           <h2>마지막 조커를 피하세요</h2>
-          <p>같은 그림 두 장을 맞춰 버리세요. 오른쪽 상대에게서 한 장씩 뽑고, 마지막까지 조커를 가진 사람이 집니다.</p>
-          <div className="old-maid-roster"><span>플레이어</span>{(["cpu-1", "cpu-2", "cpu-3"] as const).map((seatId) => <span key={seatId}>{nameOf(seatId)}</span>)}</div>
-          <button className="old-maid-primary" onClick={() => dispatch({ type: "start" })}>19장 배분 시작</button>
+          <p>같은 그림 두 장을 맞춰 버리세요. 차례가 오면 지정된 상대에게서 한 장을 뽑고, 마지막까지 조커를 가진 사람이 집니다.</p>
+          <strong className="old-maid-opponent-title">함께할 상대 3명을 고르세요</strong>
+          <div className="old-maid-opponent-picker">{cartridge.characters.map((character) => { const selected = opponentIds.includes(character.id); const portrait = assets[character.portraits.neutral]; return <button type="button" className={selected ? "selected" : ""} aria-pressed={selected} key={character.id} onClick={() => toggleOpponent(character.id)}>{portrait && <img src={portrait} alt="" decoding="async" />}<span>{character.name}</span></button>; })}</div>
+          <div className="old-maid-roster"><span>플레이어</span>{opponentIds.map((id) => <span key={id}>{characters.get(id)?.name}</span>)}</div>
+          <button className="old-maid-primary" disabled={opponentIds.length !== 3} onClick={() => dispatch({ type: "start", characterIds: opponentIds as [string, string, string] })}>카드 배분 시작</button>
         </div>}
 
         {state.status === "dealing" && <div className="old-maid-dealing-copy" aria-live="polite"><IconCards /><strong>카드를 나누는 중…</strong><span>배분이 끝나면 처음부터 맞은 짝을 정리합니다.</span></div>}
 
-        {state.status === "revealing" && state.pendingDraw && <DrawReveal key={`${state.turn}:${state.pendingDraw.cardId}`} event={state.pendingDraw} face={faces.get(state.pendingDraw.faceId) as OldMaidFace} assets={assets} actorName={nameOf(state.pendingDraw.actorId)} targetName={nameOf(state.pendingDraw.targetId)} playerControls={state.pendingDraw.actorId === "player"} onCollect={() => dispatch({ type: "collect_draw" })} />}
+        {state.status === "revealing" && state.pendingDraw && <DrawReveal key={`${state.turn}:${state.pendingDraw.cardId}`} event={state.pendingDraw} face={faces.get(state.pendingDraw.faceId) as OldMaidFace} assets={assets} actorName={nameOf(state.pendingDraw.actorId)} targetName={nameOf(state.pendingDraw.targetId)} playerControls={state.pendingDraw.actorId === "player"} revealFace={state.pendingDraw.actorId === "player" || state.pendingDraw.targetId === "player" || spectating} onCollect={() => dispatch({ type: "collect_draw" })} />}
 
         {state.status === "discarding" && discardOwner && discardPairs.length > 0 && <DiscardStage key={`${state.discardMode}:${discardOwner}:${discardPairs[0]?.join(":")}`} ownerId={discardOwner} ownerName={nameOf(discardOwner)} pairs={discardPairs} cards={cards} faces={faces} assets={assets} playerControls={discardOwner === "player"} onDiscard={(cardIds) => dispatch({ type: "discard_pair", cardIds })} />}
 
@@ -111,11 +123,13 @@ export function OldMaidScreen({ cartridge, assets, initialState, onPersist, onEx
         </div>}
       </div>
 
+      <GameLog state={state} faces={faces} nameOf={nameOf} revealCpuDraws={spectating} />
+
       <section className={`old-maid-player ${state.currentPlayerId === "player" && state.status === "playing" ? "active" : ""}`} data-deal-target="player">
         <div><strong>플레이어</strong><span>{state.status === "ready" ? "배분 전" : state.status === "dealing" ? "배분 중" : `${state.hands.player.length}장`}</span></div>
         <div className="old-maid-player-hand" aria-label="내 손패">
           {handVisible && state.hands.player.map((cardId) => { const card = cards.get(cardId); const face = card ? faces.get(card.faceId) : null; return face ? <button key={cardId} className={`old-maid-card-button ${discardableIds.has(cardId) ? "discardable" : ""}`} onClick={() => setDetail(face)} aria-label={`${face.name} 크게 보기`}><CardFace face={face} assets={assets} odd={face.id === cartridge.oddFaceId} /></button> : null; })}
-          {handVisible && state.hands.player.length === 0 && <span className="old-maid-safe"><IconCheck /> 손패를 모두 비웠습니다</span>}
+          {handVisible && state.hands.player.length === 0 && <span className="old-maid-safe"><IconCheck /> 손패를 모두 비웠습니다{spectating ? " · 남은 경기를 관전 중" : ""}</span>}
           {(state.status === "ready" || state.status === "dealing") && <span className="old-maid-hand-placeholder">{state.status === "ready" ? "시작하면 이곳에 내 카드가 놓입니다." : "카드가 날아오고 있습니다…"}</span>}
         </div>
       </section>
@@ -127,12 +141,13 @@ export function OldMaidScreen({ cartridge, assets, initialState, onPersist, onEx
   </main>;
 }
 
-function SeatPanel({ seatId, state, name, portrait, reaction, active }: { seatId: OldMaidCpuSeatId; state: OldMaidState; name: string; portrait: string | null; reaction: string; active: boolean }) {
+function SeatPanel({ seatId, state, name, portrait, reaction, active, spectating, cards, faces, assets, onDetail }: { seatId: OldMaidCpuSeatId; state: OldMaidState; name: string; portrait: string | null; reaction: string; active: boolean; spectating: boolean; cards: Map<string, { faceId: string }>; faces: Map<string, OldMaidFace>; assets: Readonly<Record<string, string>>; onDetail(face: OldMaidFace): void }) {
   const safe = state.safeOrder.includes(seatId);
   const hidden = state.status === "ready" || state.status === "dealing";
-  return <article className={`old-maid-seat ${active ? "active" : ""} ${safe ? "safe" : ""}`} data-deal-target={seatId}>
+  return <article className={`old-maid-seat seat-${seatId} ${active ? "active" : ""} ${safe ? "safe" : ""}`} data-deal-target={seatId}>
     <div className="old-maid-seat-portrait">{portrait ? <img src={portrait} alt={`${name}의 현재 표정`} decoding="async" /> : <span>{name}</span>}<i className={`old-maid-reaction-dot ${reaction}`} aria-hidden="true" /></div>
     <div><strong>{name}</strong><em className={`old-maid-reaction-text ${reaction}`}>{reactionLabel(reaction)}</em><span>{hidden ? (state.status === "ready" ? "배분 전" : "배분 중") : safe ? "손패 비움" : `${state.hands[seatId].length}장`}</span></div>
+    {spectating && !safe && <div className="old-maid-spectator-hand" aria-label={`${name}의 공개된 손패`}>{state.hands[seatId].map((cardId) => { const face = faces.get(cards.get(cardId)?.faceId ?? ""); return face ? <button key={cardId} onClick={() => onDetail(face)}><CardFace face={face} assets={assets} odd={face.id === "joker"} /></button> : null; })}</div>}
   </article>;
 }
 
@@ -150,7 +165,7 @@ function CardDetail({ face, assets, odd, onClose }: { face: OldMaidFace; assets:
   </div>;
 }
 
-function DrawReveal({ event, face, assets, actorName, targetName, playerControls, onCollect }: { event: NonNullable<OldMaidState["pendingDraw"]>; face: OldMaidFace; assets: Readonly<Record<string, string>>; actorName: string; targetName: string; playerControls: boolean; onCollect(): void }) {
+function DrawReveal({ event, face, assets, actorName, targetName, playerControls, revealFace, onCollect }: { event: NonNullable<OldMaidState["pendingDraw"]>; face: OldMaidFace; assets: Readonly<Record<string, string>>; actorName: string; targetName: string; playerControls: boolean; revealFace: boolean; onCollect(): void }) {
   const cardRef = useRef<HTMLDivElement>(null);
   const collectRef = useRef(onCollect);
   const collectingRef = useRef(false);
@@ -172,7 +187,7 @@ function DrawReveal({ event, face, assets, actorName, targetName, playerControls
       element.animate([
         { transform: `translate(${dx}px,${dy}px) scale(.42) rotateY(180deg)`, opacity: .35 },
         { transform: "translate(0,0) scale(1) rotateY(180deg)", opacity: 1, offset: .58 },
-        { transform: "translate(0,0) scale(1) rotateY(0deg)", opacity: 1 },
+        { transform: `translate(0,0) scale(1) rotateY(${revealFace ? 0 : 180}deg)`, opacity: 1 },
       ], { duration: 720, easing: "cubic-bezier(.2,.75,.2,1)", fill: "forwards" });
       revealTimer = window.setTimeout(() => setReady(true), 720);
       if (!playerControls) autoTimer = window.setTimeout(() => collect(), 1050);
@@ -205,7 +220,19 @@ function DrawReveal({ event, face, assets, actorName, targetName, playerControls
     } catch { /* 이동 연출이 불가능해도 판정 단계는 위 타이머로 계속 진행한다. */ }
   }
 
-  return <div className="old-maid-reveal-stage" aria-live="polite"><p><b>{actorName}</b>{subjectParticle(actorName)} {targetName}에게서 뽑았습니다</p><div className="old-maid-flip-card" ref={cardRef}><CardFace face={face} assets={assets} odd={face.id === "joker"} /></div><strong className="old-maid-revealed-name">{ready ? face.name : "카드 확인 중…"}</strong>{playerControls && <button className="old-maid-primary" disabled={!ready || collecting} onClick={collect}>{collecting ? "내 손으로 가져오는 중…" : "이 카드를 내 손으로 가져오기"}</button>}{!playerControls && <span>{actorName}의 손으로 이동합니다…</span>}</div>;
+  return <div className="old-maid-reveal-stage" aria-live="polite"><p><b>{actorName}</b>{subjectParticle(actorName)} {targetName}에게서 뽑았습니다</p><div className={`old-maid-flip-card ${revealFace ? "" : "hidden"}`} ref={cardRef}>{revealFace ? <CardFace face={face} assets={assets} odd={face.id === "joker"} /> : <CardBack />}</div><strong className="old-maid-revealed-name">{ready ? revealFace ? face.name : "상대끼리 뽑은 카드는 비공개" : "카드 확인 중…"}</strong>{playerControls && <button className="old-maid-primary" disabled={!ready || collecting} onClick={collect}>{collecting ? "내 손으로 가져오는 중…" : "이 카드를 내 손으로 가져오기"}</button>}{!playerControls && <span>{actorName}의 손으로 이동합니다…</span>}</div>;
+}
+
+function CardBack() { return <div className="old-maid-card back standalone"><span>THE<br />MARGIN</span></div>; }
+
+function GameLog({ state, faces, nameOf, revealCpuDraws }: { state: OldMaidState; faces: Map<string, OldMaidFace>; nameOf(seatId: OldMaidSeatId): string; revealCpuDraws: boolean }) {
+  const logRef = useRef<HTMLOListElement>(null);
+  useEffect(() => { const element = logRef.current; if (element) element.scrollTop = element.scrollHeight; }, [state.history.length]);
+  return <aside className="old-maid-log" aria-label="경기 기록"><strong>경기 기록</strong><ol ref={logRef}>{state.history.map((entry, index) => {
+    if (entry.type === "discard") return <li key={`${index}:discard`}><b>{nameOf(entry.ownerId)}</b> · {faces.get(entry.faceId)?.name ?? "한 쌍"} 버림</li>;
+    const canReveal = revealCpuDraws || entry.actorId === "player" || entry.targetId === "player";
+    return <li key={`${index}:draw`}><b>{nameOf(entry.actorId)}</b> → {nameOf(entry.targetId)} · {canReveal ? faces.get(entry.faceId)?.name ?? "카드" : "카드 1장"}</li>;
+  })}{state.history.length === 0 && <li>카드를 나누면 기록이 쌓입니다.</li>}</ol></aside>;
 }
 
 function DiscardStage({ ownerId, ownerName, pairs, cards, faces, assets, playerControls, onDiscard }: { ownerId: OldMaidSeatId; ownerName: string; pairs: [string, string][]; cards: Map<string, { faceId: string }>; faces: Map<string, OldMaidFace>; assets: Readonly<Record<string, string>>; playerControls: boolean; onDiscard(cardIds: [string, string]): void }) {

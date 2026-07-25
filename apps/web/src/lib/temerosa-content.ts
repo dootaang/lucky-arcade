@@ -2,7 +2,7 @@ interface ManifestVariant { size: "sm" | "md" | "lg"; path: string; }
 interface ManifestAsset { id: string; variants: ManifestVariant[]; }
 interface TemerosaManifest { version: string; assets: ManifestAsset[]; }
 
-const PACKS = ["0.1.0", "0.3.0", "0.4.0", "0.5.0"] as const;
+const PACKS = ["0.1.0", "0.3.0", "0.4.0", "0.5.0", "0.6.0"] as const;
 const REQUIRED_ASSETS = [
   "pequod-ruins",
   "review-nieun-current-angry",
@@ -27,8 +27,15 @@ const REQUIRED_ASSETS = [
   "nemo-magical-tense",
   "nieun-standing",
   "nieun-smile",
+  "nieun-surprised",
+  "alger-surprised",
   "pale-angry",
+  "pale-sad",
+  "pale-combat",
   "kano-smile",
+  "kano-angry",
+  "kano-sad",
+  "kano-combat",
   "lyla-natural",
   "lyla-smile",
   "lyla-angry",

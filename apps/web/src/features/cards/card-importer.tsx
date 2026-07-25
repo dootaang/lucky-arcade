@@ -1,4 +1,4 @@
-import { IconFileUpload, IconShieldLock } from "@tabler/icons-react";
+import { IconFileUpload } from "@tabler/icons-react";
 import { Button, cn } from "@lucky-arcade/ui";
 import { useRef, useState, type DragEvent } from "react";
 import type { StoredCard } from "../../lib/database.ts";
@@ -23,7 +23,6 @@ export function CardImporter({ onImported }: { onImported(card: StoredCard): voi
       <div><h2>봇카드를 게임 카트리지로</h2><p>여기에 놓거나 버튼으로 고르세요. charx · png · risum · json</p></div>
       <Button onClick={() => input.current?.click()}>카드 가져오기</Button>
     </>}
-    <small><IconShieldLock size={16} /> 원본과 분석 결과는 이 브라우저 밖으로 전송되지 않습니다.</small>
     {error && <p className="error-message" role="alert">{error}</p>}
   </section>;
 }

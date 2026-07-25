@@ -58,15 +58,15 @@ export function Home() {
       </div>
     </aside>
     <main className="dashboard">
-      <header className="topbar"><div><span className="eyebrow">100% 로컬 · 무LLM</span><h1>기다리는 동안, 바로 한 판</h1><p>카드 파일이 없어도 준비된 세계에서 바로 시작할 수 있습니다.</p></div><button className="icon-button" onClick={() => setLight((value) => !value)} aria-label={light ? "어두운 테마" : "밝은 테마"}>{light ? <IconMoon /> : <IconSun />}</button></header>
+      <header className="topbar"><div><h1>기다리는 동안, 바로 한 판</h1></div><button className="icon-button" onClick={() => setLight((value) => !value)} aria-label={light ? "어두운 테마" : "밝은 테마"}>{light ? <IconMoon /> : <IconSun />}</button></header>
 
       {recentPlay && recentCabinet && <section className="resume-hero" aria-label="이어하기"><div className="resume-icon"><IconClockPlay /></div><div><span className="eyebrow">최근 플레이 · {timeAgo(recentPlay.updatedAt)}</span><h2>{recentPlay.title}</h2><p>{recentPlay.progressLabel}에서 안전하게 저장되어 있습니다.</p></div><button onClick={() => { const card = recentPlay.cardFingerprint ? cards.find((item) => item.fingerprint === recentPlay.cardFingerprint) : undefined; if (card) setSelected(card); setActiveCabinet(recentPlay.cabinetId); }}><IconPlayerPlay /> {recentCabinet.manifest.resumeLabel}</button></section>}
 
-      <section className="arcade-section"><div className="section-heading"><div><span className="eyebrow">지금 바로 놀기</span><h2>공개 미니게임</h2><p>도둑잡기와 최애 월드컵만 먼저 공개합니다.</p></div></div><div className="arcade-grid">{builtIns.map((entry) => <ArcadeCard key={entry.manifest.id} entry={entry} onPlay={() => setActiveCabinet(entry.manifest.id)} />)}</div></section>
+      <section className="arcade-section"><div className="section-heading"><div><h2>공개 미니게임</h2></div></div><div className="arcade-grid">{builtIns.map((entry) => <ArcadeCard key={entry.manifest.id} entry={entry} onPlay={() => setActiveCabinet(entry.manifest.id)} />)}</div></section>
 
       <section className="personal-arcade"><div className="section-heading"><div><span className="eyebrow">선택 기능</span><h2>내 카드로 놀기</h2><p>개인 봇카드를 넣으면 재료가 충분한 게임만 열어드립니다.</p></div></div><CardImporter onImported={imported} />
         {cards.length > 0 && <section className="library-strip"><div><span className="eyebrow">내 카드 보관함</span><h2>{cards.length}장의 카트리지</h2></div><div className="card-pills">{cards.map((card) => <button className={selected?.fingerprint === card.fingerprint ? "active" : ""} key={card.fingerprint} onClick={() => setSelected(card)}><strong>{card.analyzed.report.card.name}</strong><small>{card.analyzed.report.lore.verifiedPuzzleCount}개 퍼즐</small></button>)}</div></section>}
-        {selected ? <ReportView card={selected} onPlay={setActiveCabinet} /> : <EmptyCardState />}
+        {selected && <ReportView card={selected} onPlay={setActiveCabinet} />}
       </section>
     </main>
   </div>;
@@ -79,5 +79,4 @@ function ArcadeCard({ entry, onPlay }: { entry: WebCabinetRegistration; onPlay()
 }
 
 function Nav({ icon, label, active = false }: { icon: React.ReactNode; label: string; active?: boolean }) { return <button className={active ? "active" : ""}>{icon}<span>{label}</span></button>; }
-function EmptyCardState() { return <section className="empty-card-state"><IconCards size={34} /><div><h3>개인 카드 놀이는 선택 사항입니다</h3><p>위의 내장 게임은 카드 파일 없이 언제든 플레이할 수 있습니다.</p></div></section>; }
 function timeAgo(value: string): string { const minutes = Math.max(0, Math.floor((Date.now() - new Date(value).getTime()) / 60_000)); return minutes < 1 ? "방금 전" : minutes < 60 ? `${minutes}분 전` : minutes < 1440 ? `${Math.floor(minutes / 60)}시간 전` : `${Math.floor(minutes / 1440)}일 전`; }

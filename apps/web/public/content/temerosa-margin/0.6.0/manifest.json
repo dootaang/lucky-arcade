@@ -1,0 +1,1417 @@
+{
+  "contract": "temerosa-content-manifest/0.1",
+  "packId": "temerosa-margin",
+  "version": "0.6.0",
+  "assets": [
+    {
+      "id": "gallery-bestiaization-alger-neutral",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "alger",
+      "expression": "neutral",
+      "appearanceSet": "alger/bestiaization/executive",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/gallery-bestiaization-alger-neutral/sm.webp",
+          "mime": "image/webp",
+          "width": 131,
+          "height": 192,
+          "bytes": 9156
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/gallery-bestiaization-alger-neutral/md.webp",
+          "mime": "image/webp",
+          "width": 525,
+          "height": 768,
+          "bytes": 66724
+        }
+      ]
+    },
+    {
+      "id": "gallery-bestiaization-alger-pleased",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "alger",
+      "expression": "pleased",
+      "appearanceSet": "alger/bestiaization/executive",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/gallery-bestiaization-alger-pleased/sm.webp",
+          "mime": "image/webp",
+          "width": 131,
+          "height": 192,
+          "bytes": 8850
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/gallery-bestiaization-alger-pleased/md.webp",
+          "mime": "image/webp",
+          "width": 525,
+          "height": 768,
+          "bytes": 63980
+        }
+      ]
+    },
+    {
+      "id": "gallery-bestiaization-alger-tense",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "alger",
+      "expression": "tense",
+      "appearanceSet": "alger/bestiaization/executive",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/gallery-bestiaization-alger-tense/sm.webp",
+          "mime": "image/webp",
+          "width": 131,
+          "height": 192,
+          "bytes": 9188
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/gallery-bestiaization-alger-tense/md.webp",
+          "mime": "image/webp",
+          "width": 525,
+          "height": 768,
+          "bytes": 64574
+        }
+      ]
+    },
+    {
+      "id": "gallery-bestiaization-bacikal-neutral",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "bacikal",
+      "expression": "neutral",
+      "appearanceSet": "bacikal/bestiaization/bacikal",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/gallery-bestiaization-bacikal-neutral/sm.webp",
+          "mime": "image/webp",
+          "width": 131,
+          "height": 192,
+          "bytes": 9032
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/gallery-bestiaization-bacikal-neutral/md.webp",
+          "mime": "image/webp",
+          "width": 525,
+          "height": 768,
+          "bytes": 65020
+        }
+      ]
+    },
+    {
+      "id": "gallery-bestiaization-bacikal-pleased",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "bacikal",
+      "expression": "pleased",
+      "appearanceSet": "bacikal/bestiaization/bacikal",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/gallery-bestiaization-bacikal-pleased/sm.webp",
+          "mime": "image/webp",
+          "width": 192,
+          "height": 192,
+          "bytes": 11186
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/gallery-bestiaization-bacikal-pleased/md.webp",
+          "mime": "image/webp",
+          "width": 768,
+          "height": 768,
+          "bytes": 77342
+        }
+      ]
+    },
+    {
+      "id": "gallery-bestiaization-bacikal-tense",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "bacikal",
+      "expression": "tense",
+      "appearanceSet": "bacikal/bestiaization/bacikal",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/gallery-bestiaization-bacikal-tense/sm.webp",
+          "mime": "image/webp",
+          "width": 131,
+          "height": 192,
+          "bytes": 8082
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/gallery-bestiaization-bacikal-tense/md.webp",
+          "mime": "image/webp",
+          "width": 525,
+          "height": 768,
+          "bytes": 54706
+        }
+      ]
+    },
+    {
+      "id": "gallery-bestiaization-lyla-neutral",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "lyla",
+      "expression": "neutral",
+      "appearanceSet": "lyla/bestiaization/ruler",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/gallery-bestiaization-lyla-neutral/sm.webp",
+          "mime": "image/webp",
+          "width": 192,
+          "height": 131,
+          "bytes": 10398
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/gallery-bestiaization-lyla-neutral/md.webp",
+          "mime": "image/webp",
+          "width": 768,
+          "height": 525,
+          "bytes": 70382
+        }
+      ]
+    },
+    {
+      "id": "gallery-bestiaization-lyla-pleased",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "lyla",
+      "expression": "pleased",
+      "appearanceSet": "lyla/bestiaization/ruler",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/gallery-bestiaization-lyla-pleased/sm.webp",
+          "mime": "image/webp",
+          "width": 131,
+          "height": 192,
+          "bytes": 9724
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/gallery-bestiaization-lyla-pleased/md.webp",
+          "mime": "image/webp",
+          "width": 525,
+          "height": 768,
+          "bytes": 71940
+        }
+      ]
+    },
+    {
+      "id": "gallery-bestiaization-lyla-tense",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "lyla",
+      "expression": "tense",
+      "appearanceSet": "lyla/bestiaization/ruler",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/gallery-bestiaization-lyla-tense/sm.webp",
+          "mime": "image/webp",
+          "width": 131,
+          "height": 192,
+          "bytes": 11080
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/gallery-bestiaization-lyla-tense/md.webp",
+          "mime": "image/webp",
+          "width": 525,
+          "height": 768,
+          "bytes": 78744
+        }
+      ]
+    },
+    {
+      "id": "gallery-bestiaization-nieun-neutral",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "nieun",
+      "expression": "neutral",
+      "appearanceSet": "nieun/bestiaization/information-broker",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/gallery-bestiaization-nieun-neutral/sm.webp",
+          "mime": "image/webp",
+          "width": 192,
+          "height": 192,
+          "bytes": 8566
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/gallery-bestiaization-nieun-neutral/md.webp",
+          "mime": "image/webp",
+          "width": 768,
+          "height": 768,
+          "bytes": 54486
+        }
+      ]
+    },
+    {
+      "id": "gallery-bestiaization-nieun-pleased",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "nieun",
+      "expression": "pleased",
+      "appearanceSet": "nieun/bestiaization/information-broker",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/gallery-bestiaization-nieun-pleased/sm.webp",
+          "mime": "image/webp",
+          "width": 192,
+          "height": 192,
+          "bytes": 9912
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/gallery-bestiaization-nieun-pleased/md.webp",
+          "mime": "image/webp",
+          "width": 768,
+          "height": 768,
+          "bytes": 76388
+        }
+      ]
+    },
+    {
+      "id": "gallery-bestiaization-nieun-tense",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "nieun",
+      "expression": "tense",
+      "appearanceSet": "nieun/bestiaization/information-broker",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/gallery-bestiaization-nieun-tense/sm.webp",
+          "mime": "image/webp",
+          "width": 192,
+          "height": 192,
+          "bytes": 10328
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/gallery-bestiaization-nieun-tense/md.webp",
+          "mime": "image/webp",
+          "width": 768,
+          "height": 768,
+          "bytes": 78514
+        }
+      ]
+    },
+    {
+      "id": "gallery-bestiaization-riel-neutral",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "riel",
+      "expression": "neutral",
+      "appearanceSet": "riel/bestiaization/record",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/gallery-bestiaization-riel-neutral/sm.webp",
+          "mime": "image/webp",
+          "width": 131,
+          "height": 192,
+          "bytes": 6962
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/gallery-bestiaization-riel-neutral/md.webp",
+          "mime": "image/webp",
+          "width": 525,
+          "height": 768,
+          "bytes": 50010
+        }
+      ]
+    },
+    {
+      "id": "gallery-bestiaization-riel-pleased",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "riel",
+      "expression": "pleased",
+      "appearanceSet": "riel/bestiaization/record",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/gallery-bestiaization-riel-pleased/sm.webp",
+          "mime": "image/webp",
+          "width": 131,
+          "height": 192,
+          "bytes": 7448
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/gallery-bestiaization-riel-pleased/md.webp",
+          "mime": "image/webp",
+          "width": 525,
+          "height": 768,
+          "bytes": 50150
+        }
+      ]
+    },
+    {
+      "id": "gallery-bestiaization-riel-tense",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "riel",
+      "expression": "tense",
+      "appearanceSet": "riel/bestiaization/record",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/gallery-bestiaization-riel-tense/sm.webp",
+          "mime": "image/webp",
+          "width": 131,
+          "height": 192,
+          "bytes": 7538
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/gallery-bestiaization-riel-tense/md.webp",
+          "mime": "image/webp",
+          "width": 525,
+          "height": 768,
+          "bytes": 53234
+        }
+      ]
+    },
+    {
+      "id": "gallery-finale-alger-neutral",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "alger",
+      "expression": "neutral",
+      "appearanceSet": "alger/finale/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/gallery-finale-alger-neutral/sm.webp",
+          "mime": "image/webp",
+          "width": 96,
+          "height": 192,
+          "bytes": 5414
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/gallery-finale-alger-neutral/md.webp",
+          "mime": "image/webp",
+          "width": 382,
+          "height": 768,
+          "bytes": 41714
+        }
+      ]
+    },
+    {
+      "id": "gallery-finale-alger-pleased",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "alger",
+      "expression": "pleased",
+      "appearanceSet": "alger/finale/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/gallery-finale-alger-pleased/sm.webp",
+          "mime": "image/webp",
+          "width": 96,
+          "height": 192,
+          "bytes": 5570
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/gallery-finale-alger-pleased/md.webp",
+          "mime": "image/webp",
+          "width": 382,
+          "height": 768,
+          "bytes": 42866
+        }
+      ]
+    },
+    {
+      "id": "gallery-finale-alger-tense",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "alger",
+      "expression": "tense",
+      "appearanceSet": "alger/finale/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/gallery-finale-alger-tense/sm.webp",
+          "mime": "image/webp",
+          "width": 144,
+          "height": 192,
+          "bytes": 6574
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/gallery-finale-alger-tense/md.webp",
+          "mime": "image/webp",
+          "width": 576,
+          "height": 768,
+          "bytes": 49046
+        }
+      ]
+    },
+    {
+      "id": "gallery-finale-bacikal-neutral",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "bacikal",
+      "expression": "neutral",
+      "appearanceSet": "bacikal/finale/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/gallery-finale-bacikal-neutral/sm.webp",
+          "mime": "image/webp",
+          "width": 144,
+          "height": 192,
+          "bytes": 4516
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/gallery-finale-bacikal-neutral/md.webp",
+          "mime": "image/webp",
+          "width": 576,
+          "height": 768,
+          "bytes": 34922
+        }
+      ]
+    },
+    {
+      "id": "gallery-finale-bacikal-pleased",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "bacikal",
+      "expression": "pleased",
+      "appearanceSet": "bacikal/finale/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/gallery-finale-bacikal-pleased/sm.webp",
+          "mime": "image/webp",
+          "width": 144,
+          "height": 192,
+          "bytes": 5000
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/gallery-finale-bacikal-pleased/md.webp",
+          "mime": "image/webp",
+          "width": 576,
+          "height": 768,
+          "bytes": 39674
+        }
+      ]
+    },
+    {
+      "id": "gallery-finale-bacikal-tense",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "bacikal",
+      "expression": "tense",
+      "appearanceSet": "bacikal/finale/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/gallery-finale-bacikal-tense/sm.webp",
+          "mime": "image/webp",
+          "width": 144,
+          "height": 192,
+          "bytes": 5064
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/gallery-finale-bacikal-tense/md.webp",
+          "mime": "image/webp",
+          "width": 576,
+          "height": 768,
+          "bytes": 38828
+        }
+      ]
+    },
+    {
+      "id": "gallery-finale-kano-neutral",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "kano",
+      "expression": "neutral",
+      "appearanceSet": "kano/finale/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/gallery-finale-kano-neutral/sm.webp",
+          "mime": "image/webp",
+          "width": 192,
+          "height": 144,
+          "bytes": 6858
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/gallery-finale-kano-neutral/md.webp",
+          "mime": "image/webp",
+          "width": 768,
+          "height": 576,
+          "bytes": 55284
+        }
+      ]
+    },
+    {
+      "id": "gallery-finale-kano-pleased",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "kano",
+      "expression": "pleased",
+      "appearanceSet": "kano/finale/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/gallery-finale-kano-pleased/sm.webp",
+          "mime": "image/webp",
+          "width": 108,
+          "height": 192,
+          "bytes": 6476
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/gallery-finale-kano-pleased/md.webp",
+          "mime": "image/webp",
+          "width": 433,
+          "height": 768,
+          "bytes": 56504
+        }
+      ]
+    },
+    {
+      "id": "gallery-finale-kano-tense",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "kano",
+      "expression": "tense",
+      "appearanceSet": "kano/finale/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/gallery-finale-kano-tense/sm.webp",
+          "mime": "image/webp",
+          "width": 108,
+          "height": 192,
+          "bytes": 6650
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/gallery-finale-kano-tense/md.webp",
+          "mime": "image/webp",
+          "width": 433,
+          "height": 768,
+          "bytes": 57368
+        }
+      ]
+    },
+    {
+      "id": "gallery-finale-nieun-neutral",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "nieun",
+      "expression": "neutral",
+      "appearanceSet": "nieun/finale/event-horizon-magical-girl",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/gallery-finale-nieun-neutral/sm.webp",
+          "mime": "image/webp",
+          "width": 96,
+          "height": 192,
+          "bytes": 6888
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/gallery-finale-nieun-neutral/md.webp",
+          "mime": "image/webp",
+          "width": 382,
+          "height": 768,
+          "bytes": 50830
+        }
+      ]
+    },
+    {
+      "id": "gallery-finale-nieun-pleased",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "nieun",
+      "expression": "pleased",
+      "appearanceSet": "nieun/finale/event-horizon-magical-girl",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/gallery-finale-nieun-pleased/sm.webp",
+          "mime": "image/webp",
+          "width": 96,
+          "height": 192,
+          "bytes": 7066
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/gallery-finale-nieun-pleased/md.webp",
+          "mime": "image/webp",
+          "width": 382,
+          "height": 768,
+          "bytes": 50978
+        }
+      ]
+    },
+    {
+      "id": "gallery-finale-nieun-tense",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "nieun",
+      "expression": "tense",
+      "appearanceSet": "nieun/finale/event-horizon-magical-girl",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/gallery-finale-nieun-tense/sm.webp",
+          "mime": "image/webp",
+          "width": 88,
+          "height": 192,
+          "bytes": 6098
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/gallery-finale-nieun-tense/md.webp",
+          "mime": "image/webp",
+          "width": 354,
+          "height": 768,
+          "bytes": 42676
+        }
+      ]
+    },
+    {
+      "id": "gallery-finale-pale-neutral",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "pale",
+      "expression": "neutral",
+      "appearanceSet": "pale/finale/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/gallery-finale-pale-neutral/sm.webp",
+          "mime": "image/webp",
+          "width": 96,
+          "height": 192,
+          "bytes": 6636
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/gallery-finale-pale-neutral/md.webp",
+          "mime": "image/webp",
+          "width": 382,
+          "height": 768,
+          "bytes": 50292
+        }
+      ]
+    },
+    {
+      "id": "gallery-finale-pale-pleased",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "pale",
+      "expression": "pleased",
+      "appearanceSet": "pale/finale/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/gallery-finale-pale-pleased/sm.webp",
+          "mime": "image/webp",
+          "width": 96,
+          "height": 192,
+          "bytes": 5610
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/gallery-finale-pale-pleased/md.webp",
+          "mime": "image/webp",
+          "width": 382,
+          "height": 768,
+          "bytes": 46506
+        }
+      ]
+    },
+    {
+      "id": "gallery-finale-pale-tense",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "pale",
+      "expression": "tense",
+      "appearanceSet": "pale/finale/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/gallery-finale-pale-tense/sm.webp",
+          "mime": "image/webp",
+          "width": 96,
+          "height": 192,
+          "bytes": 5514
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/gallery-finale-pale-tense/md.webp",
+          "mime": "image/webp",
+          "width": 382,
+          "height": 768,
+          "bytes": 45102
+        }
+      ]
+    },
+    {
+      "id": "gallery-finale-wares-neutral",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "wares",
+      "expression": "neutral",
+      "appearanceSet": "wares/finale/margin",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/gallery-finale-wares-neutral/sm.webp",
+          "mime": "image/webp",
+          "width": 144,
+          "height": 192,
+          "bytes": 7894
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/gallery-finale-wares-neutral/md.webp",
+          "mime": "image/webp",
+          "width": 576,
+          "height": 768,
+          "bytes": 62214
+        }
+      ]
+    },
+    {
+      "id": "gallery-finale-wares-pleased",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "wares",
+      "expression": "pleased",
+      "appearanceSet": "wares/finale/margin",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/gallery-finale-wares-pleased/sm.webp",
+          "mime": "image/webp",
+          "width": 144,
+          "height": 192,
+          "bytes": 6374
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/gallery-finale-wares-pleased/md.webp",
+          "mime": "image/webp",
+          "width": 576,
+          "height": 768,
+          "bytes": 49284
+        }
+      ]
+    },
+    {
+      "id": "gallery-finale-wares-tense",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "wares",
+      "expression": "tense",
+      "appearanceSet": "wares/finale/margin",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/gallery-finale-wares-tense/sm.webp",
+          "mime": "image/webp",
+          "width": 144,
+          "height": 192,
+          "bytes": 6566
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/gallery-finale-wares-tense/md.webp",
+          "mime": "image/webp",
+          "width": 576,
+          "height": 768,
+          "bytes": 52974
+        }
+      ]
+    },
+    {
+      "id": "gallery-overture-kano-pleased",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "kano",
+      "expression": "pleased",
+      "appearanceSet": "kano/overture/ice-goddess",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/gallery-overture-kano-pleased/sm.webp",
+          "mime": "image/webp",
+          "width": 128,
+          "height": 192,
+          "bytes": 4944
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/gallery-overture-kano-pleased/md.webp",
+          "mime": "image/webp",
+          "width": 512,
+          "height": 768,
+          "bytes": 40348
+        }
+      ]
+    },
+    {
+      "id": "gallery-overture-kano-tense",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "kano",
+      "expression": "tense",
+      "appearanceSet": "kano/overture/ice-goddess",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/gallery-overture-kano-tense/sm.webp",
+          "mime": "image/webp",
+          "width": 192,
+          "height": 192,
+          "bytes": 13372
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/gallery-overture-kano-tense/md.webp",
+          "mime": "image/webp",
+          "width": 768,
+          "height": 768,
+          "bytes": 90226
+        }
+      ]
+    },
+    {
+      "id": "gallery-overture-lyla-pleased",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "lyla",
+      "expression": "pleased",
+      "appearanceSet": "lyla/overture/founder",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/gallery-overture-lyla-pleased/sm.webp",
+          "mime": "image/webp",
+          "width": 131,
+          "height": 192,
+          "bytes": 7448
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/gallery-overture-lyla-pleased/md.webp",
+          "mime": "image/webp",
+          "width": 525,
+          "height": 768,
+          "bytes": 50150
+        }
+      ]
+    },
+    {
+      "id": "gallery-overture-lyla-tense",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "lyla",
+      "expression": "tense",
+      "appearanceSet": "lyla/overture/founder",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/gallery-overture-lyla-tense/sm.webp",
+          "mime": "image/webp",
+          "width": 131,
+          "height": 192,
+          "bytes": 6796
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/gallery-overture-lyla-tense/md.webp",
+          "mime": "image/webp",
+          "width": 525,
+          "height": 768,
+          "bytes": 47756
+        }
+      ]
+    },
+    {
+      "id": "gallery-overture-pale-pleased",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "pale",
+      "expression": "pleased",
+      "appearanceSet": "pale/overture/origin-voyage",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/gallery-overture-pale-pleased/sm.webp",
+          "mime": "image/webp",
+          "width": 131,
+          "height": 192,
+          "bytes": 9730
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/gallery-overture-pale-pleased/md.webp",
+          "mime": "image/webp",
+          "width": 525,
+          "height": 768,
+          "bytes": 65990
+        }
+      ]
+    },
+    {
+      "id": "gallery-overture-pale-tense",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "pale",
+      "expression": "tense",
+      "appearanceSet": "pale/overture/origin-voyage",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/gallery-overture-pale-tense/sm.webp",
+          "mime": "image/webp",
+          "width": 131,
+          "height": 192,
+          "bytes": 10250
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/gallery-overture-pale-tense/md.webp",
+          "mime": "image/webp",
+          "width": 525,
+          "height": 768,
+          "bytes": 74894
+        }
+      ]
+    },
+    {
+      "id": "gallery-root2-kano-neutral",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "kano",
+      "expression": "neutral",
+      "appearanceSet": "kano/root2/purification-chief",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/gallery-root2-kano-neutral/sm.webp",
+          "mime": "image/webp",
+          "width": 128,
+          "height": 192,
+          "bytes": 4880
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/gallery-root2-kano-neutral/md.webp",
+          "mime": "image/webp",
+          "width": 512,
+          "height": 768,
+          "bytes": 40634
+        }
+      ]
+    },
+    {
+      "id": "gallery-root2-kano-pleased",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "kano",
+      "expression": "pleased",
+      "appearanceSet": "kano/root2/purification-chief",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/gallery-root2-kano-pleased/sm.webp",
+          "mime": "image/webp",
+          "width": 128,
+          "height": 192,
+          "bytes": 5178
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/gallery-root2-kano-pleased/md.webp",
+          "mime": "image/webp",
+          "width": 512,
+          "height": 768,
+          "bytes": 37490
+        }
+      ]
+    },
+    {
+      "id": "gallery-root2-kano-tense",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "kano",
+      "expression": "tense",
+      "appearanceSet": "kano/root2/purification-chief",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/gallery-root2-kano-tense/sm.webp",
+          "mime": "image/webp",
+          "width": 192,
+          "height": 192,
+          "bytes": 13372
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/gallery-root2-kano-tense/md.webp",
+          "mime": "image/webp",
+          "width": 768,
+          "height": 768,
+          "bytes": 90226
+        }
+      ]
+    },
+    {
+      "id": "gallery-root2-lyla-neutral",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "lyla",
+      "expression": "neutral",
+      "appearanceSet": "lyla/root2/alternate",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/gallery-root2-lyla-neutral/sm.webp",
+          "mime": "image/webp",
+          "width": 128,
+          "height": 192,
+          "bytes": 5004
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/gallery-root2-lyla-neutral/md.webp",
+          "mime": "image/webp",
+          "width": 512,
+          "height": 768,
+          "bytes": 42620
+        }
+      ]
+    },
+    {
+      "id": "gallery-root2-lyla-pleased",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "lyla",
+      "expression": "pleased",
+      "appearanceSet": "lyla/root2/alternate",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/gallery-root2-lyla-pleased/sm.webp",
+          "mime": "image/webp",
+          "width": 128,
+          "height": 192,
+          "bytes": 5012
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/gallery-root2-lyla-pleased/md.webp",
+          "mime": "image/webp",
+          "width": 512,
+          "height": 768,
+          "bytes": 43422
+        }
+      ]
+    },
+    {
+      "id": "gallery-root2-lyla-tense",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "lyla",
+      "expression": "tense",
+      "appearanceSet": "lyla/root2/alternate",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/gallery-root2-lyla-tense/sm.webp",
+          "mime": "image/webp",
+          "width": 128,
+          "height": 192,
+          "bytes": 5424
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/gallery-root2-lyla-tense/md.webp",
+          "mime": "image/webp",
+          "width": 512,
+          "height": 768,
+          "bytes": 43910
+        }
+      ]
+    },
+    {
+      "id": "gallery-root2-nieun-neutral",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "nieun",
+      "expression": "neutral",
+      "appearanceSet": "nieun/root2/purification-team",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/gallery-root2-nieun-neutral/sm.webp",
+          "mime": "image/webp",
+          "width": 128,
+          "height": 192,
+          "bytes": 5522
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/gallery-root2-nieun-neutral/md.webp",
+          "mime": "image/webp",
+          "width": 512,
+          "height": 768,
+          "bytes": 40980
+        }
+      ]
+    },
+    {
+      "id": "gallery-root2-nieun-pleased",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "nieun",
+      "expression": "pleased",
+      "appearanceSet": "nieun/root2/purification-team",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/gallery-root2-nieun-pleased/sm.webp",
+          "mime": "image/webp",
+          "width": 128,
+          "height": 192,
+          "bytes": 6698
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/gallery-root2-nieun-pleased/md.webp",
+          "mime": "image/webp",
+          "width": 512,
+          "height": 768,
+          "bytes": 53080
+        }
+      ]
+    },
+    {
+      "id": "gallery-root2-nieun-tense",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "nieun",
+      "expression": "tense",
+      "appearanceSet": "nieun/root2/purification-team",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/gallery-root2-nieun-tense/sm.webp",
+          "mime": "image/webp",
+          "width": 128,
+          "height": 192,
+          "bytes": 6420
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/gallery-root2-nieun-tense/md.webp",
+          "mime": "image/webp",
+          "width": 512,
+          "height": 768,
+          "bytes": 49166
+        }
+      ]
+    },
+    {
+      "id": "gallery-root2-pale-neutral",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "pale",
+      "expression": "neutral",
+      "appearanceSet": "pale/root2/mayor",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/gallery-root2-pale-neutral/sm.webp",
+          "mime": "image/webp",
+          "width": 128,
+          "height": 192,
+          "bytes": 7510
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/gallery-root2-pale-neutral/md.webp",
+          "mime": "image/webp",
+          "width": 512,
+          "height": 768,
+          "bytes": 58398
+        }
+      ]
+    },
+    {
+      "id": "gallery-root2-pale-pleased",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "pale",
+      "expression": "pleased",
+      "appearanceSet": "pale/root2/mayor",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/gallery-root2-pale-pleased/sm.webp",
+          "mime": "image/webp",
+          "width": 128,
+          "height": 192,
+          "bytes": 6948
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/gallery-root2-pale-pleased/md.webp",
+          "mime": "image/webp",
+          "width": 512,
+          "height": 768,
+          "bytes": 55962
+        }
+      ]
+    },
+    {
+      "id": "gallery-root2-pale-tense",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "pale",
+      "expression": "tense",
+      "appearanceSet": "pale/root2/mayor",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/gallery-root2-pale-tense/sm.webp",
+          "mime": "image/webp",
+          "width": 128,
+          "height": 192,
+          "bytes": 6446
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/gallery-root2-pale-tense/md.webp",
+          "mime": "image/webp",
+          "width": 512,
+          "height": 768,
+          "bytes": 49478
+        }
+      ]
+    },
+    {
+      "id": "gallery-root2-wares-neutral",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "wares",
+      "expression": "neutral",
+      "appearanceSet": "wares/root2/observer",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/gallery-root2-wares-neutral/sm.webp",
+          "mime": "image/webp",
+          "width": 128,
+          "height": 192,
+          "bytes": 6492
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/gallery-root2-wares-neutral/md.webp",
+          "mime": "image/webp",
+          "width": 512,
+          "height": 768,
+          "bytes": 49014
+        }
+      ]
+    },
+    {
+      "id": "gallery-root2-wares-pleased",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "wares",
+      "expression": "pleased",
+      "appearanceSet": "wares/root2/observer",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/gallery-root2-wares-pleased/sm.webp",
+          "mime": "image/webp",
+          "width": 128,
+          "height": 192,
+          "bytes": 5656
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/gallery-root2-wares-pleased/md.webp",
+          "mime": "image/webp",
+          "width": 512,
+          "height": 768,
+          "bytes": 40914
+        }
+      ]
+    },
+    {
+      "id": "gallery-root2-wares-tense",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "wares",
+      "expression": "tense",
+      "appearanceSet": "wares/root2/observer",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/gallery-root2-wares-tense/sm.webp",
+          "mime": "image/webp",
+          "width": 128,
+          "height": 192,
+          "bytes": 6138
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/gallery-root2-wares-tense/md.webp",
+          "mime": "image/webp",
+          "width": 512,
+          "height": 768,
+          "bytes": 44622
+        }
+      ]
+    }
+  ],
+  "totalBytes": 3349994,
+  "safety": {
+    "policy": "explicit-sfw-allowlist/0.1",
+    "selectedAssetCount": 54,
+    "forbiddenAssetCount": 0
+  }
+}

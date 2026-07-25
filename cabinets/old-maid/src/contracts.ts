@@ -1,5 +1,5 @@
-export const OLD_MAID_VERSION = "old-maid/0.3" as const;
-export const TEMEROSA_OLD_MAID_PACK_VERSION = "temerosa-old-maid/0.3" as const;
+export const OLD_MAID_VERSION = "old-maid/0.4" as const;
+export const TEMEROSA_OLD_MAID_PACK_VERSION = "temerosa-old-maid/0.4" as const;
 
 export type OldMaidSeatId = "player" | "cpu-1" | "cpu-2" | "cpu-3";
 export type OldMaidCpuSeatId = Exclude<OldMaidSeatId, "player">;
@@ -28,7 +28,7 @@ export interface OldMaidCharacter {
 }
 
 export interface OldMaidCartridge {
-  contract: "old-maid-cartridge/0.3";
+  contract: "old-maid-cartridge/0.4";
   version: typeof TEMEROSA_OLD_MAID_PACK_VERSION;
   title: string;
   oddFaceId: string;
@@ -36,6 +36,10 @@ export interface OldMaidCartridge {
   cards: OldMaidCard[];
   characters: OldMaidCharacter[];
 }
+
+export type OldMaidHistoryEntry =
+  | { type: "draw"; turn: number; actorId: OldMaidSeatId; targetId: OldMaidSeatId; faceId: string; madePair: boolean }
+  | { type: "discard"; turn: number; ownerId: OldMaidSeatId; faceId: string };
 
 export interface OldMaidDiscard {
   turn: number;
@@ -58,7 +62,7 @@ export interface OldMaidDealCard {
 }
 
 export interface OldMaidState {
-  contract: "old-maid-state/0.3";
+  contract: "old-maid-state/0.4";
   version: typeof OLD_MAID_VERSION;
   packVersion: typeof TEMEROSA_OLD_MAID_PACK_VERSION;
   sessionId: string;
@@ -78,10 +82,11 @@ export interface OldMaidState {
   loserId: OldMaidSeatId | null;
   discards: OldMaidDiscard[];
   lastDraw: OldMaidDrawEvent | null;
+  history: OldMaidHistoryEntry[];
 }
 
 export type OldMaidAction =
-  | { type: "start" }
+  | { type: "start"; characterIds?: [string, string, string] }
   | { type: "finish_deal" }
   | { type: "draw"; index: number }
   | { type: "cpu_draw" }

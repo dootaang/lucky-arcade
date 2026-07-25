@@ -187,7 +187,7 @@ test("plays and restores a complete Temerosa old maid table", async ({ page }, t
   await expect(page.getByText("마지막 조커를 피하세요")).toBeVisible();
   await expect(page.getByText("배분 전").first()).toBeVisible();
   await expect(page.getByText(/침착한 듯|만족한 듯|긴장한 듯/).first()).toBeVisible();
-  await page.getByRole("button", { name: "19장 배분 시작" }).click();
+  await page.getByRole("button", { name: "카드 배분 시작" }).click();
   await expect(page.getByText("카드를 나누는 중…")).toBeVisible();
   await expect(page.locator(".old-maid-player-hand")).toBeVisible();
   let checkedDetail = false;
@@ -222,7 +222,7 @@ test("mobile Temerosa old maid keeps the draw cards reachable", async ({ page },
   test.skip(testInfo.project.metadata.mobile !== true);
   await page.goto("/");
   await page.locator(".arcade-entry").filter({ hasText: "테메로세 도둑잡기" }).getByRole("button", { name: "바로 시작" }).click();
-  await page.getByRole("button", { name: "19장 배분 시작" }).click();
+  await page.getByRole("button", { name: "카드 배분 시작" }).click();
   const firstBack = page.getByRole("button", { name: /첫 번째|1번째 뒷면 카드/ }).first();
   if (await firstBack.count()) await expect(firstBack).toBeInViewport();
   await expect(page.locator(".old-maid-player-hand")).toBeInViewport();

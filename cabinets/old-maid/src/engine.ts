@@ -6,7 +6,9 @@ export const OLD_MAID_SEAT_ORDER: readonly OldMaidSeatId[] = ["player", "cpu-1",
 
 export function createOldMaidState(cartridge: OldMaidCartridge, seed: string, sessionId = `old-maid-${Date.now().toString(36)}`): OldMaidState {
   validateCartridge(cartridge);
-  const shuffled = shuffle(cartridge.cards.map((card) => card.id), new XorShift32(`${cartridge.version}:${seed}:deal`));
+  const rng = new XorShift32(`${cartridge.version}:${seed}:deal`);
+  const pairIds = shuffle([...new Set(cartridge.cards.map((card) => card.pairId).filter((pairId): pairId is string => pairId !== null))], rng).slice(0, 12);
+  const shuffled = shuffle(cartridge.cards.filter((card) => card.pairId === null || pairIds.includes(card.pairId)).map((card) => card.id), rng);
   const hands = emptyHands();
   const dealOrder = shuffled.map((cardId, index) => {
     const seatId = OLD_MAID_SEAT_ORDER[index % OLD_MAID_SEAT_ORDER.length] as OldMaidSeatId;
@@ -15,12 +17,12 @@ export function createOldMaidState(cartridge: OldMaidCartridge, seed: string, se
   });
   const selected = shuffle(cartridge.characters.map((character) => character.id), new XorShift32(`${cartridge.version}:${seed}:characters`)).slice(0, 3);
   return {
-    contract: "old-maid-state/0.3", version: OLD_MAID_VERSION, packVersion: TEMEROSA_OLD_MAID_PACK_VERSION,
+    contract: "old-maid-state/0.4", version: OLD_MAID_VERSION, packVersion: TEMEROSA_OLD_MAID_PACK_VERSION,
     sessionId, seed, sequence: 0, turn: 0, status: "ready", currentPlayerId: "player", hands, dealOrder,
     characters: { "cpu-1": selected[0] as string, "cpu-2": selected[1] as string, "cpu-3": selected[2] as string },
     reactions: { "cpu-1": "neutral", "cpu-2": "neutral", "cpu-3": "neutral" },
     pendingDraw: null, discardMode: null, discardSeatIndex: null,
-    safeOrder: [], loserId: null, discards: [], lastDraw: null,
+    safeOrder: [], loserId: null, discards: [], lastDraw: null, history: [],
   };
 }
 
@@ -28,7 +30,8 @@ export function reduceOldMaid(cartridge: OldMaidCartridge, state: OldMaidState, 
   if (action.type === "restart") return { ...createOldMaidState(cartridge, action.seed, state.sessionId), sequence: state.sequence + 1 };
   if (action.type === "start") {
     assert(state.status === "ready", "old_maid_start_invalid");
-    return { ...state, sequence: state.sequence + 1, status: "dealing" };
+    const characters = action.characterIds ? selectedCharacters(cartridge, action.characterIds) : state.characters;
+    return { ...state, sequence: state.sequence + 1, status: "dealing", characters };
   }
   if (action.type === "finish_deal") {
     assert(state.status === "dealing", "old_maid_finish_deal_invalid");
@@ -79,7 +82,7 @@ export function cpuDrawIndex(seed: string, turn: number, actorId: OldMaidSeatId,
 }
 
 export function validateCartridge(cartridge: OldMaidCartridge): void {
-  assert(cartridge.contract === "old-maid-cartridge/0.3", "old_maid_cartridge_contract");
+  assert(cartridge.contract === "old-maid-cartridge/0.4", "old_maid_cartridge_contract");
   assert(cartridge.characters.length >= 3, "old_maid_characters_too_few");
   assert(new Set(cartridge.characters.map((character) => character.id)).size === cartridge.characters.length, "old_maid_character_duplicate");
   assert(new Set(cartridge.faces.map((face) => face.id)).size === cartridge.faces.length, "old_maid_face_duplicate");
@@ -112,7 +115,11 @@ function discardPair(cartridge: OldMaidCartridge, state: OldMaidState, cardIds: 
   const hands = cloneHands(state.hands);
   hands[ownerId] = hands[ownerId].filter((cardId) => !cardIds.includes(cardId));
   const discards = [...state.discards, { turn: state.turn, ownerId, faceId: card.faceId, cardIds }];
-  const next = { ...state, sequence: state.sequence + 1, hands, discards };
+  const discardEntry = { type: "discard" as const, turn: state.turn, ownerId, faceId: card.faceId };
+  const history = state.discardMode === "draw" && state.pendingDraw
+    ? [...state.history, { type: "draw" as const, turn: state.turn, actorId: state.pendingDraw.actorId, targetId: state.pendingDraw.targetId, faceId: state.pendingDraw.faceId, madePair: true }, discardEntry]
+    : [...state.history, discardEntry];
+  const next = { ...state, sequence: state.sequence + 1, hands, discards, history };
   if (state.discardMode === "draw") return finalizeDraw(next, true);
   return continueInitialDiscard(cartridge, next, state.discardSeatIndex ?? 0);
 }
@@ -144,10 +151,11 @@ function finalizeDraw(state: OldMaidState, madePair: boolean): OldMaidState {
   const active = OLD_MAID_SEAT_ORDER.filter((seatId) => state.hands[seatId].length > 0);
   const complete = active.length <= 1;
   const nextId = complete ? active[0] ?? event.actorId : nextActiveSeat(state.hands, event.actorId);
+  const drawAlreadyLogged = state.history.some((entry) => entry.type === "draw" && entry.turn === state.turn && entry.actorId === event.actorId && entry.targetId === event.targetId);
   return {
     ...state, turn: state.turn + 1, status: complete ? "complete" : "playing", currentPlayerId: nextId,
     safeOrder, loserId: complete ? active[0] ?? null : null, pendingDraw: null, discardMode: null, discardSeatIndex: null,
-    lastDraw: event,
+    lastDraw: event, history: drawAlreadyLogged ? state.history : [...state.history, { type: "draw", turn: state.turn, actorId: event.actorId, targetId: event.targetId, faceId: event.faceId, madePair }],
   };
 }
 
@@ -185,6 +193,12 @@ function nextActiveSeat(hands: Record<OldMaidSeatId, string[]>, from: OldMaidSea
 }
 
 function emptyHands(): Record<OldMaidSeatId, string[]> { return { player: [], "cpu-1": [], "cpu-2": [], "cpu-3": [] }; }
+function selectedCharacters(cartridge: OldMaidCartridge, ids: [string, string, string]): Record<OldMaidCpuSeatId, string> {
+  assert(new Set(ids).size === 3, "old_maid_character_selection_duplicate");
+  const valid = new Set(cartridge.characters.map((character) => character.id));
+  assert(ids.every((id) => valid.has(id)), "old_maid_character_selection_invalid");
+  return { "cpu-1": ids[0], "cpu-2": ids[1], "cpu-3": ids[2] };
+}
 function cloneHands(hands: Record<OldMaidSeatId, string[]>): Record<OldMaidSeatId, string[]> { return { player: [...hands.player], "cpu-1": [...hands["cpu-1"]], "cpu-2": [...hands["cpu-2"]], "cpu-3": [...hands["cpu-3"]] }; }
 function cardById(cards: OldMaidCard[], cardId: string): OldMaidCard { const card = cards.find((candidate) => candidate.id === cardId); assert(card, `old_maid_card_missing:${cardId}`); return card; }
 function shuffle<T>(input: readonly T[], rng: XorShift32): T[] { const output = [...input]; for (let index = output.length - 1; index > 0; index -= 1) { const target = rng.nextUint32() % (index + 1); [output[index], output[target]] = [output[target] as T, output[index] as T]; } return output; }
