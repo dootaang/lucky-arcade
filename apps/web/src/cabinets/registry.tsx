@@ -19,7 +19,7 @@ const PUBLIC_CABINET_IDS = new Set(["temerosa-old-maid", "gfl-favorite-cup", "fa
 const registrations: readonly WebCabinetRegistration[] = [
   {
     manifest: {
-      id: "temerosa-old-maid", version: "old-maid/0.4", title: "테메로세 도둑잡기",
+      id: "temerosa-old-maid", version: "old-maid/0.5", title: "테메로세 도둑잡기",
       description: "테메로세 인물들과 즐기는 도둑잡기.", requiredCapabilities: [],
       sessionKind: "repeat", launchKind: "built-in", resumeLabel: "도둑잡기 이어하기", estimatedMinutes: { min: 2, max: 4 },
     },

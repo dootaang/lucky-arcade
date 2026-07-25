@@ -1,11 +1,12 @@
-export const OLD_MAID_VERSION = "old-maid/0.4" as const;
-export const TEMEROSA_OLD_MAID_PACK_VERSION = "temerosa-old-maid/0.4" as const;
+export const OLD_MAID_VERSION = "old-maid/0.5" as const;
+export const TEMEROSA_OLD_MAID_PACK_VERSION = "temerosa-old-maid/0.5" as const;
 
 export type OldMaidSeatId = "player" | "cpu-1" | "cpu-2" | "cpu-3";
 export type OldMaidCpuSeatId = Exclude<OldMaidSeatId, "player">;
 export type OldMaidStatus = "ready" | "dealing" | "playing" | "revealing" | "discarding" | "complete";
 export type OldMaidReaction = "neutral" | "pleased" | "tense";
 export type OldMaidTellStyle = "open" | "guarded" | "bluffer";
+export type OldMaidMode = "play" | "spectate";
 
 export interface OldMaidFace {
   id: string;
@@ -25,10 +26,11 @@ export interface OldMaidCharacter {
   appearanceSet: string;
   tellStyle: OldMaidTellStyle;
   portraits: Record<OldMaidReaction, string>;
+  despairPortrait: string;
 }
 
 export interface OldMaidCartridge {
-  contract: "old-maid-cartridge/0.4";
+  contract: "old-maid-cartridge/0.5";
   version: typeof TEMEROSA_OLD_MAID_PACK_VERSION;
   title: string;
   oddFaceId: string;
@@ -62,7 +64,7 @@ export interface OldMaidDealCard {
 }
 
 export interface OldMaidState {
-  contract: "old-maid-state/0.4";
+  contract: "old-maid-state/0.5";
   version: typeof OLD_MAID_VERSION;
   packVersion: typeof TEMEROSA_OLD_MAID_PACK_VERSION;
   sessionId: string;
@@ -70,11 +72,13 @@ export interface OldMaidState {
   sequence: number;
   turn: number;
   status: OldMaidStatus;
+  mode: OldMaidMode;
   currentPlayerId: OldMaidSeatId;
   hands: Record<OldMaidSeatId, string[]>;
   dealOrder: OldMaidDealCard[];
   characters: Record<OldMaidCpuSeatId, string>;
-  reactions: Record<OldMaidCpuSeatId, OldMaidReaction>;
+  spectatorCharacterId: string | null;
+  reactions: Record<OldMaidSeatId, OldMaidReaction>;
   pendingDraw: OldMaidDrawEvent | null;
   discardMode: "initial" | "draw" | null;
   discardSeatIndex: number | null;
@@ -86,7 +90,7 @@ export interface OldMaidState {
 }
 
 export type OldMaidAction =
-  | { type: "start"; characterIds?: [string, string, string] }
+  | { type: "start"; mode?: OldMaidMode; characterIds?: string[] }
   | { type: "finish_deal" }
   | { type: "draw"; index: number }
   | { type: "cpu_draw" }

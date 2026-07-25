@@ -1,0 +1,39 @@
+{
+  "contract": "temerosa-content-manifest/0.1",
+  "packId": "temerosa-margin",
+  "version": "0.7.0",
+  "assets": [
+    {
+      "id": "nemo-magical-despair",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "nemo",
+      "expression": "despair",
+      "appearanceSet": "nemo/magical-girl/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/nemo-magical-despair/sm.webp",
+          "mime": "image/webp",
+          "width": 192,
+          "height": 128,
+          "bytes": 5640
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/nemo-magical-despair/md.webp",
+          "mime": "image/webp",
+          "width": 768,
+          "height": 512,
+          "bytes": 43838
+        }
+      ]
+    }
+  ],
+  "totalBytes": 49478,
+  "safety": {
+    "policy": "explicit-sfw-allowlist/0.1",
+    "selectedAssetCount": 1,
+    "forbiddenAssetCount": 0
+  }
+}

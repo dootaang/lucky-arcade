@@ -17,10 +17,11 @@ export function createOldMaidState(cartridge: OldMaidCartridge, seed: string, se
   });
   const selected = shuffle(cartridge.characters.map((character) => character.id), new XorShift32(`${cartridge.version}:${seed}:characters`)).slice(0, 3);
   return {
-    contract: "old-maid-state/0.4", version: OLD_MAID_VERSION, packVersion: TEMEROSA_OLD_MAID_PACK_VERSION,
-    sessionId, seed, sequence: 0, turn: 0, status: "ready", currentPlayerId: "player", hands, dealOrder,
+    contract: "old-maid-state/0.5", version: OLD_MAID_VERSION, packVersion: TEMEROSA_OLD_MAID_PACK_VERSION,
+    sessionId, seed, sequence: 0, turn: 0, status: "ready", mode: "play", currentPlayerId: "player", hands, dealOrder,
     characters: { "cpu-1": selected[0] as string, "cpu-2": selected[1] as string, "cpu-3": selected[2] as string },
-    reactions: { "cpu-1": "neutral", "cpu-2": "neutral", "cpu-3": "neutral" },
+    spectatorCharacterId: null,
+    reactions: { player: "neutral", "cpu-1": "neutral", "cpu-2": "neutral", "cpu-3": "neutral" },
     pendingDraw: null, discardMode: null, discardSeatIndex: null,
     safeOrder: [], loserId: null, discards: [], lastDraw: null, history: [],
   };
@@ -30,8 +31,10 @@ export function reduceOldMaid(cartridge: OldMaidCartridge, state: OldMaidState, 
   if (action.type === "restart") return { ...createOldMaidState(cartridge, action.seed, state.sessionId), sequence: state.sequence + 1 };
   if (action.type === "start") {
     assert(state.status === "ready", "old_maid_start_invalid");
-    const characters = action.characterIds ? selectedCharacters(cartridge, action.characterIds) : state.characters;
-    return { ...state, sequence: state.sequence + 1, status: "dealing", characters };
+    const mode = action.mode ?? "play";
+    const ids = action.characterIds ?? Object.values(state.characters);
+    const selection = selectedCharacters(cartridge, ids, mode);
+    return { ...state, sequence: state.sequence + 1, status: "dealing", mode, characters: selection.characters, spectatorCharacterId: selection.spectatorCharacterId };
   }
   if (action.type === "finish_deal") {
     assert(state.status === "dealing", "old_maid_finish_deal_invalid");
@@ -42,9 +45,9 @@ export function reduceOldMaid(cartridge: OldMaidCartridge, state: OldMaidState, 
 
   assert(state.status === "playing", "old_maid_not_playing");
   const actorId = state.currentPlayerId;
-  const isPlayer = actorId === "player";
-  if (action.type === "draw") assert(isPlayer, "old_maid_player_turn_required");
-  if (action.type === "cpu_draw") assert(!isPlayer, "old_maid_cpu_turn_required");
+  const isHuman = actorId === "player" && state.mode === "play";
+  if (action.type === "draw") assert(isHuman, "old_maid_player_turn_required");
+  if (action.type === "cpu_draw") assert(!isHuman, "old_maid_cpu_turn_required");
   const targetId = nextActiveSeat(state.hands, actorId);
   const targetHand = state.hands[targetId];
   assert(targetHand.length > 0, "old_maid_target_empty");
@@ -95,8 +98,8 @@ export function inspectCardReaction(cartridge: OldMaidCartridge, state: OldMaidS
 }
 
 export function validateCartridge(cartridge: OldMaidCartridge): void {
-  assert(cartridge.contract === "old-maid-cartridge/0.4", "old_maid_cartridge_contract");
-  assert(cartridge.characters.length >= 3, "old_maid_characters_too_few");
+  assert(cartridge.contract === "old-maid-cartridge/0.5", "old_maid_cartridge_contract");
+  assert(cartridge.characters.length >= 4, "old_maid_characters_too_few");
   assert(new Set(cartridge.characters.map((character) => character.id)).size === cartridge.characters.length, "old_maid_character_duplicate");
   assert(new Set(cartridge.faces.map((face) => face.id)).size === cartridge.faces.length, "old_maid_face_duplicate");
   assert(new Set(cartridge.cards.map((card) => card.id)).size === cartridge.cards.length, "old_maid_card_duplicate");
@@ -172,16 +175,17 @@ function finalizeDraw(state: OldMaidState, madePair: boolean): OldMaidState {
   };
 }
 
-function reactionsAfterDraw(cartridge: OldMaidCartridge, state: OldMaidState, actorId: OldMaidSeatId, targetId: OldMaidSeatId, drewJoker: boolean, madePair: boolean): Record<OldMaidCpuSeatId, OldMaidReaction> {
+function reactionsAfterDraw(cartridge: OldMaidCartridge, state: OldMaidState, actorId: OldMaidSeatId, targetId: OldMaidSeatId, drewJoker: boolean, madePair: boolean): Record<OldMaidSeatId, OldMaidReaction> {
   const next = { ...state.reactions };
-  if (actorId !== "player") next[actorId] = tellReaction(cartridge, state, actorId, drewJoker ? "tense" : madePair ? "pleased" : "neutral", "actor");
-  if (targetId !== "player") next[targetId] = tellReaction(cartridge, state, targetId, drewJoker ? "pleased" : "neutral", "target");
+  if (characterIdForSeat(state, actorId)) next[actorId] = tellReaction(cartridge, state, actorId, drewJoker ? "tense" : madePair ? "pleased" : "neutral", "actor");
+  if (characterIdForSeat(state, targetId)) next[targetId] = tellReaction(cartridge, state, targetId, drewJoker ? "pleased" : "neutral", "target");
   return next;
 }
 
-function tellReaction(cartridge: OldMaidCartridge, state: OldMaidState, seatId: OldMaidCpuSeatId, truth: OldMaidReaction, role: string): OldMaidReaction {
-  const character = cartridge.characters.find((candidate) => candidate.id === state.characters[seatId]);
-  assert(character, `old_maid_character_missing:${state.characters[seatId]}`);
+function tellReaction(cartridge: OldMaidCartridge, state: OldMaidState, seatId: OldMaidSeatId, truth: OldMaidReaction, role: string): OldMaidReaction {
+  const characterId = characterIdForSeat(state, seatId);
+  const character = cartridge.characters.find((candidate) => candidate.id === characterId);
+  assert(character, `old_maid_character_missing:${characterId ?? seatId}`);
   const rng = new XorShift32(`${state.seed}:tell:${state.turn}:${seatId}:${role}`);
   const roll = rng.nextUint32() % 100;
   if (character.tellStyle === "open") return roll < 80 ? truth : "neutral";
@@ -206,12 +210,14 @@ function nextActiveSeat(hands: Record<OldMaidSeatId, string[]>, from: OldMaidSea
 }
 
 function emptyHands(): Record<OldMaidSeatId, string[]> { return { player: [], "cpu-1": [], "cpu-2": [], "cpu-3": [] }; }
-function selectedCharacters(cartridge: OldMaidCartridge, ids: [string, string, string]): Record<OldMaidCpuSeatId, string> {
-  assert(new Set(ids).size === 3, "old_maid_character_selection_duplicate");
+function selectedCharacters(cartridge: OldMaidCartridge, ids: string[], mode: OldMaidState["mode"]): { characters: Record<OldMaidCpuSeatId, string>; spectatorCharacterId: string | null } {
+  const required = mode === "spectate" ? 4 : 3;
+  assert(ids.length === required && new Set(ids).size === required, "old_maid_character_selection_duplicate");
   const valid = new Set(cartridge.characters.map((character) => character.id));
   assert(ids.every((id) => valid.has(id)), "old_maid_character_selection_invalid");
-  return { "cpu-1": ids[0], "cpu-2": ids[1], "cpu-3": ids[2] };
+  return { characters: { "cpu-1": ids[0] as string, "cpu-2": ids[1] as string, "cpu-3": ids[2] as string }, spectatorCharacterId: mode === "spectate" ? ids[3] as string : null };
 }
+export function characterIdForSeat(state: OldMaidState, seatId: OldMaidSeatId): string | null { return seatId === "player" ? state.spectatorCharacterId : state.characters[seatId]; }
 function cloneHands(hands: Record<OldMaidSeatId, string[]>): Record<OldMaidSeatId, string[]> { return { player: [...hands.player], "cpu-1": [...hands["cpu-1"]], "cpu-2": [...hands["cpu-2"]], "cpu-3": [...hands["cpu-3"]] }; }
 function cardById(cards: OldMaidCard[], cardId: string): OldMaidCard { const card = cards.find((candidate) => candidate.id === cardId); assert(card, `old_maid_card_missing:${cardId}`); return card; }
 function shuffle<T>(input: readonly T[], rng: XorShift32): T[] { const output = [...input]; for (let index = output.length - 1; index > 0; index -= 1) { const target = rng.nextUint32() % (index + 1); [output[index], output[target]] = [output[target] as T, output[index] as T]; } return output; }

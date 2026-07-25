@@ -18,6 +18,19 @@ function autoplay(seed: string): { state: OldMaidState; actions: OldMaidAction[]
   return { state, actions };
 }
 
+function autoplaySpectator(seed: string): OldMaidState {
+  let state = createOldMaidState(temerosaOldMaidCartridge, seed, "spectator-session");
+  state = reduceOldMaid(temerosaOldMaidCartridge, state, { type: "start", mode: "spectate", characterIds: ["nemo", "pale", "kano", "alger"] });
+  state = reduceOldMaid(temerosaOldMaidCartridge, state, { type: "finish_deal" });
+  for (let step = 0; state.status !== "complete" && step < 2_000; step += 1) {
+    const action: OldMaidAction = state.status === "revealing" ? { type: "collect_draw" }
+      : state.status === "discarding" ? { type: "discard_pair", cardIds: availablePairs(temerosaOldMaidCartridge, state)[0] as [string, string] }
+      : { type: "cpu_draw" };
+    state = reduceOldMaid(temerosaOldMaidCartridge, state, action);
+  }
+  return state;
+}
+
 describe("old maid deterministic engine", () => {
   it("validates the expanded face pool, nine possible opponents, and exactly one joker", () => {
     expect(() => validateCartridge(temerosaOldMaidCartridge)).not.toThrow();
@@ -27,6 +40,7 @@ describe("old maid deterministic engine", () => {
     ]);
     expect(temerosaOldMaidCartridge.characters).toHaveLength(9);
     expect(temerosaOldMaidCartridge.characters.find((character) => character.id === "nemo")?.portraits.neutral).toBe("nemo-magical-neutral");
+    expect(temerosaOldMaidCartridge.characters.every((character) => Boolean(character.despairPortrait))).toBe(true);
   });
 
   it("does not begin play until the visible deal has completed", () => {
@@ -43,6 +57,14 @@ describe("old maid deterministic engine", () => {
     let state = createOldMaidState(temerosaOldMaidCartridge, "chosen-opponents", "test-session");
     state = reduceOldMaid(temerosaOldMaidCartridge, state, { type: "start", characterIds: ["nemo", "pale", "bacikal"] });
     expect(Object.values(state.characters)).toEqual(["nemo", "pale", "bacikal"]);
+  });
+
+  it("runs a four-NPC spectator table with no human turn", () => {
+    const state = autoplaySpectator("spectator");
+    expect(state.mode).toBe("spectate");
+    expect(state.spectatorCharacterId).toBe("alger");
+    expect(state.status).toBe("complete");
+    expect(state.loserId).not.toBeNull();
   });
 
   it("keeps initial pairs until each visible discard action", () => {

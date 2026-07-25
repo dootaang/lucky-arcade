@@ -202,8 +202,6 @@ test("plays and restores a complete Temerosa old maid table", async ({ page }, t
       checkedDiscardPile = true;
       continue;
     }
-    const collect = page.locator("button:not([disabled])", { hasText: "이 카드를 내 손으로 가져오기" });
-    if (await collect.count()) { await expect(collect).toBeEnabled(); await collect.evaluate((element) => (element as HTMLButtonElement).click()); continue; }
     const ownCard = page.getByRole("button", { name: /크게 보기/ }).first();
     if (!checkedDetail && await ownCard.count()) {
       await ownCard.click();
@@ -223,6 +221,26 @@ test("plays and restores a complete Temerosa old maid table", async ({ page }, t
   await page.getByRole("button", { name: "도둑잡기 이어하기", exact: true }).click();
   await expect(page.getByText(/에게 조커가 남았습니다/)).toBeVisible();
   await expect(page.getByRole("button", { name: "같은 판 다시 하기" })).toBeVisible();
+});
+
+test("starts a hidden-hand four-NPC Temerosa spectator table", async ({ page }, testInfo) => {
+  test.skip(testInfo.project.metadata.mobile === true);
+  await page.goto("/");
+  await page.locator(".arcade-entry").filter({ hasText: "테메로세 도둑잡기" }).getByRole("button", { name: "바로 시작" }).click();
+  await page.getByRole("button", { name: "NPC 4명 관전" }).click();
+  await expect(page.locator(".old-maid-opponent-picker button.selected")).toHaveCount(4);
+  await page.getByRole("button", { name: "NPC 대국 관전 시작" }).click();
+  await expect(page.getByText("카드를 나누는 중…")).toBeVisible();
+  await expect(page.locator(".old-maid-spectator-seat")).toBeVisible({ timeout: 20_000 });
+  await expect(page.getByText("상대끼리 뽑은 카드는 비공개")).toHaveCount(0);
+  await expect(page.locator(".old-maid-reveal-stage .old-maid-card.back").first()).toBeVisible({ timeout: 30_000 });
+  await expect(page.getByRole("button", { name: "이 카드를 내 손으로 가져오기" })).toHaveCount(0);
+  const rightColumn = await page.locator(".old-maid-table").evaluate((table) => {
+    const seat = table.querySelector(".seat-cpu-3")?.getBoundingClientRect();
+    const log = table.querySelector(".old-maid-log")?.getBoundingClientRect();
+    return { seatBottom: seat?.bottom ?? 0, logTop: log?.top ?? 0 };
+  });
+  expect(rightColumn.logTop).toBeGreaterThanOrEqual(rightColumn.seatBottom);
 });
 
 test("mobile Temerosa old maid keeps the draw cards reachable", async ({ page }, testInfo) => {

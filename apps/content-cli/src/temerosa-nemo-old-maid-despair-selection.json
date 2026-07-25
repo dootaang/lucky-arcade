@@ -1,0 +1,17 @@
+{
+  "contract": "temerosa-content-selection/0.1",
+  "packId": "temerosa-margin",
+  "version": "0.7.0",
+  "assets": [
+    {
+      "id": "nemo-magical-despair",
+      "source": "nemo",
+      "sourcePath": "assets/other/image/144.png",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "nemo",
+      "expression": "despair",
+      "appearanceSet": "nemo/magical-girl/current"
+    }
+  ]
+}

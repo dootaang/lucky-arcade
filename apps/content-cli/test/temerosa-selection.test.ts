@@ -9,6 +9,7 @@ const reviewSelectionPath = fileURLToPath(new URL("../src/temerosa-d1-review-sel
 const appearanceReviewSelectionPath = fileURLToPath(new URL("../src/temerosa-d1-appearance-review-selection.json", import.meta.url));
 const v4ExpressionReviewSelectionPath = fileURLToPath(new URL("../src/temerosa-d1-v4-expression-review-selection.json", import.meta.url));
 const nemoOldMaidSelectionPath = fileURLToPath(new URL("../src/temerosa-nemo-old-maid-selection.json", import.meta.url));
+const nemoOldMaidDespairSelectionPath = fileURLToPath(new URL("../src/temerosa-nemo-old-maid-despair-selection.json", import.meta.url));
 const oldMaidGallerySelectionPath = fileURLToPath(new URL("../src/temerosa-old-maid-gallery-selection.json", import.meta.url));
 describe("Temerosa D1 content selection", () => {
   it("is an explicit, unique SFW allowlist", async () => {
@@ -40,6 +41,13 @@ describe("Temerosa D1 content selection", () => {
     expect(selection.version).toBe("0.5.0");
     expect(selection.assets).toHaveLength(3);
     expect(selection.assets.every((asset) => asset.source === "nemo" && asset.appearanceSet === "nemo/magical-girl/current")).toBe(true);
+    expect(() => assertTemerosaSelection(selection)).not.toThrow();
+  });
+
+  it("keeps Nemo's Old Maid loss portrait explicit and SFW", async () => {
+    const selection = temerosaContentSelectionSchema.parse(JSON.parse(await readFile(nemoOldMaidDespairSelectionPath, "utf8")));
+    expect(selection.version).toBe("0.7.0");
+    expect(selection.assets).toEqual([expect.objectContaining({ id: "nemo-magical-despair", expression: "despair", appearanceSet: "nemo/magical-girl/current" })]);
     expect(() => assertTemerosaSelection(selection)).not.toThrow();
   });
 
