@@ -1,5 +1,6 @@
 import type { OldMaidCard, OldMaidCartridge, OldMaidFace } from "./contracts.ts";
 import { temerosaGalleryFaces } from "./temerosa-gallery.ts";
+import { temerosaOldMaidLines } from "./temerosa-lines.ts";
 
 const faces: OldMaidFace[] = [
   ...temerosaGalleryFaces,
@@ -23,6 +24,7 @@ export const temerosaOldMaidCartridge: OldMaidCartridge = {
   oddFaceId: "joker",
   faces,
   cards,
+  lines: temerosaOldMaidLines,
   characters: [
     { id: "pale", name: "페일", appearanceSet: "finale", tellStyle: "open", portraits: { neutral: "review-pale-standing", pleased: "review-pale-smirk", tense: "pale-angry" }, despairPortrait: "pale-sad" },
     { id: "kano", name: "카노", appearanceSet: "finale", tellStyle: "guarded", portraits: { neutral: "review-kano-standing", pleased: "kano-smile", tense: "review-kano-upset" }, despairPortrait: "kano-sad" },

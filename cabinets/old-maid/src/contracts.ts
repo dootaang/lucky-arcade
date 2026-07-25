@@ -7,6 +7,16 @@ export type OldMaidStatus = "ready" | "dealing" | "playing" | "revealing" | "dis
 export type OldMaidReaction = "neutral" | "pleased" | "tense";
 export type OldMaidTellStyle = "open" | "guarded" | "bluffer";
 export type OldMaidMode = "play" | "spectate";
+export type OldMaidLineEvent =
+  | "watching" | "idle-draw" | "pair-discard" | "taken-from"
+  | "pair-made" | "joker-drawn" | "joker-left" | "emptied";
+
+export interface OldMaidLine {
+  id: string;
+  characterId: string;
+  event: OldMaidLineEvent;
+  text: readonly string[];
+}
 
 export interface OldMaidFace {
   id: string;
@@ -37,6 +47,7 @@ export interface OldMaidCartridge {
   faces: OldMaidFace[];
   cards: OldMaidCard[];
   characters: OldMaidCharacter[];
+  lines?: readonly OldMaidLine[];
 }
 
 export type OldMaidHistoryEntry =

@@ -1,5 +1,6 @@
 import { IconArrowLeft, IconCards, IconCheck, IconRefresh, IconX } from "@tabler/icons-react";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { isOldMaidSpeechSilent, oldMaidSpeechSnapshot, selectOldMaidSpeech, validateOldMaidLines, type OldMaidSpeech } from "../dialogue.ts";
 import { availablePairs, characterIdForSeat, createOldMaidState, discardingSeat, inspectCardReaction, reduceOldMaid, targetSeat } from "../engine.ts";
 import type { OldMaidAction, OldMaidCartridge, OldMaidFace, OldMaidMode, OldMaidSeatId, OldMaidState } from "../contracts.ts";
 import "./old-maid.css";
@@ -13,13 +14,18 @@ export interface OldMaidScreenProps {
 }
 
 export function OldMaidScreen({ cartridge, assets, initialState, onPersist, onExit }: OldMaidScreenProps) {
+  useMemo(() => validateOldMaidLines(cartridge), [cartridge]);
   const [state, setState] = useState(() => initialState ?? createOldMaidState(cartridge, dailySeed()));
   const [detail, setDetail] = useState<OldMaidFace | null>(null);
   const [opponentIds, setOpponentIds] = useState<string[]>(() => Object.values(state.characters));
   const [lobbyMode, setLobbyMode] = useState<OldMaidMode>(() => state.mode);
   const [hoveredDrawCardId, setHoveredDrawCardId] = useState<string | null>(null);
   const [touchedDrawCardId, setTouchedDrawCardId] = useState<string | null>(null);
+  const [speech, setSpeech] = useState<DisplayedSpeech | null>(null);
   const pointerKindRef = useRef("");
+  const recentLineIdsRef = useRef<string[]>([]);
+  const speechTimersRef = useRef<number[]>([]);
+  const speechRevisionRef = useRef(0);
   const stateRef = useRef(state);
   const persistQueueRef = useRef<Promise<void>>(Promise.resolve());
   const saveRevisionRef = useRef(0);
@@ -31,6 +37,11 @@ export function OldMaidScreen({ cartridge, assets, initialState, onPersist, onEx
   function dispatch(action: OldMaidAction) {
     const previous = stateRef.current;
     const next = reduceOldMaid(cartridge, previous, action);
+    const previousSpeech = oldMaidSpeechSnapshot(previous);
+    const nextSpeech = oldMaidSpeechSnapshot(next);
+    const selectedSpeech = selectOldMaidSpeech(cartridge, previousSpeech, nextSpeech, recentLineIdsRef.current);
+    if (isOldMaidSpeechSilent(nextSpeech)) clearSpeech();
+    else if (selectedSpeech) showSpeech(selectedSpeech);
     stateRef.current = next;
     setState(next);
     setSaveState("saving");
@@ -39,11 +50,47 @@ export function OldMaidScreen({ cartridge, assets, initialState, onPersist, onEx
     void persistQueueRef.current.then(() => { if (saveRevisionRef.current === revision) setSaveState("saved"); }).catch(() => { if (saveRevisionRef.current === revision) setSaveState("error"); });
   }
 
+  function showSpeech(selected: OldMaidSpeech) {
+    cancelSpeechTimers();
+    recentLineIdsRef.current = [...recentLineIdsRef.current, selected.line.id].slice(-6);
+    const revision = ++speechRevisionRef.current;
+    const showBeat = (beat: number) => setSpeech({ ...selected, beat, revision });
+    showBeat(0);
+    if (selected.line.text.length === 1) {
+      speechTimersRef.current.push(window.setTimeout(() => setSpeech(null), 2_400));
+      return;
+    }
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const gap = reduced ? 250 : 700;
+    let elapsed = 0;
+    for (let beat = 0; beat < selected.line.text.length; beat += 1) {
+      elapsed += 2_000;
+      if (beat === selected.line.text.length - 1) break;
+      speechTimersRef.current.push(window.setTimeout(() => setSpeech(null), elapsed));
+      elapsed += gap;
+      speechTimersRef.current.push(window.setTimeout(() => showBeat(beat + 1), elapsed));
+    }
+    speechTimersRef.current.push(window.setTimeout(() => setSpeech(null), elapsed));
+  }
+
+  function clearSpeech() {
+    cancelSpeechTimers();
+    speechRevisionRef.current += 1;
+    setSpeech(null);
+  }
+
+  function cancelSpeechTimers() {
+    for (const timer of speechTimersRef.current) window.clearTimeout(timer);
+    speechTimersRef.current = [];
+  }
+
   useEffect(() => {
     if (state.status !== "playing" || state.currentPlayerId === "player" && state.mode === "play") return;
     const timer = window.setTimeout(() => dispatch({ type: "cpu_draw" }), 300);
     return () => window.clearTimeout(timer);
   }, [state.currentPlayerId, state.status, state.turn]);
+
+  useEffect(() => () => cancelSpeechTimers(), []);
 
   useEffect(() => {
     if (state.status === "ready") {
@@ -105,7 +152,7 @@ export function OldMaidScreen({ cartridge, assets, initialState, onPersist, onEx
           const character = characters.get(state.characters[seatId]);
           const reaction = seatId === targetId && inspectedReaction ? inspectedReaction : state.reactions[seatId];
           const portraitId = state.status === "complete" && state.loserId === seatId ? character?.despairPortrait : character?.portraits[reaction];
-          return <SeatPanel key={seatId} seatId={seatId} state={state} name={nameOf(seatId)} portrait={portraitId ? assets[portraitId] ?? null : null} reaction={reaction} active={state.currentPlayerId === seatId} showHand={state.mode === "spectate" || humanFinishedWatching} cards={cards} faces={faces} assets={assets} onDetail={setDetail} />;
+          return <SeatPanel key={seatId} seatId={seatId} state={state} name={nameOf(seatId)} portrait={portraitId ? assets[portraitId] ?? null : null} reaction={reaction} active={state.currentPlayerId === seatId} showHand={state.mode === "spectate" || humanFinishedWatching} cards={cards} faces={faces} assets={assets} speech={speech?.seatId === seatId ? speech : null} onDetail={setDetail} />;
         })}
       </div>
 
@@ -198,10 +245,13 @@ export function OldMaidScreen({ cartridge, assets, initialState, onPersist, onEx
   </main>;
 }
 
-function SeatPanel({ seatId, state, name, portrait, reaction, active, showHand, cards, faces, assets, onDetail }: { seatId: Exclude<OldMaidSeatId, "player">; state: OldMaidState; name: string; portrait: string | null; reaction: string; active: boolean; showHand: boolean; cards: Map<string, { faceId: string }>; faces: Map<string, OldMaidFace>; assets: Readonly<Record<string, string>>; onDetail(face: OldMaidFace): void }) {
+interface DisplayedSpeech extends OldMaidSpeech { beat: number; revision: number; }
+
+function SeatPanel({ seatId, state, name, portrait, reaction, active, showHand, cards, faces, assets, speech, onDetail }: { seatId: Exclude<OldMaidSeatId, "player">; state: OldMaidState; name: string; portrait: string | null; reaction: string; active: boolean; showHand: boolean; cards: Map<string, { faceId: string }>; faces: Map<string, OldMaidFace>; assets: Readonly<Record<string, string>>; speech: DisplayedSpeech | null; onDetail(face: OldMaidFace): void }) {
   const safe = state.safeOrder.includes(seatId);
   const hidden = state.status === "ready" || state.status === "dealing";
-  return <article className={`old-maid-seat seat-${seatId} ${active ? "active" : ""} ${safe ? "safe" : ""}`} data-deal-target={seatId}>
+  return <article className={`old-maid-seat seat-${seatId} ${active ? "active" : ""} ${safe ? "safe" : ""} ${speech ? "speaking" : ""}`} data-deal-target={seatId}>
+    {speech && <div className="old-maid-speech" data-line-id={speech.line.id} data-beat={speech.beat} key={`${speech.line.id}:${speech.beat}:${speech.revision}`}><p>{speech.line.text[speech.beat]}</p></div>}
     <div className="old-maid-seat-portrait">{portrait ? <img src={portrait} alt={`${name}의 현재 표정`} decoding="async" /> : <span>{name}</span>}<i className={`old-maid-reaction-dot ${reaction}`} aria-hidden="true" /></div>
     <div><strong>{name}</strong><em className={`old-maid-reaction-text ${reaction}`}>{reactionLabel(reaction)}</em><span>{hidden ? (state.status === "ready" ? "배분 전" : "배분 중") : safe ? "손패 비움" : `${state.hands[seatId].length}장`}</span></div>
     {showHand && !safe && <div className="old-maid-spectator-hand" aria-label={`${name}의 공개된 손패`}>{state.hands[seatId].map((cardId) => { const face = faces.get(cards.get(cardId)?.faceId ?? ""); return face ? <button key={cardId} onClick={() => onDetail(face)}><CardFace face={face} assets={assets} odd={face.id === "joker"} /></button> : null; })}</div>}

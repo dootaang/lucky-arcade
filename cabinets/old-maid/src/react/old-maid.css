@@ -42,3 +42,15 @@
   .old-maid-pile-pair .old-maid-card{width:38px;height:57px;margin:0 -8px}
   .old-maid-log{margin-top:0}
 }
+
+/* Optional world-authored seat dialogue. It is decorative and intentionally not aria-live. */
+.old-maid-seat{position:relative;overflow:visible}
+.old-maid-seat.speaking{z-index:50!important}
+.old-maid-speech{position:absolute;left:50%;bottom:calc(100% + 8px);z-index:40;width:max-content;max-width:min(72vw,22rem);padding:9px 12px;border:1px solid rgba(239,210,133,.48);border-radius:12px;color:#f5ead0;background:rgba(7,15,25,.97);box-shadow:0 12px 30px rgba(0,0,0,.48);transform:translateX(-50%);pointer-events:none;animation:old-maid-speech-in .18s ease-out}
+.old-maid-speech::after{position:absolute;left:50%;top:100%;width:9px;height:9px;border-right:1px solid rgba(239,210,133,.48);border-bottom:1px solid rgba(239,210,133,.48);background:rgba(7,15,25,.97);content:"";transform:translate(-50%,-50%) rotate(45deg)}
+.old-maid-speech p{margin:0;white-space:normal;word-break:keep-all;font-size:.76rem;line-height:1.5;text-align:left}
+.old-maid-seat.seat-cpu-2 .old-maid-speech{left:0;transform:none;animation:none}
+.old-maid-seat.seat-cpu-3 .old-maid-speech{right:0;left:auto;transform:none;animation:none}
+@keyframes old-maid-speech-in{from{opacity:0;transform:translateX(-50%) translateY(5px) scale(.97)}to{opacity:1;transform:translateX(-50%) translateY(0) scale(1)}}
+@media(max-width:680px){.old-maid-speech{top:8px;bottom:auto;max-width:min(72vw,22rem);padding:7px 9px}.old-maid-speech p{font-size:.68rem}.old-maid-seat.seat-cpu-1 .old-maid-speech{left:0;transform:none;animation:none}.old-maid-seat.seat-cpu-2 .old-maid-speech{left:50%;transform:translateX(-50%)}.old-maid-seat.seat-cpu-3 .old-maid-speech{right:0;left:auto;transform:none}}
+@media(prefers-reduced-motion:reduce){.old-maid-speech{animation:none}}

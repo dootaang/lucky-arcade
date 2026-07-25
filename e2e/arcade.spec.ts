@@ -192,9 +192,16 @@ test("plays and restores a complete Temerosa old maid table", async ({ page }, t
   await expect(page.locator(".old-maid-player-hand")).toBeVisible();
   let checkedDetail = false;
   let checkedDiscardPile = false;
+  let checkedSpeech = false;
 
   for (let turn = 0; turn < 800; turn += 1) {
     if (await page.getByText(/에게 조커가 남았습니다/).count()) break;
+    const speech = page.locator(".old-maid-speech").first();
+    if (!checkedSpeech && await speech.count()) {
+      await expect(speech).toBeVisible();
+      await expect(speech).not.toHaveAttribute("aria-live");
+      checkedSpeech = true;
+    }
     const discard = page.locator('button[aria-label$="두 장 버리기"]:not([disabled])').first();
     if (await discard.count()) {
       await discard.click();
@@ -216,6 +223,7 @@ test("plays and restores a complete Temerosa old maid table", async ({ page }, t
   await expect(page.getByText(/에게 조커가 남았습니다/)).toBeVisible();
   await expect(page.locator(".old-maid-discard-pile")).toHaveCount(0);
   expect(checkedDiscardPile).toBe(true);
+  expect(checkedSpeech).toBe(true);
   await expect(page.getByText("자동 저장됨")).toBeVisible();
   await page.reload();
   await expect(page.getByRole("region", { name: "이어하기" })).toContainText("대국 완료");
@@ -250,6 +258,27 @@ test("mobile Temerosa old maid keeps the draw cards reachable", async ({ page },
   await page.goto("/");
   await page.locator(".arcade-entry").filter({ hasText: "테메로세 도둑잡기" }).getByRole("button", { name: "바로 시작" }).click();
   await page.getByRole("button", { name: "카드 배분 시작" }).click();
+  const speech = page.locator(".old-maid-speech").first();
+  for (let step = 0; step < 160 && !await speech.isVisible(); step += 1) {
+    const discard = page.locator('button[aria-label$="두 장 버리기"]:not([disabled])').first();
+    if (await discard.count()) await discard.click();
+    else {
+      const backs = page.getByRole("button", { name: /번째 뒷면 카드/ });
+      if (await backs.count()) await backs.first().click();
+      else await page.waitForTimeout(120);
+    }
+  }
+  await expect(speech).toBeVisible();
+  const speechLayout = await speech.evaluate((element) => {
+    const bubble = element.getBoundingClientRect();
+    const hand = document.querySelector(".old-maid-player-hand")?.getBoundingClientRect();
+    const header = document.querySelector(".old-maid-header")?.getBoundingClientRect();
+    return { left: bubble.left, right: bubble.right, top: bubble.top, bottom: bubble.bottom, headerBottom: header?.bottom ?? 0, handTop: hand?.top ?? Number.POSITIVE_INFINITY, viewportWidth: window.innerWidth };
+  });
+  expect(speechLayout.left).toBeGreaterThanOrEqual(-1);
+  expect(speechLayout.right).toBeLessThanOrEqual(speechLayout.viewportWidth + 1);
+  expect(speechLayout.top).toBeGreaterThanOrEqual(speechLayout.headerBottom);
+  expect(speechLayout.bottom).toBeLessThanOrEqual(speechLayout.handTop);
   const firstBack = page.getByRole("button", { name: /첫 번째|1번째 뒷면 카드/ }).first();
   if (await firstBack.count()) await expect(firstBack).toBeInViewport();
   await expect(page.locator(".old-maid-player-hand")).toBeInViewport();

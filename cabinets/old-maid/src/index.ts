@@ -2,7 +2,9 @@ import type { CabinetManifest } from "@lucky-arcade/cabinet-sdk";
 import { OLD_MAID_VERSION } from "./contracts.ts";
 
 export * from "./contracts.ts";
+export * from "./dialogue.ts";
 export * from "./engine.ts";
+export { temerosaOldMaidLines } from "./temerosa-lines.ts";
 export { temerosaOldMaidCartridge } from "./cartridge.ts";
 
 export const temerosaOldMaidManifest: CabinetManifest = {
