@@ -8,6 +8,7 @@ const selectionPath = fileURLToPath(new URL("../src/temerosa-d1-selection.json",
 const reviewSelectionPath = fileURLToPath(new URL("../src/temerosa-d1-review-selection.json", import.meta.url));
 const appearanceReviewSelectionPath = fileURLToPath(new URL("../src/temerosa-d1-appearance-review-selection.json", import.meta.url));
 const v4ExpressionReviewSelectionPath = fileURLToPath(new URL("../src/temerosa-d1-v4-expression-review-selection.json", import.meta.url));
+const nemoOldMaidSelectionPath = fileURLToPath(new URL("../src/temerosa-nemo-old-maid-selection.json", import.meta.url));
 describe("Temerosa D1 content selection", () => {
   it("is an explicit, unique SFW allowlist", async () => {
     const selection = temerosaContentSelectionSchema.parse(JSON.parse(await readFile(selectionPath, "utf8")));
@@ -27,6 +28,18 @@ describe("Temerosa D1 content selection", () => {
 
   it.each(["pale-naked", "pale-aroused", "kano-cowgirl-position", "nieun-masturbation", "wares-fellatio", "pale-missionary-position-cum"])("rejects known adult expression name %s", (name) => {
     expect(TEMEROSA_FORBIDDEN_ASSET_NAME.test(name)).toBe(true);
+  });
+
+  it.each(["nemo-cunnilingus", "nemo-paizuri", "nemo-deep_throat", "nemo-thighjob", "nemo-mating_press", "nemo-tongue_kiss"])("rejects additional adult expression name %s", (name) => {
+    expect(TEMEROSA_FORBIDDEN_ASSET_NAME.test(name)).toBe(true);
+  });
+
+  it("keeps the magical-girl Nemo Old Maid set explicit, unique, and SFW", async () => {
+    const selection = temerosaContentSelectionSchema.parse(JSON.parse(await readFile(nemoOldMaidSelectionPath, "utf8")));
+    expect(selection.version).toBe("0.5.0");
+    expect(selection.assets).toHaveLength(3);
+    expect(selection.assets.every((asset) => asset.source === "nemo" && asset.appearanceSet === "nemo/magical-girl/current")).toBe(true);
+    expect(() => assertTemerosaSelection(selection)).not.toThrow();
   });
 
   it("keeps the owner review shortlist explicit, unique, and SFW by name", async () => {

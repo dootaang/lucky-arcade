@@ -1,0 +1,37 @@
+{
+  "contract": "temerosa-content-selection/0.1",
+  "packId": "temerosa-margin",
+  "version": "0.5.0",
+  "assets": [
+    {
+      "id": "nemo-magical-neutral",
+      "source": "nemo",
+      "sourcePath": "assets/other/image/73.png",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "nemo",
+      "expression": "neutral",
+      "appearanceSet": "nemo/magical-girl/current"
+    },
+    {
+      "id": "nemo-magical-smile",
+      "source": "nemo",
+      "sourcePath": "assets/other/image/71.png",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "nemo",
+      "expression": "smile",
+      "appearanceSet": "nemo/magical-girl/current"
+    },
+    {
+      "id": "nemo-magical-tense",
+      "source": "nemo",
+      "sourcePath": "assets/other/image/64.png",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "nemo",
+      "expression": "tense",
+      "appearanceSet": "nemo/magical-girl/current"
+    }
+  ]
+}

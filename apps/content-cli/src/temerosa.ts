@@ -17,7 +17,7 @@ import { assertTemerosaSelection, assertTemerosaSourceAssetSafe } from "./temero
 const DEFAULT_SELECTION = fileURLToPath(new URL("./temerosa-d1-selection.json", import.meta.url));
 const MAX_INPUT_PIXELS = 40_000_000;
 
-type SourceKey = "overture" | "root2" | "finale" | "bestiaization";
+type SourceKey = "overture" | "root2" | "finale" | "bestiaization" | "nemo";
 type CliArguments = { sources: Partial<Record<SourceKey, string>>; selection: string; out: string };
 type VariantPlan = { size: TemerosaContentVariant["size"]; maxWidth: number; maxHeight: number };
 
@@ -132,12 +132,13 @@ function parseArgs(values: string[]): CliArguments {
     else if (key === "--bestiaization") output.sources.bestiaization = value;
     else if (key === "--root2") output.sources.root2 = value;
     else if (key === "--overture") output.sources.overture = value;
+    else if (key === "--nemo") output.sources.nemo = value;
     else if (key === "--selection") output.selection = value;
     else if (key === "--out") output.out = value;
     else continue;
     index += 1;
   }
-  if (!output.out) throw new Error("usage: [--overture <charx>] [--root2 <charx>] [--finale <charx>] [--bestiaization <charx>] [--selection <json>] --out <temerosa-margin/version>");
+  if (!output.out) throw new Error("usage: [--overture <charx>] [--root2 <charx>] [--finale <charx>] [--bestiaization <charx>] [--nemo <charx>] [--selection <json>] --out <temerosa-margin/version>");
   return output;
 }
 

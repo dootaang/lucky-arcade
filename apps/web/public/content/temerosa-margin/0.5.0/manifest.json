@@ -1,0 +1,91 @@
+{
+  "contract": "temerosa-content-manifest/0.1",
+  "packId": "temerosa-margin",
+  "version": "0.5.0",
+  "assets": [
+    {
+      "id": "nemo-magical-neutral",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "nemo",
+      "expression": "neutral",
+      "appearanceSet": "nemo/magical-girl/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/nemo-magical-neutral/sm.webp",
+          "mime": "image/webp",
+          "width": 131,
+          "height": 192,
+          "bytes": 7982
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/nemo-magical-neutral/md.webp",
+          "mime": "image/webp",
+          "width": 525,
+          "height": 768,
+          "bytes": 51304
+        }
+      ]
+    },
+    {
+      "id": "nemo-magical-smile",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "nemo",
+      "expression": "smile",
+      "appearanceSet": "nemo/magical-girl/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/nemo-magical-smile/sm.webp",
+          "mime": "image/webp",
+          "width": 131,
+          "height": 192,
+          "bytes": 9912
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/nemo-magical-smile/md.webp",
+          "mime": "image/webp",
+          "width": 525,
+          "height": 768,
+          "bytes": 63848
+        }
+      ]
+    },
+    {
+      "id": "nemo-magical-tense",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "nemo",
+      "expression": "tense",
+      "appearanceSet": "nemo/magical-girl/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/nemo-magical-tense/sm.webp",
+          "mime": "image/webp",
+          "width": 192,
+          "height": 192,
+          "bytes": 10794
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/nemo-magical-tense/md.webp",
+          "mime": "image/webp",
+          "width": 768,
+          "height": 768,
+          "bytes": 64770
+        }
+      ]
+    }
+  ],
+  "totalBytes": 208610,
+  "safety": {
+    "policy": "explicit-sfw-allowlist/0.1",
+    "selectedAssetCount": 3,
+    "forbiddenAssetCount": 0
+  }
+}

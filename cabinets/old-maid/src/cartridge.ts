@@ -8,8 +8,8 @@ const faces: OldMaidFace[] = [
   { id: "pale-smirk", name: "페일 · 장난", assetId: "review-pale-smirk" },
   { id: "kano-standing", name: "카노 · 감독", assetId: "review-kano-standing" },
   { id: "kano-upset", name: "카노 · 발끈", assetId: "review-kano-upset" },
-  { id: "nemo-standing", name: "네모 · 경계", assetId: "nemo-natural" },
-  { id: "nemo-smile", name: "네모 · 미소", assetId: "nemo-smile" },
+  { id: "nemo-standing", name: "네모 · 경계", assetId: "nemo-magical-neutral" },
+  { id: "nemo-smile", name: "네모 · 미소", assetId: "nemo-magical-smile" },
   { id: "joker", name: "조커 · 짝 없는 카드", assetId: null },
 ];
 
@@ -30,7 +30,7 @@ export const temerosaOldMaidCartridge: OldMaidCartridge = {
   characters: [
     { id: "pale", name: "페일", appearanceSet: "finale", tellStyle: "open", portraits: { neutral: "review-pale-standing", pleased: "review-pale-smirk", tense: "pale-angry" } },
     { id: "kano", name: "카노", appearanceSet: "finale", tellStyle: "guarded", portraits: { neutral: "review-kano-standing", pleased: "kano-smile", tense: "review-kano-upset" } },
-    { id: "nemo", name: "네모", appearanceSet: "bestiaization", tellStyle: "bluffer", portraits: { neutral: "nemo-natural", pleased: "nemo-smile", tense: "nemo-angry" } },
+    { id: "nemo", name: "네모", appearanceSet: "nemo-magical-girl", tellStyle: "bluffer", portraits: { neutral: "nemo-magical-neutral", pleased: "nemo-magical-smile", tense: "nemo-magical-tense" } },
     { id: "alger", name: "알제", appearanceSet: "finale", tellStyle: "guarded", portraits: { neutral: "review-alger-standing", pleased: "review-alger-smile", tense: "review-alger-disappointed" } },
     { id: "nieun", name: "박니은", appearanceSet: "finale-current", tellStyle: "guarded", portraits: { neutral: "nieun-standing", pleased: "nieun-smile", tense: "review-nieun-current-angry" } },
     { id: "lyla", name: "라일라", appearanceSet: "bestiaization", tellStyle: "bluffer", portraits: { neutral: "lyla-natural", pleased: "lyla-smile", tense: "lyla-angry" } },

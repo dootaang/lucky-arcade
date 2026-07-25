@@ -263,7 +263,7 @@ export const temerosaContentSelectionSchema = z.object({
   version: z.string().regex(/^\d+\.\d+\.\d+$/),
   assets: z.array(z.object({
     id: z.string().regex(/^[a-z0-9][a-z0-9-]*$/),
-    source: z.enum(["overture", "root2", "finale", "bestiaization"]),
+    source: z.enum(["overture", "root2", "finale", "bestiaization", "nemo"]),
     sourcePath: z.string().min(1),
     role: temerosaAssetRoleSchema,
     chunk: temerosaContentChunkSchema,

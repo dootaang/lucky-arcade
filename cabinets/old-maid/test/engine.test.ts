@@ -26,7 +26,7 @@ describe("old maid deterministic engine", () => {
       expect.objectContaining({ faceId: "joker" }),
     ]);
     expect(temerosaOldMaidCartridge.characters).toHaveLength(8);
-    expect(temerosaOldMaidCartridge.characters.find((character) => character.id === "nemo")?.portraits.neutral).toBe("nemo-natural");
+    expect(temerosaOldMaidCartridge.characters.find((character) => character.id === "nemo")?.portraits.neutral).toBe("nemo-magical-neutral");
   });
 
   it("does not begin play until the visible deal has completed", () => {
