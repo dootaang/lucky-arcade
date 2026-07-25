@@ -3,6 +3,11 @@ import { clsx, type ClassValue } from "clsx";
 import type { ButtonHTMLAttributes } from "react";
 import { twMerge } from "tailwind-merge";
 
+/**
+ * 트럼프 카드는 이 배럴에서 내보내지 않는다. `@lucky-arcade/ui/playing-card`로만 가져간다.
+ * 배럴에 두면 `Button` 하나를 쓰는 화면에도 덱 전체가 초기 청크로 딸려 온다.
+ */
+
 export function cn(...values: ClassValue[]): string { return twMerge(clsx(values)); }
 
 const buttonVariants = cva(
