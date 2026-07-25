@@ -242,6 +242,16 @@ test("plays and restores a complete Temerosa old maid table", async ({ page }, t
       await expect(page.locator(".old-maid-pile-pair")).not.toHaveCount(0);
       if (!checkedArrival) {
         await expect(page.locator('.old-maid-pile-slot[data-arriving="true"]')).toHaveCount(1);
+        const arriving = await page.locator('.old-maid-pile-slot[data-arriving="true"]').evaluate((slot) => {
+          const resting = [...document.querySelectorAll<HTMLElement>('.old-maid-pile-slot:not([data-arriving="true"])')];
+          return {
+            z: Number(getComputedStyle(slot).zIndex),
+            restingZ: resting.length ? Math.max(...resting.map((other) => Number(getComputedStyle(other).zIndex))) : 0,
+          };
+        });
+        // 쌓인 더미 위에 얹히되, 뽑기 열과 진행 UI(z-index 3) 아래에 머물러야 한다.
+        expect(arriving.z).toBeGreaterThan(arriving.restingZ);
+        expect(arriving.z).toBeLessThan(3);
         checkedArrival = true;
       }
       checkedDiscardSpread ||= await page.locator(".old-maid-pile-slot").evaluateAll((slots) => {

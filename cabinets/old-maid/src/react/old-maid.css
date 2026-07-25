@@ -19,7 +19,7 @@
 .old-maid-inspection-hint{position:absolute;left:50%;bottom:22px;z-index:6;transform:translateX(-50%);padding:6px 10px;border-radius:999px;color:#cfdae7;background:rgba(2,8,15,.82);font-size:.68rem;white-space:nowrap;pointer-events:none}
 .old-maid-discard-pile{position:absolute;inset:0;overflow:hidden;pointer-events:none}
 .old-maid-pile-slot{--pile-base-x:0px;--pile-base-y:0px;position:absolute;left:50%;top:55%;z-index:var(--pile-z);transform:translate(calc(-50% + var(--pile-base-x) + var(--jitter-x)),calc(-50% + var(--pile-base-y) + var(--jitter-y))) rotate(calc(var(--pile-angle) + var(--jitter-r)))}
-.old-maid-pile-slot[data-owner="cpu-1"]{--pile-base-y:-96px}.old-maid-pile-slot[data-owner="cpu-2"]{--pile-base-x:-96px}.old-maid-pile-slot[data-owner="cpu-3"]{--pile-base-x:96px}.old-maid-pile-slot[data-owner="player"]{--pile-base-y:96px}.old-maid-pile-slot[data-arriving="true"]{z-index:12}
+.old-maid-pile-slot[data-owner="cpu-1"]{--pile-base-y:-96px}.old-maid-pile-slot[data-owner="cpu-2"]{--pile-base-x:-96px}.old-maid-pile-slot[data-owner="cpu-3"]{--pile-base-x:96px}.old-maid-pile-slot[data-owner="player"]{--pile-base-y:96px}.old-maid-pile-slot[data-arriving="true"]{z-index:2}
 .old-maid-pile-pair{display:flex;filter:drop-shadow(0 5px 7px rgba(0,0,0,.42))}
 .old-maid-pile-pair .old-maid-card{width:46px;height:68px;margin:0 -9px}
 .old-maid-pile-pair .old-maid-card:first-child{transform:rotate(-5deg)}
