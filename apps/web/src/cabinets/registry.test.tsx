@@ -7,7 +7,7 @@ describe("public cabinet visibility", () => {
   });
 
   it("keeps hidden cabinets out of resume and lookup UI", () => {
-    expect(getCabinetRegistration("temerosa-old-maid")?.manifest.title).toContain("여백의 도둑");
+    expect(getCabinetRegistration("temerosa-old-maid")?.manifest.title).toContain("도둑잡기");
     expect(getCabinetRegistration("favorite-cup")?.manifest.title).toBe("최애 월드컵");
     for (const id of ["temerosa-margin", "lucky-derby-lab", "gfl-sprite-memory", "gfl-ember", "restoration-crew", "lore-circuit"]) {
       expect(getCabinetRegistration(id)).toBeUndefined();

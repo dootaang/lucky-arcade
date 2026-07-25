@@ -19,6 +19,22 @@ const REQUIRED_ASSETS = [
   "review-bacikal-standing",
   "review-bacikal-smile",
   "review-bacikal-disappointed",
+  "nemo-natural",
+  "nemo-smile",
+  "nemo-angry",
+  "nieun-standing",
+  "nieun-smile",
+  "pale-angry",
+  "kano-smile",
+  "lyla-natural",
+  "lyla-smile",
+  "lyla-angry",
+  "riel-natural",
+  "riel-smile",
+  "riel-sad",
+  "wares-standing",
+  "wares-smile",
+  "wares-surprised",
 ] as const;
 let assetPromise: Promise<Readonly<Record<string, string>>> | null = null;
 

@@ -1,8 +1,11 @@
-export const OLD_MAID_VERSION = "old-maid/0.1" as const;
-export const TEMEROSA_OLD_MAID_PACK_VERSION = "temerosa-old-maid/0.1" as const;
+export const OLD_MAID_VERSION = "old-maid/0.2" as const;
+export const TEMEROSA_OLD_MAID_PACK_VERSION = "temerosa-old-maid/0.2" as const;
 
-export type OldMaidSeatId = "player" | "pale" | "kano" | "nemo";
-export type OldMaidStatus = "ready" | "playing" | "complete";
+export type OldMaidSeatId = "player" | "cpu-1" | "cpu-2" | "cpu-3";
+export type OldMaidCpuSeatId = Exclude<OldMaidSeatId, "player">;
+export type OldMaidStatus = "ready" | "dealing" | "playing" | "complete";
+export type OldMaidReaction = "neutral" | "pleased" | "tense";
+export type OldMaidTellStyle = "open" | "guarded" | "bluffer";
 
 export interface OldMaidFace {
   id: string;
@@ -16,20 +19,22 @@ export interface OldMaidCard {
   pairId: string | null;
 }
 
-export interface OldMaidSeat {
-  id: OldMaidSeatId;
+export interface OldMaidCharacter {
+  id: string;
   name: string;
-  portraitAssetId: string | null;
+  appearanceSet: string;
+  tellStyle: OldMaidTellStyle;
+  portraits: Record<OldMaidReaction, string>;
 }
 
 export interface OldMaidCartridge {
-  contract: "old-maid-cartridge/0.1";
+  contract: "old-maid-cartridge/0.2";
   version: typeof TEMEROSA_OLD_MAID_PACK_VERSION;
   title: string;
   oddFaceId: string;
   faces: OldMaidFace[];
   cards: OldMaidCard[];
-  seats: OldMaidSeat[];
+  characters: OldMaidCharacter[];
 }
 
 export interface OldMaidDiscard {
@@ -47,8 +52,13 @@ export interface OldMaidDrawEvent {
   madePair: boolean;
 }
 
+export interface OldMaidDealCard {
+  cardId: string;
+  seatId: OldMaidSeatId;
+}
+
 export interface OldMaidState {
-  contract: "old-maid-state/0.1";
+  contract: "old-maid-state/0.2";
   version: typeof OLD_MAID_VERSION;
   packVersion: typeof TEMEROSA_OLD_MAID_PACK_VERSION;
   sessionId: string;
@@ -58,6 +68,9 @@ export interface OldMaidState {
   status: OldMaidStatus;
   currentPlayerId: OldMaidSeatId;
   hands: Record<OldMaidSeatId, string[]>;
+  dealOrder: OldMaidDealCard[];
+  characters: Record<OldMaidCpuSeatId, string>;
+  reactions: Record<OldMaidCpuSeatId, OldMaidReaction>;
   safeOrder: OldMaidSeatId[];
   loserId: OldMaidSeatId | null;
   discards: OldMaidDiscard[];
@@ -66,6 +79,7 @@ export interface OldMaidState {
 
 export type OldMaidAction =
   | { type: "start" }
+  | { type: "finish_deal" }
   | { type: "draw"; index: number }
   | { type: "cpu_draw" }
   | { type: "restart"; seed: string };

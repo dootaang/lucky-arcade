@@ -6,6 +6,8 @@ function autoplay(seed: string): { state: OldMaidState; actions: OldMaidAction[]
   let state = createOldMaidState(temerosaOldMaidCartridge, seed, "test-session");
   const actions: OldMaidAction[] = [{ type: "start" }];
   state = reduceOldMaid(temerosaOldMaidCartridge, state, actions[0] as OldMaidAction);
+  actions.push({ type: "finish_deal" });
+  state = reduceOldMaid(temerosaOldMaidCartridge, state, actions[1] as OldMaidAction);
   while (state.status === "playing" && actions.length < 2_000) {
     const action: OldMaidAction = state.currentPlayerId === "player" ? { type: "draw", index: 0 } : { type: "cpu_draw" };
     actions.push(action);
@@ -15,12 +17,24 @@ function autoplay(seed: string): { state: OldMaidState; actions: OldMaidAction[]
 }
 
 describe("old maid deterministic engine", () => {
-  it("validates nine pairs and exactly one neutral odd card", () => {
+  it("validates nine pairs, eight possible opponents, and exactly one joker", () => {
     expect(() => validateCartridge(temerosaOldMaidCartridge)).not.toThrow();
     expect(temerosaOldMaidCartridge.cards).toHaveLength(19);
     expect(temerosaOldMaidCartridge.cards.filter((card) => card.pairId === null)).toEqual([
-      expect.objectContaining({ faceId: "margin-record" }),
+      expect.objectContaining({ faceId: "joker" }),
     ]);
+    expect(temerosaOldMaidCartridge.characters).toHaveLength(8);
+    expect(temerosaOldMaidCartridge.characters.find((character) => character.id === "nemo")?.portraits.neutral).toBe("nemo-natural");
+  });
+
+  it("does not begin play until the visible deal has completed", () => {
+    let state = createOldMaidState(temerosaOldMaidCartridge, "deal-phase", "test-session");
+    expect(state.dealOrder).toHaveLength(19);
+    expect(new Set(Object.values(state.characters)).size).toBe(3);
+    state = reduceOldMaid(temerosaOldMaidCartridge, state, { type: "start" });
+    expect(state.status).toBe("dealing");
+    state = reduceOldMaid(temerosaOldMaidCartridge, state, { type: "finish_deal" });
+    expect(state.status).toBe("playing");
   });
 
   it("removes every pair already held after the initial deal", () => {
@@ -32,8 +46,8 @@ describe("old maid deterministic engine", () => {
   });
 
   it("uses only public turn metadata and target size for CPU draw selection", () => {
-    expect(cpuDrawIndex("seed", 4, "pale", "kano", 5)).toBe(cpuDrawIndex("seed", 4, "pale", "kano", 5));
-    expect(cpuDrawIndex("seed", 4, "pale", "kano", 5)).toBeLessThan(5);
+    expect(cpuDrawIndex("seed", 4, "cpu-1", "cpu-2", 5)).toBe(cpuDrawIndex("seed", 4, "cpu-1", "cpu-2", 5));
+    expect(cpuDrawIndex("seed", 4, "cpu-1", "cpu-2", 5)).toBeLessThan(5);
   });
 
   it("replays identical inputs to an identical final result", () => {

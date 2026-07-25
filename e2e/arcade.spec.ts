@@ -47,7 +47,7 @@ test("opens built-in quick cabinets without a card", async ({ page }) => {
   for (let pick = 0; pick < 11; pick += 1) await page.locator(".favorite-choice").first().click();
   await expect(page.getByText("오늘의 최애", { exact: true })).toBeVisible();
   await page.getByRole("button", { name: "다른 놀이 보기" }).click();
-  await expect(page.locator(".arcade-entry").filter({ hasText: "테메로세: 여백의 도둑" })).toBeVisible();
+  await expect(page.locator(".arcade-entry").filter({ hasText: "테메로세 도둑잡기" })).toBeVisible();
   for (const hiddenTitle of ["작전 암호 기억", "럭키★더비 엔진 실험장", "소녀전선: 잔불 작전", "테메로세: 여백 — 첫 항로"]) {
     await expect(page.locator(".arcade-entry").filter({ hasText: hiddenTitle })).toHaveCount(0);
   }
@@ -181,32 +181,40 @@ test.skip("becomes a provisional navigator and restores the chosen Temerosa part
 test("plays and restores a complete Temerosa old maid table", async ({ page }, testInfo) => {
   test.skip(testInfo.project.metadata.mobile === true);
   await page.goto("/");
-  await page.locator(".arcade-entry").filter({ hasText: "테메로세: 여백의 도둑" }).getByRole("button", { name: "바로 시작" }).click();
-  await expect(page.getByRole("heading", { name: "여백의 도둑" })).toBeVisible();
-  await expect(page.getByText("마지막 여백 기록을 피하세요")).toBeVisible();
-  await page.getByRole("button", { name: "19장 배분하고 시작" }).click();
+  await page.locator(".arcade-entry").filter({ hasText: "테메로세 도둑잡기" }).getByRole("button", { name: "바로 시작" }).click();
+  await expect(page.getByRole("heading", { name: "테메로세 도둑잡기" })).toBeVisible();
+  await expect(page.getByText("마지막 조커를 피하세요")).toBeVisible();
+  await expect(page.getByText("배분 전").first()).toBeVisible();
+  await page.getByRole("button", { name: "19장 배분 시작" }).click();
+  await expect(page.getByText("카드를 나누는 중…")).toBeVisible();
   await expect(page.locator(".old-maid-player-hand")).toBeVisible();
+  const ownCard = page.getByRole("button", { name: /크게 보기/ }).first();
+  if (await ownCard.count()) {
+    await ownCard.click();
+    await expect(page.getByRole("dialog")).toBeVisible();
+    await page.getByRole("button", { name: "카드 상세 닫기" }).click();
+  }
 
   for (let turn = 0; turn < 300; turn += 1) {
-    if (await page.getByText(/에게 여백 기록이 남았습니다/).count()) break;
+    if (await page.getByText(/에게 조커가 남았습니다/).count()) break;
     const backs = page.getByRole("button", { name: /번째 뒷면 카드/ });
     if (await backs.count()) await backs.first().click();
     else await page.waitForTimeout(180);
   }
-  await expect(page.getByText(/에게 여백 기록이 남았습니다/)).toBeVisible();
+  await expect(page.getByText(/에게 조커가 남았습니다/)).toBeVisible();
   await expect(page.getByText("자동 저장됨")).toBeVisible();
   await page.reload();
   await expect(page.getByRole("region", { name: "이어하기" })).toContainText("대국 완료");
   await page.getByRole("button", { name: "도둑잡기 이어하기", exact: true }).click();
-  await expect(page.getByText(/에게 여백 기록이 남았습니다/)).toBeVisible();
-  await expect(page.getByRole("button", { name: "같은 패 다시 보기" })).toBeVisible();
+  await expect(page.getByText(/에게 조커가 남았습니다/)).toBeVisible();
+  await expect(page.getByRole("button", { name: "같은 판 다시 하기" })).toBeVisible();
 });
 
 test("mobile Temerosa old maid keeps the draw cards reachable", async ({ page }, testInfo) => {
   test.skip(testInfo.project.metadata.mobile !== true);
   await page.goto("/");
-  await page.locator(".arcade-entry").filter({ hasText: "테메로세: 여백의 도둑" }).getByRole("button", { name: "바로 시작" }).click();
-  await page.getByRole("button", { name: "19장 배분하고 시작" }).click();
+  await page.locator(".arcade-entry").filter({ hasText: "테메로세 도둑잡기" }).getByRole("button", { name: "바로 시작" }).click();
+  await page.getByRole("button", { name: "19장 배분 시작" }).click();
   const firstBack = page.getByRole("button", { name: /첫 번째|1번째 뒷면 카드/ }).first();
   if (await firstBack.count()) await expect(firstBack).toBeInViewport();
   await expect(page.locator(".old-maid-player-hand")).toBeInViewport();
