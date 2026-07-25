@@ -91,6 +91,9 @@ importers:
       '@lucky-arcade/lucky-derby':
         specifier: workspace:*
         version: link:../../cabinets/lucky-derby
+      '@lucky-arcade/old-maid':
+        specifier: workspace:*
+        version: link:../../cabinets/old-maid
       '@lucky-arcade/persistence':
         specifier: workspace:*
         version: link:../../packages/persistence
@@ -238,6 +241,25 @@ importers:
       phaser:
         specifier: 4.2.1
         version: 4.2.1
+      react:
+        specifier: 19.2.8
+        version: 19.2.8
+    devDependencies:
+      '@types/react':
+        specifier: 19.2.17
+        version: 19.2.17
+
+  cabinets/old-maid:
+    dependencies:
+      '@lucky-arcade/cabinet-sdk':
+        specifier: workspace:*
+        version: link:../../packages/cabinet-sdk
+      '@lucky-arcade/engine':
+        specifier: workspace:*
+        version: link:../../packages/engine
+      '@tabler/icons-react':
+        specifier: 3.45.0
+        version: 3.45.0(react@19.2.8)
       react:
         specifier: 19.2.8
         version: 19.2.8

@@ -1,0 +1,15 @@
+{
+  "name": "@lucky-arcade/old-maid",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": { ".": "./src/index.ts", "./react": "./src/react/old-maid-screen.tsx" },
+  "scripts": { "typecheck": "tsc -p tsconfig.json", "test": "vitest run" },
+  "dependencies": {
+    "@lucky-arcade/cabinet-sdk": "workspace:*",
+    "@lucky-arcade/engine": "workspace:*",
+    "@tabler/icons-react": "3.45.0",
+    "react": "19.2.8"
+  },
+  "devDependencies": { "@types/react": "19.2.17" }
+}

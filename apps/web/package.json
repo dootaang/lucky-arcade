@@ -19,6 +19,7 @@
     "@lucky-arcade/gfl-ember": "workspace:*",
     "@lucky-arcade/lore-circuit": "workspace:*",
     "@lucky-arcade/lucky-derby": "workspace:*",
+    "@lucky-arcade/old-maid": "workspace:*",
     "@lucky-arcade/persistence": "workspace:*",
     "@lucky-arcade/restoration-crew": "workspace:*",
     "@lucky-arcade/sprite-memory": "workspace:*",

@@ -18,6 +18,15 @@ type CabinetView = LazyExoticComponent<ComponentType<CabinetViewContext>>;
 const registrations: readonly WebCabinetRegistration[] = [
   {
     manifest: {
+      id: "temerosa-old-maid", version: "old-maid/0.1", title: "테메로세: 여백의 도둑",
+      description: "페일·카노·네모와 짝을 버리고, 마지막 여백 기록을 피하는 4인 도둑잡기입니다.", requiredCapabilities: [],
+      sessionKind: "repeat", launchKind: "built-in", resumeLabel: "도둑잡기 이어하기", estimatedMinutes: { min: 2, max: 4 },
+    },
+    openingRank: null, world: "테메로세", badge: "바로 한 판",
+    load: async () => { const module = await import("../features/temerosa-old-maid/temerosa-old-maid-view.tsx"); return { default: ({ onExit }) => <module.default onExit={onExit} /> }; },
+  },
+  {
+    manifest: {
       id: "temerosa-margin", version: "temerosa-margin/0.2", title: "테메로세: 여백 — 첫 항로",
       description: "죽은 단말기를 깨우고 임시 항해사가 되어, 함께 갈 두 사람과 첫 계약을 맺습니다.", requiredCapabilities: [],
       sessionKind: "deep", launchKind: "built-in", resumeLabel: "첫 항로 이어하기", estimatedMinutes: { min: 5, max: 10 },
