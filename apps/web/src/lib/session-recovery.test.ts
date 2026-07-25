@@ -25,6 +25,16 @@ describe("session recovery", () => {
     expect(recovered).toEqual({ state: { count: 2 }, sequence: 1 });
     expect(truncated).toEqual([1]);
   });
+
+  it("lets a cabinet restore a verified legacy snapshot under a newer current version", async () => {
+    const snapshot = { ...record({ count: 7 }, 4), cabinetVersion: "test/legacy" };
+    const recovered = await recoverSession({
+      ...options(store(snapshot, [])),
+      cabinetVersion: "test/current",
+      restoreSnapshot: (_cabinetVersion, value) => value as State,
+    });
+    expect(recovered).toEqual({ state: { count: 7 }, sequence: 4 });
+  });
 });
 
 function options(value: SessionRecoveryStore) {

@@ -1,4 +1,4 @@
-import { TEMEROSA_OLD_MAID_PACK_VERSION, type OldMaidCard, type OldMaidCartridge, type OldMaidCharacter, type OldMaidFace, type OldMaidTellStyle } from "./contracts.ts";
+import { TEMEROSA_OLD_MAID_PACK_VERSION, type OldMaidCard, type OldMaidCartridge, type OldMaidCharacter, type OldMaidFace } from "./contracts.ts";
 import { temerosaGalleryFaces } from "./temerosa-gallery.ts";
 import { temerosaOldMaidLines } from "./temerosa-lines.ts";
 
@@ -90,7 +90,9 @@ function buildContentCharacters(contentAssets: readonly TemerosaCasinoPortraitAs
       id: characterId,
       name: characterName(characterId),
       appearanceSet: neutral.appearanceSet ?? "temerosa-casino",
-      tellStyle: derivedTellStyle(characterId),
+      // No authored psychology evidence exists for newly audited characters.
+      // Keep them neutral instead of inventing a trait from their identifier.
+      tellStyle: "standard",
       portraits: { neutral: neutral.id, pleased: pleased.id, tense: tense.id },
       despairPortrait: despair.id,
     });
@@ -103,11 +105,6 @@ function uniqueById(items: readonly OldMaidFace[]): OldMaidFace[] {
 }
 function uniqueCharacters(items: readonly OldMaidCharacter[]): OldMaidCharacter[] {
   return [...new Map(items.map((item) => [item.id, item])).values()];
-}
-function derivedTellStyle(characterId: string): OldMaidTellStyle {
-  const styles: readonly OldMaidTellStyle[] = ["open", "guarded", "bluffer"];
-  const score = [...characterId].reduce((sum, character) => sum + character.charCodeAt(0), 0);
-  return styles[score % styles.length] as OldMaidTellStyle;
 }
 function expressionName(expression: string): string {
   const names: Readonly<Record<string, string>> = { neutral: "기본", pleased: "미소", tense: "긴장", despair: "절망", blush: "홍조", surprised: "놀람" };

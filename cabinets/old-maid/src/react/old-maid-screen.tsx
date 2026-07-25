@@ -2,7 +2,9 @@ import { IconArrowLeft, IconCards, IconCheck, IconRefresh, IconX } from "@tabler
 import { useEffect, useMemo, useRef, useState } from "react";
 import { isOldMaidSpeechSilent, oldMaidSpeechSnapshot, selectOldMaidSpeech, validateOldMaidLines, type OldMaidSpeech } from "../dialogue.ts";
 import { availablePairs, characterIdForSeat, createOldMaidState, discardingSeat, inspectCardReaction, reduceOldMaid, targetSeat } from "../engine.ts";
-import type { OldMaidAction, OldMaidCartridge, OldMaidFace, OldMaidMode, OldMaidSeatId, OldMaidState } from "../contracts.ts";
+import { publicRead } from "../read.ts";
+import { selectAmbientReaction } from "../tells.ts";
+import type { OldMaidAction, OldMaidCartridge, OldMaidFace, OldMaidMode, OldMaidPsychologySummary, OldMaidSeatId, OldMaidState } from "../contracts.ts";
 import { pileOffset } from "./pile-layout.ts";
 import "./old-maid.css";
 
@@ -13,7 +15,7 @@ export interface OldMaidScreenProps {
   initialState: OldMaidState | null;
   matchSummary?: OldMaidMatchSummary | null;
   economy?: OldMaidEconomy;
-  onPersist(previous: OldMaidState, next: OldMaidState, action: OldMaidAction): Promise<void>;
+  onPersist(previous: OldMaidState, next: OldMaidState, action: OldMaidAction, psychology: OldMaidPsychologySummary): Promise<void>;
   onExit(): void;
 }
 
@@ -64,6 +66,7 @@ export function OldMaidScreen({ cartridge, assets, detailAssets = assets, initia
   const stateRef = useRef(state);
   const persistQueueRef = useRef<Promise<void>>(Promise.resolve());
   const saveRevisionRef = useRef(0);
+  const psychologyRef = useRef<OldMaidPsychologySummary>(loadPsychologySummary(state.sessionId, state.seed));
   const [saveState, setSaveState] = useState<"saved" | "saving" | "error">("saved");
   const faces = useMemo(() => new Map(cartridge.faces.map((face) => [face.id, face])), [cartridge]);
   const cards = useMemo(() => new Map(cartridge.cards.map((card) => [card.id, card])), [cartridge]);
@@ -76,6 +79,9 @@ export function OldMaidScreen({ cartridge, assets, detailAssets = assets, initia
   function dispatch(action: OldMaidAction) {
     const previous = stateRef.current;
     const next = reduceOldMaid(cartridge, previous, action);
+    if (action.type === "start" || action.type === "restart") psychologyRef.current = emptyPsychologySummary();
+    else recordPsychologyAction(cartridge, previous, next, action, psychologyRef.current);
+    savePsychologySummary(next.sessionId, next.seed, psychologyRef.current);
     const previousSpeech = oldMaidSpeechSnapshot(previous);
     const nextSpeech = oldMaidSpeechSnapshot(next);
     const selectedSpeech = selectOldMaidSpeech(cartridge, previousSpeech, nextSpeech, recentLineIdsRef.current);
@@ -85,7 +91,8 @@ export function OldMaidScreen({ cartridge, assets, detailAssets = assets, initia
     setState(next);
     setSaveState("saving");
     const revision = ++saveRevisionRef.current;
-    persistQueueRef.current = persistQueueRef.current.catch(() => undefined).then(() => onPersist(previous, next, action));
+    const psychology = { ...psychologyRef.current };
+    persistQueueRef.current = persistQueueRef.current.catch(() => undefined).then(() => onPersist(previous, next, action, psychology));
     void persistQueueRef.current.then(() => { if (saveRevisionRef.current === revision) setSaveState("saved"); }).catch(() => { if (saveRevisionRef.current === revision) setSaveState("error"); });
   }
 
@@ -197,7 +204,12 @@ export function OldMaidScreen({ cartridge, assets, detailAssets = assets, initia
   }
 
   function inspectDrawCard(cardId: string) {
-    setInspectedDrawCardIds((current) => current.includes(cardId) ? current : current.length < 3 ? [...current, cardId] : current);
+    setInspectedDrawCardIds((current) => {
+      if (current.includes(cardId) || current.length >= 3) return current;
+      psychologyRef.current.inspectedCards += 1;
+      savePsychologySummary(stateRef.current.sessionId, stateRef.current.seed, psychologyRef.current);
+      return [...current, cardId];
+    });
   }
 
   return <main className="old-maid-shell" style={background ? { "--old-maid-bg": `url(${JSON.stringify(background)})` } as React.CSSProperties : undefined}>
@@ -211,9 +223,10 @@ export function OldMaidScreen({ cartridge, assets, detailAssets = assets, initia
       <div className="old-maid-opponents">
         {(["cpu-1", "cpu-2", "cpu-3"] as const).map((seatId) => {
           const character = characters.get(state.characters[seatId]);
-          const reaction = seatId === targetId && inspectedReaction ? inspectedReaction : state.reactions[seatId];
+          const baseReaction = state.status === "revealing" || state.status === "discarding" ? state.reactions[seatId] : selectAmbientReaction(cartridge, state, seatId);
+          const reaction = seatId === targetId && inspectedReaction ? inspectedReaction : baseReaction;
           const portraitId = state.status === "complete" && state.loserId === seatId ? character?.despairPortrait : character?.portraits[reaction];
-          return <SeatPanel key={seatId} seatId={seatId} state={state} name={nameOf(seatId)} portrait={portraitId ? assets[portraitId] ?? null : null} reaction={reaction} active={state.currentPlayerId === seatId} showHand={state.mode === "spectate" || humanFinishedWatching} cards={cards} faces={faces} assets={assets} speech={speech?.seatId === seatId ? speech : null} onDetail={setDetail} />;
+          return <SeatPanel key={seatId} seatId={seatId} state={state} name={nameOf(seatId)} portrait={portraitId ? assets[portraitId] ?? null : null} reaction={reaction} active={state.currentPlayerId === seatId} reordered={publicRead(state, seatId).reorderedSinceTargetDraw} showHand={state.mode === "spectate" || humanFinishedWatching} cards={cards} faces={faces} assets={assets} speech={speech?.seatId === seatId ? speech : null} onDetail={setDetail} />;
         })}
       </div>
 
@@ -305,7 +318,7 @@ export function OldMaidScreen({ cartridge, assets, detailAssets = assets, initia
 
       <GameLog state={state} faces={faces} nameOf={nameOf} revealCpuDraws={state.mode === "spectate" || humanFinishedWatching} />
 
-      {state.mode === "spectate" && state.status !== "ready" ? <SpectatorSeat state={state} name={nameOf("player")} character={characters.get(state.spectatorCharacterId ?? "")} portrait={assets[(state.status === "complete" && state.loserId === "player" ? characters.get(state.spectatorCharacterId ?? "")?.despairPortrait : characters.get(state.spectatorCharacterId ?? "")?.portraits[state.reactions.player]) ?? ""] ?? null} cards={cards} faces={faces} assets={assets} onDetail={setDetail} /> : <section className={`old-maid-player ${state.currentPlayerId === "player" && state.status === "playing" ? "active" : ""}`} data-deal-target="player">
+      {state.mode === "spectate" && state.status !== "ready" ? <SpectatorSeat state={state} name={nameOf("player")} character={characters.get(state.spectatorCharacterId ?? "")} reaction={state.status === "revealing" || state.status === "discarding" ? state.reactions.player : selectAmbientReaction(cartridge, state, "player")} portrait={assets[(state.status === "complete" && state.loserId === "player" ? characters.get(state.spectatorCharacterId ?? "")?.despairPortrait : characters.get(state.spectatorCharacterId ?? "")?.portraits[state.status === "revealing" || state.status === "discarding" ? state.reactions.player : selectAmbientReaction(cartridge, state, "player")]) ?? ""] ?? null} cards={cards} faces={faces} assets={assets} onDetail={setDetail} /> : <section className={`old-maid-player ${state.currentPlayerId === "player" && state.status === "playing" ? "active" : ""}`} data-deal-target="player">
         <div><strong>플레이어</strong><span>{state.status === "ready" ? "배분 전" : state.status === "dealing" ? "배분 중" : `${state.hands.player.length}장`}</span></div>
         <div className="old-maid-player-hand" aria-label="내 손패">
           {handVisible && state.hands.player.map((cardId, index) => { const card = cards.get(cardId); const face = card ? faces.get(card.faceId) : null; const canReorder = state.status === "playing" && state.currentPlayerId === "player" && state.mode === "play" && (state.lastReorder?.turn !== state.turn || state.lastReorder.count < 3); return face ? <button key={cardId} className={`old-maid-card-button ${discardableIds.has(cardId) ? "discardable" : ""} ${reorderFrom === index ? "reordering" : ""}`} draggable={canReorder} onDragStart={(event) => event.dataTransfer.setData("text/old-maid-index", String(index))} onDragOver={(event) => { if (canReorder) event.preventDefault(); }} onDrop={(event) => { event.preventDefault(); const from = Number(event.dataTransfer.getData("text/old-maid-index")); if (canReorder && Number.isInteger(from)) dispatch({ type: "reorder_hand", from, to: index }); }} onPointerDown={(event) => { if (!canReorder || event.pointerType === "mouse") return; longPressRef.current = window.setTimeout(() => setReorderFrom(index), 450); }} onPointerUp={() => { if (longPressRef.current !== null) window.clearTimeout(longPressRef.current); longPressRef.current = null; }} onKeyDown={(event) => { if (!canReorder || event.key !== "ArrowLeft" && event.key !== "ArrowRight") return; event.preventDefault(); const to = Math.max(0, Math.min(state.hands.player.length - 1, index + (event.key === "ArrowLeft" ? -1 : 1))); if (to !== index) dispatch({ type: "reorder_hand", from: index, to }); }} onClick={() => { if (reorderFrom !== null && canReorder) { if (reorderFrom !== index) dispatch({ type: "reorder_hand", from: reorderFrom, to: index }); setReorderFrom(null); } else setDetail(face); }} aria-label={`${face.name} 크게 보기${canReorder ? ", 좌우 화살표로 재배열" : ""}`}><CardFace face={face} assets={assets} odd={face.id === cartridge.oddFaceId} /></button> : null; })}
@@ -340,22 +353,22 @@ function streakLabel(value: number): string {
   return "현재 연속 기록 없음";
 }
 
-function SeatPanel({ seatId, state, name, portrait, reaction, active, showHand, cards, faces, assets, speech, onDetail }: { seatId: Exclude<OldMaidSeatId, "player">; state: OldMaidState; name: string; portrait: string | null; reaction: string; active: boolean; showHand: boolean; cards: Map<string, { faceId: string }>; faces: Map<string, OldMaidFace>; assets: Readonly<Record<string, string>>; speech: DisplayedSpeech | null; onDetail(face: OldMaidFace): void }) {
+function SeatPanel({ seatId, state, name, portrait, reaction, active, reordered, showHand, cards, faces, assets, speech, onDetail }: { seatId: Exclude<OldMaidSeatId, "player">; state: OldMaidState; name: string; portrait: string | null; reaction: string; active: boolean; reordered: boolean; showHand: boolean; cards: Map<string, { faceId: string }>; faces: Map<string, OldMaidFace>; assets: Readonly<Record<string, string>>; speech: DisplayedSpeech | null; onDetail(face: OldMaidFace): void }) {
   const safe = state.safeOrder.includes(seatId);
   const hidden = state.status === "ready" || state.status === "dealing";
   return <article className={`old-maid-seat seat-${seatId} ${active ? "active" : ""} ${safe ? "safe" : ""} ${speech ? "speaking" : ""}`} data-deal-target={seatId}>
     {speech && <div className="old-maid-speech" data-line-id={speech.line.id} data-beat={speech.beat} key={`${speech.line.id}:${speech.beat}:${speech.revision}`}><p>{speech.line.text[speech.beat]}</p></div>}
     <div className="old-maid-seat-portrait">{portrait ? <img src={portrait} alt={`${name}의 현재 표정`} decoding="async" /> : <span>{name}</span>}<i className={`old-maid-reaction-dot ${reaction}`} aria-hidden="true" /></div>
-    <div><strong>{name}</strong><em className={`old-maid-reaction-text ${reaction}`}>{reactionLabel(reaction)}</em><span>{hidden ? (state.status === "ready" ? "배분 전" : "배분 중") : safe ? "손패 비움" : `${state.hands[seatId].length}장`}</span></div>
+    <div><strong>{name}</strong><em className={`old-maid-reaction-text ${reaction}`}>{reactionLabel(reaction)}</em><span>{hidden ? (state.status === "ready" ? "배분 전" : "배분 중") : safe ? "손패 비움" : reordered ? `${state.hands[seatId].length}장 · 손패를 섞어 둠` : `${state.hands[seatId].length}장`}</span></div>
     {showHand && !safe && <div className="old-maid-spectator-hand" aria-label={`${name}의 공개된 손패`}>{state.hands[seatId].map((cardId) => { const face = faces.get(cards.get(cardId)?.faceId ?? ""); return face ? <button key={cardId} onClick={() => onDetail(face)}><CardFace face={face} assets={assets} odd={face.id === "joker"} /></button> : null; })}</div>}
   </article>;
 }
 
-function SpectatorSeat({ state, name, character, portrait, cards, faces, assets, onDetail }: { state: OldMaidState; name: string; character: OldMaidCartridge["characters"][number] | undefined; portrait: string | null; cards: Map<string, { faceId: string }>; faces: Map<string, OldMaidFace>; assets: Readonly<Record<string, string>>; onDetail(face: OldMaidFace): void }) {
+function SpectatorSeat({ state, name, character, reaction, portrait, cards, faces, assets, onDetail }: { state: OldMaidState; name: string; character: OldMaidCartridge["characters"][number] | undefined; reaction: string; portrait: string | null; cards: Map<string, { faceId: string }>; faces: Map<string, OldMaidFace>; assets: Readonly<Record<string, string>>; onDetail(face: OldMaidFace): void }) {
   const safe = state.safeOrder.includes("player");
   return <article className={`old-maid-player old-maid-spectator-seat ${state.currentPlayerId === "player" && state.status === "playing" ? "active" : ""} ${safe ? "safe" : ""}`} data-deal-target="player">
-    <div className="old-maid-spectator-profile"><div className="old-maid-seat-portrait">{portrait ? <img src={portrait} alt={`${name}의 현재 표정`} decoding="async" /> : <span>{name}</span>}</div><div><strong>{name}</strong><em className={`old-maid-reaction-text ${state.reactions.player}`}>{reactionLabel(state.reactions.player)}</em><span>{state.status === "dealing" ? "배분 중" : safe ? "손패 비움" : `${state.hands.player.length}장`}</span></div></div>
-    <span className="old-maid-spectator-label">관전 좌석 · 이번 판 반응 {character?.tellStyle === "open" ? "공개형" : character?.tellStyle === "guarded" ? "경계형" : "허세형"}</span>
+    <div className="old-maid-spectator-profile"><div className="old-maid-seat-portrait">{portrait ? <img src={portrait} alt={`${name}의 현재 표정`} decoding="async" /> : <span>{name}</span>}</div><div><strong>{name}</strong><em className={`old-maid-reaction-text ${reaction}`}>{reactionLabel(reaction)}</em><span>{state.status === "dealing" ? "배분 중" : safe ? "손패 비움" : `${state.hands.player.length}장`}</span></div></div>
+    <span className="old-maid-spectator-label">관전 좌석 · 이번 판 반응 {tellStyleLabel(character?.tellStyle)}</span>
     {!safe && <div className="old-maid-spectator-hand old-maid-spectator-bottom-hand" aria-label={`${name}의 관전 손패`}>{state.hands.player.map((cardId) => { const face = faces.get(cards.get(cardId)?.faceId ?? ""); return face ? <button key={cardId} onClick={() => onDetail(face)} aria-label={`${face.name} 크게 보기`}><CardFace face={face} assets={assets} odd={face.id === "joker"} /></button> : null; })}</div>}
   </article>;
 }
@@ -555,5 +568,36 @@ function DealingAnimation({ state, onComplete }: { state: OldMaidState; onComple
 
 function dailySeed(): string { return new Date().toISOString().slice(0, 10); }
 function reactionLabel(reaction: string): string { return reaction === "pleased" ? "만족한 듯" : reaction === "tense" ? "긴장한 듯" : "침착한 듯"; }
+function tellStyleLabel(style: OldMaidCartridge["characters"][number]["tellStyle"] | undefined): string { return style === "open" ? "공개형" : style === "guarded" ? "경계형" : style === "bluffer" ? "허세형" : "표준형"; }
+function emptyPsychologySummary(): OldMaidPsychologySummary { return { inspectedCards: 0, reorderActions: 0, reorderTurns: 0, reorderSignals: 0, movedSlotDraws: 0, successfulBaits: 0 }; }
+function psychologyStorageKey(sessionId: string, seed: string): string { return `lucky-arcade:old-maid-psychology:${sessionId}:${seed}`; }
+function loadPsychologySummary(sessionId: string, seed: string): OldMaidPsychologySummary {
+  if (typeof window === "undefined") return emptyPsychologySummary();
+  try {
+    const value = JSON.parse(window.localStorage.getItem(psychologyStorageKey(sessionId, seed)) ?? "null") as Partial<OldMaidPsychologySummary> | null;
+    return value ? { ...emptyPsychologySummary(), ...value } : emptyPsychologySummary();
+  } catch { return emptyPsychologySummary(); }
+}
+function savePsychologySummary(sessionId: string, seed: string, summary: OldMaidPsychologySummary): void {
+  if (typeof window === "undefined") return;
+  try { window.localStorage.setItem(psychologyStorageKey(sessionId, seed), JSON.stringify(summary)); } catch { /* telemetry must never block play */ }
+}
+function recordPsychologyAction(cartridge: OldMaidCartridge, previous: OldMaidState, next: OldMaidState, action: OldMaidAction, summary: OldMaidPsychologySummary): void {
+  if (action.type === "reorder_hand") {
+    summary.reorderActions += 1;
+    if (previous.lastReorder?.turn !== previous.turn) summary.reorderTurns += 1;
+    return;
+  }
+  if (action.type !== "cpu_draw" || !next.pendingDraw) return;
+  const targetId = next.pendingDraw.targetId;
+  const read = publicRead(previous, targetId);
+  if (!read.reorderedSinceTargetDraw || read.reorderIndex === null) return;
+  summary.reorderSignals += 1;
+  const drawnIndex = previous.hands[targetId].indexOf(next.pendingDraw.cardId);
+  if (drawnIndex !== read.reorderIndex) return;
+  summary.movedSlotDraws += 1;
+  const drawn = cartridge.cards.find((card) => card.id === next.pendingDraw?.cardId);
+  if (drawn?.faceId !== cartridge.oddFaceId) summary.successfulBaits += 1;
+}
 function subjectParticle(value: string): string { const code = value.charCodeAt(value.length - 1) - 0xac00; return code >= 0 && code <= 11171 && code % 28 !== 0 ? "이" : "가"; }
 export default OldMaidScreen;

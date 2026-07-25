@@ -1,4 +1,4 @@
-import { OLD_MAID_VERSION, TEMEROSA_OLD_MAID_PACK_VERSION, createOldMaidState, createTemerosaCasinoOldMaidCartridge, oldMaidOutcome, reduceOldMaid, type OldMaidAction, type OldMaidCartridge, type OldMaidState } from "@lucky-arcade/old-maid";
+import { OLD_MAID_VERSION, TEMEROSA_OLD_MAID_PACK_VERSION, createOldMaidState, createTemerosaCasinoOldMaidCartridge, isOldMaidState, oldMaidOutcome, reduceOldMaid, restoreOldMaidState, type OldMaidAction, type OldMaidCartridge, type OldMaidPsychologySummary, type OldMaidState } from "@lucky-arcade/old-maid";
 import { OldMaidScreen } from "@lucky-arcade/old-maid/react";
 import { makeReceipt, resultHash } from "@lucky-arcade/engine";
 import { useEffect, useState } from "react";
@@ -31,7 +31,8 @@ export default function TemerosaOldMaidView({ onExit }: { onExit(): void }) {
         fresh: createOldMaidState(cartridge, new Date().toISOString().slice(0, 10), SESSION),
         cabinetVersion: OLD_MAID_VERSION,
         packVersion: TEMEROSA_OLD_MAID_PACK_VERSION,
-        isState: (value): value is OldMaidState => Boolean(value && typeof value === "object" && (value as Partial<OldMaidState>).version === OLD_MAID_VERSION && (value as Partial<OldMaidState>).packVersion === TEMEROSA_OLD_MAID_PACK_VERSION),
+        isState: (value): value is OldMaidState => isOldMaidState(value) && value.packVersion === TEMEROSA_OLD_MAID_PACK_VERSION,
+        restoreSnapshot: restoreOldMaidState,
         reduce: (state, action) => reduceOldMaid(cartridge, state, action),
       }), listPredictions()]);
       if (!alive) return;
@@ -52,22 +53,22 @@ export default function TemerosaOldMaidView({ onExit }: { onExit(): void }) {
   }, []);
   useEffect(() => { void Promise.all([readWallet(), readCollection(COLLECTION)]).then(([nextWallet, nextCollection]) => { setWallet(nextWallet); setCollection(nextCollection); }).catch(() => undefined); }, []);
 
-  async function persist(previous: OldMaidState, next: OldMaidState, action: OldMaidAction) {
+  async function persist(previous: OldMaidState, next: OldMaidState, action: OldMaidAction, psychology: OldMaidPsychologySummary) {
     const cartridge = ready?.cartridge;
     if (!cartridge) throw new Error("temerosa_old_maid_not_ready");
     const receipt = makeReceipt(next.sequence, action, next.turn, resultHash(previous), next);
     await appendAction(SESSION, receipt);
     await saveSnapshot({
       contract: "snapshot-record/0.1", sessionId: SESSION, sequence: next.sequence, state: next,
-      stateHash: receipt.resultHash, engineVersion: "arcade-engine/0.1", cabinetVersion: OLD_MAID_VERSION, packVersion: TEMEROSA_OLD_MAID_PACK_VERSION,
+      stateHash: receipt.resultHash, engineVersion: "arcade-engine/0.1", cabinetVersion: next.version, packVersion: TEMEROSA_OLD_MAID_PACK_VERSION,
     }, {
       contract: "recent-play/0.1", cabinetId: "temerosa-old-maid", sessionId: SESSION,
       title: "테메로세 도둑잡기", progressLabel: progressLabel(next), updatedAt: new Date().toISOString(),
     });
     if (previous.status !== "complete" && next.status === "complete") {
       void recordOldMaidCompletion(cartridge, previous, next, {
-        cabinetId: "temerosa-old-maid", sessionId: SESSION, cabinetVersion: OLD_MAID_VERSION, packVersion: TEMEROSA_OLD_MAID_PACK_VERSION,
-      }).then((summary) => { if (summary) setMatchSummary(summary); }).catch(() => undefined);
+        cabinetId: "temerosa-old-maid", sessionId: SESSION, cabinetVersion: next.version, packVersion: TEMEROSA_OLD_MAID_PACK_VERSION,
+      }, psychology).then((summary) => { if (summary) setMatchSummary(summary); }).catch(() => undefined);
       if (next.mode === "spectate") void settleCurrentPrediction(next);
       else void grantOldMaidCompletion(previous, next, "temerosa-old-maid").then((result) => { if (result) { setWallet(result.wallet); setAward({ amount: result.amount, rank: result.rank }); } }).catch(() => undefined);
     }

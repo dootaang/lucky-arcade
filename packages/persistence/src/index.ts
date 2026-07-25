@@ -81,6 +81,14 @@ export interface MatchRecord {
   standings: MatchStanding[];
   outcome: "win" | "loss" | "spectated";
   resultHash: string;
+  psychology?: {
+    inspectedCards: number;
+    reorderActions: number;
+    reorderTurns: number;
+    reorderSignals: number;
+    movedSlotDraws: number;
+    successfulBaits: number;
+  };
 }
 
 export interface MatchRecordStore {

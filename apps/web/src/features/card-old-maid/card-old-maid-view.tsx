@@ -1,5 +1,5 @@
 import { makeReceipt, resultHash } from "@lucky-arcade/engine";
-import { OLD_MAID_VERSION, createOldMaidState, reduceOldMaid, type OldMaidAction, type OldMaidCartridge, type OldMaidState } from "@lucky-arcade/old-maid";
+import { OLD_MAID_VERSION, createOldMaidState, isOldMaidState, reduceOldMaid, restoreOldMaidState, type OldMaidAction, type OldMaidCartridge, type OldMaidPsychologySummary, type OldMaidState } from "@lucky-arcade/old-maid";
 import { OldMaidScreen } from "@lucky-arcade/old-maid/react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { CabinetViewProps } from "../../cabinets/registry.tsx";
@@ -40,7 +40,8 @@ export default function CardOldMaidView({ analyzed, onExit }: CabinetViewProps) 
       const fresh = createOldMaidState(cartridge, new Date().toISOString().slice(0, 10), sessionId);
       const recovered = await recoverSession<OldMaidState, OldMaidAction>({
         sessionId, fresh, cabinetVersion: OLD_MAID_VERSION, packVersion: CARD_OLD_MAID_PACK_VERSION,
-        isState: (value): value is OldMaidState => Boolean(value && typeof value === "object" && (value as Partial<OldMaidState>).version === OLD_MAID_VERSION && (value as Partial<OldMaidState>).packVersion === CARD_OLD_MAID_PACK_VERSION),
+        isState: (value): value is OldMaidState => isOldMaidState(value) && value.packVersion === CARD_OLD_MAID_PACK_VERSION,
+        restoreSnapshot: restoreOldMaidState,
         reduce: (state, action) => reduceOldMaid(cartridge, state, action),
       });
       const assets = await loadAssets(service, cartridge, recovered.state);
@@ -54,19 +55,19 @@ export default function CardOldMaidView({ analyzed, onExit }: CabinetViewProps) 
     void Promise.all([readWallet(), readCollection(collectionId)]).then(([nextWallet, nextCollection]) => { setWallet(nextWallet); setCollection(nextCollection); }).catch(() => undefined);
   }, [collectionId]);
 
-  async function persist(previous: OldMaidState, next: OldMaidState, action: OldMaidAction) {
+  async function persist(previous: OldMaidState, next: OldMaidState, action: OldMaidAction, psychology: OldMaidPsychologySummary) {
     const service = serviceRef.current;
     if (service && cartridge) void loadAssets(service, cartridge, next).then((assets) => setReady((current) => current ? { ...current, assets } : current)).catch(() => undefined);
     const receipt = makeReceipt(next.sequence, action, next.turn, resultHash(previous), next);
     await appendAction(sessionId, receipt);
-    await saveSnapshot({ contract: "snapshot-record/0.1", sessionId, sequence: next.sequence, state: next, stateHash: receipt.resultHash, engineVersion: "arcade-engine/0.1", cabinetVersion: OLD_MAID_VERSION, packVersion: CARD_OLD_MAID_PACK_VERSION }, {
+    await saveSnapshot({ contract: "snapshot-record/0.1", sessionId, sequence: next.sequence, state: next, stateHash: receipt.resultHash, engineVersion: "arcade-engine/0.1", cabinetVersion: next.version, packVersion: CARD_OLD_MAID_PACK_VERSION }, {
       contract: "recent-play/0.1", cabinetId: "old-maid-card", sessionId, cardFingerprint: sourceFingerprint,
       title: cartridge?.title ?? "내 카드 도둑잡기", progressLabel: progressLabel(next), updatedAt: new Date().toISOString(),
     });
     if (cartridge && previous.status !== "complete" && next.status === "complete") {
       void recordOldMaidCompletion(cartridge, previous, next, {
-        cabinetId: "old-maid-card", sessionId, cabinetVersion: OLD_MAID_VERSION, packVersion: CARD_OLD_MAID_PACK_VERSION, cardFingerprint: sourceFingerprint,
-      }).then((summary) => { if (summary) setMatchSummary(summary); }).catch(() => undefined);
+        cabinetId: "old-maid-card", sessionId, cabinetVersion: next.version, packVersion: CARD_OLD_MAID_PACK_VERSION, cardFingerprint: sourceFingerprint,
+      }, psychology).then((summary) => { if (summary) setMatchSummary(summary); }).catch(() => undefined);
       void grantOldMaidCompletion(previous, next, "old-maid-card").then((result) => { if (result) { setWallet(result.wallet); setAward({ amount: result.amount, rank: result.rank }); } }).catch(() => undefined);
     }
   }

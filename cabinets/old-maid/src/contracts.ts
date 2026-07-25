@@ -1,11 +1,12 @@
-export const OLD_MAID_VERSION = "old-maid/0.6" as const;
+export const OLD_MAID_LEGACY_VERSION = "old-maid/0.6" as const;
+export const OLD_MAID_VERSION = "old-maid/0.7" as const;
 export const TEMEROSA_OLD_MAID_PACK_VERSION = "temerosa-old-maid/0.7" as const;
 
 export type OldMaidSeatId = "player" | "cpu-1" | "cpu-2" | "cpu-3";
 export type OldMaidCpuSeatId = Exclude<OldMaidSeatId, "player">;
 export type OldMaidStatus = "ready" | "dealing" | "playing" | "revealing" | "discarding" | "complete";
 export type OldMaidReaction = "neutral" | "pleased" | "tense";
-export type OldMaidTellStyle = "open" | "guarded" | "bluffer";
+export type OldMaidTellStyle = "standard" | "open" | "guarded" | "bluffer";
 export type OldMaidMode = "play" | "spectate";
 export type OldMaidLineEvent =
   | "watching" | "idle-draw" | "pair-discard" | "taken-from"
@@ -79,7 +80,7 @@ export interface OldMaidDealCard {
 
 export interface OldMaidState {
   contract: "old-maid-state/0.6";
-  version: typeof OLD_MAID_VERSION;
+  version: typeof OLD_MAID_VERSION | typeof OLD_MAID_LEGACY_VERSION;
   packVersion: string;
   sessionId: string;
   seed: string;
@@ -102,6 +103,17 @@ export interface OldMaidState {
   lastDraw: OldMaidDrawEvent | null;
   history: OldMaidHistoryEntry[];
   lastReorder: { turn: number; toIndex: number; count: number } | null;
+  /** Added for 0.7 games. The player entry mirrors lastReorder for 0.6 readers. */
+  lastReorders?: Partial<Record<OldMaidSeatId, { turn: number; fromIndex: number; toIndex: number; count: number }>>;
+}
+
+export interface OldMaidPsychologySummary {
+  inspectedCards: number;
+  reorderActions: number;
+  reorderTurns: number;
+  reorderSignals: number;
+  movedSlotDraws: number;
+  successfulBaits: number;
 }
 
 export type OldMaidAction =

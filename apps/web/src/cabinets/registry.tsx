@@ -24,7 +24,7 @@ const registrations: readonly WebCabinetRegistration[] = [
   },
   {
     manifest: {
-      id: "temerosa-old-maid", version: "old-maid/0.6", title: "테메로세 도둑잡기",
+      id: "temerosa-old-maid", version: "old-maid/0.7", title: "테메로세 도둑잡기",
       description: "테메로세 인물들과 즐기는 도둑잡기.", requiredCapabilities: [],
       sessionKind: "repeat", launchKind: "built-in", resumeLabel: "도둑잡기 이어하기", estimatedMinutes: { min: 2, max: 4 },
     },
@@ -87,7 +87,7 @@ const registrations: readonly WebCabinetRegistration[] = [
   },
   {
     manifest: {
-      id: "old-maid-card", version: "old-maid/0.6", title: "내 카드 도둑잡기",
+      id: "old-maid-card", version: "old-maid/0.7", title: "내 카드 도둑잡기",
       description: "내 카드의 인물과 표정으로 즐기는 도둑잡기.", requiredCapabilities: ["expressive-npcs>=4"],
       sessionKind: "repeat", launchKind: "card", resumeLabel: "도둑잡기 이어하기", estimatedMinutes: { min: 2, max: 4 },
     },

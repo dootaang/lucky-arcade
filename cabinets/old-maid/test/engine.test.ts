@@ -1,7 +1,7 @@
 import { resultHash } from "@lucky-arcade/engine";
 import { describe, expect, it } from "vitest";
 import { PERSONA_PRESETS } from "@lucky-arcade/engine";
-import { availablePairs, cpuDrawIndex, createOldMaidState, createTemerosaCasinoOldMaidCartridge, inspectCardReaction, oldMaidOutcome, publicRead, reduceOldMaid, temerosaOldMaidCartridge, validateCartridge, type OldMaidAction, type OldMaidCartridge, type OldMaidCharacter, type OldMaidMode, type OldMaidState } from "../src/index.ts";
+import { OLD_MAID_LEGACY_VERSION, availablePairs, cpuDrawIndex, createOldMaidState, createTemerosaCasinoOldMaidCartridge, inspectCardReaction, legacyCpuDrawIndex, oldMaidOutcome, publicRead, reduceOldMaid, selectAmbientReaction, temerosaOldMaidCartridge, validateCartridge, type OldMaidAction, type OldMaidCartridge, type OldMaidCharacter, type OldMaidMode, type OldMaidState } from "../src/index.ts";
 
 const extraCharacters: OldMaidCharacter[] = Array.from({ length: 22 }, (_, index) => ({
   id: `fixture-${index + 1}`,
@@ -138,6 +138,7 @@ describe("old maid deterministic engine", () => {
     expect(cartridge.selectableCharacterIds).not.toContain("bacikal");
     expect(cartridge.characters.find(({ id }) => id === "nemo")?.appearanceSet).toBe("nemo-magical-girl");
     expect(cartridge.faces.some(({ assetId }) => assetId === "card-fixture-main-surprised")).toBe(true);
+    expect(cartridge.characters.find(({ id }) => id === "fixture-main")?.tellStyle).toBe("standard");
     expect(() => validateCartridge(cartridge)).not.toThrow();
   });
 
@@ -205,6 +206,48 @@ describe("old maid deterministic engine", () => {
     const read = publicRead(state, "cpu-2");
     expect(cpuDrawIndex(PERSONA_PRESETS.open, read, "seed", 4, "cpu-1", "cpu-2", 5)).toBe(cpuDrawIndex(PERSONA_PRESETS.open, read, "seed", 4, "cpu-1", "cpu-2", 5));
     expect(cpuDrawIndex(PERSONA_PRESETS.open, read, "seed", 4, "cpu-1", "cpu-2", 5)).toBeLessThan(5);
+  });
+
+  it("makes literal, neutral, and counter-reading policies observably distinct", () => {
+    const read = { targetHandSize: 5, targetDiscardCount: 0, turnsSinceTargetDrew: 1, reorderedSinceTargetDraw: true, reorderIndex: 2, reorderCount: 3, reorderedImmediatelyAfterDraw: true };
+    const rate = (persona: (typeof PERSONA_PRESETS)[keyof typeof PERSONA_PRESETS]) => Array.from({ length: 1_000 }, (_, seed) => cpuDrawIndex(persona, read, `policy-${seed}`, 4, "cpu-1", "player", 5)).filter((index) => index === 2).length;
+    const open = rate(PERSONA_PRESETS.open), standard = rate(PERSONA_PRESETS.standard), guarded = rate(PERSONA_PRESETS.guarded);
+    expect(open).toBeGreaterThan(standard + 80);
+    expect(guarded).toBeLessThan(standard - 40);
+  });
+
+  it("keeps the exact 0.6 draw policy and suppresses CPU reorders for legacy states", () => {
+    const fresh = createOldMaidState(temerosaOldMaidCartridge, "legacy-policy", "test-session");
+    const { lastReorders: _newReorders, ...legacyFresh } = fresh;
+    const state: OldMaidState = { ...legacyFresh, version: OLD_MAID_LEGACY_VERSION, status: "playing", currentPlayerId: "cpu-1" };
+    const read = publicRead(state, "cpu-2");
+    const style = temerosaOldMaidCartridge.characters.find(({ id }) => id === state.characters["cpu-1"])?.tellStyle ?? "standard";
+    const index = legacyCpuDrawIndex(PERSONA_PRESETS[style], read, state.seed, state.turn, "cpu-1", "cpu-2", state.hands["cpu-2"].length);
+    const next = reduceOldMaid(temerosaOldMaidCartridge, state, { type: "cpu_draw" });
+    expect(next.pendingDraw?.cardId).toBe(state.hands["cpu-2"][index]);
+    expect(next.lastReorders).toBeUndefined();
+    const playerState: OldMaidState = { ...state, currentPlayerId: "player" };
+    const playerReordered = reduceOldMaid(temerosaOldMaidCartridge, playerState, { type: "reorder_hand", from: 0, to: 1 });
+    expect(Object.hasOwn(playerReordered, "lastReorders")).toBe(false);
+  });
+
+  it("derives ambient pressure without changing the saved state", () => {
+    const base = createOldMaidState(temerosaOldMaidCartridge, "ambient", "test-session");
+    const characterState = { ...base, status: "playing" as const, currentPlayerId: "cpu-3" as const, characters: { ...base.characters, "cpu-1": "pale" } };
+    const jokerOwner = (Object.keys(characterState.hands) as (keyof typeof characterState.hands)[]).find((seatId) => characterState.hands[seatId].includes("joker-odd"));
+    const pressured = jokerOwner === "cpu-1" ? characterState : { ...characterState, hands: { ...characterState.hands, [jokerOwner!]: characterState.hands[jokerOwner!].filter((id) => id !== "joker-odd"), "cpu-1": [...characterState.hands["cpu-1"], "joker-odd"] } };
+    const before = resultHash(pressured);
+    const reactions = Array.from({ length: 100 }, (_, index) => selectAmbientReaction(temerosaOldMaidCartridge, { ...pressured, seed: `ambient-${index}` }, "cpu-1"));
+    expect(reactions).toContain("tense");
+    expect(resultHash(pressured)).toBe(before);
+  });
+
+  it("lets new CPU seats reorder deterministically without changing card membership", () => {
+    const left = autoplayCartridge(thirtyCharacterCartridge, "cpu-reorder", "spectate");
+    const right = autoplayCartridge(thirtyCharacterCartridge, "cpu-reorder", "spectate");
+    expect(left.lastReorders).toEqual(right.lastReorders);
+    expect(Object.keys(left.lastReorders ?? {}).length).toBeGreaterThan(0);
+    expect(resultHash(left)).toBe(resultHash(right));
   });
 
   it("lets an open opponent visibly react to the hovered joker", () => {

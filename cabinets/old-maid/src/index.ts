@@ -6,6 +6,7 @@ export * from "./dialogue.ts";
 export * from "./engine.ts";
 export * from "./outcome.ts";
 export * from "./read.ts";
+export * from "./tells.ts";
 export { temerosaOldMaidLines } from "./temerosa-lines.ts";
 export { createTemerosaCasinoOldMaidCartridge, temerosaOldMaidCartridge, type TemerosaCasinoPortraitAsset } from "./cartridge.ts";
 

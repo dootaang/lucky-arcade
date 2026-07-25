@@ -1,5 +1,5 @@
 import { resultHash } from "@lucky-arcade/engine";
-import { oldMaidOutcome, type OldMaidCartridge, type OldMaidState } from "@lucky-arcade/old-maid";
+import { oldMaidOutcome, type OldMaidCartridge, type OldMaidPsychologySummary, type OldMaidState } from "@lucky-arcade/old-maid";
 import type { MatchRecord } from "@lucky-arcade/persistence";
 import { appendMatchRecord, listMatchRecordsForSession, pruneMatchRecords } from "./database.ts";
 
@@ -21,7 +21,7 @@ export interface OldMaidMatchIdentity {
   cardFingerprint?: string;
 }
 
-export function createOldMaidMatchRecord(cartridge: OldMaidCartridge, state: OldMaidState, identity: OldMaidMatchIdentity, completedAt = new Date().toISOString()): MatchRecord | null {
+export function createOldMaidMatchRecord(cartridge: OldMaidCartridge, state: OldMaidState, identity: OldMaidMatchIdentity, completedAt = new Date().toISOString(), psychology?: OldMaidPsychologySummary): MatchRecord | null {
   const outcome = oldMaidOutcome(state);
   if (!outcome) return null;
   const names = new Map(cartridge.characters.map((character) => [character.id, character.name]));
@@ -46,12 +46,13 @@ export function createOldMaidMatchRecord(cartridge: OldMaidCartridge, state: Old
     })),
     outcome: state.mode === "spectate" ? "spectated" : outcome.loserId === "player" ? "loss" : "win",
     resultHash: resultHash(state),
+    ...(psychology ? { psychology } : {}),
   };
 }
 
-export async function recordOldMaidCompletion(cartridge: OldMaidCartridge, previous: OldMaidState, next: OldMaidState, identity: OldMaidMatchIdentity): Promise<MatchSummary | null> {
+export async function recordOldMaidCompletion(cartridge: OldMaidCartridge, previous: OldMaidState, next: OldMaidState, identity: OldMaidMatchIdentity, psychology?: OldMaidPsychologySummary): Promise<MatchSummary | null> {
   if (previous.status === "complete" || next.status !== "complete") return null;
-  const record = createOldMaidMatchRecord(cartridge, next, identity);
+  const record = createOldMaidMatchRecord(cartridge, next, identity, new Date().toISOString(), psychology);
   if (!record) return null;
   await appendMatchRecord(record);
   await pruneMatchRecords(200);
