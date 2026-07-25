@@ -15,7 +15,7 @@ export function createTemerosaRun(content: TemerosaStoryContent, seed: string, s
     sessionId, seed, sequence: 0, nodeId: content.startNodeId, lineIndex: 0,
     memory: {
       playerApproach: null, preservedResourceId: null, lostResourceId: null, choiceIds: [], lineIds: [], navigatorStage: "unregistered",
-      selectedCompanions: [], companionPacts: [], nemoName: null, paleBoundaryId: null, currentRouteRecordIds: [], deadRouteRecordIds: [], salvage: {},
+      selectedCompanions: [], companionPacts: [], nemoName: null, paleBoundaryId: null, registrationChoiceId: null, currentRouteRecordIds: [], deadRouteRecordIds: [], salvage: {},
       echo: { deaths: 0, deadRouteCardIds: [], bossVariantIds: [], rememberedPromiseIds: [] },
       emotions: ["nieun", "alger", "pale", "kano", "nemo"].map((characterId) => ({ characterId: characterId as "nieun" | "alger" | "pale" | "kano" | "nemo", bond: "unfamiliar", pressure: "stable" })),
       flags: [],
@@ -32,12 +32,11 @@ export function reduceTemerosaRun(content: TemerosaStoryContent, state: Temerosa
     assert(currentLine, "temerosa_line_missing");
     const memory = { ...state.memory, lineIds: appendUnique(state.memory.lineIds, currentLine.id) };
     if (state.lineIndex < node.lines.length - 1) return { ...state, sequence: state.sequence + 1, lineIndex: state.lineIndex + 1, memory };
-    return enterNode(content, { ...state, sequence: state.sequence + 1, memory }, resolveNextNode(node.nextId, state));
+    return enterNode(content, { ...state, sequence: state.sequence + 1, memory }, resolveNextNode(node.nextId, memory));
   }
   if (action.type === "choose") {
     assert(node.kind === "choice", "temerosa_choice_requires_choice_node");
-    assert(node.options.some((option) => option.id === action.choiceId), "temerosa_choice_invalid");
-    if (node.id === "pact-confirm" && action.choiceId === "pacts-ask" && state.memory.flags.includes("pacts-explained")) throw new Error("temerosa_choice_already_used");
+    assert(visibleChoiceOptions(node, state.memory).some((option) => option.id === action.choiceId), "temerosa_choice_invalid");
     const memory = applyChoice(state.memory, action.choiceId);
     const configuredNext = node.nextByChoice[action.choiceId];
     assert(configuredNext, "temerosa_choice_route_missing");
@@ -55,21 +54,20 @@ export function reduceTemerosaRun(content: TemerosaStoryContent, state: Temerosa
   assert(state.memory.selectedCompanions.length === 2, "temerosa_two_companions_required");
   const pacts = state.memory.selectedCompanions.map((id) => companionPact(id));
   const memory = { ...state.memory, companionPacts: pacts };
-  const nextId = state.memory.selectedCompanions.includes("nemo") ? "nemo-name" : state.memory.selectedCompanions.includes("pale") ? "pale-boundary" : "pact-confirm";
-  return enterNode(content, { ...state, sequence: state.sequence + 1, memory }, nextId);
+  const nextId = state.memory.selectedCompanions.includes("nemo") ? "nemo-name" : state.memory.selectedCompanions.includes("pale") ? "pale-boundary" : "nieun-return";
+  return enterNode(content, { ...state, sequence: state.sequence + 1, memory }, resolveNextNode(nextId, memory));
 }
 
 export function selectTemerosaView(content: TemerosaStoryContent, state: TemerosaRunState): TemerosaView {
   const node = getNode(content, state.nodeId);
-  const progress = Math.min(1, state.sequence / 28);
+  const progress = Math.min(1, state.sequence / 44);
   if (node.kind === "dialogue") {
     const current = node.lines[state.lineIndex];
     assert(current, "temerosa_line_missing");
     return { kind: "dialogue", scene: node.scene, title: node.title, line: current, canAdvance: true, progress };
   }
   if (node.kind === "choice") {
-    const options = node.id === "pact-confirm" && state.memory.flags.includes("pacts-explained") ? node.options.filter((option) => option.id !== "pacts-ask") : node.options;
-    return { kind: "choice", scene: node.scene, title: node.title, prompt: node.prompt, options, progress };
+    return { kind: "choice", scene: node.scene, title: node.title, prompt: node.prompt, options: visibleChoiceOptions(node, state.memory), progress };
   }
   if (node.kind === "companions") return { kind: "companions", scene: 2, title: node.title, companions: content.companions, selected: state.memory.selectedCompanions, canConfirm: state.memory.selectedCompanions.length === 2, progress };
   return { kind: "complete", scene: 2, title: node.title, companions: content.companions.filter((companion) => state.memory.selectedCompanions.includes(companion.id)), memory: state.memory, progress: 1 };
@@ -93,10 +91,10 @@ export function validateStoryContent(content: TemerosaStoryContent): void {
   }
   assert(ids.has(content.startNodeId), "temerosa_start_node_missing");
   for (const node of content.nodes) {
-    if (node.kind === "dialogue") assert(ids.has(node.nextId), `temerosa_route_missing:${node.id}:${node.nextId}`);
+    if (node.kind === "dialogue") assert(isVirtualRoute(node.nextId) || ids.has(node.nextId), `temerosa_route_missing:${node.id}:${node.nextId}`);
     if (node.kind === "choice") for (const option of node.options) {
       const destination = node.nextByChoice[option.id] ?? "";
-      assert(destination === "departure" || ids.has(destination), `temerosa_choice_route_missing:${node.id}:${option.id}`);
+      assert(isVirtualRoute(destination) || ids.has(destination), `temerosa_choice_route_missing:${node.id}:${option.id}`);
     }
   }
 }
@@ -105,27 +103,49 @@ function applyChoice(memory: StoryMemory, choiceId: string): StoryMemory {
   let next: StoryMemory = { ...memory, choiceIds: [...memory.choiceIds, choiceId] };
   const first = FIRST_ACTIONS[choiceId as keyof typeof FIRST_ACTIONS];
   if (first) next = { ...next, playerApproach: first.approach, preservedResourceId: first.preserved, lostResourceId: first.lost };
-  if (choiceId.startsWith("register-")) next = { ...next, navigatorStage: "provisional", flags: appendUnique(next.flags, "provisional-navigator") };
+  if (choiceId === "register-sign") next = { ...next, registrationChoiceId: choiceId, navigatorStage: "provisional", flags: appendUnique(appendUnique(next.flags, "provisional-navigator"), "nameBlank") };
+  if (choiceId === "register-terms") next = { ...next, registrationChoiceId: choiceId, navigatorStage: "provisional", flags: appendUnique(appendUnique(next.flags, "provisional-navigator"), "noFailureTerms") };
+  if (choiceId === "register-people") next = { ...next, registrationChoiceId: choiceId, navigatorStage: "provisional", flags: appendUnique(appendUnique(next.flags, "provisional-navigator"), "survivorHint") };
   if (choiceId === "name-nemo") next = { ...next, nemoName: "nemo" };
   if (choiceId === "name-bacikal") next = { ...next, nemoName: "bacikal" };
   if (choiceId === "name-self") next = { ...next, nemoName: "self" };
   if (choiceId.startsWith("pale-")) next = { ...next, paleBoundaryId: choiceId };
   if (choiceId === "pacts-ask") next = { ...next, flags: appendUnique(next.flags, "pacts-explained") };
-  if (choiceId === "pacts-accept") next = { ...next, companionPacts: next.companionPacts.map((pact) => ({ ...pact, accepted: true })), flags: appendUnique(next.flags, "pacts-accepted") };
+  if (choiceId === "pacts-accept" || choiceId === "pacts-accept-after-detail") next = { ...next, companionPacts: next.companionPacts.map((pact) => ({ ...pact, accepted: true })), flags: appendUnique(next.flags, "pacts-accepted") };
   return next;
 }
 
-function resolveChoiceNext(node: ChoiceNode, nextId: string, memory: StoryMemory): string {
-  if (node.id === "nemo-name" && !memory.selectedCompanions.includes("pale")) return "pact-confirm";
-  if (node.id === "pale-boundary" && !memory.selectedCompanions.includes("pale")) return "pact-confirm";
-  if (node.id === "pact-confirm" && nextId === "departure") return departureNode(memory.selectedCompanions);
+function resolveChoiceNext(_node: ChoiceNode, nextId: string, memory: StoryMemory): string {
+  if (nextId === "departure") {
+    assert(memory.companionPacts.length === 2 && memory.companionPacts.every((pact) => pact.accepted), "temerosa_pacts_not_accepted");
+    return departureNode(memory.selectedCompanions);
+  }
+  return resolveNextNode(nextId, memory);
+}
+
+function resolveNextNode(nextId: string, memory: StoryMemory): string {
+  if (nextId === "pale-boundary" && !memory.selectedCompanions.includes("pale")) return nieunReturnNode(memory.selectedCompanions);
+  if (nextId === "nieun-return") return nieunReturnNode(memory.selectedCompanions);
   return nextId;
 }
 
-function resolveNextNode(nextId: string, state: TemerosaRunState): string {
-  if (nextId === "pale-boundary" && !state.memory.selectedCompanions.includes("pale")) return "pact-confirm";
-  return nextId;
+function visibleChoiceOptions(node: ChoiceNode, memory: StoryMemory) {
+  if (node.id !== "alger-evidence") return node.options;
+  const evidenceByApproach = { reach: "evidence-signal", observe: "evidence-record", reckon: "evidence-count", ask: "evidence-channel" } as const;
+  const evidenceId = memory.playerApproach ? evidenceByApproach[memory.playerApproach] : null;
+  assert(evidenceId, "temerosa_first_approach_missing");
+  return node.options.filter((option) => option.id === evidenceId || option.id === "evidence-question");
 }
+
+function nieunReturnNode(companions: CompanionId[]): string {
+  const key = [...companions].sort().join("-");
+  if (key === "kano-pale") return "nieun-return-pale-kano";
+  if (key === "nemo-pale") return "nieun-return-pale-nemo";
+  if (key === "kano-nemo") return "nieun-return-kano-nemo";
+  throw new Error("temerosa_companion_pair_invalid");
+}
+
+function isVirtualRoute(value: string): boolean { return value === "departure" || value === "nieun-return" || value === "pale-boundary"; }
 
 function departureNode(companions: CompanionId[]): string {
   const key = [...companions].sort().join("-");

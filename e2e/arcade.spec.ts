@@ -145,22 +145,28 @@ test("becomes a provisional navigator and restores the chosen Temerosa party", a
   await expect(page.getByRole("heading", { name: "테메로세: 여백" })).toBeVisible();
 
   await page.getByRole("button", { name: /살펴본다/ }).click();
+  await expect(page.getByRole("definition").filter({ hasText: "A.T.272 발신 기록" })).toBeVisible();
+  await expect(page.getByRole("definition").filter({ hasText: "예비 전력 한 칸" })).toBeVisible();
   await advanceDialogue(page, 3);
   await page.getByRole("button", { name: /무슨 일이 생겼는지/ }).click();
   await advanceDialogue(page, 4);
-  await advanceDialogue(page, 4);
+  await advanceDialogue(page, 5);
   await page.getByRole("button", { name: /A\.T\.272 발신 기록/ }).click();
   await advanceDialogue(page, 4);
   await page.getByRole("button", { name: /직접 서명한다/ }).click();
-  await advanceDialogue(page, 5);
+  await advanceDialogue(page, 2);
+  await advanceDialogue(page, 4);
 
   await expect(page.getByRole("heading", { name: "함께 갈 두 사람" })).toBeVisible();
   await page.getByRole("button", { name: /페일/ }).click();
   await page.getByRole("button", { name: /카노/ }).click();
   await page.getByRole("button", { name: /동행 조건 확인/ }).click();
   await page.getByRole("button", { name: /그 기분은 단서로만/ }).click();
+  await advanceDialogue(page, 1);
+  await advanceDialogue(page, 2);
   await page.getByRole("button", { name: /두 조건을 확인하고 수락/ }).click();
-  await advanceDialogue(page, 3);
+  await advanceDialogue(page, 4);
+  await advanceDialogue(page, 2);
 
   await expect(page.getByRole("heading", { name: "임시 항해사의 첫 편성이 끝났습니다." })).toBeVisible();
   await expect(page.getByText("자동 저장됨")).toBeVisible();
@@ -178,6 +184,8 @@ test("mobile Temerosa pilot keeps the first choice and dialogue controls reachab
   await page.locator(".arcade-entry").filter({ hasText: "테메로세: 여백" }).getByRole("button", { name: "작전 시작" }).click();
   await expect(page.getByRole("button", { name: /손을 뻗는다/ })).toBeInViewport();
   await page.getByRole("button", { name: /손을 뻗는다/ }).click();
+  await expect(page.locator(".temerosa-resource-delta")).toContainText("구조 신호의 생체 구간");
+  await expect(page.locator(".temerosa-resource-delta")).toContainText("오래된 발신 기록 한 조각");
   await page.getByRole("button", { name: "계속", exact: true }).click();
   await expect(page.locator(".temerosa-communication-frame img")).toBeVisible();
   await expect(page.getByRole("button", { name: "계속", exact: true })).toBeInViewport();

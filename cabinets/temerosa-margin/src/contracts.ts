@@ -1,9 +1,10 @@
-export const TEMEROSA_MARGIN_VERSION = "temerosa-margin/0.1" as const;
-export const TEMEROSA_PACK_VERSION = "0.3.0" as const;
+export const TEMEROSA_MARGIN_VERSION = "temerosa-margin/0.2" as const;
+export const TEMEROSA_PACK_VERSION = "0.4.0" as const;
 
 export type CharacterId = "nieun" | "alger" | "pale" | "kano" | "nemo";
 export type CompanionId = "pale" | "kano" | "nemo";
 export type PlayerApproach = "reach" | "observe" | "reckon" | "ask";
+export type RegistrationChoiceId = "register-sign" | "register-terms" | "register-people";
 export type NavigatorStage = "unregistered" | "provisional" | "navigator";
 export type BondStage = "unfamiliar" | "recognized" | "trusted" | "bonded";
 export type PressureStage = "stable" | "cracked" | "near-collapse";
@@ -42,6 +43,7 @@ export interface StoryMemory {
   companionPacts: CompanionPact[];
   nemoName: "nemo" | "bacikal" | "self" | null;
   paleBoundaryId: string | null;
+  registrationChoiceId: RegistrationChoiceId | null;
   currentRouteRecordIds: string[];
   deadRouteRecordIds: string[];
   salvage: Record<string, SalvageState>;

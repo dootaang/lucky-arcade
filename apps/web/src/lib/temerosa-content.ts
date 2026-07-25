@@ -2,7 +2,24 @@ interface ManifestVariant { size: "sm" | "md" | "lg"; path: string; }
 interface ManifestAsset { id: string; variants: ManifestVariant[]; }
 interface TemerosaManifest { version: string; assets: ManifestAsset[]; }
 
-const PACKS = ["0.1.0", "0.3.0"] as const;
+const PACKS = ["0.1.0", "0.3.0", "0.4.0"] as const;
+const REQUIRED_ASSETS = [
+  "pequod-ruins",
+  "review-nieun-current-angry",
+  "review-nieun-current-smirk-alt",
+  "review-alger-standing",
+  "review-alger-smirk",
+  "review-alger-disappointed",
+  "review-alger-smile",
+  "review-kano-standing",
+  "review-kano-angry",
+  "review-kano-upset",
+  "review-pale-standing",
+  "review-pale-smirk",
+  "review-bacikal-standing",
+  "review-bacikal-smile",
+  "review-bacikal-disappointed",
+] as const;
 let assetPromise: Promise<Readonly<Record<string, string>>> | null = null;
 
 export function loadTemerosaPilotAssets(): Promise<Readonly<Record<string, string>>> {
@@ -16,7 +33,7 @@ export function loadTemerosaPilotAssets(): Promise<Readonly<Record<string, strin
       const variant = asset.variants.find((candidate) => candidate.size === "md") ?? asset.variants[0];
       if (variant) assets[asset.id] = `/content/temerosa-margin/${manifest.version}/${variant.path}`;
     }
-    for (const required of ["pequod-ruins", "review-nieun-current-angry", "review-nieun-current-smirk-alt", "review-alger-surprised", "review-pale-smile", "review-kano-smirk", "review-bacikal-angry"]) {
+    for (const required of REQUIRED_ASSETS) {
       if (!assets[required]) throw new Error(`temerosa_pilot_asset_missing:${required}`);
     }
     return Object.freeze(assets);

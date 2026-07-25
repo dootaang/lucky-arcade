@@ -33,6 +33,7 @@ export function TemerosaMarginScreen({ assets, initialState, onPersist, onExit }
   const background = assets["pequod-ruins"];
   const line = view.kind === "dialogue" ? view.line : null;
   const portrait = line?.assetId ? assets[line.assetId] : null;
+  const showResourceDelta = Boolean(line?.id.endsWith("-result"));
 
   return (
     <main className="temerosa-game" style={background ? { "--temerosa-background": `url(${JSON.stringify(background)})` } as React.CSSProperties : undefined}>
@@ -68,6 +69,12 @@ export function TemerosaMarginScreen({ assets, initialState, onPersist, onExit }
           <div className={`temerosa-dialogue-box ${view.line.speakerId === "system" ? "system" : ""}`}>
             <div className="temerosa-dialogue-meta"><span>{view.line.speakerName}</span><small>{view.title}</small></div>
             <p>{view.line.text}</p>
+            {showResourceDelta && (
+              <dl className="temerosa-resource-delta" aria-label="첫 선택의 결과">
+                <div><dt>지켜낸 것</dt><dd>{resourceName(state.memory.preservedResourceId)}</dd></div>
+                <div><dt>잃은 것</dt><dd>{resourceName(state.memory.lostResourceId)}</dd></div>
+              </dl>
+            )}
             <div className="temerosa-dialogue-actions">
               {view.line.observationFact ? <button className={observationOpen ? "active" : ""} onClick={() => setObservationOpen((open) => !open)}><IconEye size={17} /> 관찰</button> : <span />}
               <button className="temerosa-next" onClick={() => dispatch({ type: "advance" })}>계속 <IconChevronRight size={19} /></button>
@@ -110,6 +117,7 @@ export function TemerosaMarginScreen({ assets, initialState, onPersist, onExit }
             {view.companions.map((companion) => <article key={companion.id}><img src={assets[companion.assetId]} alt={companion.name} /><strong>{companion.name}</strong><small>{companion.condition}</small></article>)}
           </div>
           <dl className="temerosa-memory-summary">
+            <div><dt>등록 기록</dt><dd>{registrationName(view.memory.registrationChoiceId)}</dd></div>
             <div><dt>보존한 것</dt><dd>{resourceName(view.memory.preservedResourceId)}</dd></div>
             <div><dt>잃은 것</dt><dd>{resourceName(view.memory.lostResourceId)}</dd></div>
             <div><dt>현재 직책</dt><dd>피쿼드 임시 항해사</dd></div>
@@ -132,6 +140,15 @@ function CompanionCard({ companion, src, selected, onToggle }: { companion: { id
 function dailySeed(): string { return new Date().toISOString().slice(0, 10); }
 function resourceName(value: string | null): string {
   return ({ "living-signal-segment": "구조 신호의 생체 구간", "old-transmission-fragment": "오래된 발신 기록 한 조각", "at272-transmission-record": "A.T.272 발신 기록", "reserve-power-cell": "예비 전력 한 칸", "return-coordinate-power": "귀환 좌표용 전력", "first-eight-seconds": "구조 신호의 첫 8초", "two-way-rescue-channel": "양방향 구조 채널", "locked-cache-power": "잠긴 보급함 전력" } as Record<string, string>)[value ?? ""] ?? "—";
+}
+
+function registrationName(value: TemerosaRunState["memory"]["registrationChoiceId"]): string {
+  const labels: Record<NonNullable<TemerosaRunState["memory"]["registrationChoiceId"]>, string> = {
+    "register-sign": "직접 서명",
+    "register-terms": "조건 확인",
+    "register-people": "생존자 확인",
+  };
+  return labels[value ?? "register-sign"];
 }
 
 export default TemerosaMarginScreen;
