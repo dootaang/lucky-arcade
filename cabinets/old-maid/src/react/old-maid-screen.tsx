@@ -6,6 +6,7 @@ import { publicRead } from "../read.ts";
 import { selectAmbientReaction } from "../tells.ts";
 import type { OldMaidAction, OldMaidCartridge, OldMaidFace, OldMaidMode, OldMaidPsychologySummary, OldMaidSeatId, OldMaidState } from "../contracts.ts";
 import { OLD_MAID_VERSION } from "../contracts.ts";
+import { discardStageKey } from "./discard-stage-key.ts";
 import { oldMaidOfferTiming, type OldMaidSpectatorSpeed } from "./offer-timing.ts";
 import { pileOffset } from "./pile-layout.ts";
 import "./old-maid.css";
@@ -291,7 +292,7 @@ export function OldMaidScreen({ cartridge, assets, detailAssets = assets, initia
 
         {state.status === "revealing" && state.pendingDraw && <DrawReveal key={`${state.turn}:${state.pendingDraw.cardId}`} event={state.pendingDraw} face={faces.get(state.pendingDraw.faceId) as OldMaidFace} assets={assets} actorName={nameOf(state.pendingDraw.actorId)} targetName={nameOf(state.pendingDraw.targetId)} revealFace={state.mode === "spectate" || state.pendingDraw.actorId === "player" || state.pendingDraw.targetId === "player" || humanFinishedWatching} onCollect={() => dispatch({ type: "collect_draw" })} />}
 
-        {state.status === "discarding" && discardOwner && discardPairs.length > 0 && <DiscardStage key={`${state.discardMode}:${discardOwner}:${discardPairs[0]?.join(":")}`} ownerId={discardOwner} ownerName={nameOf(discardOwner)} pairs={discardPairs} cards={cards} faces={faces} assets={assets} playerControls={discardOwner === "player" && state.mode === "play"} onDiscard={(cardIds) => dispatch({ type: "discard_pair", cardIds })} />}
+        {state.status === "discarding" && discardOwner && discardPairs.length > 0 && <DiscardStage key={discardStageKey(state.discardMode, discardOwner, discardPairs)} ownerId={discardOwner} ownerName={nameOf(discardOwner)} pairs={discardPairs} cards={cards} faces={faces} assets={assets} playerControls={discardOwner === "player" && state.mode === "play"} onDiscard={(cardIds) => dispatch({ type: "discard_pair", cardIds })} />}
 
         {state.offer && (state.status === "offering" || state.status === "playing") && <OfferStage
           state={state}
