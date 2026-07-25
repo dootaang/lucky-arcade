@@ -21,8 +21,8 @@ const cards: OldMaidCard[] = faces.flatMap<OldMaidCard>((face) => face.id === "j
     ]);
 
 export const temerosaOldMaidCartridge: OldMaidCartridge = {
-  contract: "old-maid-cartridge/0.2",
-  version: "temerosa-old-maid/0.2",
+  contract: "old-maid-cartridge/0.3",
+  version: "temerosa-old-maid/0.3",
   title: "테메로세 도둑잡기",
   oddFaceId: "joker",
   faces,

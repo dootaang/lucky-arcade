@@ -1,6 +1,6 @@
 import { resultHash } from "@lucky-arcade/engine";
 import { describe, expect, it } from "vitest";
-import { cpuDrawIndex, createOldMaidState, reduceOldMaid, temerosaOldMaidCartridge, validateCartridge, type OldMaidAction, type OldMaidState } from "../src/index.ts";
+import { availablePairs, cpuDrawIndex, createOldMaidState, reduceOldMaid, temerosaOldMaidCartridge, validateCartridge, type OldMaidAction, type OldMaidState } from "../src/index.ts";
 
 function autoplay(seed: string): { state: OldMaidState; actions: OldMaidAction[] } {
   let state = createOldMaidState(temerosaOldMaidCartridge, seed, "test-session");
@@ -8,8 +8,10 @@ function autoplay(seed: string): { state: OldMaidState; actions: OldMaidAction[]
   state = reduceOldMaid(temerosaOldMaidCartridge, state, actions[0] as OldMaidAction);
   actions.push({ type: "finish_deal" });
   state = reduceOldMaid(temerosaOldMaidCartridge, state, actions[1] as OldMaidAction);
-  while (state.status === "playing" && actions.length < 2_000) {
-    const action: OldMaidAction = state.currentPlayerId === "player" ? { type: "draw", index: 0 } : { type: "cpu_draw" };
+  while (state.status !== "complete" && actions.length < 2_000) {
+    const action: OldMaidAction = state.status === "revealing" ? { type: "collect_draw" }
+      : state.status === "discarding" ? { type: "discard_pair", cardIds: availablePairs(temerosaOldMaidCartridge, state)[0] as [string, string] }
+      : state.currentPlayerId === "player" ? { type: "draw", index: 0 } : { type: "cpu_draw" };
     actions.push(action);
     state = reduceOldMaid(temerosaOldMaidCartridge, state, action);
   }
@@ -34,11 +36,16 @@ describe("old maid deterministic engine", () => {
     state = reduceOldMaid(temerosaOldMaidCartridge, state, { type: "start" });
     expect(state.status).toBe("dealing");
     state = reduceOldMaid(temerosaOldMaidCartridge, state, { type: "finish_deal" });
-    expect(state.status).toBe("playing");
+    expect(state.status).toBe("discarding");
   });
 
-  it("removes every pair already held after the initial deal", () => {
-    const state = createOldMaidState(temerosaOldMaidCartridge, "initial-pairs", "test-session");
+  it("keeps initial pairs until each visible discard action", () => {
+    let state = createOldMaidState(temerosaOldMaidCartridge, "initial-pairs", "test-session");
+    state = reduceOldMaid(temerosaOldMaidCartridge, state, { type: "start" });
+    state = reduceOldMaid(temerosaOldMaidCartridge, state, { type: "finish_deal" });
+    expect(state.status).toBe("discarding");
+    expect(availablePairs(temerosaOldMaidCartridge, state).length).toBeGreaterThan(0);
+    while (state.status === "discarding") state = reduceOldMaid(temerosaOldMaidCartridge, state, { type: "discard_pair", cardIds: availablePairs(temerosaOldMaidCartridge, state)[0] as [string, string] });
     for (const hand of Object.values(state.hands)) {
       const pairIds = hand.map((cardId) => temerosaOldMaidCartridge.cards.find((card) => card.id === cardId)?.pairId).filter(Boolean);
       expect(new Set(pairIds).size).toBe(pairIds.length);

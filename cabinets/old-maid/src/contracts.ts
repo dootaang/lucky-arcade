@@ -1,9 +1,9 @@
-export const OLD_MAID_VERSION = "old-maid/0.2" as const;
-export const TEMEROSA_OLD_MAID_PACK_VERSION = "temerosa-old-maid/0.2" as const;
+export const OLD_MAID_VERSION = "old-maid/0.3" as const;
+export const TEMEROSA_OLD_MAID_PACK_VERSION = "temerosa-old-maid/0.3" as const;
 
 export type OldMaidSeatId = "player" | "cpu-1" | "cpu-2" | "cpu-3";
 export type OldMaidCpuSeatId = Exclude<OldMaidSeatId, "player">;
-export type OldMaidStatus = "ready" | "dealing" | "playing" | "complete";
+export type OldMaidStatus = "ready" | "dealing" | "playing" | "revealing" | "discarding" | "complete";
 export type OldMaidReaction = "neutral" | "pleased" | "tense";
 export type OldMaidTellStyle = "open" | "guarded" | "bluffer";
 
@@ -28,7 +28,7 @@ export interface OldMaidCharacter {
 }
 
 export interface OldMaidCartridge {
-  contract: "old-maid-cartridge/0.2";
+  contract: "old-maid-cartridge/0.3";
   version: typeof TEMEROSA_OLD_MAID_PACK_VERSION;
   title: string;
   oddFaceId: string;
@@ -58,7 +58,7 @@ export interface OldMaidDealCard {
 }
 
 export interface OldMaidState {
-  contract: "old-maid-state/0.2";
+  contract: "old-maid-state/0.3";
   version: typeof OLD_MAID_VERSION;
   packVersion: typeof TEMEROSA_OLD_MAID_PACK_VERSION;
   sessionId: string;
@@ -71,6 +71,9 @@ export interface OldMaidState {
   dealOrder: OldMaidDealCard[];
   characters: Record<OldMaidCpuSeatId, string>;
   reactions: Record<OldMaidCpuSeatId, OldMaidReaction>;
+  pendingDraw: OldMaidDrawEvent | null;
+  discardMode: "initial" | "draw" | null;
+  discardSeatIndex: number | null;
   safeOrder: OldMaidSeatId[];
   loserId: OldMaidSeatId | null;
   discards: OldMaidDiscard[];
@@ -82,4 +85,6 @@ export type OldMaidAction =
   | { type: "finish_deal" }
   | { type: "draw"; index: number }
   | { type: "cpu_draw" }
+  | { type: "collect_draw" }
+  | { type: "discard_pair"; cardIds: [string, string] }
   | { type: "restart"; seed: string };

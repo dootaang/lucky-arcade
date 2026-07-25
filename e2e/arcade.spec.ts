@@ -179,24 +179,32 @@ test.skip("becomes a provisional navigator and restores the chosen Temerosa part
 });
 
 test("plays and restores a complete Temerosa old maid table", async ({ page }, testInfo) => {
+  test.setTimeout(180_000);
   test.skip(testInfo.project.metadata.mobile === true);
   await page.goto("/");
   await page.locator(".arcade-entry").filter({ hasText: "테메로세 도둑잡기" }).getByRole("button", { name: "바로 시작" }).click();
   await expect(page.getByRole("heading", { name: "테메로세 도둑잡기" })).toBeVisible();
   await expect(page.getByText("마지막 조커를 피하세요")).toBeVisible();
   await expect(page.getByText("배분 전").first()).toBeVisible();
+  await expect(page.getByText(/침착한 듯|만족한 듯|긴장한 듯/).first()).toBeVisible();
   await page.getByRole("button", { name: "19장 배분 시작" }).click();
   await expect(page.getByText("카드를 나누는 중…")).toBeVisible();
   await expect(page.locator(".old-maid-player-hand")).toBeVisible();
-  const ownCard = page.getByRole("button", { name: /크게 보기/ }).first();
-  if (await ownCard.count()) {
-    await ownCard.click();
-    await expect(page.getByRole("dialog")).toBeVisible();
-    await page.getByRole("button", { name: "카드 상세 닫기" }).click();
-  }
+  let checkedDetail = false;
 
-  for (let turn = 0; turn < 300; turn += 1) {
+  for (let turn = 0; turn < 800; turn += 1) {
     if (await page.getByText(/에게 조커가 남았습니다/).count()) break;
+    const discard = page.locator('button[aria-label$="두 장 버리기"]:not([disabled])').first();
+    if (await discard.count()) { await discard.click(); continue; }
+    const collect = page.locator("button:not([disabled])", { hasText: "이 카드를 내 손으로 가져오기" });
+    if (await collect.count()) { await expect(collect).toBeEnabled(); await collect.evaluate((element) => (element as HTMLButtonElement).click()); continue; }
+    const ownCard = page.getByRole("button", { name: /크게 보기/ }).first();
+    if (!checkedDetail && await ownCard.count()) {
+      await ownCard.click();
+      await expect(page.getByRole("dialog")).toBeVisible();
+      await page.getByRole("button", { name: "카드 상세 닫기" }).click();
+      checkedDetail = true;
+    }
     const backs = page.getByRole("button", { name: /번째 뒷면 카드/ });
     if (await backs.count()) await backs.first().click();
     else await page.waitForTimeout(180);

@@ -41,6 +41,8 @@ export default function TemerosaOldMaidView({ onExit }: { onExit(): void }) {
 function progressLabel(state: OldMaidState): string {
   if (state.status === "complete") return `${state.turn}턴 · 대국 완료`;
   if (state.status === "playing") return `${state.turn}턴 · ${Object.values(state.hands).reduce((sum, hand) => sum + hand.length, 0)}장 남음`;
+  if (state.status === "revealing") return `${state.turn + 1}번째 카드 확인 중`;
+  if (state.status === "discarding") return "맞은 짝 공개 중";
   if (state.status === "dealing") return "19장 배분 중";
   return "19장 배분 준비";
 }
