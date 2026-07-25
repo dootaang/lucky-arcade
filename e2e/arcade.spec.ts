@@ -244,6 +244,7 @@ test("plays and restores a complete Temerosa old maid table", async ({ page }, t
   let checkedThrowingChrome = false;
   let checkedArrival = false;
   let checkedSpeech = false;
+  let checkedOfferReaction = false;
 
   for (let turn = 0; turn < 800; turn += 1) {
     if (await page.getByText(/에게 조커가 남았습니다/).count()) break;
@@ -304,7 +305,22 @@ test("plays and restores a complete Temerosa old maid table", async ({ page }, t
     if (await finishOffer.count()) await finishOffer.click();
     else {
       const backs = page.locator(".old-maid-offer-card:not([disabled]), .old-maid-draw-row button");
-      if (await backs.count()) await backs.first().click();
+      if (await backs.count()) {
+        let drewWithTouch = false;
+        const offeredCard = page.locator(".old-maid-offer-card:not([disabled])").first();
+        if (!checkedOfferReaction && await offeredCard.count()) {
+          const targetId = await page.locator(".old-maid-offer-stage").getAttribute("data-offer-target");
+          expect(targetId).toMatch(/^cpu-/);
+          await offeredCard.hover();
+          await expect(page.locator(`.seat-${targetId} .old-maid-reaction-text`)).toHaveText(/만족한 듯|긴장한 듯/);
+          await offeredCard.dispatchEvent("pointerdown", { pointerType: "touch", pointerId: 1, isPrimary: true });
+          await expect(offeredCard).toHaveAttribute("aria-label", /한 번 더 누르면 뽑기/);
+          await offeredCard.dispatchEvent("pointerdown", { pointerType: "touch", pointerId: 1, isPrimary: true });
+          drewWithTouch = true;
+          checkedOfferReaction = true;
+        }
+        if (!drewWithTouch) await backs.first().click();
+      }
       else await page.waitForTimeout(180);
     }
   }
@@ -315,6 +331,7 @@ test("plays and restores a complete Temerosa old maid table", async ({ page }, t
   expect(checkedThrowingChrome).toBe(true);
   expect(checkedArrival).toBe(true);
   expect(checkedSpeech).toBe(true);
+  expect(checkedOfferReaction).toBe(true);
   await expect(page.getByText("자동 저장됨")).toBeVisible();
   await page.reload();
   await expect(page.getByRole("region", { name: "이어하기" })).toContainText("대국 완료");

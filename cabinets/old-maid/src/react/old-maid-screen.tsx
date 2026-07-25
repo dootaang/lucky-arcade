@@ -304,7 +304,12 @@ export function OldMaidScreen({ cartridge, assets, detailAssets = assets, initia
           revealFaces={state.mode === "spectate" || humanFinishedWatching}
           moveDuration={activeOfferTiming.moveDuration}
           inspectedCardId={inspectedDrawCardId}
-          onInspect={inspectDrawCard}
+          touchedCardId={touchedDrawCardId}
+          onHover={(cardId) => { if (cardId) inspectDrawCard(cardId); setHoveredDrawCardId(cardId); }}
+          onTouch={(cardId, index) => {
+            if (touchedDrawCardId === cardId) dispatch({ type: "draw", index });
+            else { inspectDrawCard(cardId); setTouchedDrawCardId(cardId); }
+          }}
           onDraw={(index) => dispatch({ type: "draw", index })}
           onFinish={() => dispatch({ type: "finish_offer" })}
         />}
@@ -428,7 +433,7 @@ function SpectatorSeat({ state, name, character, reaction, portrait, cards, face
   </article>;
 }
 
-function OfferStage({ state, cards, faces, assets, actorName, targetName, revealFaces, moveDuration, inspectedCardId, onInspect, onDraw, onFinish }: {
+function OfferStage({ state, cards, faces, assets, actorName, targetName, revealFaces, moveDuration, inspectedCardId, touchedCardId, onHover, onTouch, onDraw, onFinish }: {
   state: OldMaidState;
   cards: Map<string, { faceId: string }>;
   faces: Map<string, OldMaidFace>;
@@ -438,11 +443,14 @@ function OfferStage({ state, cards, faces, assets, actorName, targetName, reveal
   revealFaces: boolean;
   moveDuration: number;
   inspectedCardId: string | null;
-  onInspect(cardId: string): void;
+  touchedCardId: string | null;
+  onHover(cardId: string | null): void;
+  onTouch(cardId: string, index: number): void;
   onDraw(index: number): void;
   onFinish(): void;
 }) {
   const handRef = useRef<HTMLDivElement>(null);
+  const pointerKindRef = useRef("");
   const offer = state.offer;
   const targetHand = offer ? state.hands[offer.targetId] : [];
   useHandFlip(handRef, targetHand.join("|"), moveDuration);
@@ -450,7 +458,7 @@ function OfferStage({ state, cards, faces, assets, actorName, targetName, reveal
   const humanTarget = state.mode === "play" && offer.targetId === "player";
   const humanActorReady = state.mode === "play" && offer.actorId === "player" && state.status === "playing" && offer.phase === "ready";
   const phaseCopy = offer.phase === "arranging" ? `${targetName}의 손패 정리 중` : offer.phase === "settling" ? `${targetName}이 카드를 내미는 중` : `${actorName}, 한 장을 고르세요`;
-  return <section className={`old-maid-offer-stage phase-${offer.phase}`} aria-label={`${targetName}의 손패 제시`}>
+  return <section className={`old-maid-offer-stage phase-${offer.phase}`} data-offer-target={offer.targetId} aria-label={`${targetName}의 손패 제시`}>
     <div className="old-maid-offer-copy"><span>{actorName} → {targetName}</span><strong>{phaseCopy}</strong></div>
     {!humanTarget && <div className="old-maid-offer-hand" ref={handRef}>
       {targetHand.map((cardId, index) => {
@@ -462,9 +470,22 @@ function OfferStage({ state, cards, faces, assets, actorName, targetName, reveal
           data-card-id={cardId}
           className={`old-maid-offer-card ${inspectedCardId === cardId ? "inspected" : ""}`}
           disabled={!canDraw}
-          aria-label={`${index + 1}번째 ${revealFaces && face ? face.name : "뒷면 카드"}${canDraw ? ", 뽑기" : ""}`}
-          onPointerEnter={(event) => { if (canDraw && event.pointerType === "mouse") onInspect(cardId); }}
-          onClick={() => { if (canDraw) onDraw(index); }}
+          aria-label={`${index + 1}번째 ${revealFaces && face ? face.name : "뒷면 카드"}${canDraw ? touchedCardId === cardId ? ", 한 번 더 누르면 뽑기" : ", 뽑기" : ""}`}
+          onPointerEnter={(event) => { if (canDraw && event.pointerType === "mouse") onHover(cardId); }}
+          onPointerLeave={(event) => { if (canDraw && event.pointerType === "mouse") onHover(null); }}
+          onPointerDown={(event) => {
+            if (!canDraw) return;
+            pointerKindRef.current = event.pointerType;
+            if (event.pointerType === "mouse") return;
+            event.preventDefault();
+            onTouch(cardId, index);
+          }}
+          onClick={() => {
+            if (!canDraw) return;
+            if (pointerKindRef.current && pointerKindRef.current !== "mouse") { pointerKindRef.current = ""; return; }
+            pointerKindRef.current = "";
+            onDraw(index);
+          }}
         >{revealFaces && face ? <CardFace face={face} assets={assets} odd={face.id === "joker"} /> : <CardBack />}</button>;
       })}
     </div>}
