@@ -1,0 +1,2017 @@
+{
+  "contract": "temerosa-content-selection/0.1",
+  "packId": "temerosa-margin",
+  "version": "0.8.0",
+  "assets": [
+    {
+      "id": "npc-yul-despair",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/83.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "yul",
+      "expression": "despair",
+      "appearanceSet": "yul/bestiaization/current"
+    },
+    {
+      "id": "card-yul-surprised",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/84.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "yul",
+      "expression": "surprised",
+      "appearanceSet": "yul/bestiaization/current"
+    },
+    {
+      "id": "npc-yul-tense",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/85.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "yul",
+      "expression": "tense",
+      "appearanceSet": "yul/bestiaization/current"
+    },
+    {
+      "id": "npc-yul-neutral",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/86.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "yul",
+      "expression": "neutral",
+      "appearanceSet": "yul/bestiaization/current"
+    },
+    {
+      "id": "card-yul-blush",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/87.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "yul",
+      "expression": "blush",
+      "appearanceSet": "yul/bestiaization/current"
+    },
+    {
+      "id": "npc-yul-pleased",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/88.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "yul",
+      "expression": "pleased",
+      "appearanceSet": "yul/bestiaization/current"
+    },
+    {
+      "id": "npc-cicero-tense",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/89.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "cicero",
+      "expression": "tense",
+      "appearanceSet": "cicero/bestiaization/current"
+    },
+    {
+      "id": "npc-cicero-pleased",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/90.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "cicero",
+      "expression": "pleased",
+      "appearanceSet": "cicero/bestiaization/current"
+    },
+    {
+      "id": "card-cicero-blush",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/91.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "cicero",
+      "expression": "blush",
+      "appearanceSet": "cicero/bestiaization/current"
+    },
+    {
+      "id": "npc-cicero-despair",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/92.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "cicero",
+      "expression": "despair",
+      "appearanceSet": "cicero/bestiaization/current"
+    },
+    {
+      "id": "npc-cicero-neutral",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/93.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "cicero",
+      "expression": "neutral",
+      "appearanceSet": "cicero/bestiaization/current"
+    },
+    {
+      "id": "card-cicero-surprised",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/94.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "cicero",
+      "expression": "surprised",
+      "appearanceSet": "cicero/bestiaization/current"
+    },
+    {
+      "id": "npc-phaeo-neutral",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/95.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "phaeo",
+      "expression": "neutral",
+      "appearanceSet": "phaeo/bestiaization/current"
+    },
+    {
+      "id": "card-phaeo-blush",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/96.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "phaeo",
+      "expression": "blush",
+      "appearanceSet": "phaeo/bestiaization/current"
+    },
+    {
+      "id": "card-phaeo-surprised",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/97.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "phaeo",
+      "expression": "surprised",
+      "appearanceSet": "phaeo/bestiaization/current"
+    },
+    {
+      "id": "npc-phaeo-despair",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/98.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "phaeo",
+      "expression": "despair",
+      "appearanceSet": "phaeo/bestiaization/current"
+    },
+    {
+      "id": "npc-phaeo-tense",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/99.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "phaeo",
+      "expression": "tense",
+      "appearanceSet": "phaeo/bestiaization/current"
+    },
+    {
+      "id": "npc-phaeo-pleased",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/100.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "phaeo",
+      "expression": "pleased",
+      "appearanceSet": "phaeo/bestiaization/current"
+    },
+    {
+      "id": "npc-traver-neutral",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/101.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "traver",
+      "expression": "neutral",
+      "appearanceSet": "traver/bestiaization/current"
+    },
+    {
+      "id": "npc-traver-pleased",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/102.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "traver",
+      "expression": "pleased",
+      "appearanceSet": "traver/bestiaization/current"
+    },
+    {
+      "id": "card-traver-blush",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/103.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "traver",
+      "expression": "blush",
+      "appearanceSet": "traver/bestiaization/current"
+    },
+    {
+      "id": "npc-traver-despair",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/104.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "traver",
+      "expression": "despair",
+      "appearanceSet": "traver/bestiaization/current"
+    },
+    {
+      "id": "npc-traver-tense",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/105.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "traver",
+      "expression": "tense",
+      "appearanceSet": "traver/bestiaization/current"
+    },
+    {
+      "id": "card-traver-surprised",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/106.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "traver",
+      "expression": "surprised",
+      "appearanceSet": "traver/bestiaization/current"
+    },
+    {
+      "id": "card-kreva-surprised",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/107.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "kreva",
+      "expression": "surprised",
+      "appearanceSet": "kreva/bestiaization/current"
+    },
+    {
+      "id": "card-kreva-blush",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/108.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "kreva",
+      "expression": "blush",
+      "appearanceSet": "kreva/bestiaization/current"
+    },
+    {
+      "id": "npc-kreva-despair",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/109.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "kreva",
+      "expression": "despair",
+      "appearanceSet": "kreva/bestiaization/current"
+    },
+    {
+      "id": "npc-kreva-pleased",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/110.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "kreva",
+      "expression": "pleased",
+      "appearanceSet": "kreva/bestiaization/current"
+    },
+    {
+      "id": "npc-kreva-tense",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/111.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "kreva",
+      "expression": "tense",
+      "appearanceSet": "kreva/bestiaization/current"
+    },
+    {
+      "id": "npc-kreva-neutral",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/112.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "kreva",
+      "expression": "neutral",
+      "appearanceSet": "kreva/bestiaization/current"
+    },
+    {
+      "id": "npc-camille-pleased",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/113.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "camille",
+      "expression": "pleased",
+      "appearanceSet": "camille/bestiaization/current"
+    },
+    {
+      "id": "npc-camille-neutral",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/114.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "camille",
+      "expression": "neutral",
+      "appearanceSet": "camille/bestiaization/current"
+    },
+    {
+      "id": "npc-camille-tense",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/115.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "camille",
+      "expression": "tense",
+      "appearanceSet": "camille/bestiaization/current"
+    },
+    {
+      "id": "npc-camille-despair",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/117.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "camille",
+      "expression": "despair",
+      "appearanceSet": "camille/bestiaization/current"
+    },
+    {
+      "id": "npc-bche-pleased",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/119.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "bche",
+      "expression": "pleased",
+      "appearanceSet": "bche/bestiaization/current"
+    },
+    {
+      "id": "npc-bche-despair",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/120.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "bche",
+      "expression": "despair",
+      "appearanceSet": "bche/bestiaization/current"
+    },
+    {
+      "id": "npc-bche-tense",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/121.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "bche",
+      "expression": "tense",
+      "appearanceSet": "bche/bestiaization/current"
+    },
+    {
+      "id": "card-bche-blush",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/122.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "bche",
+      "expression": "blush",
+      "appearanceSet": "bche/bestiaization/current"
+    },
+    {
+      "id": "card-bche-surprised",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/123.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "bche",
+      "expression": "surprised",
+      "appearanceSet": "bche/bestiaization/current"
+    },
+    {
+      "id": "npc-bche-neutral",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/124.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "bche",
+      "expression": "neutral",
+      "appearanceSet": "bche/bestiaization/current"
+    },
+    {
+      "id": "npc-deokbae-pleased",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/125.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "deokbae",
+      "expression": "pleased",
+      "appearanceSet": "deokbae/bestiaization/current"
+    },
+    {
+      "id": "npc-deokbae-tense",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/126.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "deokbae",
+      "expression": "tense",
+      "appearanceSet": "deokbae/bestiaization/current"
+    },
+    {
+      "id": "npc-deokbae-despair",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/127.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "deokbae",
+      "expression": "despair",
+      "appearanceSet": "deokbae/bestiaization/current"
+    },
+    {
+      "id": "card-deokbae-blush",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/128.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "deokbae",
+      "expression": "blush",
+      "appearanceSet": "deokbae/bestiaization/current"
+    },
+    {
+      "id": "card-deokbae-surprised",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/129.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "deokbae",
+      "expression": "surprised",
+      "appearanceSet": "deokbae/bestiaization/current"
+    },
+    {
+      "id": "npc-deokbae-neutral",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/130.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "deokbae",
+      "expression": "neutral",
+      "appearanceSet": "deokbae/bestiaization/current"
+    },
+    {
+      "id": "npc-machina-neutral",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/131.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "machina",
+      "expression": "neutral",
+      "appearanceSet": "machina/bestiaization/current"
+    },
+    {
+      "id": "npc-machina-pleased",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/132.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "machina",
+      "expression": "pleased",
+      "appearanceSet": "machina/bestiaization/current"
+    },
+    {
+      "id": "card-machina-surprised",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/133.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "machina",
+      "expression": "surprised",
+      "appearanceSet": "machina/bestiaization/current"
+    },
+    {
+      "id": "npc-machina-tense",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/134.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "machina",
+      "expression": "tense",
+      "appearanceSet": "machina/bestiaization/current"
+    },
+    {
+      "id": "npc-machina-despair",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/135.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "machina",
+      "expression": "despair",
+      "appearanceSet": "machina/bestiaization/current"
+    },
+    {
+      "id": "card-machina-blush",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/136.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "machina",
+      "expression": "blush",
+      "appearanceSet": "machina/bestiaization/current"
+    },
+    {
+      "id": "npc-katrinka-neutral",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/137.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "katrinka",
+      "expression": "neutral",
+      "appearanceSet": "katrinka/bestiaization/current"
+    },
+    {
+      "id": "npc-katrinka-tense",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/138.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "katrinka",
+      "expression": "tense",
+      "appearanceSet": "katrinka/bestiaization/current"
+    },
+    {
+      "id": "npc-katrinka-despair",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/140.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "katrinka",
+      "expression": "despair",
+      "appearanceSet": "katrinka/bestiaization/current"
+    },
+    {
+      "id": "npc-katrinka-pleased",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/142.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "katrinka",
+      "expression": "pleased",
+      "appearanceSet": "katrinka/bestiaization/current"
+    },
+    {
+      "id": "npc-ttaengchil-neutral",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/143.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "ttaengchil",
+      "expression": "neutral",
+      "appearanceSet": "ttaengchil/bestiaization/current"
+    },
+    {
+      "id": "npc-ttaengchil-pleased",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/144.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "ttaengchil",
+      "expression": "pleased",
+      "appearanceSet": "ttaengchil/bestiaization/current"
+    },
+    {
+      "id": "card-ttaengchil-surprised",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/145.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "ttaengchil",
+      "expression": "surprised",
+      "appearanceSet": "ttaengchil/bestiaization/current"
+    },
+    {
+      "id": "npc-ttaengchil-despair",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/146.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "ttaengchil",
+      "expression": "despair",
+      "appearanceSet": "ttaengchil/bestiaization/current"
+    },
+    {
+      "id": "card-ttaengchil-blush",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/147.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "ttaengchil",
+      "expression": "blush",
+      "appearanceSet": "ttaengchil/bestiaization/current"
+    },
+    {
+      "id": "npc-ttaengchil-tense",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/148.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "ttaengchil",
+      "expression": "tense",
+      "appearanceSet": "ttaengchil/bestiaization/current"
+    },
+    {
+      "id": "npc-tumit-tu-despair",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/150.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "tumit-tu",
+      "expression": "despair",
+      "appearanceSet": "tumit-tu/bestiaization/current"
+    },
+    {
+      "id": "npc-tumit-tu-tense",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/151.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "tumit-tu",
+      "expression": "tense",
+      "appearanceSet": "tumit-tu/bestiaization/current"
+    },
+    {
+      "id": "card-tumit-tu-blush",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/152.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "tumit-tu",
+      "expression": "blush",
+      "appearanceSet": "tumit-tu/bestiaization/current"
+    },
+    {
+      "id": "npc-tumit-tu-neutral",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/153.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "tumit-tu",
+      "expression": "neutral",
+      "appearanceSet": "tumit-tu/bestiaization/current"
+    },
+    {
+      "id": "card-tumit-tu-surprised",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/155.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "tumit-tu",
+      "expression": "surprised",
+      "appearanceSet": "tumit-tu/bestiaization/current"
+    },
+    {
+      "id": "npc-tumit-tu-pleased",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/156.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "tumit-tu",
+      "expression": "pleased",
+      "appearanceSet": "tumit-tu/bestiaization/current"
+    },
+    {
+      "id": "npc-temute-neutral",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/157.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "temute",
+      "expression": "neutral",
+      "appearanceSet": "temute/bestiaization/current"
+    },
+    {
+      "id": "npc-temute-despair",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/158.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "temute",
+      "expression": "despair",
+      "appearanceSet": "temute/bestiaization/current"
+    },
+    {
+      "id": "npc-temute-pleased",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/159.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "temute",
+      "expression": "pleased",
+      "appearanceSet": "temute/bestiaization/current"
+    },
+    {
+      "id": "card-temute-blush",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/160.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "temute",
+      "expression": "blush",
+      "appearanceSet": "temute/bestiaization/current"
+    },
+    {
+      "id": "npc-temute-tense",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/161.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "temute",
+      "expression": "tense",
+      "appearanceSet": "temute/bestiaization/current"
+    },
+    {
+      "id": "card-temute-surprised",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/162.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "temute",
+      "expression": "surprised",
+      "appearanceSet": "temute/bestiaization/current"
+    },
+    {
+      "id": "npc-hiro-neutral",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/163.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "hiro",
+      "expression": "neutral",
+      "appearanceSet": "hiro/bestiaization/current"
+    },
+    {
+      "id": "npc-hiro-pleased",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/164.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "hiro",
+      "expression": "pleased",
+      "appearanceSet": "hiro/bestiaization/current"
+    },
+    {
+      "id": "npc-hiro-tense",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/165.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "hiro",
+      "expression": "tense",
+      "appearanceSet": "hiro/bestiaization/current"
+    },
+    {
+      "id": "npc-hiro-despair",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/166.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "hiro",
+      "expression": "despair",
+      "appearanceSet": "hiro/bestiaization/current"
+    },
+    {
+      "id": "card-hiro-surprised",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/167.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "hiro",
+      "expression": "surprised",
+      "appearanceSet": "hiro/bestiaization/current"
+    },
+    {
+      "id": "card-hiro-blush",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/168.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "hiro",
+      "expression": "blush",
+      "appearanceSet": "hiro/bestiaization/current"
+    },
+    {
+      "id": "npc-levillotte-neutral",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/171.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "levillotte",
+      "expression": "neutral",
+      "appearanceSet": "levillotte/bestiaization/current"
+    },
+    {
+      "id": "npc-levillotte-pleased",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/172.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "levillotte",
+      "expression": "pleased",
+      "appearanceSet": "levillotte/bestiaization/current"
+    },
+    {
+      "id": "card-levillotte-surprised",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/173.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "levillotte",
+      "expression": "surprised",
+      "appearanceSet": "levillotte/bestiaization/current"
+    },
+    {
+      "id": "npc-levillotte-tense",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/174.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "levillotte",
+      "expression": "tense",
+      "appearanceSet": "levillotte/bestiaization/current"
+    },
+    {
+      "id": "npc-levillotte-despair",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/175.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "levillotte",
+      "expression": "despair",
+      "appearanceSet": "levillotte/bestiaization/current"
+    },
+    {
+      "id": "card-levillotte-blush",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/176.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "levillotte",
+      "expression": "blush",
+      "appearanceSet": "levillotte/bestiaization/current"
+    },
+    {
+      "id": "npc-adesha-neutral",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/177.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "adesha",
+      "expression": "neutral",
+      "appearanceSet": "adesha/bestiaization/current"
+    },
+    {
+      "id": "npc-adesha-tense",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/178.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "adesha",
+      "expression": "tense",
+      "appearanceSet": "adesha/bestiaization/current"
+    },
+    {
+      "id": "npc-adesha-despair",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/179.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "adesha",
+      "expression": "despair",
+      "appearanceSet": "adesha/bestiaization/current"
+    },
+    {
+      "id": "npc-adesha-pleased",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/180.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "adesha",
+      "expression": "pleased",
+      "appearanceSet": "adesha/bestiaization/current"
+    },
+    {
+      "id": "card-adesha-surprised",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/181.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "adesha",
+      "expression": "surprised",
+      "appearanceSet": "adesha/bestiaization/current"
+    },
+    {
+      "id": "card-adesha-blush",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/182.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "adesha",
+      "expression": "blush",
+      "appearanceSet": "adesha/bestiaization/current"
+    },
+    {
+      "id": "npc-diamo-neutral",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/185.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "diamo",
+      "expression": "neutral",
+      "appearanceSet": "diamo/bestiaization/current"
+    },
+    {
+      "id": "npc-diamo-pleased",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/186.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "diamo",
+      "expression": "pleased",
+      "appearanceSet": "diamo/bestiaization/current"
+    },
+    {
+      "id": "card-diamo-blush",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/187.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "diamo",
+      "expression": "blush",
+      "appearanceSet": "diamo/bestiaization/current"
+    },
+    {
+      "id": "npc-diamo-tense",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/188.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "diamo",
+      "expression": "tense",
+      "appearanceSet": "diamo/bestiaization/current"
+    },
+    {
+      "id": "card-diamo-surprised",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/189.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "diamo",
+      "expression": "surprised",
+      "appearanceSet": "diamo/bestiaization/current"
+    },
+    {
+      "id": "npc-diamo-despair",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/190.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "diamo",
+      "expression": "despair",
+      "appearanceSet": "diamo/bestiaization/current"
+    },
+    {
+      "id": "npc-morsisa-neutral",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/191.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "morsisa",
+      "expression": "neutral",
+      "appearanceSet": "morsisa/bestiaization/current"
+    },
+    {
+      "id": "npc-morsisa-tense",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/192.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "morsisa",
+      "expression": "tense",
+      "appearanceSet": "morsisa/bestiaization/current"
+    },
+    {
+      "id": "card-morsisa-blush",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/193.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "morsisa",
+      "expression": "blush",
+      "appearanceSet": "morsisa/bestiaization/current"
+    },
+    {
+      "id": "card-morsisa-surprised",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/194.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "morsisa",
+      "expression": "surprised",
+      "appearanceSet": "morsisa/bestiaization/current"
+    },
+    {
+      "id": "npc-morsisa-pleased",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/195.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "morsisa",
+      "expression": "pleased",
+      "appearanceSet": "morsisa/bestiaization/current"
+    },
+    {
+      "id": "npc-morsisa-despair",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/196.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "morsisa",
+      "expression": "despair",
+      "appearanceSet": "morsisa/bestiaization/current"
+    },
+    {
+      "id": "npc-echo-neutral",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/197.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "echo",
+      "expression": "neutral",
+      "appearanceSet": "echo/bestiaization/current"
+    },
+    {
+      "id": "card-echo-surprised",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/198.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "echo",
+      "expression": "surprised",
+      "appearanceSet": "echo/bestiaization/current"
+    },
+    {
+      "id": "npc-echo-tense",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/199.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "echo",
+      "expression": "tense",
+      "appearanceSet": "echo/bestiaization/current"
+    },
+    {
+      "id": "npc-echo-pleased",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/200.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "echo",
+      "expression": "pleased",
+      "appearanceSet": "echo/bestiaization/current"
+    },
+    {
+      "id": "card-echo-blush",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/201.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "echo",
+      "expression": "blush",
+      "appearanceSet": "echo/bestiaization/current"
+    },
+    {
+      "id": "npc-echo-despair",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/202.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "echo",
+      "expression": "despair",
+      "appearanceSet": "echo/bestiaization/current"
+    },
+    {
+      "id": "card-flask-tense",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/204.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "flask",
+      "expression": "tense",
+      "appearanceSet": "flask/bestiaization/current"
+    },
+    {
+      "id": "card-flask-neutral",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/205.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "flask",
+      "expression": "neutral",
+      "appearanceSet": "flask/bestiaization/current"
+    },
+    {
+      "id": "card-flask-despair",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/206.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "flask",
+      "expression": "despair",
+      "appearanceSet": "flask/bestiaization/current"
+    },
+    {
+      "id": "card-flask-blush",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/207.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "flask",
+      "expression": "blush",
+      "appearanceSet": "flask/bestiaization/current"
+    },
+    {
+      "id": "card-snow-rim-neutral",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/208.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "snow-rim",
+      "expression": "neutral",
+      "appearanceSet": "snow-rim/bestiaization/current"
+    },
+    {
+      "id": "card-snow-rim-despair",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/209.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "snow-rim",
+      "expression": "despair",
+      "appearanceSet": "snow-rim/bestiaization/current"
+    },
+    {
+      "id": "card-snow-rim-surprised",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/210.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "snow-rim",
+      "expression": "surprised",
+      "appearanceSet": "snow-rim/bestiaization/current"
+    },
+    {
+      "id": "card-snow-rim-blush",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/211.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "snow-rim",
+      "expression": "blush",
+      "appearanceSet": "snow-rim/bestiaization/current"
+    },
+    {
+      "id": "card-snow-rim-pleased",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/212.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "snow-rim",
+      "expression": "pleased",
+      "appearanceSet": "snow-rim/bestiaization/current"
+    },
+    {
+      "id": "card-snow-rim-tense",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/213.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "snow-rim",
+      "expression": "tense",
+      "appearanceSet": "snow-rim/bestiaization/current"
+    },
+    {
+      "id": "card-sakabus-neutral",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/220.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "sakabus",
+      "expression": "neutral",
+      "appearanceSet": "sakabus/bestiaization/current"
+    },
+    {
+      "id": "card-sakabus-pleased",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/221.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "sakabus",
+      "expression": "pleased",
+      "appearanceSet": "sakabus/bestiaization/current"
+    },
+    {
+      "id": "card-sakabus-tense",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/222.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "sakabus",
+      "expression": "tense",
+      "appearanceSet": "sakabus/bestiaization/current"
+    },
+    {
+      "id": "card-sakabus-blush",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/223.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "sakabus",
+      "expression": "blush",
+      "appearanceSet": "sakabus/bestiaization/current"
+    },
+    {
+      "id": "card-sakabus-despair",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/224.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "sakabus",
+      "expression": "despair",
+      "appearanceSet": "sakabus/bestiaization/current"
+    },
+    {
+      "id": "card-sakabus-surprised",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/225.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "sakabus",
+      "expression": "surprised",
+      "appearanceSet": "sakabus/bestiaization/current"
+    },
+    {
+      "id": "npc-nostalgia-neutral",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/226.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "nostalgia",
+      "expression": "neutral",
+      "appearanceSet": "nostalgia/bestiaization/current"
+    },
+    {
+      "id": "npc-nostalgia-pleased",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/227.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "nostalgia",
+      "expression": "pleased",
+      "appearanceSet": "nostalgia/bestiaization/current"
+    },
+    {
+      "id": "npc-nostalgia-despair",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/228.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "nostalgia",
+      "expression": "despair",
+      "appearanceSet": "nostalgia/bestiaization/current"
+    },
+    {
+      "id": "npc-nostalgia-tense",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/229.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "nostalgia",
+      "expression": "tense",
+      "appearanceSet": "nostalgia/bestiaization/current"
+    },
+    {
+      "id": "card-nostalgia-surprised",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/230.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "nostalgia",
+      "expression": "surprised",
+      "appearanceSet": "nostalgia/bestiaization/current"
+    },
+    {
+      "id": "card-nostalgia-blush",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/231.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "nostalgia",
+      "expression": "blush",
+      "appearanceSet": "nostalgia/bestiaization/current"
+    },
+    {
+      "id": "npc-apollyon-tense",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/232.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "apollyon",
+      "expression": "tense",
+      "appearanceSet": "apollyon/bestiaization/current"
+    },
+    {
+      "id": "npc-apollyon-pleased",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/233.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "apollyon",
+      "expression": "pleased",
+      "appearanceSet": "apollyon/bestiaization/current"
+    },
+    {
+      "id": "card-apollyon-surprised",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/234.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "apollyon",
+      "expression": "surprised",
+      "appearanceSet": "apollyon/bestiaization/current"
+    },
+    {
+      "id": "npc-apollyon-despair",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/235.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "apollyon",
+      "expression": "despair",
+      "appearanceSet": "apollyon/bestiaization/current"
+    },
+    {
+      "id": "card-apollyon-blush",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/236.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "apollyon",
+      "expression": "blush",
+      "appearanceSet": "apollyon/bestiaization/current"
+    },
+    {
+      "id": "npc-apollyon-neutral",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/237.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "apollyon",
+      "expression": "neutral",
+      "appearanceSet": "apollyon/bestiaization/current"
+    },
+    {
+      "id": "card-strelka-neutral",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/238.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "strelka",
+      "expression": "neutral",
+      "appearanceSet": "strelka/bestiaization/current"
+    },
+    {
+      "id": "card-strelka-despair",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/239.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "strelka",
+      "expression": "despair",
+      "appearanceSet": "strelka/bestiaization/current"
+    },
+    {
+      "id": "card-strelka-blush",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/240.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "strelka",
+      "expression": "blush",
+      "appearanceSet": "strelka/bestiaization/current"
+    },
+    {
+      "id": "card-strelka-surprised",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/241.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "strelka",
+      "expression": "surprised",
+      "appearanceSet": "strelka/bestiaization/current"
+    },
+    {
+      "id": "card-strelka-tense",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/242.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "strelka",
+      "expression": "tense",
+      "appearanceSet": "strelka/bestiaization/current"
+    },
+    {
+      "id": "npc-esther-neutral",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/243.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "esther",
+      "expression": "neutral",
+      "appearanceSet": "esther/bestiaization/current"
+    },
+    {
+      "id": "npc-esther-despair",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/244.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "esther",
+      "expression": "despair",
+      "appearanceSet": "esther/bestiaization/current"
+    },
+    {
+      "id": "npc-esther-pleased",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/245.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "esther",
+      "expression": "pleased",
+      "appearanceSet": "esther/bestiaization/current"
+    },
+    {
+      "id": "card-esther-surprised",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/246.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "esther",
+      "expression": "surprised",
+      "appearanceSet": "esther/bestiaization/current"
+    },
+    {
+      "id": "npc-esther-tense",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/247.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "esther",
+      "expression": "tense",
+      "appearanceSet": "esther/bestiaization/current"
+    },
+    {
+      "id": "card-esther-blush",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/248.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "esther",
+      "expression": "blush",
+      "appearanceSet": "esther/bestiaization/current"
+    },
+    {
+      "id": "npc-anna-neutral",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/249.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "anna",
+      "expression": "neutral",
+      "appearanceSet": "anna/bestiaization/current"
+    },
+    {
+      "id": "npc-anna-despair",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/250.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "anna",
+      "expression": "despair",
+      "appearanceSet": "anna/bestiaization/current"
+    },
+    {
+      "id": "npc-anna-pleased",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/251.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "anna",
+      "expression": "pleased",
+      "appearanceSet": "anna/bestiaization/current"
+    },
+    {
+      "id": "card-anna-surprised",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/252.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "anna",
+      "expression": "surprised",
+      "appearanceSet": "anna/bestiaization/current"
+    },
+    {
+      "id": "npc-anna-tense",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/253.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "anna",
+      "expression": "tense",
+      "appearanceSet": "anna/bestiaization/current"
+    },
+    {
+      "id": "card-anna-blush",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/254.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "anna",
+      "expression": "blush",
+      "appearanceSet": "anna/bestiaization/current"
+    },
+    {
+      "id": "npc-cradle-neutral",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/261.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "cradle",
+      "expression": "neutral",
+      "appearanceSet": "cradle/bestiaization/current"
+    },
+    {
+      "id": "npc-cradle-pleased",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/262.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "cradle",
+      "expression": "pleased",
+      "appearanceSet": "cradle/bestiaization/current"
+    },
+    {
+      "id": "npc-cradle-tense",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/263.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "cradle",
+      "expression": "tense",
+      "appearanceSet": "cradle/bestiaization/current"
+    },
+    {
+      "id": "card-cradle-surprised",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/264.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "cradle",
+      "expression": "surprised",
+      "appearanceSet": "cradle/bestiaization/current"
+    },
+    {
+      "id": "card-cradle-blush",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/265.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "cradle",
+      "expression": "blush",
+      "appearanceSet": "cradle/bestiaization/current"
+    },
+    {
+      "id": "npc-cradle-despair",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/266.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "cradle",
+      "expression": "despair",
+      "appearanceSet": "cradle/bestiaization/current"
+    },
+    {
+      "id": "npc-lilim-neutral",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/267.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "lilim",
+      "expression": "neutral",
+      "appearanceSet": "lilim/bestiaization/current"
+    },
+    {
+      "id": "npc-lilim-pleased",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/268.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "lilim",
+      "expression": "pleased",
+      "appearanceSet": "lilim/bestiaization/current"
+    },
+    {
+      "id": "npc-lilim-despair",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/269.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "lilim",
+      "expression": "despair",
+      "appearanceSet": "lilim/bestiaization/current"
+    },
+    {
+      "id": "card-lilim-surprised",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/270.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "lilim",
+      "expression": "surprised",
+      "appearanceSet": "lilim/bestiaization/current"
+    },
+    {
+      "id": "npc-lilim-tense",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/271.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "lilim",
+      "expression": "tense",
+      "appearanceSet": "lilim/bestiaization/current"
+    },
+    {
+      "id": "card-lilim-blush",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/272.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "lilim",
+      "expression": "blush",
+      "appearanceSet": "lilim/bestiaization/current"
+    },
+    {
+      "id": "npc-lyla-pleased",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/292.png",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "lyla",
+      "expression": "pleased",
+      "appearanceSet": "lyla/bestiaization/current"
+    },
+    {
+      "id": "npc-lyla-despair",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/293.png",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "lyla",
+      "expression": "despair",
+      "appearanceSet": "lyla/bestiaization/current"
+    },
+    {
+      "id": "card-lyla-blush",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/294.png",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "lyla",
+      "expression": "blush",
+      "appearanceSet": "lyla/bestiaization/current"
+    },
+    {
+      "id": "card-lyla-surprised",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/295.png",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "lyla",
+      "expression": "surprised",
+      "appearanceSet": "lyla/bestiaization/current"
+    },
+    {
+      "id": "npc-lyla-tense",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/296.png",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "lyla",
+      "expression": "tense",
+      "appearanceSet": "lyla/bestiaization/current"
+    },
+    {
+      "id": "npc-lyla-neutral",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/297.png",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "lyla",
+      "expression": "neutral",
+      "appearanceSet": "lyla/bestiaization/current"
+    },
+    {
+      "id": "npc-alger-despair",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/314.png",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "alger",
+      "expression": "despair",
+      "appearanceSet": "alger/bestiaization/current"
+    },
+    {
+      "id": "npc-alger-tense",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/315.png",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "alger",
+      "expression": "tense",
+      "appearanceSet": "alger/bestiaization/current"
+    },
+    {
+      "id": "npc-alger-pleased",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/316.png",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "alger",
+      "expression": "pleased",
+      "appearanceSet": "alger/bestiaization/current"
+    },
+    {
+      "id": "card-alger-blush",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/317.png",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "alger",
+      "expression": "blush",
+      "appearanceSet": "alger/bestiaization/current"
+    },
+    {
+      "id": "card-alger-surprised",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/318.png",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "alger",
+      "expression": "surprised",
+      "appearanceSet": "alger/bestiaization/current"
+    },
+    {
+      "id": "npc-alger-neutral",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/320.png",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "alger",
+      "expression": "neutral",
+      "appearanceSet": "alger/bestiaization/current"
+    },
+    {
+      "id": "npc-nieun-pleased",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/342.png",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "nieun",
+      "expression": "pleased",
+      "appearanceSet": "nieun/bestiaization/current"
+    },
+    {
+      "id": "npc-nieun-tense",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/343.png",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "nieun",
+      "expression": "tense",
+      "appearanceSet": "nieun/bestiaization/current"
+    },
+    {
+      "id": "npc-nieun-despair",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/344.png",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "nieun",
+      "expression": "despair",
+      "appearanceSet": "nieun/bestiaization/current"
+    },
+    {
+      "id": "npc-nieun-neutral",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/347.png",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "nieun",
+      "expression": "neutral",
+      "appearanceSet": "nieun/bestiaization/current"
+    },
+    {
+      "id": "npc-raven-pleased",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/380.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "raven",
+      "expression": "pleased",
+      "appearanceSet": "raven/bestiaization/current"
+    },
+    {
+      "id": "npc-raven-tense",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/381.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "raven",
+      "expression": "tense",
+      "appearanceSet": "raven/bestiaization/current"
+    },
+    {
+      "id": "card-raven-blush",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/382.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "raven",
+      "expression": "blush",
+      "appearanceSet": "raven/bestiaization/current"
+    },
+    {
+      "id": "card-raven-surprised",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/383.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "raven",
+      "expression": "surprised",
+      "appearanceSet": "raven/bestiaization/current"
+    },
+    {
+      "id": "npc-raven-despair",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/384.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "raven",
+      "expression": "despair",
+      "appearanceSet": "raven/bestiaization/current"
+    },
+    {
+      "id": "npc-raven-neutral",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/385.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "raven",
+      "expression": "neutral",
+      "appearanceSet": "raven/bestiaization/current"
+    },
+    {
+      "id": "card-spiril-blush",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/392.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "spiril",
+      "expression": "blush",
+      "appearanceSet": "spiril/bestiaization/current"
+    },
+    {
+      "id": "card-spiril-surprised",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/393.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "spiril",
+      "expression": "surprised",
+      "appearanceSet": "spiril/bestiaization/current"
+    },
+    {
+      "id": "card-spiril-tense",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/394.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "spiril",
+      "expression": "tense",
+      "appearanceSet": "spiril/bestiaization/current"
+    },
+    {
+      "id": "card-spiril-despair",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/395.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "spiril",
+      "expression": "despair",
+      "appearanceSet": "spiril/bestiaization/current"
+    },
+    {
+      "id": "card-spiril-pleased",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/396.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "spiril",
+      "expression": "pleased",
+      "appearanceSet": "spiril/bestiaization/current"
+    },
+    {
+      "id": "card-spiril-neutral",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/397.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "spiril",
+      "expression": "neutral",
+      "appearanceSet": "spiril/bestiaization/current"
+    },
+    {
+      "id": "card-flask-pleased",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/416.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "flask",
+      "expression": "pleased",
+      "appearanceSet": "flask/bestiaization/current"
+    },
+    {
+      "id": "card-flask-surprised",
+      "source": "bestiaization",
+      "sourcePath": "assets/other/image/417.jpeg",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "flask",
+      "expression": "surprised",
+      "appearanceSet": "flask/bestiaization/current"
+    },
+    {
+      "id": "npc-nemo-tense",
+      "source": "nemo",
+      "sourcePath": "assets/other/image/64.png",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "nemo",
+      "expression": "tense",
+      "appearanceSet": "nemo/magical-girl/current"
+    },
+    {
+      "id": "npc-nemo-pleased",
+      "source": "nemo",
+      "sourcePath": "assets/other/image/71.png",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "nemo",
+      "expression": "pleased",
+      "appearanceSet": "nemo/magical-girl/current"
+    },
+    {
+      "id": "npc-nemo-neutral",
+      "source": "nemo",
+      "sourcePath": "assets/other/image/73.png",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "nemo",
+      "expression": "neutral",
+      "appearanceSet": "nemo/magical-girl/current"
+    },
+    {
+      "id": "npc-nemo-despair",
+      "source": "nemo",
+      "sourcePath": "assets/other/image/144.png",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "nemo",
+      "expression": "despair",
+      "appearanceSet": "nemo/magical-girl/current"
+    }
+  ]
+}

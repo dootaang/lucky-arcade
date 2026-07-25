@@ -8,6 +8,8 @@
     "temerosa": "tsx src/temerosa.ts",
     "temerosa:audit": "tsx src/audit-temerosa.ts",
     "temerosa:expressions": "tsx src/audit-temerosa-expressions.ts",
+    "temerosa:casino": "tsx src/compile-temerosa-casino.ts",
+    "temerosa:casino:audit": "tsx src/audit-temerosa-casino.ts",
     "cards": "tsx src/playing-cards.ts",
     "cards:audit": "tsx src/audit-playing-cards.ts",
     "validate": "tsx src/validate-pack.ts",

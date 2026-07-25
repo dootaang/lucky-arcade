@@ -1,0 +1,5239 @@
+{
+  "contract": "temerosa-content-manifest/0.1",
+  "packId": "temerosa-margin",
+  "version": "0.8.0",
+  "assets": [
+    {
+      "id": "card-adesha-blush",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "adesha",
+      "expression": "blush",
+      "appearanceSet": "adesha/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/card-adesha-blush/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 6046
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/card-adesha-blush/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 51054
+        }
+      ]
+    },
+    {
+      "id": "card-adesha-surprised",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "adesha",
+      "expression": "surprised",
+      "appearanceSet": "adesha/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/card-adesha-surprised/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 6134
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/card-adesha-surprised/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 47740
+        }
+      ]
+    },
+    {
+      "id": "card-alger-blush",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "alger",
+      "expression": "blush",
+      "appearanceSet": "alger/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/card-alger-blush/sm.webp",
+          "mime": "image/webp",
+          "width": 131,
+          "height": 192,
+          "bytes": 10278
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/card-alger-blush/md.webp",
+          "mime": "image/webp",
+          "width": 525,
+          "height": 768,
+          "bytes": 69726
+        }
+      ]
+    },
+    {
+      "id": "card-alger-surprised",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "alger",
+      "expression": "surprised",
+      "appearanceSet": "alger/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/card-alger-surprised/sm.webp",
+          "mime": "image/webp",
+          "width": 131,
+          "height": 192,
+          "bytes": 9096
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/card-alger-surprised/md.webp",
+          "mime": "image/webp",
+          "width": 525,
+          "height": 768,
+          "bytes": 65498
+        }
+      ]
+    },
+    {
+      "id": "card-anna-blush",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "anna",
+      "expression": "blush",
+      "appearanceSet": "anna/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/card-anna-blush/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 9970
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/card-anna-blush/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 92110
+        }
+      ]
+    },
+    {
+      "id": "card-anna-surprised",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "anna",
+      "expression": "surprised",
+      "appearanceSet": "anna/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/card-anna-surprised/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 9320
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/card-anna-surprised/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 78404
+        }
+      ]
+    },
+    {
+      "id": "card-apollyon-blush",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "apollyon",
+      "expression": "blush",
+      "appearanceSet": "apollyon/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/card-apollyon-blush/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 7588
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/card-apollyon-blush/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 65464
+        }
+      ]
+    },
+    {
+      "id": "card-apollyon-surprised",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "apollyon",
+      "expression": "surprised",
+      "appearanceSet": "apollyon/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/card-apollyon-surprised/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 8494
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/card-apollyon-surprised/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 71550
+        }
+      ]
+    },
+    {
+      "id": "card-bche-blush",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "bche",
+      "expression": "blush",
+      "appearanceSet": "bche/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/card-bche-blush/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 8124
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/card-bche-blush/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 77802
+        }
+      ]
+    },
+    {
+      "id": "card-bche-surprised",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "bche",
+      "expression": "surprised",
+      "appearanceSet": "bche/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/card-bche-surprised/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 8098
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/card-bche-surprised/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 72322
+        }
+      ]
+    },
+    {
+      "id": "card-cicero-blush",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "cicero",
+      "expression": "blush",
+      "appearanceSet": "cicero/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/card-cicero-blush/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 9148
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/card-cicero-blush/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 78524
+        }
+      ]
+    },
+    {
+      "id": "card-cicero-surprised",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "cicero",
+      "expression": "surprised",
+      "appearanceSet": "cicero/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/card-cicero-surprised/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 8934
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/card-cicero-surprised/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 71790
+        }
+      ]
+    },
+    {
+      "id": "card-cradle-blush",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "cradle",
+      "expression": "blush",
+      "appearanceSet": "cradle/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/card-cradle-blush/sm.webp",
+          "mime": "image/webp",
+          "width": 131,
+          "height": 192,
+          "bytes": 10196
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/card-cradle-blush/md.webp",
+          "mime": "image/webp",
+          "width": 525,
+          "height": 768,
+          "bytes": 88280
+        }
+      ]
+    },
+    {
+      "id": "card-cradle-surprised",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "cradle",
+      "expression": "surprised",
+      "appearanceSet": "cradle/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/card-cradle-surprised/sm.webp",
+          "mime": "image/webp",
+          "width": 131,
+          "height": 192,
+          "bytes": 10048
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/card-cradle-surprised/md.webp",
+          "mime": "image/webp",
+          "width": 525,
+          "height": 768,
+          "bytes": 82618
+        }
+      ]
+    },
+    {
+      "id": "card-deokbae-blush",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "deokbae",
+      "expression": "blush",
+      "appearanceSet": "deokbae/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/card-deokbae-blush/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 8198
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/card-deokbae-blush/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 69466
+        }
+      ]
+    },
+    {
+      "id": "card-deokbae-surprised",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "deokbae",
+      "expression": "surprised",
+      "appearanceSet": "deokbae/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/card-deokbae-surprised/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 8146
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/card-deokbae-surprised/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 68864
+        }
+      ]
+    },
+    {
+      "id": "card-diamo-blush",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "diamo",
+      "expression": "blush",
+      "appearanceSet": "diamo/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/card-diamo-blush/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 8558
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/card-diamo-blush/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 75714
+        }
+      ]
+    },
+    {
+      "id": "card-diamo-surprised",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "diamo",
+      "expression": "surprised",
+      "appearanceSet": "diamo/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/card-diamo-surprised/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 8560
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/card-diamo-surprised/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 82460
+        }
+      ]
+    },
+    {
+      "id": "card-echo-blush",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "echo",
+      "expression": "blush",
+      "appearanceSet": "echo/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/card-echo-blush/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 6174
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/card-echo-blush/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 54658
+        }
+      ]
+    },
+    {
+      "id": "card-echo-surprised",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "echo",
+      "expression": "surprised",
+      "appearanceSet": "echo/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/card-echo-surprised/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 6662
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/card-echo-surprised/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 58112
+        }
+      ]
+    },
+    {
+      "id": "card-esther-blush",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "esther",
+      "expression": "blush",
+      "appearanceSet": "esther/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/card-esther-blush/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 6780
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/card-esther-blush/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 53452
+        }
+      ]
+    },
+    {
+      "id": "card-esther-surprised",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "esther",
+      "expression": "surprised",
+      "appearanceSet": "esther/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/card-esther-surprised/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 8374
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/card-esther-surprised/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 70954
+        }
+      ]
+    },
+    {
+      "id": "card-flask-blush",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "flask",
+      "expression": "blush",
+      "appearanceSet": "flask/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/card-flask-blush/sm.webp",
+          "mime": "image/webp",
+          "width": 131,
+          "height": 192,
+          "bytes": 7028
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/card-flask-blush/md.webp",
+          "mime": "image/webp",
+          "width": 525,
+          "height": 768,
+          "bytes": 57782
+        }
+      ]
+    },
+    {
+      "id": "card-flask-despair",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "flask",
+      "expression": "despair",
+      "appearanceSet": "flask/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/card-flask-despair/sm.webp",
+          "mime": "image/webp",
+          "width": 131,
+          "height": 192,
+          "bytes": 5570
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/card-flask-despair/md.webp",
+          "mime": "image/webp",
+          "width": 525,
+          "height": 768,
+          "bytes": 46944
+        }
+      ]
+    },
+    {
+      "id": "card-flask-neutral",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "flask",
+      "expression": "neutral",
+      "appearanceSet": "flask/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/card-flask-neutral/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 6688
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/card-flask-neutral/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 58464
+        }
+      ]
+    },
+    {
+      "id": "card-flask-pleased",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "flask",
+      "expression": "pleased",
+      "appearanceSet": "flask/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/card-flask-pleased/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 7260
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/card-flask-pleased/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 64094
+        }
+      ]
+    },
+    {
+      "id": "card-flask-surprised",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "flask",
+      "expression": "surprised",
+      "appearanceSet": "flask/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/card-flask-surprised/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 6502
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/card-flask-surprised/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 58120
+        }
+      ]
+    },
+    {
+      "id": "card-flask-tense",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "flask",
+      "expression": "tense",
+      "appearanceSet": "flask/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/card-flask-tense/sm.webp",
+          "mime": "image/webp",
+          "width": 131,
+          "height": 192,
+          "bytes": 6792
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/card-flask-tense/md.webp",
+          "mime": "image/webp",
+          "width": 525,
+          "height": 768,
+          "bytes": 55836
+        }
+      ]
+    },
+    {
+      "id": "card-hiro-blush",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "hiro",
+      "expression": "blush",
+      "appearanceSet": "hiro/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/card-hiro-blush/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 7032
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/card-hiro-blush/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 59432
+        }
+      ]
+    },
+    {
+      "id": "card-hiro-surprised",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "hiro",
+      "expression": "surprised",
+      "appearanceSet": "hiro/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/card-hiro-surprised/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 6876
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/card-hiro-surprised/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 58810
+        }
+      ]
+    },
+    {
+      "id": "card-kreva-blush",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "kreva",
+      "expression": "blush",
+      "appearanceSet": "kreva/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/card-kreva-blush/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 6332
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/card-kreva-blush/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 56876
+        }
+      ]
+    },
+    {
+      "id": "card-kreva-surprised",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "kreva",
+      "expression": "surprised",
+      "appearanceSet": "kreva/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/card-kreva-surprised/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 8366
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/card-kreva-surprised/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 76796
+        }
+      ]
+    },
+    {
+      "id": "card-levillotte-blush",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "levillotte",
+      "expression": "blush",
+      "appearanceSet": "levillotte/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/card-levillotte-blush/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 5470
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/card-levillotte-blush/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 47062
+        }
+      ]
+    },
+    {
+      "id": "card-levillotte-surprised",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "levillotte",
+      "expression": "surprised",
+      "appearanceSet": "levillotte/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/card-levillotte-surprised/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 5598
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/card-levillotte-surprised/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 45366
+        }
+      ]
+    },
+    {
+      "id": "card-lilim-blush",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "lilim",
+      "expression": "blush",
+      "appearanceSet": "lilim/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/card-lilim-blush/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 7464
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/card-lilim-blush/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 67866
+        }
+      ]
+    },
+    {
+      "id": "card-lilim-surprised",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "lilim",
+      "expression": "surprised",
+      "appearanceSet": "lilim/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/card-lilim-surprised/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 7806
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/card-lilim-surprised/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 66870
+        }
+      ]
+    },
+    {
+      "id": "card-lyla-blush",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "lyla",
+      "expression": "blush",
+      "appearanceSet": "lyla/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/card-lyla-blush/sm.webp",
+          "mime": "image/webp",
+          "width": 131,
+          "height": 192,
+          "bytes": 9722
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/card-lyla-blush/md.webp",
+          "mime": "image/webp",
+          "width": 525,
+          "height": 768,
+          "bytes": 67944
+        }
+      ]
+    },
+    {
+      "id": "card-lyla-surprised",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "lyla",
+      "expression": "surprised",
+      "appearanceSet": "lyla/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/card-lyla-surprised/sm.webp",
+          "mime": "image/webp",
+          "width": 131,
+          "height": 192,
+          "bytes": 10598
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/card-lyla-surprised/md.webp",
+          "mime": "image/webp",
+          "width": 525,
+          "height": 768,
+          "bytes": 77538
+        }
+      ]
+    },
+    {
+      "id": "card-machina-blush",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "machina",
+      "expression": "blush",
+      "appearanceSet": "machina/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/card-machina-blush/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 9820
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/card-machina-blush/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 89572
+        }
+      ]
+    },
+    {
+      "id": "card-machina-surprised",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "machina",
+      "expression": "surprised",
+      "appearanceSet": "machina/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/card-machina-surprised/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 8374
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/card-machina-surprised/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 73066
+        }
+      ]
+    },
+    {
+      "id": "card-morsisa-blush",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "morsisa",
+      "expression": "blush",
+      "appearanceSet": "morsisa/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/card-morsisa-blush/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 8196
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/card-morsisa-blush/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 74218
+        }
+      ]
+    },
+    {
+      "id": "card-morsisa-surprised",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "morsisa",
+      "expression": "surprised",
+      "appearanceSet": "morsisa/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/card-morsisa-surprised/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 7738
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/card-morsisa-surprised/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 69842
+        }
+      ]
+    },
+    {
+      "id": "card-nostalgia-blush",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "nostalgia",
+      "expression": "blush",
+      "appearanceSet": "nostalgia/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/card-nostalgia-blush/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 8570
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/card-nostalgia-blush/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 69556
+        }
+      ]
+    },
+    {
+      "id": "card-nostalgia-surprised",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "nostalgia",
+      "expression": "surprised",
+      "appearanceSet": "nostalgia/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/card-nostalgia-surprised/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 7866
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/card-nostalgia-surprised/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 64194
+        }
+      ]
+    },
+    {
+      "id": "card-phaeo-blush",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "phaeo",
+      "expression": "blush",
+      "appearanceSet": "phaeo/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/card-phaeo-blush/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 7368
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/card-phaeo-blush/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 63566
+        }
+      ]
+    },
+    {
+      "id": "card-phaeo-surprised",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "phaeo",
+      "expression": "surprised",
+      "appearanceSet": "phaeo/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/card-phaeo-surprised/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 8116
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/card-phaeo-surprised/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 70774
+        }
+      ]
+    },
+    {
+      "id": "card-raven-blush",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "raven",
+      "expression": "blush",
+      "appearanceSet": "raven/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/card-raven-blush/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 4470
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/card-raven-blush/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 33812
+        }
+      ]
+    },
+    {
+      "id": "card-raven-surprised",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "raven",
+      "expression": "surprised",
+      "appearanceSet": "raven/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/card-raven-surprised/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 5434
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/card-raven-surprised/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 41216
+        }
+      ]
+    },
+    {
+      "id": "card-sakabus-blush",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "sakabus",
+      "expression": "blush",
+      "appearanceSet": "sakabus/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/card-sakabus-blush/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 8546
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/card-sakabus-blush/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 70292
+        }
+      ]
+    },
+    {
+      "id": "card-sakabus-despair",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "sakabus",
+      "expression": "despair",
+      "appearanceSet": "sakabus/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/card-sakabus-despair/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 9346
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/card-sakabus-despair/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 78820
+        }
+      ]
+    },
+    {
+      "id": "card-sakabus-neutral",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "sakabus",
+      "expression": "neutral",
+      "appearanceSet": "sakabus/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/card-sakabus-neutral/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 9192
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/card-sakabus-neutral/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 79318
+        }
+      ]
+    },
+    {
+      "id": "card-sakabus-pleased",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "sakabus",
+      "expression": "pleased",
+      "appearanceSet": "sakabus/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/card-sakabus-pleased/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 9452
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/card-sakabus-pleased/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 79572
+        }
+      ]
+    },
+    {
+      "id": "card-sakabus-surprised",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "sakabus",
+      "expression": "surprised",
+      "appearanceSet": "sakabus/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/card-sakabus-surprised/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 8506
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/card-sakabus-surprised/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 71248
+        }
+      ]
+    },
+    {
+      "id": "card-sakabus-tense",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "sakabus",
+      "expression": "tense",
+      "appearanceSet": "sakabus/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/card-sakabus-tense/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 9342
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/card-sakabus-tense/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 76300
+        }
+      ]
+    },
+    {
+      "id": "card-snow-rim-blush",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "snow-rim",
+      "expression": "blush",
+      "appearanceSet": "snow-rim/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/card-snow-rim-blush/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 8652
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/card-snow-rim-blush/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 68124
+        }
+      ]
+    },
+    {
+      "id": "card-snow-rim-despair",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "snow-rim",
+      "expression": "despair",
+      "appearanceSet": "snow-rim/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/card-snow-rim-despair/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 8720
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/card-snow-rim-despair/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 72392
+        }
+      ]
+    },
+    {
+      "id": "card-snow-rim-neutral",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "snow-rim",
+      "expression": "neutral",
+      "appearanceSet": "snow-rim/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/card-snow-rim-neutral/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 8776
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/card-snow-rim-neutral/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 71364
+        }
+      ]
+    },
+    {
+      "id": "card-snow-rim-pleased",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "snow-rim",
+      "expression": "pleased",
+      "appearanceSet": "snow-rim/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/card-snow-rim-pleased/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 7646
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/card-snow-rim-pleased/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 66482
+        }
+      ]
+    },
+    {
+      "id": "card-snow-rim-surprised",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "snow-rim",
+      "expression": "surprised",
+      "appearanceSet": "snow-rim/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/card-snow-rim-surprised/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 8300
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/card-snow-rim-surprised/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 68472
+        }
+      ]
+    },
+    {
+      "id": "card-snow-rim-tense",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "snow-rim",
+      "expression": "tense",
+      "appearanceSet": "snow-rim/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/card-snow-rim-tense/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 7822
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/card-snow-rim-tense/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 63932
+        }
+      ]
+    },
+    {
+      "id": "card-spiril-blush",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "spiril",
+      "expression": "blush",
+      "appearanceSet": "spiril/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/card-spiril-blush/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 8504
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/card-spiril-blush/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 68046
+        }
+      ]
+    },
+    {
+      "id": "card-spiril-despair",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "spiril",
+      "expression": "despair",
+      "appearanceSet": "spiril/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/card-spiril-despair/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 7010
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/card-spiril-despair/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 59898
+        }
+      ]
+    },
+    {
+      "id": "card-spiril-neutral",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "spiril",
+      "expression": "neutral",
+      "appearanceSet": "spiril/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/card-spiril-neutral/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 7002
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/card-spiril-neutral/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 62054
+        }
+      ]
+    },
+    {
+      "id": "card-spiril-pleased",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "spiril",
+      "expression": "pleased",
+      "appearanceSet": "spiril/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/card-spiril-pleased/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 7648
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/card-spiril-pleased/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 59902
+        }
+      ]
+    },
+    {
+      "id": "card-spiril-surprised",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "spiril",
+      "expression": "surprised",
+      "appearanceSet": "spiril/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/card-spiril-surprised/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 7496
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/card-spiril-surprised/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 63010
+        }
+      ]
+    },
+    {
+      "id": "card-spiril-tense",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "spiril",
+      "expression": "tense",
+      "appearanceSet": "spiril/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/card-spiril-tense/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 8674
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/card-spiril-tense/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 68178
+        }
+      ]
+    },
+    {
+      "id": "card-strelka-blush",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "strelka",
+      "expression": "blush",
+      "appearanceSet": "strelka/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/card-strelka-blush/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 5924
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/card-strelka-blush/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 46224
+        }
+      ]
+    },
+    {
+      "id": "card-strelka-despair",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "strelka",
+      "expression": "despair",
+      "appearanceSet": "strelka/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/card-strelka-despair/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 7642
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/card-strelka-despair/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 62552
+        }
+      ]
+    },
+    {
+      "id": "card-strelka-neutral",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "strelka",
+      "expression": "neutral",
+      "appearanceSet": "strelka/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/card-strelka-neutral/sm.webp",
+          "mime": "image/webp",
+          "width": 131,
+          "height": 192,
+          "bytes": 6454
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/card-strelka-neutral/md.webp",
+          "mime": "image/webp",
+          "width": 525,
+          "height": 768,
+          "bytes": 48602
+        }
+      ]
+    },
+    {
+      "id": "card-strelka-surprised",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "strelka",
+      "expression": "surprised",
+      "appearanceSet": "strelka/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/card-strelka-surprised/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 6788
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/card-strelka-surprised/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 56636
+        }
+      ]
+    },
+    {
+      "id": "card-strelka-tense",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "strelka",
+      "expression": "tense",
+      "appearanceSet": "strelka/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/card-strelka-tense/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 7154
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/card-strelka-tense/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 60052
+        }
+      ]
+    },
+    {
+      "id": "card-temute-blush",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "temute",
+      "expression": "blush",
+      "appearanceSet": "temute/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/card-temute-blush/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 6322
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/card-temute-blush/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 57972
+        }
+      ]
+    },
+    {
+      "id": "card-temute-surprised",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "temute",
+      "expression": "surprised",
+      "appearanceSet": "temute/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/card-temute-surprised/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 7134
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/card-temute-surprised/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 61958
+        }
+      ]
+    },
+    {
+      "id": "card-traver-blush",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "traver",
+      "expression": "blush",
+      "appearanceSet": "traver/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/card-traver-blush/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 6762
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/card-traver-blush/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 59010
+        }
+      ]
+    },
+    {
+      "id": "card-traver-surprised",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "traver",
+      "expression": "surprised",
+      "appearanceSet": "traver/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/card-traver-surprised/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 8140
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/card-traver-surprised/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 67422
+        }
+      ]
+    },
+    {
+      "id": "card-ttaengchil-blush",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "ttaengchil",
+      "expression": "blush",
+      "appearanceSet": "ttaengchil/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/card-ttaengchil-blush/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 6968
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/card-ttaengchil-blush/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 68118
+        }
+      ]
+    },
+    {
+      "id": "card-ttaengchil-surprised",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "ttaengchil",
+      "expression": "surprised",
+      "appearanceSet": "ttaengchil/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/card-ttaengchil-surprised/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 7202
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/card-ttaengchil-surprised/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 63532
+        }
+      ]
+    },
+    {
+      "id": "card-tumit-tu-blush",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "tumit-tu",
+      "expression": "blush",
+      "appearanceSet": "tumit-tu/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/card-tumit-tu-blush/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 5676
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/card-tumit-tu-blush/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 52014
+        }
+      ]
+    },
+    {
+      "id": "card-tumit-tu-surprised",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "tumit-tu",
+      "expression": "surprised",
+      "appearanceSet": "tumit-tu/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/card-tumit-tu-surprised/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 6184
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/card-tumit-tu-surprised/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 52790
+        }
+      ]
+    },
+    {
+      "id": "card-yul-blush",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "yul",
+      "expression": "blush",
+      "appearanceSet": "yul/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/card-yul-blush/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 7396
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/card-yul-blush/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 65682
+        }
+      ]
+    },
+    {
+      "id": "card-yul-surprised",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "yul",
+      "expression": "surprised",
+      "appearanceSet": "yul/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/card-yul-surprised/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 7838
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/card-yul-surprised/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 66698
+        }
+      ]
+    },
+    {
+      "id": "npc-adesha-despair",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "adesha",
+      "expression": "despair",
+      "appearanceSet": "adesha/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/npc-adesha-despair/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 4840
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/npc-adesha-despair/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 38028
+        }
+      ]
+    },
+    {
+      "id": "npc-adesha-neutral",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "adesha",
+      "expression": "neutral",
+      "appearanceSet": "adesha/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/npc-adesha-neutral/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 5656
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/npc-adesha-neutral/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 44960
+        }
+      ]
+    },
+    {
+      "id": "npc-adesha-pleased",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "adesha",
+      "expression": "pleased",
+      "appearanceSet": "adesha/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/npc-adesha-pleased/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 5242
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/npc-adesha-pleased/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 43242
+        }
+      ]
+    },
+    {
+      "id": "npc-adesha-tense",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "adesha",
+      "expression": "tense",
+      "appearanceSet": "adesha/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/npc-adesha-tense/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 4894
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/npc-adesha-tense/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 39618
+        }
+      ]
+    },
+    {
+      "id": "npc-alger-despair",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "alger",
+      "expression": "despair",
+      "appearanceSet": "alger/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/npc-alger-despair/sm.webp",
+          "mime": "image/webp",
+          "width": 131,
+          "height": 192,
+          "bytes": 10394
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/npc-alger-despair/md.webp",
+          "mime": "image/webp",
+          "width": 525,
+          "height": 768,
+          "bytes": 77712
+        }
+      ]
+    },
+    {
+      "id": "npc-alger-neutral",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "alger",
+      "expression": "neutral",
+      "appearanceSet": "alger/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/npc-alger-neutral/sm.webp",
+          "mime": "image/webp",
+          "width": 131,
+          "height": 192,
+          "bytes": 9156
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/npc-alger-neutral/md.webp",
+          "mime": "image/webp",
+          "width": 525,
+          "height": 768,
+          "bytes": 66724
+        }
+      ]
+    },
+    {
+      "id": "npc-alger-pleased",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "alger",
+      "expression": "pleased",
+      "appearanceSet": "alger/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/npc-alger-pleased/sm.webp",
+          "mime": "image/webp",
+          "width": 131,
+          "height": 192,
+          "bytes": 8850
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/npc-alger-pleased/md.webp",
+          "mime": "image/webp",
+          "width": 525,
+          "height": 768,
+          "bytes": 63980
+        }
+      ]
+    },
+    {
+      "id": "npc-alger-tense",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "alger",
+      "expression": "tense",
+      "appearanceSet": "alger/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/npc-alger-tense/sm.webp",
+          "mime": "image/webp",
+          "width": 131,
+          "height": 192,
+          "bytes": 9188
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/npc-alger-tense/md.webp",
+          "mime": "image/webp",
+          "width": 525,
+          "height": 768,
+          "bytes": 64574
+        }
+      ]
+    },
+    {
+      "id": "npc-anna-despair",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "anna",
+      "expression": "despair",
+      "appearanceSet": "anna/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/npc-anna-despair/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 7778
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/npc-anna-despair/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 72676
+        }
+      ]
+    },
+    {
+      "id": "npc-anna-neutral",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "anna",
+      "expression": "neutral",
+      "appearanceSet": "anna/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/npc-anna-neutral/sm.webp",
+          "mime": "image/webp",
+          "width": 131,
+          "height": 192,
+          "bytes": 9444
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/npc-anna-neutral/md.webp",
+          "mime": "image/webp",
+          "width": 525,
+          "height": 768,
+          "bytes": 79284
+        }
+      ]
+    },
+    {
+      "id": "npc-anna-pleased",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "anna",
+      "expression": "pleased",
+      "appearanceSet": "anna/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/npc-anna-pleased/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 8870
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/npc-anna-pleased/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 77180
+        }
+      ]
+    },
+    {
+      "id": "npc-anna-tense",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "anna",
+      "expression": "tense",
+      "appearanceSet": "anna/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/npc-anna-tense/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 10304
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/npc-anna-tense/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 96636
+        }
+      ]
+    },
+    {
+      "id": "npc-apollyon-despair",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "apollyon",
+      "expression": "despair",
+      "appearanceSet": "apollyon/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/npc-apollyon-despair/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 7626
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/npc-apollyon-despair/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 67020
+        }
+      ]
+    },
+    {
+      "id": "npc-apollyon-neutral",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "apollyon",
+      "expression": "neutral",
+      "appearanceSet": "apollyon/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/npc-apollyon-neutral/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 6214
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/npc-apollyon-neutral/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 53254
+        }
+      ]
+    },
+    {
+      "id": "npc-apollyon-pleased",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "apollyon",
+      "expression": "pleased",
+      "appearanceSet": "apollyon/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/npc-apollyon-pleased/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 6822
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/npc-apollyon-pleased/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 59220
+        }
+      ]
+    },
+    {
+      "id": "npc-apollyon-tense",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "apollyon",
+      "expression": "tense",
+      "appearanceSet": "apollyon/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/npc-apollyon-tense/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 10456
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/npc-apollyon-tense/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 89728
+        }
+      ]
+    },
+    {
+      "id": "npc-bche-despair",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "bche",
+      "expression": "despair",
+      "appearanceSet": "bche/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/npc-bche-despair/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 8274
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/npc-bche-despair/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 76144
+        }
+      ]
+    },
+    {
+      "id": "npc-bche-neutral",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "bche",
+      "expression": "neutral",
+      "appearanceSet": "bche/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/npc-bche-neutral/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 8210
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/npc-bche-neutral/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 78508
+        }
+      ]
+    },
+    {
+      "id": "npc-bche-pleased",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "bche",
+      "expression": "pleased",
+      "appearanceSet": "bche/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/npc-bche-pleased/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 9528
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/npc-bche-pleased/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 91338
+        }
+      ]
+    },
+    {
+      "id": "npc-bche-tense",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "bche",
+      "expression": "tense",
+      "appearanceSet": "bche/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/npc-bche-tense/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 9660
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/npc-bche-tense/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 91704
+        }
+      ]
+    },
+    {
+      "id": "npc-camille-despair",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "camille",
+      "expression": "despair",
+      "appearanceSet": "camille/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/npc-camille-despair/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 6398
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/npc-camille-despair/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 57974
+        }
+      ]
+    },
+    {
+      "id": "npc-camille-neutral",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "camille",
+      "expression": "neutral",
+      "appearanceSet": "camille/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/npc-camille-neutral/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 7232
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/npc-camille-neutral/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 66988
+        }
+      ]
+    },
+    {
+      "id": "npc-camille-pleased",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "camille",
+      "expression": "pleased",
+      "appearanceSet": "camille/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/npc-camille-pleased/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 7222
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/npc-camille-pleased/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 64632
+        }
+      ]
+    },
+    {
+      "id": "npc-camille-tense",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "camille",
+      "expression": "tense",
+      "appearanceSet": "camille/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/npc-camille-tense/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 8460
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/npc-camille-tense/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 77934
+        }
+      ]
+    },
+    {
+      "id": "npc-cicero-despair",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "cicero",
+      "expression": "despair",
+      "appearanceSet": "cicero/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/npc-cicero-despair/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 4880
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/npc-cicero-despair/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 40444
+        }
+      ]
+    },
+    {
+      "id": "npc-cicero-neutral",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "cicero",
+      "expression": "neutral",
+      "appearanceSet": "cicero/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/npc-cicero-neutral/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 8248
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/npc-cicero-neutral/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 67842
+        }
+      ]
+    },
+    {
+      "id": "npc-cicero-pleased",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "cicero",
+      "expression": "pleased",
+      "appearanceSet": "cicero/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/npc-cicero-pleased/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 6318
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/npc-cicero-pleased/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 52796
+        }
+      ]
+    },
+    {
+      "id": "npc-cicero-tense",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "cicero",
+      "expression": "tense",
+      "appearanceSet": "cicero/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/npc-cicero-tense/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 8028
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/npc-cicero-tense/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 68732
+        }
+      ]
+    },
+    {
+      "id": "npc-cradle-despair",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "cradle",
+      "expression": "despair",
+      "appearanceSet": "cradle/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/npc-cradle-despair/sm.webp",
+          "mime": "image/webp",
+          "width": 131,
+          "height": 192,
+          "bytes": 8680
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/npc-cradle-despair/md.webp",
+          "mime": "image/webp",
+          "width": 525,
+          "height": 768,
+          "bytes": 70508
+        }
+      ]
+    },
+    {
+      "id": "npc-cradle-neutral",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "cradle",
+      "expression": "neutral",
+      "appearanceSet": "cradle/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/npc-cradle-neutral/sm.webp",
+          "mime": "image/webp",
+          "width": 131,
+          "height": 192,
+          "bytes": 10690
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/npc-cradle-neutral/md.webp",
+          "mime": "image/webp",
+          "width": 525,
+          "height": 768,
+          "bytes": 97288
+        }
+      ]
+    },
+    {
+      "id": "npc-cradle-pleased",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "cradle",
+      "expression": "pleased",
+      "appearanceSet": "cradle/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/npc-cradle-pleased/sm.webp",
+          "mime": "image/webp",
+          "width": 131,
+          "height": 192,
+          "bytes": 9406
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/npc-cradle-pleased/md.webp",
+          "mime": "image/webp",
+          "width": 525,
+          "height": 768,
+          "bytes": 73810
+        }
+      ]
+    },
+    {
+      "id": "npc-cradle-tense",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "cradle",
+      "expression": "tense",
+      "appearanceSet": "cradle/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/npc-cradle-tense/sm.webp",
+          "mime": "image/webp",
+          "width": 131,
+          "height": 192,
+          "bytes": 9924
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/npc-cradle-tense/md.webp",
+          "mime": "image/webp",
+          "width": 525,
+          "height": 768,
+          "bytes": 83832
+        }
+      ]
+    },
+    {
+      "id": "npc-deokbae-despair",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "deokbae",
+      "expression": "despair",
+      "appearanceSet": "deokbae/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/npc-deokbae-despair/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 7586
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/npc-deokbae-despair/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 64918
+        }
+      ]
+    },
+    {
+      "id": "npc-deokbae-neutral",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "deokbae",
+      "expression": "neutral",
+      "appearanceSet": "deokbae/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/npc-deokbae-neutral/sm.webp",
+          "mime": "image/webp",
+          "width": 192,
+          "height": 192,
+          "bytes": 7378
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/npc-deokbae-neutral/md.webp",
+          "mime": "image/webp",
+          "width": 768,
+          "height": 768,
+          "bytes": 63364
+        }
+      ]
+    },
+    {
+      "id": "npc-deokbae-pleased",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "deokbae",
+      "expression": "pleased",
+      "appearanceSet": "deokbae/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/npc-deokbae-pleased/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 7996
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/npc-deokbae-pleased/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 67628
+        }
+      ]
+    },
+    {
+      "id": "npc-deokbae-tense",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "deokbae",
+      "expression": "tense",
+      "appearanceSet": "deokbae/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/npc-deokbae-tense/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 8052
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/npc-deokbae-tense/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 67754
+        }
+      ]
+    },
+    {
+      "id": "npc-diamo-despair",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "diamo",
+      "expression": "despair",
+      "appearanceSet": "diamo/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/npc-diamo-despair/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 8630
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/npc-diamo-despair/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 77972
+        }
+      ]
+    },
+    {
+      "id": "npc-diamo-neutral",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "diamo",
+      "expression": "neutral",
+      "appearanceSet": "diamo/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/npc-diamo-neutral/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 9798
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/npc-diamo-neutral/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 87722
+        }
+      ]
+    },
+    {
+      "id": "npc-diamo-pleased",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "diamo",
+      "expression": "pleased",
+      "appearanceSet": "diamo/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/npc-diamo-pleased/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 8610
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/npc-diamo-pleased/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 79086
+        }
+      ]
+    },
+    {
+      "id": "npc-diamo-tense",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "diamo",
+      "expression": "tense",
+      "appearanceSet": "diamo/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/npc-diamo-tense/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 8996
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/npc-diamo-tense/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 77836
+        }
+      ]
+    },
+    {
+      "id": "npc-echo-despair",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "echo",
+      "expression": "despair",
+      "appearanceSet": "echo/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/npc-echo-despair/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 5862
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/npc-echo-despair/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 53398
+        }
+      ]
+    },
+    {
+      "id": "npc-echo-neutral",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "echo",
+      "expression": "neutral",
+      "appearanceSet": "echo/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/npc-echo-neutral/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 5418
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/npc-echo-neutral/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 45596
+        }
+      ]
+    },
+    {
+      "id": "npc-echo-pleased",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "echo",
+      "expression": "pleased",
+      "appearanceSet": "echo/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/npc-echo-pleased/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 6730
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/npc-echo-pleased/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 63798
+        }
+      ]
+    },
+    {
+      "id": "npc-echo-tense",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "echo",
+      "expression": "tense",
+      "appearanceSet": "echo/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/npc-echo-tense/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 5966
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/npc-echo-tense/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 50848
+        }
+      ]
+    },
+    {
+      "id": "npc-esther-despair",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "esther",
+      "expression": "despair",
+      "appearanceSet": "esther/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/npc-esther-despair/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 7590
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/npc-esther-despair/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 67804
+        }
+      ]
+    },
+    {
+      "id": "npc-esther-neutral",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "esther",
+      "expression": "neutral",
+      "appearanceSet": "esther/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/npc-esther-neutral/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 7478
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/npc-esther-neutral/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 62604
+        }
+      ]
+    },
+    {
+      "id": "npc-esther-pleased",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "esther",
+      "expression": "pleased",
+      "appearanceSet": "esther/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/npc-esther-pleased/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 9156
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/npc-esther-pleased/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 74224
+        }
+      ]
+    },
+    {
+      "id": "npc-esther-tense",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "esther",
+      "expression": "tense",
+      "appearanceSet": "esther/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/npc-esther-tense/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 7202
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/npc-esther-tense/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 57828
+        }
+      ]
+    },
+    {
+      "id": "npc-hiro-despair",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "hiro",
+      "expression": "despair",
+      "appearanceSet": "hiro/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/npc-hiro-despair/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 6864
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/npc-hiro-despair/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 59380
+        }
+      ]
+    },
+    {
+      "id": "npc-hiro-neutral",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "hiro",
+      "expression": "neutral",
+      "appearanceSet": "hiro/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/npc-hiro-neutral/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 7404
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/npc-hiro-neutral/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 62762
+        }
+      ]
+    },
+    {
+      "id": "npc-hiro-pleased",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "hiro",
+      "expression": "pleased",
+      "appearanceSet": "hiro/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/npc-hiro-pleased/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 6898
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/npc-hiro-pleased/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 58704
+        }
+      ]
+    },
+    {
+      "id": "npc-hiro-tense",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "hiro",
+      "expression": "tense",
+      "appearanceSet": "hiro/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/npc-hiro-tense/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 6834
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/npc-hiro-tense/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 58650
+        }
+      ]
+    },
+    {
+      "id": "npc-katrinka-despair",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "katrinka",
+      "expression": "despair",
+      "appearanceSet": "katrinka/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/npc-katrinka-despair/sm.webp",
+          "mime": "image/webp",
+          "width": 192,
+          "height": 192,
+          "bytes": 4722
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/npc-katrinka-despair/md.webp",
+          "mime": "image/webp",
+          "width": 768,
+          "height": 768,
+          "bytes": 40474
+        }
+      ]
+    },
+    {
+      "id": "npc-katrinka-neutral",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "katrinka",
+      "expression": "neutral",
+      "appearanceSet": "katrinka/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/npc-katrinka-neutral/sm.webp",
+          "mime": "image/webp",
+          "width": 192,
+          "height": 192,
+          "bytes": 10390
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/npc-katrinka-neutral/md.webp",
+          "mime": "image/webp",
+          "width": 768,
+          "height": 768,
+          "bytes": 98076
+        }
+      ]
+    },
+    {
+      "id": "npc-katrinka-pleased",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "katrinka",
+      "expression": "pleased",
+      "appearanceSet": "katrinka/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/npc-katrinka-pleased/sm.webp",
+          "mime": "image/webp",
+          "width": 192,
+          "height": 192,
+          "bytes": 5992
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/npc-katrinka-pleased/md.webp",
+          "mime": "image/webp",
+          "width": 768,
+          "height": 768,
+          "bytes": 52542
+        }
+      ]
+    },
+    {
+      "id": "npc-katrinka-tense",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "katrinka",
+      "expression": "tense",
+      "appearanceSet": "katrinka/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/npc-katrinka-tense/sm.webp",
+          "mime": "image/webp",
+          "width": 192,
+          "height": 192,
+          "bytes": 6422
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/npc-katrinka-tense/md.webp",
+          "mime": "image/webp",
+          "width": 768,
+          "height": 768,
+          "bytes": 55918
+        }
+      ]
+    },
+    {
+      "id": "npc-kreva-despair",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "kreva",
+      "expression": "despair",
+      "appearanceSet": "kreva/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/npc-kreva-despair/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 8460
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/npc-kreva-despair/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 82218
+        }
+      ]
+    },
+    {
+      "id": "npc-kreva-neutral",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "kreva",
+      "expression": "neutral",
+      "appearanceSet": "kreva/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/npc-kreva-neutral/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 8348
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/npc-kreva-neutral/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 85772
+        }
+      ]
+    },
+    {
+      "id": "npc-kreva-pleased",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "kreva",
+      "expression": "pleased",
+      "appearanceSet": "kreva/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/npc-kreva-pleased/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 8616
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/npc-kreva-pleased/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 77878
+        }
+      ]
+    },
+    {
+      "id": "npc-kreva-tense",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "kreva",
+      "expression": "tense",
+      "appearanceSet": "kreva/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/npc-kreva-tense/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 9132
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/npc-kreva-tense/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 83570
+        }
+      ]
+    },
+    {
+      "id": "npc-levillotte-despair",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "levillotte",
+      "expression": "despair",
+      "appearanceSet": "levillotte/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/npc-levillotte-despair/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 5192
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/npc-levillotte-despair/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 46988
+        }
+      ]
+    },
+    {
+      "id": "npc-levillotte-neutral",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "levillotte",
+      "expression": "neutral",
+      "appearanceSet": "levillotte/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/npc-levillotte-neutral/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 4950
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/npc-levillotte-neutral/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 41780
+        }
+      ]
+    },
+    {
+      "id": "npc-levillotte-pleased",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "levillotte",
+      "expression": "pleased",
+      "appearanceSet": "levillotte/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/npc-levillotte-pleased/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 5324
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/npc-levillotte-pleased/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 44326
+        }
+      ]
+    },
+    {
+      "id": "npc-levillotte-tense",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "levillotte",
+      "expression": "tense",
+      "appearanceSet": "levillotte/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/npc-levillotte-tense/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 6314
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/npc-levillotte-tense/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 51698
+        }
+      ]
+    },
+    {
+      "id": "npc-lilim-despair",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "lilim",
+      "expression": "despair",
+      "appearanceSet": "lilim/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/npc-lilim-despair/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 6650
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/npc-lilim-despair/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 61512
+        }
+      ]
+    },
+    {
+      "id": "npc-lilim-neutral",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "lilim",
+      "expression": "neutral",
+      "appearanceSet": "lilim/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/npc-lilim-neutral/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 7568
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/npc-lilim-neutral/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 71982
+        }
+      ]
+    },
+    {
+      "id": "npc-lilim-pleased",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "lilim",
+      "expression": "pleased",
+      "appearanceSet": "lilim/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/npc-lilim-pleased/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 6442
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/npc-lilim-pleased/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 61926
+        }
+      ]
+    },
+    {
+      "id": "npc-lilim-tense",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "lilim",
+      "expression": "tense",
+      "appearanceSet": "lilim/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/npc-lilim-tense/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 7474
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/npc-lilim-tense/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 71144
+        }
+      ]
+    },
+    {
+      "id": "npc-lyla-despair",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "lyla",
+      "expression": "despair",
+      "appearanceSet": "lyla/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/npc-lyla-despair/sm.webp",
+          "mime": "image/webp",
+          "width": 131,
+          "height": 192,
+          "bytes": 11218
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/npc-lyla-despair/md.webp",
+          "mime": "image/webp",
+          "width": 525,
+          "height": 768,
+          "bytes": 80540
+        }
+      ]
+    },
+    {
+      "id": "npc-lyla-neutral",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "lyla",
+      "expression": "neutral",
+      "appearanceSet": "lyla/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/npc-lyla-neutral/sm.webp",
+          "mime": "image/webp",
+          "width": 192,
+          "height": 131,
+          "bytes": 10398
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/npc-lyla-neutral/md.webp",
+          "mime": "image/webp",
+          "width": 768,
+          "height": 525,
+          "bytes": 70382
+        }
+      ]
+    },
+    {
+      "id": "npc-lyla-pleased",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "lyla",
+      "expression": "pleased",
+      "appearanceSet": "lyla/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/npc-lyla-pleased/sm.webp",
+          "mime": "image/webp",
+          "width": 131,
+          "height": 192,
+          "bytes": 9724
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/npc-lyla-pleased/md.webp",
+          "mime": "image/webp",
+          "width": 525,
+          "height": 768,
+          "bytes": 71940
+        }
+      ]
+    },
+    {
+      "id": "npc-lyla-tense",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "lyla",
+      "expression": "tense",
+      "appearanceSet": "lyla/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/npc-lyla-tense/sm.webp",
+          "mime": "image/webp",
+          "width": 131,
+          "height": 192,
+          "bytes": 11080
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/npc-lyla-tense/md.webp",
+          "mime": "image/webp",
+          "width": 525,
+          "height": 768,
+          "bytes": 78744
+        }
+      ]
+    },
+    {
+      "id": "npc-machina-despair",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "machina",
+      "expression": "despair",
+      "appearanceSet": "machina/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/npc-machina-despair/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 7878
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/npc-machina-despair/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 71934
+        }
+      ]
+    },
+    {
+      "id": "npc-machina-neutral",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "machina",
+      "expression": "neutral",
+      "appearanceSet": "machina/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/npc-machina-neutral/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 9320
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/npc-machina-neutral/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 82086
+        }
+      ]
+    },
+    {
+      "id": "npc-machina-pleased",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "machina",
+      "expression": "pleased",
+      "appearanceSet": "machina/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/npc-machina-pleased/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 9368
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/npc-machina-pleased/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 88654
+        }
+      ]
+    },
+    {
+      "id": "npc-machina-tense",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "machina",
+      "expression": "tense",
+      "appearanceSet": "machina/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/npc-machina-tense/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 9604
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/npc-machina-tense/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 88462
+        }
+      ]
+    },
+    {
+      "id": "npc-morsisa-despair",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "morsisa",
+      "expression": "despair",
+      "appearanceSet": "morsisa/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/npc-morsisa-despair/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 7754
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/npc-morsisa-despair/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 64758
+        }
+      ]
+    },
+    {
+      "id": "npc-morsisa-neutral",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "morsisa",
+      "expression": "neutral",
+      "appearanceSet": "morsisa/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/npc-morsisa-neutral/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 8992
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/npc-morsisa-neutral/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 78810
+        }
+      ]
+    },
+    {
+      "id": "npc-morsisa-pleased",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "morsisa",
+      "expression": "pleased",
+      "appearanceSet": "morsisa/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/npc-morsisa-pleased/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 8170
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/npc-morsisa-pleased/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 70724
+        }
+      ]
+    },
+    {
+      "id": "npc-morsisa-tense",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "morsisa",
+      "expression": "tense",
+      "appearanceSet": "morsisa/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/npc-morsisa-tense/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 8708
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/npc-morsisa-tense/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 75604
+        }
+      ]
+    },
+    {
+      "id": "npc-nemo-despair",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "nemo",
+      "expression": "despair",
+      "appearanceSet": "nemo/magical-girl/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/npc-nemo-despair/sm.webp",
+          "mime": "image/webp",
+          "width": 192,
+          "height": 128,
+          "bytes": 5640
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/npc-nemo-despair/md.webp",
+          "mime": "image/webp",
+          "width": 768,
+          "height": 512,
+          "bytes": 43838
+        }
+      ]
+    },
+    {
+      "id": "npc-nemo-neutral",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "nemo",
+      "expression": "neutral",
+      "appearanceSet": "nemo/magical-girl/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/npc-nemo-neutral/sm.webp",
+          "mime": "image/webp",
+          "width": 131,
+          "height": 192,
+          "bytes": 7982
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/npc-nemo-neutral/md.webp",
+          "mime": "image/webp",
+          "width": 525,
+          "height": 768,
+          "bytes": 51304
+        }
+      ]
+    },
+    {
+      "id": "npc-nemo-pleased",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "nemo",
+      "expression": "pleased",
+      "appearanceSet": "nemo/magical-girl/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/npc-nemo-pleased/sm.webp",
+          "mime": "image/webp",
+          "width": 131,
+          "height": 192,
+          "bytes": 9912
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/npc-nemo-pleased/md.webp",
+          "mime": "image/webp",
+          "width": 525,
+          "height": 768,
+          "bytes": 63848
+        }
+      ]
+    },
+    {
+      "id": "npc-nemo-tense",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "nemo",
+      "expression": "tense",
+      "appearanceSet": "nemo/magical-girl/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/npc-nemo-tense/sm.webp",
+          "mime": "image/webp",
+          "width": 192,
+          "height": 192,
+          "bytes": 10794
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/npc-nemo-tense/md.webp",
+          "mime": "image/webp",
+          "width": 768,
+          "height": 768,
+          "bytes": 64770
+        }
+      ]
+    },
+    {
+      "id": "npc-nieun-despair",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "nieun",
+      "expression": "despair",
+      "appearanceSet": "nieun/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/npc-nieun-despair/sm.webp",
+          "mime": "image/webp",
+          "width": 192,
+          "height": 192,
+          "bytes": 7588
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/npc-nieun-despair/md.webp",
+          "mime": "image/webp",
+          "width": 768,
+          "height": 768,
+          "bytes": 61396
+        }
+      ]
+    },
+    {
+      "id": "npc-nieun-neutral",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "nieun",
+      "expression": "neutral",
+      "appearanceSet": "nieun/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/npc-nieun-neutral/sm.webp",
+          "mime": "image/webp",
+          "width": 192,
+          "height": 192,
+          "bytes": 8566
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/npc-nieun-neutral/md.webp",
+          "mime": "image/webp",
+          "width": 768,
+          "height": 768,
+          "bytes": 54486
+        }
+      ]
+    },
+    {
+      "id": "npc-nieun-pleased",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "nieun",
+      "expression": "pleased",
+      "appearanceSet": "nieun/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/npc-nieun-pleased/sm.webp",
+          "mime": "image/webp",
+          "width": 192,
+          "height": 192,
+          "bytes": 9912
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/npc-nieun-pleased/md.webp",
+          "mime": "image/webp",
+          "width": 768,
+          "height": 768,
+          "bytes": 76388
+        }
+      ]
+    },
+    {
+      "id": "npc-nieun-tense",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "nieun",
+      "expression": "tense",
+      "appearanceSet": "nieun/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/npc-nieun-tense/sm.webp",
+          "mime": "image/webp",
+          "width": 192,
+          "height": 192,
+          "bytes": 10328
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/npc-nieun-tense/md.webp",
+          "mime": "image/webp",
+          "width": 768,
+          "height": 768,
+          "bytes": 78514
+        }
+      ]
+    },
+    {
+      "id": "npc-nostalgia-despair",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "nostalgia",
+      "expression": "despair",
+      "appearanceSet": "nostalgia/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/npc-nostalgia-despair/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 7948
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/npc-nostalgia-despair/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 67942
+        }
+      ]
+    },
+    {
+      "id": "npc-nostalgia-neutral",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "nostalgia",
+      "expression": "neutral",
+      "appearanceSet": "nostalgia/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/npc-nostalgia-neutral/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 8668
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/npc-nostalgia-neutral/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 74004
+        }
+      ]
+    },
+    {
+      "id": "npc-nostalgia-pleased",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "nostalgia",
+      "expression": "pleased",
+      "appearanceSet": "nostalgia/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/npc-nostalgia-pleased/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 7636
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/npc-nostalgia-pleased/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 64892
+        }
+      ]
+    },
+    {
+      "id": "npc-nostalgia-tense",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "nostalgia",
+      "expression": "tense",
+      "appearanceSet": "nostalgia/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/npc-nostalgia-tense/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 8102
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/npc-nostalgia-tense/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 68372
+        }
+      ]
+    },
+    {
+      "id": "npc-phaeo-despair",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "phaeo",
+      "expression": "despair",
+      "appearanceSet": "phaeo/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/npc-phaeo-despair/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 7654
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/npc-phaeo-despair/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 67036
+        }
+      ]
+    },
+    {
+      "id": "npc-phaeo-neutral",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "phaeo",
+      "expression": "neutral",
+      "appearanceSet": "phaeo/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/npc-phaeo-neutral/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 6372
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/npc-phaeo-neutral/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 60276
+        }
+      ]
+    },
+    {
+      "id": "npc-phaeo-pleased",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "phaeo",
+      "expression": "pleased",
+      "appearanceSet": "phaeo/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/npc-phaeo-pleased/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 8540
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/npc-phaeo-pleased/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 71006
+        }
+      ]
+    },
+    {
+      "id": "npc-phaeo-tense",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "phaeo",
+      "expression": "tense",
+      "appearanceSet": "phaeo/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/npc-phaeo-tense/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 8262
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/npc-phaeo-tense/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 74000
+        }
+      ]
+    },
+    {
+      "id": "npc-raven-despair",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "raven",
+      "expression": "despair",
+      "appearanceSet": "raven/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/npc-raven-despair/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 3968
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/npc-raven-despair/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 32258
+        }
+      ]
+    },
+    {
+      "id": "npc-raven-neutral",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "raven",
+      "expression": "neutral",
+      "appearanceSet": "raven/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/npc-raven-neutral/sm.webp",
+          "mime": "image/webp",
+          "width": 131,
+          "height": 192,
+          "bytes": 4344
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/npc-raven-neutral/md.webp",
+          "mime": "image/webp",
+          "width": 525,
+          "height": 768,
+          "bytes": 30746
+        }
+      ]
+    },
+    {
+      "id": "npc-raven-pleased",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "raven",
+      "expression": "pleased",
+      "appearanceSet": "raven/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/npc-raven-pleased/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 4934
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/npc-raven-pleased/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 38140
+        }
+      ]
+    },
+    {
+      "id": "npc-raven-tense",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "raven",
+      "expression": "tense",
+      "appearanceSet": "raven/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/npc-raven-tense/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 7080
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/npc-raven-tense/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 54988
+        }
+      ]
+    },
+    {
+      "id": "npc-temute-despair",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "temute",
+      "expression": "despair",
+      "appearanceSet": "temute/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/npc-temute-despair/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 7642
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/npc-temute-despair/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 68348
+        }
+      ]
+    },
+    {
+      "id": "npc-temute-neutral",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "temute",
+      "expression": "neutral",
+      "appearanceSet": "temute/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/npc-temute-neutral/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 7100
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/npc-temute-neutral/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 61506
+        }
+      ]
+    },
+    {
+      "id": "npc-temute-pleased",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "temute",
+      "expression": "pleased",
+      "appearanceSet": "temute/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/npc-temute-pleased/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 6618
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/npc-temute-pleased/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 59186
+        }
+      ]
+    },
+    {
+      "id": "npc-temute-tense",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "temute",
+      "expression": "tense",
+      "appearanceSet": "temute/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/npc-temute-tense/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 6420
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/npc-temute-tense/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 57746
+        }
+      ]
+    },
+    {
+      "id": "npc-traver-despair",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "traver",
+      "expression": "despair",
+      "appearanceSet": "traver/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/npc-traver-despair/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 6074
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/npc-traver-despair/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 52216
+        }
+      ]
+    },
+    {
+      "id": "npc-traver-neutral",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "traver",
+      "expression": "neutral",
+      "appearanceSet": "traver/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/npc-traver-neutral/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 7646
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/npc-traver-neutral/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 65346
+        }
+      ]
+    },
+    {
+      "id": "npc-traver-pleased",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "traver",
+      "expression": "pleased",
+      "appearanceSet": "traver/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/npc-traver-pleased/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 8658
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/npc-traver-pleased/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 72296
+        }
+      ]
+    },
+    {
+      "id": "npc-traver-tense",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "traver",
+      "expression": "tense",
+      "appearanceSet": "traver/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/npc-traver-tense/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 7984
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/npc-traver-tense/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 66420
+        }
+      ]
+    },
+    {
+      "id": "npc-ttaengchil-despair",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "ttaengchil",
+      "expression": "despair",
+      "appearanceSet": "ttaengchil/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/npc-ttaengchil-despair/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 7334
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/npc-ttaengchil-despair/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 64044
+        }
+      ]
+    },
+    {
+      "id": "npc-ttaengchil-neutral",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "ttaengchil",
+      "expression": "neutral",
+      "appearanceSet": "ttaengchil/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/npc-ttaengchil-neutral/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 8258
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/npc-ttaengchil-neutral/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 71294
+        }
+      ]
+    },
+    {
+      "id": "npc-ttaengchil-pleased",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "ttaengchil",
+      "expression": "pleased",
+      "appearanceSet": "ttaengchil/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/npc-ttaengchil-pleased/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 6502
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/npc-ttaengchil-pleased/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 65410
+        }
+      ]
+    },
+    {
+      "id": "npc-ttaengchil-tense",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "ttaengchil",
+      "expression": "tense",
+      "appearanceSet": "ttaengchil/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/npc-ttaengchil-tense/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 8996
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/npc-ttaengchil-tense/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 74876
+        }
+      ]
+    },
+    {
+      "id": "npc-tumit-tu-despair",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "tumit-tu",
+      "expression": "despair",
+      "appearanceSet": "tumit-tu/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/npc-tumit-tu-despair/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 7100
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/npc-tumit-tu-despair/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 61896
+        }
+      ]
+    },
+    {
+      "id": "npc-tumit-tu-neutral",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "tumit-tu",
+      "expression": "neutral",
+      "appearanceSet": "tumit-tu/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/npc-tumit-tu-neutral/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 7824
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/npc-tumit-tu-neutral/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 72858
+        }
+      ]
+    },
+    {
+      "id": "npc-tumit-tu-pleased",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "tumit-tu",
+      "expression": "pleased",
+      "appearanceSet": "tumit-tu/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/npc-tumit-tu-pleased/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 6484
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/npc-tumit-tu-pleased/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 55440
+        }
+      ]
+    },
+    {
+      "id": "npc-tumit-tu-tense",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "tumit-tu",
+      "expression": "tense",
+      "appearanceSet": "tumit-tu/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/npc-tumit-tu-tense/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 8034
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/npc-tumit-tu-tense/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 75724
+        }
+      ]
+    },
+    {
+      "id": "npc-yul-despair",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "yul",
+      "expression": "despair",
+      "appearanceSet": "yul/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/npc-yul-despair/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 7432
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/npc-yul-despair/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 69750
+        }
+      ]
+    },
+    {
+      "id": "npc-yul-neutral",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "yul",
+      "expression": "neutral",
+      "appearanceSet": "yul/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/npc-yul-neutral/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 6110
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/npc-yul-neutral/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 55256
+        }
+      ]
+    },
+    {
+      "id": "npc-yul-pleased",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "yul",
+      "expression": "pleased",
+      "appearanceSet": "yul/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/npc-yul-pleased/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 7228
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/npc-yul-pleased/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 64836
+        }
+      ]
+    },
+    {
+      "id": "npc-yul-tense",
+      "role": "portrait",
+      "chunk": "margin",
+      "characterId": "yul",
+      "expression": "tense",
+      "appearanceSet": "yul/bestiaization/current",
+      "variants": [
+        {
+          "size": "sm",
+          "path": "assets/margin/npc-yul-tense/sm.webp",
+          "mime": "image/webp",
+          "width": 132,
+          "height": 192,
+          "bytes": 7552
+        },
+        {
+          "size": "md",
+          "path": "assets/margin/npc-yul-tense/md.webp",
+          "mime": "image/webp",
+          "width": 530,
+          "height": 768,
+          "bytes": 66546
+        }
+      ]
+    }
+  ],
+  "totalBytes": 14805646,
+  "safety": {
+    "policy": "explicit-sfw-allowlist/0.1",
+    "selectedAssetCount": 201,
+    "forbiddenAssetCount": 0
+  }
+}
