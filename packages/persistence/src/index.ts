@@ -90,32 +90,104 @@ export interface MatchRecordStore {
   prune(maxRecords: number): Promise<void>;
 }
 
-export interface WalletSnapshot {
+/**
+ * The persisted contract name intentionally stays at wallet/0.1 so existing
+ * medal balances are migrated to points without rewriting or rescaling them.
+ */
+export interface PointWalletSnapshot {
   contract: "wallet/0.1";
   id: "wallet";
   balance: number;
   updatedAt: string;
 }
 
-export interface MedalGrant {
+/** @deprecated Use PointWalletSnapshot. Kept for source compatibility. */
+export type WalletSnapshot = PointWalletSnapshot;
+
+export interface LegacyMedalGrant {
   contract: "medal-grant/0.1";
   sessionId: string;
   highestSequence: number;
   updatedAt: string;
 }
 
-export interface MedalGrantInput {
+export interface CompletionPointGrant {
+  contract: "point-grant/0.1";
+  sessionId: string;
+  highestSequence: number;
+  amount: 5;
+  updatedAt: string;
+}
+
+export type PointGrant = LegacyMedalGrant | CompletionPointGrant;
+
+export interface CompletionPointGrantInput {
   sessionId: string;
   sequence: number;
   cabinetId: string;
-  rank: number;
-  seatCount: number;
   spectated: boolean;
 }
 
+/** @deprecated Completion points no longer depend on placement. */
+export interface MedalGrantInput extends CompletionPointGrantInput {
+  rank: number;
+  seatCount: number;
+}
+
+/** @deprecated Use LegacyMedalGrant when reading pre-point records. */
+export type MedalGrant = LegacyMedalGrant;
+
 export interface WalletStore {
-  read(): Promise<WalletSnapshot>;
-  grant(input: MedalGrantInput): Promise<WalletSnapshot>;
+  read(): Promise<PointWalletSnapshot>;
+  grantCompletion(input: CompletionPointGrantInput): Promise<PointWalletSnapshot>;
+}
+
+export type PredictionStake = 10 | 50 | 200;
+export type SpectatorPredictionStatus = "reserved" | "won" | "lost" | "refunded";
+export type PredictionInvalidationReason = "outcome-unavailable" | "pack-version-mismatch" | "corrupt-state";
+
+export interface SpectatorPrediction {
+  contract: "spectator-prediction/0.1";
+  predictionId: string;
+  outcomeKey: string;
+  predictedCharacterId: string;
+  stake: PredictionStake;
+  status: SpectatorPredictionStatus;
+  createdAt: string;
+  settledAt?: string;
+  winningCharacterId?: string;
+  invalidationReason?: PredictionInvalidationReason;
+  /** Points credited at settlement. Reservation debits stake immediately. */
+  settlementCredit: number;
+}
+
+export interface ReserveSpectatorPredictionInput {
+  predictionId: string;
+  outcomeKey: string;
+  predictedCharacterId: string;
+  stake: PredictionStake;
+}
+
+export interface SettleSpectatorPredictionInput {
+  predictionId: string;
+  winningCharacterId: string;
+}
+
+export interface InvalidateSpectatorPredictionInput {
+  predictionId: string;
+  reason: PredictionInvalidationReason;
+}
+
+export interface PredictionTransactionResult {
+  wallet: PointWalletSnapshot;
+  prediction: SpectatorPrediction;
+}
+
+export interface SpectatorPredictionStore {
+  reserve(input: ReserveSpectatorPredictionInput): Promise<PredictionTransactionResult>;
+  settle(input: SettleSpectatorPredictionInput): Promise<PredictionTransactionResult>;
+  systemInvalidate(input: InvalidateSpectatorPredictionInput): Promise<PredictionTransactionResult>;
+  list(): Promise<SpectatorPrediction[]>;
 }
 
 export interface CollectionSnapshot {

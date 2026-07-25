@@ -1,13 +1,32 @@
 import type { AnalyzedCard, AnyAnalyzedCard } from "@lucky-arcade/contracts";
-import { medalAward } from "@lucky-arcade/contracts";
-import type { CollectionSnapshot, MatchRecord, MedalGrant, MedalGrantInput, RecentPlay, SnapshotRecord, StoredActionReceipt, WalletSnapshot } from "@lucky-arcade/persistence";
+import type {
+  CollectionSnapshot,
+  CompletionPointGrant,
+  CompletionPointGrantInput,
+  InvalidateSpectatorPredictionInput,
+  MatchRecord,
+  MedalGrantInput,
+  PointGrant,
+  PointWalletSnapshot,
+  PredictionTransactionResult,
+  RecentPlay,
+  ReserveSpectatorPredictionInput,
+  SettleSpectatorPredictionInput,
+  SnapshotRecord,
+  SpectatorPrediction,
+  StoredActionReceipt,
+  WalletSnapshot,
+} from "@lucky-arcade/persistence";
 import { selectCollectionFace } from "./collection-rules.ts";
 
 const DATABASE = "lucky-arcade";
-const VERSION = 5;
-const STORES = { cards: "cards", sources: "sources", sessions: "sessions", actions: "actions", recent: "recent", matches: "matches", wallet: "wallet", grants: "grants", collection: "collection" } as const;
-const INITIAL_BALANCE = 100;
+const VERSION = 6;
+const STORES = { cards: "cards", sources: "sources", sessions: "sessions", actions: "actions", recent: "recent", matches: "matches", wallet: "wallet", grants: "grants", collection: "collection", wagers: "wagers" } as const;
+const INITIAL_POINT_BALANCE = 0;
 const COLLECTION_COST = 12;
+const COMPLETION_REWARD = 5;
+const VALID_STAKES = new Set([10, 50, 200]);
+const INVALIDATION_REASONS = new Set(["outcome-unavailable", "pack-version-mismatch", "corrupt-state"]);
 
 export interface StoredCard { fingerprint: string; importedAt: string; analyzed: AnyAnalyzedCard; }
 
@@ -109,29 +128,144 @@ export async function pruneMatchRecords(maxRecords: number): Promise<void> {
 export async function readWallet(): Promise<WalletSnapshot> {
   const db = await openDatabase(), transaction = db.transaction(STORES.wallet, "readwrite");
   const store = transaction.objectStore(STORES.wallet);
-  let wallet = await request<WalletSnapshot | undefined>(store.get("wallet"));
+  let wallet = await request<PointWalletSnapshot | undefined>(store.get("wallet"));
   if (!wallet) {
-    wallet = { contract: "wallet/0.1", id: "wallet", balance: INITIAL_BALANCE, updatedAt: new Date().toISOString() };
+    wallet = newWallet();
     store.put(wallet);
   }
   await complete(transaction); db.close(); return wallet;
 }
 
-export async function grantMedals(input: MedalGrantInput): Promise<{ wallet: WalletSnapshot; amount: number }> {
+export async function grantCompletionPoints(input: CompletionPointGrantInput): Promise<{ wallet: PointWalletSnapshot; amount: number }> {
   const db = await openDatabase(), transaction = db.transaction([STORES.wallet, STORES.grants], "readwrite");
   const wallets = transaction.objectStore(STORES.wallet), grants = transaction.objectStore(STORES.grants);
-  const current = await request<WalletSnapshot | undefined>(wallets.get("wallet")) ?? { contract: "wallet/0.1", id: "wallet", balance: INITIAL_BALANCE, updatedAt: new Date().toISOString() };
-  const previousGrant = await request<MedalGrant | undefined>(grants.get(input.sessionId));
+  const storedWallet = await request<PointWalletSnapshot | undefined>(wallets.get("wallet"));
+  const current = storedWallet ?? newWallet();
+  const previousGrant = await request<PointGrant | undefined>(grants.get(input.sessionId));
   if (input.spectated || (previousGrant?.highestSequence ?? -1) >= input.sequence) {
-    if (!await request<WalletSnapshot | undefined>(wallets.get("wallet"))) wallets.put(current);
+    if (!storedWallet) wallets.put(current);
     await complete(transaction); db.close(); return { wallet: current, amount: 0 };
   }
-  const amount = medalAward(current.balance, input);
   const now = new Date().toISOString();
-  const wallet: WalletSnapshot = { ...current, balance: Math.max(0, current.balance + amount), updatedAt: now };
+  const wallet: PointWalletSnapshot = { ...current, balance: current.balance + COMPLETION_REWARD, updatedAt: now };
   wallets.put(wallet);
-  grants.put({ contract: "medal-grant/0.1", sessionId: input.sessionId, highestSequence: input.sequence, updatedAt: now } satisfies MedalGrant);
-  await complete(transaction); db.close(); return { wallet, amount };
+  grants.put({ contract: "point-grant/0.1", sessionId: input.sessionId, highestSequence: input.sequence, amount: COMPLETION_REWARD, updatedAt: now } satisfies CompletionPointGrant);
+  await complete(transaction); db.close(); return { wallet, amount: COMPLETION_REWARD };
+}
+
+/** @deprecated Kept until non-old-maid callers adopt the point-named API. */
+export function grantMedals(input: MedalGrantInput): Promise<{ wallet: PointWalletSnapshot; amount: number }> {
+  return grantCompletionPoints(input);
+}
+
+export async function reserveSpectatorPrediction(input: ReserveSpectatorPredictionInput): Promise<PredictionTransactionResult> {
+  assertPredictionInput(input);
+  const db = await openDatabase();
+  const transaction = db.transaction([STORES.wallet, STORES.wagers], "readwrite");
+  const completion = complete(transaction);
+  try {
+    const wallets = transaction.objectStore(STORES.wallet);
+    const wagers = transaction.objectStore(STORES.wagers);
+    const existingId = await request<IDBValidKey | undefined>(wagers.index("by-outcome-key").getKey(input.outcomeKey));
+    if (existingId !== undefined) throw new Error("outcome_already_wagered");
+    const wallet = await request<PointWalletSnapshot | undefined>(wallets.get("wallet")) ?? newWallet();
+    if (wallet.balance < input.stake) throw new Error("insufficient_points");
+    const now = new Date().toISOString();
+    const nextWallet: PointWalletSnapshot = { ...wallet, balance: wallet.balance - input.stake, updatedAt: now };
+    const prediction: SpectatorPrediction = {
+      contract: "spectator-prediction/0.1",
+      predictionId: input.predictionId,
+      outcomeKey: input.outcomeKey,
+      predictedCharacterId: input.predictedCharacterId,
+      stake: input.stake,
+      status: "reserved",
+      createdAt: now,
+      settlementCredit: 0,
+    };
+    wallets.put(nextWallet);
+    wagers.add(prediction);
+    await completion;
+    db.close();
+    return { wallet: nextWallet, prediction };
+  } catch (error) {
+    await abort(transaction, completion);
+    db.close();
+    if (isConstraintError(error)) throw new Error("outcome_already_wagered");
+    throw error;
+  }
+}
+
+export async function settleSpectatorPrediction(input: SettleSpectatorPredictionInput): Promise<PredictionTransactionResult> {
+  if (!input.predictionId || !input.winningCharacterId) throw new Error("invalid_prediction_settlement");
+  const db = await openDatabase();
+  const transaction = db.transaction([STORES.wallet, STORES.wagers], "readwrite");
+  const completion = complete(transaction);
+  try {
+    const wallets = transaction.objectStore(STORES.wallet);
+    const wagers = transaction.objectStore(STORES.wagers);
+    const prediction = await request<SpectatorPrediction | undefined>(wagers.get(input.predictionId));
+    if (!prediction) throw new Error("prediction_not_found");
+    const wallet = await request<PointWalletSnapshot | undefined>(wallets.get("wallet")) ?? newWallet();
+    if (prediction.status === "won" || prediction.status === "lost") {
+      await completion;
+      db.close();
+      return { wallet, prediction };
+    }
+    if (prediction.status !== "reserved") throw new Error("prediction_not_settleable");
+    const won = prediction.predictedCharacterId === input.winningCharacterId;
+    const settlementCredit = won ? prediction.stake * 4 : 0;
+    const now = new Date().toISOString();
+    const nextWallet: PointWalletSnapshot = settlementCredit === 0 ? wallet : { ...wallet, balance: wallet.balance + settlementCredit, updatedAt: now };
+    const settled: SpectatorPrediction = { ...prediction, status: won ? "won" : "lost", settledAt: now, winningCharacterId: input.winningCharacterId, settlementCredit };
+    if (settlementCredit > 0) wallets.put(nextWallet);
+    wagers.put(settled);
+    await completion;
+    db.close();
+    return { wallet: nextWallet, prediction: settled };
+  } catch (error) {
+    await abort(transaction, completion);
+    db.close();
+    throw error;
+  }
+}
+
+export async function systemInvalidateSpectatorPrediction(input: InvalidateSpectatorPredictionInput): Promise<PredictionTransactionResult> {
+  if (!input.predictionId || !INVALIDATION_REASONS.has(input.reason)) throw new Error("invalid_prediction_invalidation");
+  const db = await openDatabase();
+  const transaction = db.transaction([STORES.wallet, STORES.wagers], "readwrite");
+  const completion = complete(transaction);
+  try {
+    const wallets = transaction.objectStore(STORES.wallet);
+    const wagers = transaction.objectStore(STORES.wagers);
+    const prediction = await request<SpectatorPrediction | undefined>(wagers.get(input.predictionId));
+    if (!prediction) throw new Error("prediction_not_found");
+    const wallet = await request<PointWalletSnapshot | undefined>(wallets.get("wallet")) ?? newWallet();
+    if (prediction.status === "refunded") {
+      await completion;
+      db.close();
+      return { wallet, prediction };
+    }
+    if (prediction.status !== "reserved") throw new Error("prediction_not_refundable");
+    const now = new Date().toISOString();
+    const nextWallet: PointWalletSnapshot = { ...wallet, balance: wallet.balance + prediction.stake, updatedAt: now };
+    const refunded: SpectatorPrediction = { ...prediction, status: "refunded", settledAt: now, invalidationReason: input.reason, settlementCredit: prediction.stake };
+    wallets.put(nextWallet);
+    wagers.put(refunded);
+    await completion;
+    db.close();
+    return { wallet: nextWallet, prediction: refunded };
+  } catch (error) {
+    await abort(transaction, completion);
+    db.close();
+    throw error;
+  }
+}
+
+export async function listSpectatorPredictions(): Promise<SpectatorPrediction[]> {
+  const db = await openDatabase(), transaction = db.transaction(STORES.wagers, "readonly");
+  const predictions = await request<SpectatorPrediction[]>(transaction.objectStore(STORES.wagers).getAll());
+  await complete(transaction); db.close();
+  return predictions.filter((prediction) => prediction?.contract === "spectator-prediction/0.1").sort((left, right) => right.createdAt.localeCompare(left.createdAt));
 }
 
 export async function readCollection(id: string): Promise<CollectionSnapshot> {
@@ -144,9 +278,9 @@ export async function readCollection(id: string): Promise<CollectionSnapshot> {
 export async function openCollectionItem(id: string, allFaceIds: readonly string[]): Promise<{ wallet: WalletSnapshot; collection: CollectionSnapshot; unlockedFaceId: string }> {
   const db = await openDatabase(), transaction = db.transaction([STORES.wallet, STORES.collection], "readwrite");
   const wallets = transaction.objectStore(STORES.wallet), collections = transaction.objectStore(STORES.collection);
-  const wallet = await request<WalletSnapshot | undefined>(wallets.get("wallet")) ?? { contract: "wallet/0.1", id: "wallet", balance: INITIAL_BALANCE, updatedAt: new Date().toISOString() };
+  const wallet = await request<WalletSnapshot | undefined>(wallets.get("wallet")) ?? newWallet();
   const collection = await request<CollectionSnapshot | undefined>(collections.get(id)) ?? { contract: "collection/0.1", id, unlockedFaceIds: [], updatedAt: new Date(0).toISOString() };
-  if (wallet.balance < COLLECTION_COST) { transaction.abort(); db.close(); throw new Error("insufficient_medals"); }
+  if (wallet.balance < COLLECTION_COST) { transaction.abort(); db.close(); throw new Error("insufficient_points"); }
   const unlockedFaceId = selectCollectionFace(id, collection.unlockedFaceIds, allFaceIds);
   if (!unlockedFaceId) { transaction.abort(); db.close(); throw new Error("collection_complete"); }
   const now = new Date().toISOString();
@@ -168,6 +302,9 @@ function openDatabase(): Promise<IDBDatabase> {
       if (!db.objectStoreNames.contains(STORES.wallet)) db.createObjectStore(STORES.wallet, { keyPath: "id" });
       if (!db.objectStoreNames.contains(STORES.grants)) db.createObjectStore(STORES.grants, { keyPath: "sessionId" });
       if (!db.objectStoreNames.contains(STORES.collection)) db.createObjectStore(STORES.collection, { keyPath: "id" });
+      const wagers = db.objectStoreNames.contains(STORES.wagers) ? opening.transaction!.objectStore(STORES.wagers) : db.createObjectStore(STORES.wagers, { keyPath: "predictionId" });
+      if (!wagers.indexNames.contains("by-outcome-key")) wagers.createIndex("by-outcome-key", "outcomeKey", { unique: true });
+      if (!wagers.indexNames.contains("by-created-at")) wagers.createIndex("by-created-at", "createdAt");
       const matches = db.objectStoreNames.contains(STORES.matches) ? opening.transaction!.objectStore(STORES.matches) : db.createObjectStore(STORES.matches, { keyPath: "recordId" });
       if (!matches.indexNames.contains("by-completed-at")) matches.createIndex("by-completed-at", "completedAt");
       if (!matches.indexNames.contains("by-session-completed-at")) matches.createIndex("by-session-completed-at", ["sessionId", "completedAt"]);
@@ -192,6 +329,15 @@ function collectCursor<T>(cursorRequest: IDBRequest<IDBCursorWithValue | null>, 
   });
 }
 function complete(transaction: IDBTransaction): Promise<void> { return new Promise((resolve, reject) => { transaction.oncomplete = () => resolve(); transaction.onerror = () => reject(transaction.error ?? new Error("indexeddb_transaction_failed")); transaction.onabort = () => reject(transaction.error ?? new Error("indexeddb_transaction_aborted")); }); }
+function newWallet(): PointWalletSnapshot { return { contract: "wallet/0.1", id: "wallet", balance: INITIAL_POINT_BALANCE, updatedAt: new Date().toISOString() }; }
+function assertPredictionInput(input: ReserveSpectatorPredictionInput): void {
+  if (!input.predictionId || !input.outcomeKey || !input.predictedCharacterId || !VALID_STAKES.has(input.stake)) throw new Error("invalid_prediction");
+}
+function isConstraintError(error: unknown): boolean { return error instanceof DOMException && error.name === "ConstraintError"; }
+async function abort(transaction: IDBTransaction, completion: Promise<void>): Promise<void> {
+  try { transaction.abort(); } catch { /* The transaction may already have completed. */ }
+  await completion.catch(() => undefined);
+}
 function deleteActionsThrough(store: IDBObjectStore, sessionId: string, sequence: number): void {
   const range = IDBKeyRange.bound([sessionId, Number.MIN_SAFE_INTEGER], [sessionId, sequence]);
   const cursorRequest = store.index("by-session-sequence").openKeyCursor(range);
