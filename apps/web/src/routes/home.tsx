@@ -62,7 +62,7 @@ export function Home() {
       </div>
     </aside>
     <main className="dashboard">
-      <header className="topbar"><div><h1>기다리는 동안, 바로 한 판</h1></div><strong className="lobby-wallet">★{balance.toLocaleString("ko-KR")}</strong><button className="icon-button" onClick={() => setLight((value) => !value)} aria-label={light ? "어두운 테마" : "밝은 테마"}>{light ? <IconMoon /> : <IconSun />}</button></header>
+      <header className="topbar"><div><h1>기다리는 동안, 바로 한 판</h1></div><strong className="lobby-wallet">{balance.toLocaleString("ko-KR")} P</strong><button className="icon-button" onClick={() => setLight((value) => !value)} aria-label={light ? "어두운 테마" : "밝은 테마"}>{light ? <IconMoon /> : <IconSun />}</button></header>
 
       {recentPlay && recentCabinet && <section className="resume-hero" aria-label="이어하기"><div className="resume-icon"><IconClockPlay /></div><div><span className="eyebrow">최근 플레이 · {timeAgo(recentPlay.updatedAt)}</span><h2>{recentPlay.title}</h2><p>{recentPlay.progressLabel}에서 안전하게 저장되어 있습니다.</p></div><button onClick={() => { const card = recentPlay.cardFingerprint ? cards.find((item) => item.fingerprint === recentPlay.cardFingerprint) : undefined; if (card) setSelected(card); setActiveCabinet(recentPlay.cabinetId); }}><IconPlayerPlay /> {recentCabinet.manifest.resumeLabel}</button></section>}
 

@@ -9,6 +9,7 @@ import "./old-maid.css";
 export interface OldMaidScreenProps {
   cartridge: OldMaidCartridge;
   assets: Readonly<Record<string, string>>;
+  detailAssets?: Readonly<Record<string, string>>;
   initialState: OldMaidState | null;
   matchSummary?: OldMaidMatchSummary | null;
   economy?: OldMaidEconomy;
@@ -21,6 +22,13 @@ export interface OldMaidEconomy {
   award?: { amount: number; rank: number } | null;
   unlockedFaceIds: readonly string[];
   onUnlock(): Promise<void>;
+  prediction?: OldMaidPredictionEconomy;
+}
+
+export interface OldMaidPredictionEconomy {
+  stakes: readonly number[];
+  active: { predictedCharacterId: string; stake: number; status: "reserved" | "won" | "lost" | "refunded"; settlementCredit: number } | null;
+  onStart(input: { seed: string; characterIds: readonly string[]; predictedCharacterId: string; stake: number }): Promise<"reserved" | "replay">;
 }
 
 export interface OldMaidMatchSummary {
@@ -31,7 +39,7 @@ export interface OldMaidMatchSummary {
   opponents: Array<{ participantId: string; displayName: string; played: number; beaten: number }>;
 }
 
-export function OldMaidScreen({ cartridge, assets, initialState, matchSummary, economy, onPersist, onExit }: OldMaidScreenProps) {
+export function OldMaidScreen({ cartridge, assets, detailAssets = assets, initialState, matchSummary, economy, onPersist, onExit }: OldMaidScreenProps) {
   useMemo(() => validateOldMaidLines(cartridge), [cartridge]);
   const [state, setState] = useState(() => initialState ?? createOldMaidState(cartridge, dailySeed()));
   const [detail, setDetail] = useState<OldMaidFace | null>(null);
@@ -44,6 +52,10 @@ export function OldMaidScreen({ cartridge, assets, initialState, matchSummary, e
   const [speech, setSpeech] = useState<DisplayedSpeech | null>(null);
   const [collectionOpen, setCollectionOpen] = useState(false);
   const [collectionError, setCollectionError] = useState("");
+  const [predictedCharacterId, setPredictedCharacterId] = useState("");
+  const [predictionStake, setPredictionStake] = useState(() => economy?.prediction?.stakes[0] ?? 10);
+  const [predictionError, setPredictionError] = useState("");
+  const [predictionStarting, setPredictionStarting] = useState(false);
   const pointerKindRef = useRef("");
   const recentLineIdsRef = useRef<string[]>([]);
   const speechTimersRef = useRef<number[]>([]);
@@ -56,6 +68,10 @@ export function OldMaidScreen({ cartridge, assets, initialState, matchSummary, e
   const faces = useMemo(() => new Map(cartridge.faces.map((face) => [face.id, face])), [cartridge]);
   const cards = useMemo(() => new Map(cartridge.cards.map((card) => [card.id, card])), [cartridge]);
   const characters = useMemo(() => new Map(cartridge.characters.map((character) => [character.id, character])), [cartridge]);
+  const selectableCharacters = useMemo(() => {
+    const selectable = new Set(cartridge.selectableCharacterIds ?? cartridge.characters.map((character) => character.id));
+    return cartridge.characters.filter((character) => selectable.has(character.id));
+  }, [cartridge]);
 
   function dispatch(action: OldMaidAction) {
     const previous = stateRef.current;
@@ -159,9 +175,25 @@ export function OldMaidScreen({ cartridge, assets, initialState, matchSummary, e
     setOpponentIds((current) => {
       const limit = mode === "spectate" ? 4 : 3;
       const next = current.slice(0, limit);
-      for (const character of cartridge.characters) if (next.length < limit && !next.includes(character.id)) next.push(character.id);
+      for (const character of selectableCharacters) if (next.length < limit && !next.includes(character.id)) next.push(character.id);
       return next;
     });
+  }
+
+  async function startMatch() {
+    setPredictionError("");
+    if (lobbyMode === "spectate" && economy?.prediction) {
+      const predictionTarget = opponentIds.includes(predictedCharacterId) ? predictedCharacterId : opponentIds[0];
+      if (!predictionTarget) return;
+      setPredictionStarting(true);
+      try {
+        await economy.prediction.onStart({ seed: state.seed, characterIds: opponentIds, predictedCharacterId: predictionTarget, stake: predictionStake });
+      } catch (error) {
+        setPredictionError(error instanceof Error && error.message === "insufficient_points" ? "포인트가 부족합니다. 직접 플레이 두 판이면 첫 10 P를 마련할 수 있습니다." : error instanceof Error && error.message === "outcome_already_wagered" ? "이 대국에는 이미 베팅했습니다. 같은 결과는 무료로 다시 볼 수 있습니다." : "베팅을 예약하지 못했습니다.");
+        return;
+      } finally { setPredictionStarting(false); }
+    }
+    dispatch({ type: "start", mode: lobbyMode, characterIds: opponentIds });
   }
 
   function inspectDrawCard(cardId: string) {
@@ -172,7 +204,7 @@ export function OldMaidScreen({ cartridge, assets, initialState, matchSummary, e
     <header className="old-maid-header">
       <button onClick={onExit} aria-label="오락실로 돌아가기"><IconArrowLeft /></button>
       <div><span>BOT CARD · TABLE GAME</span><h1>{cartridge.title}</h1></div>
-      <div className="old-maid-meters">{economy && <button className="old-maid-wallet" onClick={() => setCollectionOpen(true)}>★{economy.balance.toLocaleString("ko-KR")}</button>}<span>{state.turn}턴</span><small aria-live="polite">{saveState === "saving" ? "저장 중…" : saveState === "error" ? "저장 재시도 필요" : "자동 저장됨"}</small></div>
+      <div className="old-maid-meters">{economy && <button className="old-maid-wallet" onClick={() => setCollectionOpen(true)}>{economy.balance.toLocaleString("ko-KR")} P</button>}<span>{state.turn}턴</span><small aria-live="polite">{saveState === "saving" ? "저장 중…" : saveState === "error" ? "저장 재시도 필요" : "자동 저장됨"}</small></div>
     </header>
 
     <section className="old-maid-table" aria-label={`${cartridge.title} 테이블`}>
@@ -194,9 +226,16 @@ export function OldMaidScreen({ cartridge, assets, initialState, matchSummary, e
           <p>같은 그림 두 장을 맞춰 버리세요. 차례가 오면 지정된 상대에게서 한 장을 뽑고, 마지막까지 조커를 가진 사람이 집니다.</p>
           <div className="old-maid-mode-picker" aria-label="대국 방식"><button type="button" className={lobbyMode === "play" ? "selected" : ""} onClick={() => chooseMode("play")}>직접 플레이</button><button type="button" className={lobbyMode === "spectate" ? "selected" : ""} onClick={() => chooseMode("spectate")}>NPC 4명 관전</button></div>
           <strong className="old-maid-opponent-title">{lobbyMode === "spectate" ? "관전할 NPC 4명을 고르세요" : "함께할 상대 3명을 고르세요"}</strong>
-          <div className="old-maid-opponent-picker">{cartridge.characters.map((character) => { const selected = opponentIds.includes(character.id); const portrait = assets[character.portraits.neutral]; return <button type="button" className={selected ? "selected" : ""} aria-pressed={selected} key={character.id} onClick={() => toggleOpponent(character.id)}>{portrait && <img src={portrait} alt="" decoding="async" />}<span>{character.name}</span></button>; })}</div>
+          <div className="old-maid-opponent-picker">{selectableCharacters.map((character) => { const selected = opponentIds.includes(character.id); const portrait = assets[character.portraits.neutral]; return <button type="button" className={selected ? "selected" : ""} aria-pressed={selected} key={character.id} onClick={() => toggleOpponent(character.id)}>{portrait && <img src={portrait} alt="" decoding="async" />}<span>{character.name}</span></button>; })}</div>
           <div className="old-maid-roster">{lobbyMode === "play" && <span>플레이어</span>}{opponentIds.map((id) => <span key={id}>{characters.get(id)?.name}</span>)}</div>
-          <button className="old-maid-primary" disabled={opponentIds.length !== (lobbyMode === "spectate" ? 4 : 3)} onClick={() => dispatch({ type: "start", mode: lobbyMode, characterIds: opponentIds })}>{lobbyMode === "spectate" ? "NPC 대국 관전 시작" : "카드 배분 시작"}</button>
+          {lobbyMode === "spectate" && economy?.prediction && <section className="old-maid-prediction" aria-label="최종 조커 보유자 예측">
+            <strong>마지막 조커를 가질 인물에게 베팅</strong>
+            <div>{opponentIds.map((id) => <button type="button" className={(predictedCharacterId || opponentIds[0]) === id ? "selected" : ""} key={id} onClick={() => setPredictedCharacterId(id)}>{characters.get(id)?.name}</button>)}</div>
+            <div>{economy.prediction.stakes.map((stake) => <button type="button" className={predictionStake === stake ? "selected" : ""} key={stake} onClick={() => setPredictionStake(stake)} disabled={economy.balance < stake}>{stake} P</button>)}</div>
+            <small>적중하면 판돈을 돌려받고 순이익 {predictionStake * 3} P · 실패하면 판돈을 잃습니다.</small>
+            {predictionError && <p>{predictionError}</p>}
+          </section>}
+          <button className="old-maid-primary" disabled={predictionStarting || opponentIds.length !== (lobbyMode === "spectate" ? 4 : 3)} onClick={() => void startMatch()}>{predictionStarting ? "판돈 예약 중…" : lobbyMode === "spectate" ? "예측하고 NPC 대국 관전" : "카드 배분 시작"}</button>
         </div>}
 
         {state.status === "dealing" && <div className="old-maid-dealing-copy" aria-live="polite"><IconCards /><strong>카드를 나누는 중…</strong><span>배분이 끝나면 처음부터 맞은 짝을 정리합니다.</span></div>}
@@ -247,7 +286,9 @@ export function OldMaidScreen({ cartridge, assets, initialState, matchSummary, e
             {matchSummary.opponents.slice(0, 3).map((opponent) => <span key={opponent.participantId}>{opponent.displayName} {opponent.played}판 {opponent.beaten}승</span>)}
           </section>}
           {economy?.award && <p className="old-maid-award">{economy.award.amount >= 0 ? "+" : ""}{economy.award.amount} · {economy.award.rank}등</p>}
-          {economy && economy.balance < 20 && <small className="old-maid-recovery">참가 보상이 늘어난 상태입니다.</small>}
+          {state.mode === "spectate" && economy?.prediction?.active && <p className={`old-maid-prediction-result ${economy.prediction.active.status}`}>
+            {economy.prediction.active.status === "won" ? `예측 적중 · +${economy.prediction.active.settlementCredit - economy.prediction.active.stake} P` : economy.prediction.active.status === "lost" ? `예측 실패 · -${economy.prediction.active.stake} P` : economy.prediction.active.status === "refunded" ? "대국 무효 · 판돈 반환" : "정산 중…"}
+          </p>}
           <div className="old-maid-result-actions">
             <button onClick={() => dispatch({
               type: "restart",
@@ -277,7 +318,7 @@ export function OldMaidScreen({ cartridge, assets, initialState, matchSummary, e
       {state.status === "dealing" && <DealingAnimation state={state} onComplete={() => dispatch({ type: "finish_deal" })} />}
     </section>
     <footer className="old-maid-notice">표정은 힌트일 뿐입니다. 상대가 포커페이스로 속일 수도 있습니다.</footer>
-    {detail && <CardDetail face={detail} assets={assets} odd={detail.id === cartridge.oddFaceId} onClose={() => setDetail(null)} />}
+    {detail && <CardDetail face={detail} assets={detailAssets} odd={detail.id === cartridge.oddFaceId} onClose={() => setDetail(null)} />}
     {collectionOpen && economy && <div className="old-maid-modal" role="dialog" aria-modal="true" aria-label="얼굴 도감"><div className="old-maid-collection-panel">
       <button className="old-maid-modal-close" onClick={() => setCollectionOpen(false)} aria-label="도감 닫기"><IconX /></button>
       <h2>얼굴 도감</h2><p>발견 {economy.unlockedFaceIds.length} / {cartridge.faces.length}</p>
@@ -285,7 +326,7 @@ export function OldMaidScreen({ cartridge, assets, initialState, matchSummary, e
         const unlocked = economy.unlockedFaceIds.includes(face.id);
         return <div key={face.id} className={unlocked ? "unlocked" : "locked"}>{unlocked && face.assetId && assets[face.assetId] ? <img src={assets[face.assetId]} alt="" /> : <span>?</span>}<b>{unlocked ? face.name : "미발견"}</b></div>;
       })}</div>
-      {economy.unlockedFaceIds.length < cartridge.faces.length && <button className="old-maid-primary" disabled={economy.balance < 12} onClick={() => { setCollectionError(""); void economy.onUnlock().catch((error: unknown) => setCollectionError(error instanceof Error && error.message === "insufficient_medals" ? "메달이 부족합니다." : "도감을 열지 못했습니다.")); }}>★12로 확정 신규 개봉</button>}
+      {economy.unlockedFaceIds.length < cartridge.faces.length && <button className="old-maid-primary" disabled={economy.balance < 12} onClick={() => { setCollectionError(""); void economy.onUnlock().catch((error: unknown) => setCollectionError(error instanceof Error && error.message === "insufficient_points" ? "포인트가 부족합니다." : "도감을 열지 못했습니다.")); }}>12 P로 확정 신규 개봉</button>}
       {collectionError && <p>{collectionError}</p>}
     </div></div>}
   </main>;
@@ -314,7 +355,7 @@ function SpectatorSeat({ state, name, character, portrait, cards, faces, assets,
   const safe = state.safeOrder.includes("player");
   return <article className={`old-maid-player old-maid-spectator-seat ${state.currentPlayerId === "player" && state.status === "playing" ? "active" : ""} ${safe ? "safe" : ""}`} data-deal-target="player">
     <div className="old-maid-spectator-profile"><div className="old-maid-seat-portrait">{portrait ? <img src={portrait} alt={`${name}의 현재 표정`} decoding="async" /> : <span>{name}</span>}</div><div><strong>{name}</strong><em className={`old-maid-reaction-text ${state.reactions.player}`}>{reactionLabel(state.reactions.player)}</em><span>{state.status === "dealing" ? "배분 중" : safe ? "손패 비움" : `${state.hands.player.length}장`}</span></div></div>
-    <span className="old-maid-spectator-label">관전 좌석 · {character?.tellStyle === "open" ? "표정이 솔직한 편" : character?.tellStyle === "guarded" ? "표정을 잘 숨기는 편" : "상대를 속이기도 함"}</span>
+    <span className="old-maid-spectator-label">관전 좌석 · 이번 판 반응 {character?.tellStyle === "open" ? "공개형" : character?.tellStyle === "guarded" ? "경계형" : "허세형"}</span>
     {!safe && <div className="old-maid-spectator-hand old-maid-spectator-bottom-hand" aria-label={`${name}의 관전 손패`}>{state.hands.player.map((cardId) => { const face = faces.get(cards.get(cardId)?.faceId ?? ""); return face ? <button key={cardId} onClick={() => onDetail(face)} aria-label={`${face.name} 크게 보기`}><CardFace face={face} assets={assets} odd={face.id === "joker"} /></button> : null; })}</div>}
   </article>;
 }

@@ -1,8 +1,8 @@
 interface ManifestVariant { size: "sm" | "md" | "lg"; path: string; }
-interface ManifestAsset { id: string; variants: ManifestVariant[]; }
-interface TemerosaManifest { version: string; assets: ManifestAsset[]; }
+export interface TemerosaManifestAsset { id: string; characterId?: string; expression?: string; appearanceSet?: string; variants: ManifestVariant[]; }
+interface TemerosaManifest { version: string; assets: TemerosaManifestAsset[]; }
 
-const PACKS = ["0.1.0", "0.2.0", "0.3.0", "0.4.0", "0.5.0", "0.6.0", "0.7.0"] as const;
+const PACKS = ["0.1.0", "0.2.0", "0.3.0", "0.4.0", "0.5.0", "0.6.0", "0.7.0", "0.8.0"] as const;
 const REQUIRED_ASSETS = [
   "pequod-ruins",
   "review-nieun-current-angry",
@@ -52,6 +52,13 @@ const REQUIRED_ASSETS = [
   "wares-surprised",
 ] as const;
 let assetPromise: Promise<Readonly<Record<string, string>>> | null = null;
+let casinoAssetPromise: Promise<TemerosaCasinoAssetBundle> | null = null;
+
+export interface TemerosaCasinoAssetBundle {
+  assets: Readonly<Record<string, string>>;
+  detailAssets: Readonly<Record<string, string>>;
+  contentAssets: readonly TemerosaManifestAsset[];
+}
 
 export function loadTemerosaPilotAssets(): Promise<Readonly<Record<string, string>>> {
   assetPromise ??= Promise.all(PACKS.map(async (version) => {
@@ -71,3 +78,32 @@ export function loadTemerosaPilotAssets(): Promise<Readonly<Record<string, strin
   });
   return assetPromise;
 }
+
+export function loadTemerosaCasinoAssets(): Promise<TemerosaCasinoAssetBundle> {
+  casinoAssetPromise ??= Promise.all(PACKS.map(fetchManifest)).then((manifests) => {
+    const assets: Record<string, string> = {};
+    const detailAssets: Record<string, string> = {};
+    for (const manifest of manifests) for (const asset of manifest.assets) {
+      const small = asset.variants.find((candidate) => candidate.size === "sm") ?? asset.variants[0];
+      const detail = asset.variants.find((candidate) => candidate.size === "md") ?? small;
+      if (small) assets[asset.id] = contentUrl(manifest.version, small.path);
+      if (detail) detailAssets[asset.id] = contentUrl(manifest.version, detail.path);
+    }
+    for (const required of REQUIRED_ASSETS) if (!assets[required]) throw new Error(`temerosa_pilot_asset_missing:${required}`);
+    const casinoManifest = manifests.find((manifest) => manifest.version === "0.8.0");
+    if (!casinoManifest) throw new Error("temerosa_casino_manifest_missing");
+    return Object.freeze({
+      assets: Object.freeze(assets),
+      detailAssets: Object.freeze(detailAssets),
+      contentAssets: Object.freeze(casinoManifest.assets),
+    });
+  });
+  return casinoAssetPromise;
+}
+
+async function fetchManifest(version: string): Promise<TemerosaManifest> {
+  const response = await fetch(`/content/temerosa-margin/${version}/manifest.json`);
+  if (!response.ok) throw new Error(`temerosa_manifest_missing:${version}`);
+  return response.json() as Promise<TemerosaManifest>;
+}
+function contentUrl(version: string, path: string): string { return `/content/temerosa-margin/${version}/${path}`; }

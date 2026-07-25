@@ -11,9 +11,8 @@ export function createOldMaidState(cartridge: OldMaidCartridge, seed: string, se
   const pairIds = shuffle([...new Set(cartridge.cards.map((card) => card.pairId).filter((pairId): pairId is string => pairId !== null))], rng).slice(0, dealPairCount(cartridge));
   const shuffled = shuffle(cartridge.cards.filter((card) => card.pairId === null || pairIds.includes(card.pairId)).map((card) => card.id), rng);
   const hands = emptyHands();
-  const firstSeatIndex = new XorShift32(`${cartridge.version}:${seed}:first-seat`).nextUint32() % OLD_MAID_SEAT_ORDER.length;
   const dealOrder = shuffled.map((cardId, index) => {
-    const seatId = OLD_MAID_SEAT_ORDER[(firstSeatIndex + index) % OLD_MAID_SEAT_ORDER.length] as OldMaidSeatId;
+    const seatId = OLD_MAID_SEAT_ORDER[index % OLD_MAID_SEAT_ORDER.length] as OldMaidSeatId;
     hands[seatId].push(cardId);
     return { cardId, seatId };
   });

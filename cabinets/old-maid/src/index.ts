@@ -7,7 +7,7 @@ export * from "./engine.ts";
 export * from "./outcome.ts";
 export * from "./read.ts";
 export { temerosaOldMaidLines } from "./temerosa-lines.ts";
-export { temerosaOldMaidCartridge } from "./cartridge.ts";
+export { createTemerosaCasinoOldMaidCartridge, temerosaOldMaidCartridge, type TemerosaCasinoPortraitAsset } from "./cartridge.ts";
 
 export const temerosaOldMaidManifest: CabinetManifest = {
   id: "temerosa-old-maid",

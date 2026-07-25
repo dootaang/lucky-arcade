@@ -9,7 +9,7 @@
     "temerosa:audit": "tsx src/audit-temerosa.ts",
     "temerosa:expressions": "tsx src/audit-temerosa-expressions.ts",
     "temerosa:casino": "tsx src/compile-temerosa-casino.ts",
-    "temerosa:casino:audit": "tsx src/audit-temerosa-casino.ts",
+    "temerosa:casino:audit": "tsx src/audit-temerosa-casino.ts --manifest apps/web/public/content/temerosa-margin/0.8.0/manifest.json --selection apps/content-cli/src/temerosa-casino-selection.json --report reports/temerosa-casino-asset-audit.json",
     "cards": "tsx src/playing-cards.ts",
     "cards:audit": "tsx src/audit-playing-cards.ts",
     "validate": "tsx src/validate-pack.ts",

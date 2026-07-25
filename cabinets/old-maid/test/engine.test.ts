@@ -1,7 +1,7 @@
 import { resultHash } from "@lucky-arcade/engine";
 import { describe, expect, it } from "vitest";
 import { PERSONA_PRESETS } from "@lucky-arcade/engine";
-import { availablePairs, cpuDrawIndex, createOldMaidState, inspectCardReaction, oldMaidOutcome, publicRead, reduceOldMaid, temerosaOldMaidCartridge, validateCartridge, type OldMaidAction, type OldMaidCartridge, type OldMaidCharacter, type OldMaidMode, type OldMaidState } from "../src/index.ts";
+import { availablePairs, cpuDrawIndex, createOldMaidState, createTemerosaCasinoOldMaidCartridge, inspectCardReaction, oldMaidOutcome, publicRead, reduceOldMaid, temerosaOldMaidCartridge, validateCartridge, type OldMaidAction, type OldMaidCartridge, type OldMaidCharacter, type OldMaidMode, type OldMaidState } from "../src/index.ts";
 
 const extraCharacters: OldMaidCharacter[] = Array.from({ length: 22 }, (_, index) => ({
   id: `fixture-${index + 1}`,
@@ -105,15 +105,10 @@ describe("old maid deterministic engine", () => {
     expect(() => validateCartridge({ ...thirtyCharacterCartridge, dealPairCount: 10_000 })).toThrow("old_maid_deal_pairs_insufficient");
   });
 
-  it("rotates the first dealt seat deterministically across seeds", () => {
-    const counts = new Map<string, number>();
-    for (let seed = 0; seed < 1_000; seed += 1) {
-      const first = createOldMaidState(thirtyCharacterCartridge, `seat-${seed}`, "test-session").dealOrder[0]!.seatId;
-      counts.set(first, (counts.get(first) ?? 0) + 1);
-      expect(createOldMaidState(thirtyCharacterCartridge, `seat-${seed}`, "test-session").dealOrder[0]!.seatId).toBe(first);
+  it("keeps the legacy player-first dealing order while expanding the pool", () => {
+    for (let seed = 0; seed < 100; seed += 1) {
+      expect(createOldMaidState(thirtyCharacterCartridge, `seat-${seed}`, "test-session").dealOrder[0]!.seatId).toBe("player");
     }
-    expect([...counts.keys()].sort()).toEqual(["cpu-1", "cpu-2", "cpu-3", "player"]);
-    expect([...counts.values()].every((count) => count >= 200 && count <= 300)).toBe(true);
   });
 
   it("uses only the selectable 30-character roster for automatic and explicit starts", () => {
@@ -127,6 +122,23 @@ describe("old maid deterministic engine", () => {
     expect(() => reduceOldMaid(thirtyCharacterCartridge, ready, { type: "start", characterIds: ["nemo", "pale", "bacikal"] })).toThrow("old_maid_character_selection_invalid");
     expect(() => validateCartridge({ ...thirtyCharacterCartridge, selectableCharacterIds: ["nemo", "nemo", "pale", "kano"] })).toThrow("old_maid_selectable_character_duplicate");
     expect(() => validateCartridge({ ...thirtyCharacterCartridge, selectableCharacterIds: ["nemo", "pale", "kano", "missing"] })).toThrow("old_maid_selectable_character_missing");
+  });
+
+  it("builds the casino cartridge without selectable Bacikal and keeps magical-girl Nemo", () => {
+    const content = ["neutral", "pleased", "tense", "despair", "surprised"].map((expression) => ({
+      id: `${expression === "surprised" ? "card" : "npc"}-fixture-main-${expression}`,
+      characterId: "fixture-main",
+      expression,
+      appearanceSet: "fixture/main",
+    }));
+    const cartridge = createTemerosaCasinoOldMaidCartridge(content);
+    expect(cartridge.version).toBe("temerosa-old-maid/0.7");
+    expect(cartridge.dealPairCount).toBe(18);
+    expect(cartridge.selectableCharacterIds).toContain("fixture-main");
+    expect(cartridge.selectableCharacterIds).not.toContain("bacikal");
+    expect(cartridge.characters.find(({ id }) => id === "nemo")?.appearanceSet).toBe("nemo-magical-girl");
+    expect(cartridge.faces.some(({ assetId }) => assetId === "card-fixture-main-surprised")).toBe(true);
+    expect(() => validateCartridge(cartridge)).not.toThrow();
   });
 
   it("selects three characters for play and four for spectate deterministically", () => {
@@ -147,8 +159,8 @@ describe("old maid deterministic engine", () => {
 
   it("uses an explicitly selected set of three opponents", () => {
     let state = createOldMaidState(temerosaOldMaidCartridge, "chosen-opponents", "test-session");
-    state = reduceOldMaid(temerosaOldMaidCartridge, state, { type: "start", characterIds: ["nemo", "pale", "bacikal"] });
-    expect(Object.values(state.characters)).toEqual(["nemo", "pale", "bacikal"]);
+    state = reduceOldMaid(temerosaOldMaidCartridge, state, { type: "start", characterIds: ["nemo", "pale", "kano"] });
+    expect(Object.values(state.characters)).toEqual(["nemo", "pale", "kano"]);
   });
 
   it("runs a four-NPC spectator table with no human turn", () => {
