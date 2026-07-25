@@ -214,6 +214,7 @@ test("plays and restores a complete Temerosa old maid table", async ({ page }, t
     else await page.waitForTimeout(180);
   }
   await expect(page.getByText(/에게 조커가 남았습니다/)).toBeVisible();
+  await expect(page.locator(".old-maid-discard-pile")).toHaveCount(0);
   expect(checkedDiscardPile).toBe(true);
   await expect(page.getByText("자동 저장됨")).toBeVisible();
   await page.reload();

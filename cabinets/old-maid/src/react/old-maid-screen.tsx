@@ -110,7 +110,7 @@ export function OldMaidScreen({ cartridge, assets, initialState, onPersist, onEx
       </div>
 
       <div className="old-maid-center">
-        {!['ready', 'dealing'].includes(state.status) && <DiscardPile state={state} faces={faces} assets={assets} />}
+        {!['ready', 'dealing', 'complete'].includes(state.status) && <DiscardPile state={state} faces={faces} assets={assets} />}
         {state.status === "ready" && <div className="old-maid-intro">
           <IconCards size={48} />
           <span className="eyebrow">테메로세 캐릭터 카드 게임</span>
