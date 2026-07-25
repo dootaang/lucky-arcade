@@ -191,11 +191,17 @@ test("plays and restores a complete Temerosa old maid table", async ({ page }, t
   await expect(page.getByText("카드를 나누는 중…")).toBeVisible();
   await expect(page.locator(".old-maid-player-hand")).toBeVisible();
   let checkedDetail = false;
+  let checkedDiscardPile = false;
 
   for (let turn = 0; turn < 800; turn += 1) {
     if (await page.getByText(/에게 조커가 남았습니다/).count()) break;
     const discard = page.locator('button[aria-label$="두 장 버리기"]:not([disabled])').first();
-    if (await discard.count()) { await discard.click(); continue; }
+    if (await discard.count()) {
+      await discard.click();
+      await expect(page.locator(".old-maid-pile-pair")).not.toHaveCount(0);
+      checkedDiscardPile = true;
+      continue;
+    }
     const collect = page.locator("button:not([disabled])", { hasText: "이 카드를 내 손으로 가져오기" });
     if (await collect.count()) { await expect(collect).toBeEnabled(); await collect.evaluate((element) => (element as HTMLButtonElement).click()); continue; }
     const ownCard = page.getByRole("button", { name: /크게 보기/ }).first();
@@ -210,6 +216,7 @@ test("plays and restores a complete Temerosa old maid table", async ({ page }, t
     else await page.waitForTimeout(180);
   }
   await expect(page.getByText(/에게 조커가 남았습니다/)).toBeVisible();
+  expect(checkedDiscardPile).toBe(true);
   await expect(page.getByText("자동 저장됨")).toBeVisible();
   await page.reload();
   await expect(page.getByRole("region", { name: "이어하기" })).toContainText("대국 완료");
@@ -226,6 +233,12 @@ test("mobile Temerosa old maid keeps the draw cards reachable", async ({ page },
   const firstBack = page.getByRole("button", { name: /첫 번째|1번째 뒷면 카드/ }).first();
   if (await firstBack.count()) await expect(firstBack).toBeInViewport();
   await expect(page.locator(".old-maid-player-hand")).toBeInViewport();
+  const mobileOrder = await page.locator(".old-maid-table").evaluate((table) => {
+    const player = table.querySelector(".old-maid-player")?.getBoundingClientRect();
+    const log = table.querySelector(".old-maid-log")?.getBoundingClientRect();
+    return { playerBottom: player?.bottom ?? 0, logTop: log?.top ?? 0 };
+  });
+  expect(mobileOrder.logTop).toBeGreaterThanOrEqual(mobileOrder.playerBottom);
 });
 
 test.skip("mobile Temerosa pilot keeps the first choice and dialogue controls reachable", async ({ page }, testInfo) => {

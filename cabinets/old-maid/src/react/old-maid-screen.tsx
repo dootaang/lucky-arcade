@@ -1,6 +1,6 @@
 import { IconArrowLeft, IconCards, IconCheck, IconRefresh, IconX } from "@tabler/icons-react";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { availablePairs, createOldMaidState, discardingSeat, reduceOldMaid, targetSeat } from "../engine.ts";
+import { availablePairs, createOldMaidState, discardingSeat, inspectCardReaction, reduceOldMaid, targetSeat } from "../engine.ts";
 import type { OldMaidAction, OldMaidCartridge, OldMaidCpuSeatId, OldMaidFace, OldMaidSeatId, OldMaidState } from "../contracts.ts";
 import "./old-maid.css";
 
@@ -16,6 +16,9 @@ export function OldMaidScreen({ cartridge, assets, initialState, onPersist, onEx
   const [state, setState] = useState(() => initialState ?? createOldMaidState(cartridge, dailySeed()));
   const [detail, setDetail] = useState<OldMaidFace | null>(null);
   const [opponentIds, setOpponentIds] = useState<string[]>(() => Object.values(state.characters));
+  const [hoveredDrawCardId, setHoveredDrawCardId] = useState<string | null>(null);
+  const [touchedDrawCardId, setTouchedDrawCardId] = useState<string | null>(null);
+  const pointerKindRef = useRef("");
   const stateRef = useRef(state);
   const persistQueueRef = useRef<Promise<void>>(Promise.resolve());
   const saveRevisionRef = useRef(0);
@@ -52,6 +55,11 @@ export function OldMaidScreen({ cartridge, assets, initialState, onPersist, onEx
     return () => window.removeEventListener("keydown", close);
   }, [detail]);
 
+  useEffect(() => {
+    setHoveredDrawCardId(null);
+    setTouchedDrawCardId(null);
+  }, [state.currentPlayerId, state.status, state.turn]);
+
   const nameOf = (seatId: OldMaidSeatId) => seatId === "player" ? "플레이어" : characters.get(state.characters[seatId])?.name ?? "상대";
   const targetId = state.status === "playing" ? targetSeat(state) : null;
   const discardOwner = discardingSeat(state);
@@ -59,6 +67,10 @@ export function OldMaidScreen({ cartridge, assets, initialState, onPersist, onEx
   const discardableIds = new Set(discardOwner === "player" ? discardPairs.flat() : []);
   const handVisible = !["ready", "dealing"].includes(state.status);
   const spectating = state.safeOrder.includes("player") && state.hands.player.length === 0 && state.status !== "complete";
+  const inspectedDrawCardId = hoveredDrawCardId ?? touchedDrawCardId;
+  const inspectedReaction = state.status === "playing" && state.currentPlayerId === "player" && targetId !== null && targetId !== "player" && inspectedDrawCardId && state.hands[targetId].includes(inspectedDrawCardId)
+    ? inspectCardReaction(cartridge, state, targetId, inspectedDrawCardId)
+    : null;
   const background = assets["pequod-ruins"];
 
   function toggleOpponent(characterId: string) {
@@ -76,12 +88,14 @@ export function OldMaidScreen({ cartridge, assets, initialState, onPersist, onEx
       <div className="old-maid-opponents">
         {(["cpu-1", "cpu-2", "cpu-3"] as const).map((seatId) => {
           const character = characters.get(state.characters[seatId]);
-          const portraitId = character?.portraits[state.reactions[seatId]];
-          return <SeatPanel key={seatId} seatId={seatId} state={state} name={nameOf(seatId)} portrait={portraitId ? assets[portraitId] ?? null : null} reaction={state.reactions[seatId]} active={state.currentPlayerId === seatId} spectating={spectating} cards={cards} faces={faces} assets={assets} onDetail={setDetail} />;
+          const reaction = seatId === targetId && inspectedReaction ? inspectedReaction : state.reactions[seatId];
+          const portraitId = character?.portraits[reaction];
+          return <SeatPanel key={seatId} seatId={seatId} state={state} name={nameOf(seatId)} portrait={portraitId ? assets[portraitId] ?? null : null} reaction={reaction} active={state.currentPlayerId === seatId} spectating={spectating} cards={cards} faces={faces} assets={assets} onDetail={setDetail} />;
         })}
       </div>
 
       <div className="old-maid-center">
+        {!['ready', 'dealing'].includes(state.status) && <DiscardPile state={state} faces={faces} assets={assets} />}
         {state.status === "ready" && <div className="old-maid-intro">
           <IconCards size={48} />
           <span className="eyebrow">테메로세 캐릭터 카드 게임</span>
@@ -105,7 +119,26 @@ export function OldMaidScreen({ cartridge, assets, initialState, onPersist, onEx
             <span>{state.currentPlayerId === "player" ? `${nameOf(targetId ?? "cpu-1")}의 뒷면 카드 한 장을 고르세요.` : `${nameOf(targetId ?? "player")}에게서 고르는 중…`}</span>
           </div>
           {state.currentPlayerId === "player" && targetId && <div className="old-maid-draw-row" aria-label={`${nameOf(targetId)}의 뒷면 카드`}>
-            {state.hands[targetId].map((cardId, index) => <button key={cardId} className="old-maid-card back" aria-label={`${index + 1}번째 뒷면 카드`} onClick={() => dispatch({ type: "draw", index })}><span>THE<br />MARGIN</span></button>)}
+            {state.hands[targetId].map((cardId, index) => <button
+              key={cardId}
+              className={`old-maid-card back ${inspectedDrawCardId === cardId ? "inspected" : ""}`}
+              aria-label={`${index + 1}번째 뒷면 카드${touchedDrawCardId === cardId ? ", 한 번 더 누르면 뽑기" : ""}`}
+              onPointerEnter={(event) => { if (event.pointerType === "mouse") setHoveredDrawCardId(cardId); }}
+              onPointerLeave={(event) => { if (event.pointerType === "mouse") setHoveredDrawCardId(null); }}
+              onPointerDown={(event) => {
+                pointerKindRef.current = event.pointerType;
+                if (event.pointerType === "mouse") return;
+                event.preventDefault();
+                if (touchedDrawCardId === cardId) dispatch({ type: "draw", index });
+                else setTouchedDrawCardId(cardId);
+              }}
+              onClick={() => {
+                if (pointerKindRef.current && pointerKindRef.current !== "mouse") { pointerKindRef.current = ""; return; }
+                pointerKindRef.current = "";
+                dispatch({ type: "draw", index });
+              }}
+            ><span>THE<br />MARGIN</span></button>)}
+            <span className="old-maid-inspection-hint">카드에 손을 올려 표정을 살피세요<span> · 모바일은 한 번 더 눌러 뽑기</span></span>
           </div>}
           {state.lastDraw && <p className="old-maid-event" aria-live="polite">{state.lastDraw.madePair ? `${nameOf(state.lastDraw.actorId)}이 짝을 완성했습니다.` : state.lastDraw.faceId === cartridge.oddFaceId ? "조커가 다른 손으로 넘어갔습니다." : "뽑은 카드가 손패에 남았습니다."}</p>}
         </>}
@@ -226,9 +259,8 @@ function DrawReveal({ event, face, assets, actorName, targetName, playerControls
 function CardBack() { return <div className="old-maid-card back standalone"><span>THE<br />MARGIN</span></div>; }
 
 function GameLog({ state, faces, nameOf, revealCpuDraws }: { state: OldMaidState; faces: Map<string, OldMaidFace>; nameOf(seatId: OldMaidSeatId): string; revealCpuDraws: boolean }) {
-  const logRef = useRef<HTMLOListElement>(null);
-  useEffect(() => { const element = logRef.current; if (element) element.scrollTop = element.scrollHeight; }, [state.history.length]);
-  return <aside className="old-maid-log" aria-label="경기 기록"><strong>경기 기록</strong><ol ref={logRef}>{state.history.map((entry, index) => {
+  const entries = [...state.history].reverse();
+  return <aside className="old-maid-log" aria-label="경기 기록"><strong>경기 기록 · 최신순</strong><ol>{entries.map((entry, index) => {
     if (entry.type === "discard") return <li key={`${index}:discard`}><b>{nameOf(entry.ownerId)}</b> · {faces.get(entry.faceId)?.name ?? "한 쌍"} 버림</li>;
     const canReveal = revealCpuDraws || entry.actorId === "player" || entry.targetId === "player";
     return <li key={`${index}:draw`}><b>{nameOf(entry.actorId)}</b> → {nameOf(entry.targetId)} · {canReveal ? faces.get(entry.faceId)?.name ?? "카드" : "카드 1장"}</li>;
@@ -237,12 +269,62 @@ function GameLog({ state, faces, nameOf, revealCpuDraws }: { state: OldMaidState
 
 function DiscardStage({ ownerId, ownerName, pairs, cards, faces, assets, playerControls, onDiscard }: { ownerId: OldMaidSeatId; ownerName: string; pairs: [string, string][]; cards: Map<string, { faceId: string }>; faces: Map<string, OldMaidFace>; assets: Readonly<Record<string, string>>; playerControls: boolean; onDiscard(cardIds: [string, string]): void }) {
   const first = pairs[0] as [string, string];
+  const optionRefs = useRef(new Map<string, HTMLButtonElement>());
+  const throwingRef = useRef(false);
+  const [throwingKey, setThrowingKey] = useState<string | null>(null);
+
+  function throwPair(pair: [string, string]) {
+    if (throwingRef.current) return;
+    throwingRef.current = true;
+    const key = pair.join(":");
+    setThrowingKey(key);
+    window.requestAnimationFrame(() => {
+      const element = optionRefs.current.get(key);
+      const source = document.querySelector<HTMLElement>(`[data-deal-target="${ownerId}"]`);
+      const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const duration = reduced ? 90 : 560;
+      if (element && source) {
+        const center = element.getBoundingClientRect();
+        const origin = source.getBoundingClientRect();
+        const dx = origin.left + origin.width / 2 - (center.left + center.width / 2);
+        const dy = origin.top + origin.height / 2 - (center.top + center.height / 2);
+        element.animate([
+          { transform: `translate(${dx}px,${dy}px) rotate(${discardAngle(ownerId)}deg) scale(.55)`, opacity: .35 },
+          { transform: `translate(0,0) rotate(${discardAngle(ownerId)}deg) scale(1)`, opacity: 1 },
+        ], { duration, easing: "cubic-bezier(.18,.8,.2,1)", fill: "forwards" });
+      }
+      window.setTimeout(() => onDiscard(pair), duration + 40);
+    });
+  }
+
   useEffect(() => {
     if (playerControls) return;
-    const timer = window.setTimeout(() => onDiscard(first), 750);
+    const timer = window.setTimeout(() => throwPair(first), 420);
     return () => window.clearTimeout(timer);
   }, [first[0], first[1], ownerId, playerControls]);
-  return <div className="old-maid-discard-stage" aria-live="polite"><p><b>{ownerName}</b>{playerControls ? "의 손에서 버릴 수 있는 짝입니다" : "이 다음 짝을 버립니다"}</p><div className="old-maid-discard-options">{pairs.map((pair) => { const face = faces.get(cards.get(pair[0])?.faceId ?? ""); return face ? <button key={pair.join(":")} disabled={!playerControls} onClick={() => onDiscard(pair)} aria-label={`${face.name} 두 장 버리기`}><span className="old-maid-discard-pair"><CardFace face={face} assets={assets} odd={false} /><CardFace face={face} assets={assets} odd={false} /></span><strong>{playerControls ? "이 짝 버리기" : `${face.name} 버리는 중…`}</strong></button> : null; })}</div></div>;
+  return <div className="old-maid-discard-stage" aria-live="polite"><p><b>{ownerName}</b>{playerControls ? "의 손에서 버릴 수 있는 짝입니다" : "이 다음 짝을 버립니다"}</p><div className={`old-maid-discard-options ${throwingKey ? "throwing" : ""}`}>{pairs.map((pair) => { const key = pair.join(":"); const face = faces.get(cards.get(pair[0])?.faceId ?? ""); return face ? <button ref={(node) => { if (node) optionRefs.current.set(key, node); else optionRefs.current.delete(key); }} className={throwingKey === key ? "throwing" : ""} key={key} disabled={!playerControls || Boolean(throwingKey)} onClick={() => throwPair(pair)} aria-label={`${face.name} 두 장 버리기`}><span className="old-maid-discard-pair"><CardFace face={face} assets={assets} odd={false} /><CardFace face={face} assets={assets} odd={false} /></span><strong>{playerControls ? "이 짝 버리기" : `${face.name} 버리는 중…`}</strong></button> : null; })}</div></div>;
+}
+
+function DiscardPile({ state, faces, assets }: { state: OldMaidState; faces: Map<string, OldMaidFace>; assets: Readonly<Record<string, string>> }) {
+  return <div className="old-maid-discard-pile" aria-label={`테이블에 버린 카드 ${state.discards.length}쌍`}>
+    {state.discards.map((discard, index) => {
+      const face = faces.get(discard.faceId);
+      if (!face) return null;
+      const column = index % 5 - 2;
+      const row = Math.floor(index / 5);
+      const style = {
+        "--pile-angle": `${discardAngle(discard.ownerId)}deg`,
+        "--pile-x": `${column * 18 + row * 4}px`,
+        "--pile-y": `${row * 15 + Math.abs(column) * 2}px`,
+        "--pile-z": index + 1,
+      } as React.CSSProperties;
+      return <div className="old-maid-pile-pair" style={style} key={`${discard.turn}:${discard.faceId}:${index}`}><CardFace face={face} assets={assets} odd={false} /><CardFace face={face} assets={assets} odd={false} /></div>;
+    })}
+  </div>;
+}
+
+function discardAngle(ownerId: OldMaidSeatId): number {
+  return ownerId === "cpu-1" ? 180 : ownerId === "cpu-2" ? 90 : ownerId === "cpu-3" ? -90 : 0;
 }
 
 function DealingAnimation({ state, onComplete }: { state: OldMaidState; onComplete(): void }) {

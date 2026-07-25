@@ -1,6 +1,6 @@
 import { resultHash } from "@lucky-arcade/engine";
 import { describe, expect, it } from "vitest";
-import { availablePairs, cpuDrawIndex, createOldMaidState, reduceOldMaid, temerosaOldMaidCartridge, validateCartridge, type OldMaidAction, type OldMaidState } from "../src/index.ts";
+import { availablePairs, cpuDrawIndex, createOldMaidState, inspectCardReaction, reduceOldMaid, temerosaOldMaidCartridge, validateCartridge, type OldMaidAction, type OldMaidState } from "../src/index.ts";
 
 function autoplay(seed: string): { state: OldMaidState; actions: OldMaidAction[] } {
   let state = createOldMaidState(temerosaOldMaidCartridge, seed, "test-session");
@@ -65,6 +65,20 @@ describe("old maid deterministic engine", () => {
   it("uses only public turn metadata and target size for CPU draw selection", () => {
     expect(cpuDrawIndex("seed", 4, "cpu-1", "cpu-2", 5)).toBe(cpuDrawIndex("seed", 4, "cpu-1", "cpu-2", 5));
     expect(cpuDrawIndex("seed", 4, "cpu-1", "cpu-2", 5)).toBeLessThan(5);
+  });
+
+  it("lets an open opponent visibly react to the hovered joker", () => {
+    let state = createOldMaidState(temerosaOldMaidCartridge, "inspect-joker", "test-session");
+    const jokerOwner = (Object.keys(state.hands) as (keyof typeof state.hands)[]).find((seatId) => state.hands[seatId].includes("joker-odd"));
+    if (jokerOwner === "player" || !jokerOwner) {
+      const cpuCard = state.hands["cpu-1"][0] as string;
+      state = { ...state, hands: { ...state.hands, player: state.hands.player.filter((id) => id !== "joker-odd").concat(cpuCard), "cpu-1": state.hands["cpu-1"].filter((id) => id !== cpuCard).concat("joker-odd") } };
+    } else if (jokerOwner !== "cpu-1") {
+      const cpuCard = state.hands["cpu-1"][0] as string;
+      state = { ...state, hands: { ...state.hands, [jokerOwner]: state.hands[jokerOwner].filter((id) => id !== "joker-odd").concat(cpuCard), "cpu-1": state.hands["cpu-1"].filter((id) => id !== cpuCard).concat("joker-odd") } };
+    }
+    state = { ...state, characters: { ...state.characters, "cpu-1": "pale" } };
+    expect(inspectCardReaction(temerosaOldMaidCartridge, state, "cpu-1", "joker-odd")).toBe("pleased");
   });
 
   it("replays identical inputs to an identical final result", () => {

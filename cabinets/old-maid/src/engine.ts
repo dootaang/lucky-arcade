@@ -81,6 +81,19 @@ export function cpuDrawIndex(seed: string, turn: number, actorId: OldMaidSeatId,
   return rng.nextUint32() % targetCardCount;
 }
 
+export function inspectCardReaction(cartridge: OldMaidCartridge, state: OldMaidState, targetId: OldMaidCpuSeatId, cardId: string): OldMaidReaction {
+  const character = cartridge.characters.find((candidate) => candidate.id === state.characters[targetId]);
+  assert(character, `old_maid_character_missing:${state.characters[targetId]}`);
+  assert(state.hands[targetId].includes(cardId), "old_maid_inspection_card_missing");
+  const truth: OldMaidReaction = cardById(cartridge.cards, cardId).faceId === cartridge.oddFaceId ? "pleased" : "tense";
+  if (character.tellStyle === "open") return truth;
+  const rng = new XorShift32(`${state.seed}:inspect:${state.turn}:${targetId}:${cardId}`);
+  const roll = rng.nextUint32() % 100;
+  if (character.tellStyle === "guarded") return roll < 35 ? truth : "neutral";
+  if (roll < 55) return truth === "pleased" ? "tense" : "pleased";
+  return "neutral";
+}
+
 export function validateCartridge(cartridge: OldMaidCartridge): void {
   assert(cartridge.contract === "old-maid-cartridge/0.4", "old_maid_cartridge_contract");
   assert(cartridge.characters.length >= 3, "old_maid_characters_too_few");
