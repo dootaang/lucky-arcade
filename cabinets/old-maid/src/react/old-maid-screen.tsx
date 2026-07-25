@@ -3,6 +3,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { isOldMaidSpeechSilent, oldMaidSpeechSnapshot, selectOldMaidSpeech, validateOldMaidLines, type OldMaidSpeech } from "../dialogue.ts";
 import { availablePairs, characterIdForSeat, createOldMaidState, discardingSeat, inspectCardReaction, reduceOldMaid, targetSeat } from "../engine.ts";
 import type { OldMaidAction, OldMaidCartridge, OldMaidFace, OldMaidMode, OldMaidSeatId, OldMaidState } from "../contracts.ts";
+import { pileOffset } from "./pile-layout.ts";
 import "./old-maid.css";
 
 export interface OldMaidScreenProps {
@@ -352,8 +353,8 @@ function GameLog({ state, faces, nameOf, revealCpuDraws }: { state: OldMaidState
 
 function DiscardStage({ ownerId, ownerName, pairs, cards, faces, assets, playerControls, onDiscard }: { ownerId: OldMaidSeatId; ownerName: string; pairs: [string, string][]; cards: Map<string, { faceId: string }>; faces: Map<string, OldMaidFace>; assets: Readonly<Record<string, string>>; playerControls: boolean; onDiscard(cardIds: [string, string]): void }) {
   const first = pairs[0] as [string, string];
-  const optionRefs = useRef(new Map<string, HTMLButtonElement>());
   const throwingRef = useRef(false);
+  const commitTimerRef = useRef(0);
   const [throwingKey, setThrowingKey] = useState<string | null>(null);
 
   function throwPair(pair: [string, string]) {
@@ -361,23 +362,8 @@ function DiscardStage({ ownerId, ownerName, pairs, cards, faces, assets, playerC
     throwingRef.current = true;
     const key = pair.join(":");
     setThrowingKey(key);
-    window.requestAnimationFrame(() => {
-      const element = optionRefs.current.get(key);
-      const source = document.querySelector<HTMLElement>(`[data-deal-target="${ownerId}"]`);
-      const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-      const duration = reduced ? 90 : 560;
-      if (element && source) {
-        const center = element.getBoundingClientRect();
-        const origin = source.getBoundingClientRect();
-        const dx = origin.left + origin.width / 2 - (center.left + center.width / 2);
-        const dy = origin.top + origin.height / 2 - (center.top + center.height / 2);
-        element.animate([
-          { transform: `translate(${dx}px,${dy}px) rotate(${discardAngle(ownerId)}deg) scale(.55)`, opacity: .35 },
-          { transform: `translate(0,0) rotate(${discardAngle(ownerId)}deg) scale(1)`, opacity: 1 },
-        ], { duration, easing: "cubic-bezier(.18,.8,.2,1)", fill: "forwards" });
-      }
-      window.setTimeout(() => onDiscard(pair), duration + 40);
-    });
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    commitTimerRef.current = window.setTimeout(() => onDiscard(pair), reduced ? 90 : 180);
   }
 
   useEffect(() => {
@@ -385,23 +371,53 @@ function DiscardStage({ ownerId, ownerName, pairs, cards, faces, assets, playerC
     const timer = window.setTimeout(() => throwPair(first), 420);
     return () => window.clearTimeout(timer);
   }, [first[0], first[1], ownerId, playerControls]);
-  return <div className="old-maid-discard-stage" aria-live="polite"><p><b>{ownerName}</b>{playerControls ? "의 손에서 버릴 수 있는 짝입니다" : "이 다음 짝을 버립니다"}</p><div className={`old-maid-discard-options ${throwingKey ? "throwing" : ""}`}>{pairs.map((pair) => { const key = pair.join(":"); const face = faces.get(cards.get(pair[0])?.faceId ?? ""); return face ? <button ref={(node) => { if (node) optionRefs.current.set(key, node); else optionRefs.current.delete(key); }} className={throwingKey === key ? "throwing" : ""} key={key} disabled={!playerControls || Boolean(throwingKey)} onClick={() => throwPair(pair)} aria-label={`${face.name} 두 장 버리기`}><span className="old-maid-discard-pair"><CardFace face={face} assets={assets} odd={false} /><CardFace face={face} assets={assets} odd={false} /></span><strong>{playerControls ? "이 짝 버리기" : `${face.name} 버리는 중…`}</strong></button> : null; })}</div></div>;
+  useEffect(() => () => window.clearTimeout(commitTimerRef.current), []);
+  return <div className="old-maid-discard-stage" aria-live="polite"><p><b>{ownerName}</b>{playerControls ? "의 손에서 버릴 수 있는 짝입니다" : "이 다음 짝을 버립니다"}</p><div className={`old-maid-discard-options ${throwingKey ? "throwing" : ""}`}>{pairs.map((pair) => { const key = pair.join(":"); const face = faces.get(cards.get(pair[0])?.faceId ?? ""); return face ? <button className={throwingKey === key ? "throwing" : ""} key={key} disabled={!playerControls || Boolean(throwingKey)} onClick={() => throwPair(pair)} aria-label={`${face.name} 두 장 버리기`}><span className="old-maid-discard-pair"><CardFace face={face} assets={assets} odd={false} /><CardFace face={face} assets={assets} odd={false} /></span><strong>{playerControls ? "이 짝 버리기" : `${face.name} 버리는 중…`}</strong></button> : null; })}</div></div>;
 }
 
 function DiscardPile({ state, faces, assets }: { state: OldMaidState; faces: Map<string, OldMaidFace>; assets: Readonly<Record<string, string>> }) {
+  const pairRefs = useRef(new Map<number, HTMLDivElement>());
+  const seenRef = useRef(state.discards.length);
+  useEffect(() => {
+    if (state.discards.length < seenRef.current) { seenRef.current = state.discards.length; return; }
+    if (state.discards.length === seenRef.current) return;
+    const index = state.discards.length - 1;
+    const discard = state.discards[index];
+    let animation: Animation | null = null;
+    let finishTimer = 0;
+    const frame = window.requestAnimationFrame(() => {
+      seenRef.current = state.discards.length;
+      const element = pairRefs.current.get(index);
+      const slot = element?.closest<HTMLElement>(".old-maid-pile-slot");
+      const source = discard ? document.querySelector<HTMLElement>(`[data-deal-target="${discard.ownerId}"]`) : null;
+      if (!element || !slot || !source) return;
+      slot.dataset.arriving = "true";
+      const target = element.getBoundingClientRect(), origin = source.getBoundingClientRect();
+      const dx = origin.left + origin.width / 2 - (target.left + target.width / 2);
+      const dy = origin.top + origin.height / 2 - (target.top + target.height / 2);
+      const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const duration = reduced ? 90 : 560;
+      animation = element.animate([
+        { transform: `translate(${dx}px,${dy}px) scale(.55)`, opacity: .35 },
+        { transform: "translate(0,0) scale(1)", opacity: 1 },
+      ], { duration, easing: "cubic-bezier(.18,.8,.2,1)" });
+      finishTimer = window.setTimeout(() => { delete slot.dataset.arriving; }, duration);
+    });
+    return () => { window.cancelAnimationFrame(frame); window.clearTimeout(finishTimer); animation?.cancel(); };
+  }, [state.discards.length]);
   return <div className="old-maid-discard-pile" aria-label={`테이블에 버린 카드 ${state.discards.length}쌍`}>
     {state.discards.map((discard, index) => {
       const face = faces.get(discard.faceId);
       if (!face) return null;
-      const column = index % 5 - 2;
-      const row = Math.floor(index / 5);
+      const offset = pileOffset(state.seed, index, discard.cardIds[0]);
       const style = {
         "--pile-angle": `${discardAngle(discard.ownerId)}deg`,
-        "--pile-x": `${column * 18 + row * 4}px`,
-        "--pile-y": `${row * 15 + Math.abs(column) * 2}px`,
-        "--pile-z": index + 1,
+        "--jitter-x": `${offset.x}px`,
+        "--jitter-y": `${offset.y}px`,
+        "--jitter-r": `${offset.rotation}deg`,
+        "--pile-z": 1,
       } as React.CSSProperties;
-      return <div className="old-maid-pile-pair" style={style} key={`${discard.turn}:${discard.faceId}:${index}`}><CardFace face={face} assets={assets} odd={false} /><CardFace face={face} assets={assets} odd={false} /></div>;
+      return <div className="old-maid-pile-slot" data-owner={discard.ownerId} style={style} key={`${discard.turn}:${discard.faceId}:${index}`}><div className="old-maid-pile-pair" ref={(node) => { if (node) pairRefs.current.set(index, node); else pairRefs.current.delete(index); }}><CardFace face={face} assets={assets} odd={false} /><CardFace face={face} assets={assets} odd={false} /></div></div>;
     })}
   </div>;
 }

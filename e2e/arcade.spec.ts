@@ -214,6 +214,9 @@ test("plays and restores a complete Temerosa old maid table", async ({ page }, t
   await expect(page.locator(".old-maid-player-hand")).toBeVisible();
   let checkedDetail = false;
   let checkedDiscardPile = false;
+  let checkedDiscardSpread = false;
+  let checkedThrowingChrome = false;
+  let checkedArrival = false;
   let checkedSpeech = false;
 
   for (let turn = 0; turn < 800; turn += 1) {
@@ -227,7 +230,28 @@ test("plays and restores a complete Temerosa old maid table", async ({ page }, t
     const discard = page.locator('button[aria-label$="두 장 버리기"]:not([disabled])').first();
     if (await discard.count()) {
       await discard.click();
+      if (!checkedThrowingChrome) {
+        const chrome = await page.locator(".old-maid-discard-options>button.throwing").evaluate((button) => {
+          const name = button.querySelector(".old-maid-card strong");
+          return { nameDisplay: name ? getComputedStyle(name).display : "missing", buttonTransform: getComputedStyle(button).transform };
+        });
+        expect(chrome).toEqual({ nameDisplay: "none", buttonTransform: "none" });
+        await expect(page.locator(".old-maid-discard-options>button.throwing>strong")).toHaveCSS("opacity", "0", { timeout: 170 });
+        checkedThrowingChrome = true;
+      }
       await expect(page.locator(".old-maid-pile-pair")).not.toHaveCount(0);
+      if (!checkedArrival) {
+        await expect(page.locator('.old-maid-pile-slot[data-arriving="true"]')).toHaveCount(1);
+        checkedArrival = true;
+      }
+      checkedDiscardSpread ||= await page.locator(".old-maid-pile-slot").evaluateAll((slots) => {
+        const byOwner = new Map<string, DOMRect>();
+        for (const slot of slots) { const owner = slot.getAttribute("data-owner"); if (owner && !byOwner.has(owner)) byOwner.set(owner, slot.getBoundingClientRect()); }
+        const positions = [...byOwner.values()];
+        if (positions.length < 2) return false;
+        const first = positions[0] as DOMRect, second = positions[1] as DOMRect;
+        return Math.hypot(first.x - second.x, first.y - second.y) > 40;
+      });
       checkedDiscardPile = true;
       continue;
     }
@@ -245,6 +269,9 @@ test("plays and restores a complete Temerosa old maid table", async ({ page }, t
   await expect(page.getByText(/에게 조커가 남았습니다/)).toBeVisible();
   await expect(page.locator(".old-maid-discard-pile")).toHaveCount(0);
   expect(checkedDiscardPile).toBe(true);
+  expect(checkedDiscardSpread).toBe(true);
+  expect(checkedThrowingChrome).toBe(true);
+  expect(checkedArrival).toBe(true);
   expect(checkedSpeech).toBe(true);
   await expect(page.getByText("자동 저장됨")).toBeVisible();
   await page.reload();
@@ -304,6 +331,22 @@ test("mobile Temerosa old maid keeps the draw cards reachable", async ({ page },
   const firstBack = page.getByRole("button", { name: /첫 번째|1번째 뒷면 카드/ }).first();
   if (await firstBack.count()) await expect(firstBack).toBeInViewport();
   await expect(page.locator(".old-maid-player-hand")).toBeInViewport();
+  if (await page.locator(".old-maid-pile-slot").count()) {
+    const pileLayout = await page.locator(".old-maid-center").evaluate((center) => {
+      const boundary = center.getBoundingClientRect();
+      const slots = [...center.querySelectorAll<HTMLElement>(".old-maid-pile-slot")];
+      const visibleRatios = slots.map((slot) => {
+        const rect = slot.getBoundingClientRect();
+        const width = Math.max(0, Math.min(rect.right, boundary.right) - Math.max(rect.left, boundary.left));
+        const height = Math.max(0, Math.min(rect.bottom, boundary.bottom) - Math.max(rect.top, boundary.top));
+        return width * height / Math.max(1, rect.width * rect.height);
+      });
+      const draw = center.querySelector<HTMLElement>(".old-maid-draw-row");
+      return { minVisibleRatio: Math.min(...visibleRatios), maxPileZ: Math.max(...slots.map((slot) => Number(getComputedStyle(slot).zIndex))), drawZ: draw ? Number(getComputedStyle(draw).zIndex) : 3 };
+    });
+    expect(pileLayout.minVisibleRatio).toBeGreaterThanOrEqual(.5);
+    expect(pileLayout.maxPileZ).toBeLessThan(pileLayout.drawZ);
+  }
   const mobileOrder = await page.locator(".old-maid-table").evaluate((table) => {
     const player = table.querySelector(".old-maid-player")?.getBoundingClientRect();
     const log = table.querySelector(".old-maid-log")?.getBoundingClientRect();

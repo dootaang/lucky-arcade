@@ -17,8 +17,10 @@
 /* Table presence: inspected hands, directional discards, and a persistent pile. */
 .old-maid-card.back.inspected{z-index:6;margin-right:9px;border-color:#f0cf79;box-shadow:0 0 24px rgba(240,207,121,.42);transform:translateY(-16px) rotate(-2deg)}
 .old-maid-inspection-hint{position:absolute;left:50%;bottom:22px;z-index:6;transform:translateX(-50%);padding:6px 10px;border-radius:999px;color:#cfdae7;background:rgba(2,8,15,.82);font-size:.68rem;white-space:nowrap;pointer-events:none}
-.old-maid-discard-pile{position:absolute;inset:0;z-index:1;overflow:hidden;pointer-events:none}
-.old-maid-pile-pair{position:absolute;left:50%;top:55%;z-index:var(--pile-z);display:flex;transform:translate(calc(-50% + var(--pile-x)),calc(-50% + var(--pile-y))) rotate(var(--pile-angle));filter:drop-shadow(0 5px 7px rgba(0,0,0,.42))}
+.old-maid-discard-pile{position:absolute;inset:0;overflow:hidden;pointer-events:none}
+.old-maid-pile-slot{--pile-base-x:0px;--pile-base-y:0px;position:absolute;left:50%;top:55%;z-index:var(--pile-z);transform:translate(calc(-50% + var(--pile-base-x) + var(--jitter-x)),calc(-50% + var(--pile-base-y) + var(--jitter-y))) rotate(calc(var(--pile-angle) + var(--jitter-r)))}
+.old-maid-pile-slot[data-owner="cpu-1"]{--pile-base-y:-96px}.old-maid-pile-slot[data-owner="cpu-2"]{--pile-base-x:-96px}.old-maid-pile-slot[data-owner="cpu-3"]{--pile-base-x:96px}.old-maid-pile-slot[data-owner="player"]{--pile-base-y:96px}.old-maid-pile-slot[data-arriving="true"]{z-index:12}
+.old-maid-pile-pair{display:flex;filter:drop-shadow(0 5px 7px rgba(0,0,0,.42))}
 .old-maid-pile-pair .old-maid-card{width:46px;height:68px;margin:0 -9px}
 .old-maid-pile-pair .old-maid-card:first-child{transform:rotate(-5deg)}
 .old-maid-pile-pair .old-maid-card:last-child{transform:rotate(5deg)}
@@ -26,6 +28,7 @@
 .old-maid-turn-callout,.old-maid-draw-row,.old-maid-event,.old-maid-intro,.old-maid-result,.old-maid-dealing-copy{z-index:3}
 .old-maid-discard-options.throwing>button:not(.throwing){opacity:.12;transform:scale(.88)}
 .old-maid-discard-options>button.throwing{position:relative;z-index:12;opacity:1!important}
+.old-maid-discard-options>button.throwing .old-maid-card strong{display:none}.old-maid-discard-options>button.throwing>strong{opacity:0;transition:opacity .12s}
 .old-maid-discard-options>button{transition:opacity .18s,transform .18s}
 
 @media(max-width:900px){
@@ -35,11 +38,13 @@
   .old-maid-player{grid-column:1;grid-row:3}
   .old-maid-log{grid-column:1;grid-row:4;margin-top:0}
   .old-maid-deal-layer{grid-column:1;grid-row:1/-1}
+  .old-maid-pile-slot[data-owner="cpu-1"]{--pile-base-x:0px;--pile-base-y:-72px}.old-maid-pile-slot[data-owner="cpu-2"]{--pile-base-x:-51px;--pile-base-y:-51px}.old-maid-pile-slot[data-owner="cpu-3"]{--pile-base-x:51px;--pile-base-y:-51px}.old-maid-pile-slot[data-owner="player"]{--pile-base-x:0px;--pile-base-y:72px}
 }
 
 @media(max-width:680px){
   .old-maid-inspection-hint{bottom:10px;max-width:92%;overflow:hidden;text-overflow:ellipsis}
   .old-maid-pile-pair .old-maid-card{width:38px;height:57px;margin:0 -8px}
+  .old-maid-pile-slot[data-owner="cpu-1"]{--pile-base-y:-56px}.old-maid-pile-slot[data-owner="cpu-2"]{--pile-base-x:-40px;--pile-base-y:-40px}.old-maid-pile-slot[data-owner="cpu-3"]{--pile-base-x:40px;--pile-base-y:-40px}.old-maid-pile-slot[data-owner="player"]{--pile-base-y:56px}
   .old-maid-log{margin-top:0}
 }
 
