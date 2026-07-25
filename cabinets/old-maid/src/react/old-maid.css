@@ -75,3 +75,7 @@
 .old-maid-speed-controls{position:absolute;right:18px;top:18px;z-index:8;display:flex;gap:4px}.old-maid-speed-controls button{padding:5px 8px;border:1px solid rgba(255,255,255,.16);border-radius:999px;color:#aebed0;background:rgba(3,9,16,.78);font-size:.66rem}.old-maid-speed-controls button.selected{border-color:#e8c873;color:#17202a;background:#e8c873;font-weight:800}
 @media(max-width:680px){.old-maid-offer-stage{padding:46px 8px 12px}.old-maid-offer-hand{max-width:96vw;padding-inline:24px}.old-maid-offer-card{margin-left:-27px}.old-maid-offer-card .old-maid-card{width:58px;height:87px}.old-maid-speed-controls{right:8px;top:8px}}
 @media(prefers-reduced-motion:reduce){.old-maid-offer-card{transition:none}}
+
+/* A drawn card keeps one visual identity from the offered slot to its destination. */
+.old-maid-flight-layer{position:fixed;inset:0;z-index:90;pointer-events:none;overflow:visible}.old-maid-flight-card{position:absolute;left:0;top:0;width:112px;height:166px;transform-origin:center}.old-maid-flight-card>.old-maid-card{width:112px;height:166px;margin:0}.old-maid-reveal-card-space{width:112px;height:166px}
+@media(max-width:680px){.old-maid-flight-card,.old-maid-flight-card>.old-maid-card,.old-maid-reveal-card-space{width:96px;height:142px}}

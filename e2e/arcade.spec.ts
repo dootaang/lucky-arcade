@@ -310,12 +310,20 @@ test("plays and restores a complete Temerosa old maid table", async ({ page }, t
         const offeredCard = page.locator(".old-maid-offer-card:not([disabled])").first();
         if (!checkedOfferReaction && await offeredCard.count()) {
           const targetId = await page.locator(".old-maid-offer-stage").getAttribute("data-offer-target");
+          const offeredCardId = await offeredCard.getAttribute("data-card-id");
           expect(targetId).toMatch(/^cpu-/);
+          expect(offeredCardId).toBeTruthy();
           await offeredCard.hover();
           await expect(page.locator(`.seat-${targetId} .old-maid-reaction-text`)).toHaveText(/만족한 듯|긴장한 듯/);
+          const offeredCardBox = await offeredCard.boundingBox();
+          expect(offeredCardBox).not.toBeNull();
           await offeredCard.dispatchEvent("pointerdown", { pointerType: "touch", pointerId: 1, isPrimary: true });
           await expect(offeredCard).toHaveAttribute("aria-label", /한 번 더 누르면 뽑기/);
           await offeredCard.dispatchEvent("pointerdown", { pointerType: "touch", pointerId: 1, isPrimary: true });
+          const flight = page.locator(`.old-maid-flight-layer[data-draw-path="center"][data-card-id="${offeredCardId}"]`);
+          await expect(flight).toBeVisible();
+          await expect(flight).toHaveAttribute("data-source-x", String(Math.round((offeredCardBox?.x ?? 0) + (offeredCardBox?.width ?? 0) / 2)));
+          await expect(flight).toHaveAttribute("data-source-y", String(Math.round((offeredCardBox?.y ?? 0) + (offeredCardBox?.height ?? 0) / 2)));
           drewWithTouch = true;
           checkedOfferReaction = true;
         }
@@ -366,7 +374,8 @@ test("starts an open-hand four-NPC Temerosa spectator table", async ({ page }, t
   await page.getByRole("button", { name: "빠르게", exact: true }).click();
   await expect(page.getByText("상대끼리 뽑은 카드는 비공개")).toHaveCount(0);
   await expect(page.locator(".old-maid-spectator-hand .old-maid-card.face").first()).toBeVisible();
-  await expect(page.locator(".old-maid-reveal-stage .old-maid-card.face").first()).toBeVisible({ timeout: 30_000 });
+  await expect(page.locator('.old-maid-flight-layer[data-draw-path="direct"] .old-maid-card.face').first()).toBeVisible({ timeout: 30_000 });
+  await expect(page.locator(".old-maid-reveal-stage")).toHaveCount(0);
   await expect(page.getByRole("button", { name: "이 카드를 내 손으로 가져오기" })).toHaveCount(0);
   const rightColumn = await page.locator(".old-maid-table").evaluate((table) => {
     const seat = table.querySelector(".seat-cpu-3")?.getBoundingClientRect();

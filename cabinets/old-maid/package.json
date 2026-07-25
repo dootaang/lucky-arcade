@@ -9,7 +9,8 @@
     "@lucky-arcade/cabinet-sdk": "workspace:*",
     "@lucky-arcade/engine": "workspace:*",
     "@tabler/icons-react": "3.45.0",
-    "react": "19.2.8"
+    "react": "19.2.8",
+    "react-dom": "19.2.8"
   },
-  "devDependencies": { "@types/react": "19.2.17" }
+  "devDependencies": { "@types/react": "19.2.17", "@types/react-dom": "19.2.3" }
 }

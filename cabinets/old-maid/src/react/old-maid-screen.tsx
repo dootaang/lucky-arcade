@@ -1,5 +1,6 @@
 import { IconArrowLeft, IconCards, IconCheck, IconRefresh, IconX } from "@tabler/icons-react";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { isOldMaidSpeechSilent, oldMaidSpeechSnapshot, selectOldMaidSpeech, validateOldMaidLines, type OldMaidSpeech } from "../dialogue.ts";
 import { availablePairs, characterIdForSeat, createOldMaidState, discardingSeat, inspectCardReaction, reduceOldMaid, targetSeat } from "../engine.ts";
 import { publicRead } from "../read.ts";
@@ -68,6 +69,7 @@ export function OldMaidScreen({ cartridge, assets, detailAssets = assets, initia
   const speechRevisionRef = useRef(0);
   const longPressRef = useRef<number | null>(null);
   const playerHandRef = useRef<HTMLDivElement>(null);
+  const drawFlightRef = useRef<DrawFlightOrigin | null>(null);
   const stateRef = useRef(state);
   const persistQueueRef = useRef<Promise<void>>(Promise.resolve());
   const saveRevisionRef = useRef(0);
@@ -84,6 +86,11 @@ export function OldMaidScreen({ cartridge, assets, detailAssets = assets, initia
   function dispatch(action: OldMaidAction) {
     const previous = stateRef.current;
     const next = reduceOldMaid(cartridge, previous, action);
+    if (next.status === "revealing" && next.pendingDraw && previous.status === "playing") {
+      drawFlightRef.current = captureDrawOrigin(next.pendingDraw.cardId);
+    } else if (action.type === "collect_draw" || action.type === "start" || action.type === "restart") {
+      drawFlightRef.current = null;
+    }
     if (action.type === "start" || action.type === "restart") psychologyRef.current = emptyPsychologySummary();
     else recordPsychologyAction(cartridge, previous, next, action, psychologyRef.current);
     savePsychologySummary(next.sessionId, next.seed, psychologyRef.current);
@@ -290,7 +297,7 @@ export function OldMaidScreen({ cartridge, assets, detailAssets = assets, initia
 
         {state.status === "dealing" && <div className="old-maid-dealing-copy" aria-live="polite"><IconCards /><strong>카드를 나누는 중…</strong><span>배분이 끝나면 처음부터 맞은 짝을 정리합니다.</span></div>}
 
-        {state.status === "revealing" && state.pendingDraw && <DrawReveal key={`${state.turn}:${state.pendingDraw.cardId}`} event={state.pendingDraw} face={faces.get(state.pendingDraw.faceId) as OldMaidFace} assets={assets} actorName={nameOf(state.pendingDraw.actorId)} targetName={nameOf(state.pendingDraw.targetId)} revealFace={state.mode === "spectate" || state.pendingDraw.actorId === "player" || state.pendingDraw.targetId === "player" || humanFinishedWatching} onCollect={() => dispatch({ type: "collect_draw" })} />}
+        {state.status === "revealing" && state.pendingDraw && <DrawReveal key={`${state.turn}:${state.pendingDraw.cardId}`} event={state.pendingDraw} face={faces.get(state.pendingDraw.faceId) as OldMaidFace} assets={assets} actorName={nameOf(state.pendingDraw.actorId)} targetName={nameOf(state.pendingDraw.targetId)} origin={drawFlightRef.current?.cardId === state.pendingDraw.cardId ? drawFlightRef.current : null} centerReveal={state.mode === "play" && (state.pendingDraw.actorId === "player" || state.pendingDraw.targetId === "player")} sourceFaceVisible={state.mode === "spectate" || humanFinishedWatching || state.mode === "play" && state.pendingDraw.targetId === "player"} onCollect={() => dispatch({ type: "collect_draw" })} />}
 
         {state.status === "discarding" && discardOwner && discardPairs.length > 0 && <DiscardStage key={discardStageKey(state.discardMode, discardOwner, discardPairs)} ownerId={discardOwner} ownerName={nameOf(discardOwner)} pairs={discardPairs} cards={cards} faces={faces} assets={assets} playerControls={discardOwner === "player" && state.mode === "play"} onDiscard={(cardIds) => dispatch({ type: "discard_pair", cardIds })} />}
 
@@ -324,6 +331,7 @@ export function OldMaidScreen({ cartridge, assets, detailAssets = assets, initia
           {!state.offer && state.currentPlayerId === "player" && state.mode === "play" && targetId && <div className="old-maid-draw-row" aria-label={`${nameOf(targetId)}의 뒷면 카드`}>
             {state.hands[targetId].map((cardId, index) => <button
               key={cardId}
+              data-card-id={cardId}
               className={`old-maid-card back ${inspectedDrawCardId === cardId ? "inspected" : ""}`}
               aria-label={`${index + 1}번째 뒷면 카드${touchedDrawCardId === cardId ? ", 한 번 더 누르면 뽑기" : ""}`}
               onPointerEnter={(event) => { if (event.pointerType === "mouse") { inspectDrawCard(cardId); setHoveredDrawCardId(cardId); } }}
@@ -535,34 +543,64 @@ function CardDetail({ face, assets, odd, onClose }: { face: OldMaidFace; assets:
   </div>;
 }
 
-function DrawReveal({ event, face, assets, actorName, targetName, revealFace, onCollect }: { event: NonNullable<OldMaidState["pendingDraw"]>; face: OldMaidFace; assets: Readonly<Record<string, string>>; actorName: string; targetName: string; revealFace: boolean; onCollect(): void }) {
+interface DrawFlightOrigin {
+  cardId: string;
+  rect: { left: number; top: number; width: number; height: number };
+}
+
+function captureDrawOrigin(cardId: string): DrawFlightOrigin | null {
+  const candidates = [...document.querySelectorAll<HTMLElement>("[data-card-id]")];
+  const element = candidates.find((candidate) => candidate.dataset.cardId === cardId && candidate.closest(".old-maid-offer-stage"))
+    ?? candidates.find((candidate) => candidate.dataset.cardId === cardId && candidate.closest(".old-maid-player-hand"))
+    ?? candidates.find((candidate) => candidate.dataset.cardId === cardId);
+  if (!element) return null;
+  const rect = element.getBoundingClientRect();
+  return { cardId, rect: { left: rect.left, top: rect.top, width: rect.width, height: rect.height } };
+}
+
+function DrawReveal({ event, face, assets, actorName, targetName, origin, centerReveal, sourceFaceVisible, onCollect }: { event: NonNullable<OldMaidState["pendingDraw"]>; face: OldMaidFace; assets: Readonly<Record<string, string>>; actorName: string; targetName: string; origin: DrawFlightOrigin | null; centerReveal: boolean; sourceFaceVisible: boolean; onCollect(): void }) {
   const cardRef = useRef<HTMLDivElement>(null);
+  const centerTransformRef = useRef("translate(0,0) scale(1)");
   const collectRef = useRef(onCollect);
   const collectingRef = useRef(false);
   const [ready, setReady] = useState(false);
   const [collecting, setCollecting] = useState(false);
   collectRef.current = onCollect;
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     let revealTimer = 0;
     let autoTimer = 0;
-    const frame = window.requestAnimationFrame(() => {
-      const element = cardRef.current;
-      const target = document.querySelector<HTMLElement>(`[data-deal-target="${event.targetId}"]`);
-      if (!element || !target) return setReady(true);
-      const center = element.getBoundingClientRect();
-      const source = target.getBoundingClientRect();
-      const dx = source.left + source.width / 2 - (center.left + center.width / 2);
-      const dy = source.top + source.height / 2 - (center.top + center.height / 2);
+    const element = cardRef.current;
+    const fallback = document.querySelector<HTMLElement>(`[data-deal-target="${event.targetId}"]`)?.getBoundingClientRect();
+    const source = origin?.rect ?? fallback;
+    if (!element || !source) {
+      setReady(true);
+      autoTimer = window.setTimeout(() => collect(), centerReveal ? 900 : 120);
+      return () => window.clearTimeout(autoTimer);
+    }
+    const resting = element.getBoundingClientRect();
+    const sourceTransform = flightTransform(source, resting);
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (!centerReveal) {
+      const destination = document.querySelector<HTMLElement>(`[data-deal-target="${event.actorId}"]`)?.getBoundingClientRect();
+      const destinationTransform = destination ? flightTransform(destination, resting, .42) : "translate(0,0) scale(.42)";
       element.animate([
-        { transform: `translate(${dx}px,${dy}px) scale(.42) rotateY(180deg)`, opacity: .35 },
-        { transform: "translate(0,0) scale(1) rotateY(180deg)", opacity: 1, offset: .58 },
-        { transform: `translate(0,0) scale(1) rotateY(${revealFace ? 0 : 180}deg)`, opacity: 1 },
-      ], { duration: 720, easing: "cubic-bezier(.2,.75,.2,1)", fill: "forwards" });
-      revealTimer = window.setTimeout(() => setReady(true), 720);
-      autoTimer = window.setTimeout(() => collect(), revealFace ? 1350 : 1050);
-    });
-    return () => { window.cancelAnimationFrame(frame); window.clearTimeout(revealTimer); window.clearTimeout(autoTimer); };
+        { transform: sourceTransform, opacity: 1 },
+        { transform: destinationTransform, opacity: .45 },
+      ], { duration: reducedMotion ? 180 : 420, easing: "cubic-bezier(.4,0,.2,1)", fill: "forwards" });
+      autoTimer = window.setTimeout(() => collectRef.current(), reducedMotion ? 185 : 425);
+      return () => window.clearTimeout(autoTimer);
+    }
+    const center = document.querySelector<HTMLElement>(".old-maid-center")?.getBoundingClientRect() ?? resting;
+    const centerTransform = flightTransform(center, resting, 1);
+    centerTransformRef.current = centerTransform;
+    element.animate([
+      { transform: sourceTransform, opacity: .72 },
+      { transform: centerTransform, opacity: 1 },
+    ], { duration: reducedMotion ? 220 : 620, easing: "cubic-bezier(.2,.75,.2,1)", fill: "forwards" });
+    revealTimer = window.setTimeout(() => setReady(true), reducedMotion ? 220 : 620);
+    autoTimer = window.setTimeout(() => collect(), reducedMotion ? 760 : 1_350);
+    return () => { window.clearTimeout(revealTimer); window.clearTimeout(autoTimer); };
   }, [event.cardId]);
 
   useEffect(() => {
@@ -578,19 +616,28 @@ function DrawReveal({ event, face, assets, actorName, targetName, revealFace, on
     const element = cardRef.current;
     const target = document.querySelector<HTMLElement>(`[data-deal-target="${event.actorId}"]`);
     if (!element || !target) return;
-    const center = element.getBoundingClientRect();
+    const resting = { left: 0, top: 0, width: element.offsetWidth, height: element.offsetHeight } as DOMRect;
     const destination = target.getBoundingClientRect();
-    const dx = destination.left + destination.width / 2 - (center.left + center.width / 2);
-    const dy = destination.top + destination.height / 2 - (center.top + center.height / 2);
     try {
       element.animate([
-        { transform: "translate(0,0) scale(1)", opacity: 1 },
-        { transform: `translate(${dx}px,${dy}px) scale(.42)`, opacity: .35 },
+        { transform: centerTransformRef.current, opacity: 1 },
+        { transform: flightTransform(destination, resting, .42), opacity: .35 },
       ], { duration: 430, easing: "cubic-bezier(.4,0,.2,1)", fill: "forwards" });
     } catch { /* 이동 연출이 불가능해도 판정 단계는 위 타이머로 계속 진행한다. */ }
   }
 
-  return <div className="old-maid-reveal-stage" aria-live="polite"><p><b>{actorName}</b>{subjectParticle(actorName)} {targetName}에게서 한 장을 뽑았습니다</p><div className="old-maid-flip-card" ref={cardRef}>{revealFace ? <CardFace face={face} assets={assets} odd={face.id === "joker"} /> : <CardBack />}</div><strong className="old-maid-revealed-name">{ready ? revealFace ? face.name : collecting ? "카드 이동 중…" : "한 장을 뽑았습니다" : "카드 확인 중…"}</strong><span>{collecting ? `${actorName}의 손으로 이동합니다…` : revealFace ? "확인 후 자동으로 손패에 들어갑니다." : ""}</span></div>;
+  const flight = typeof document === "undefined" ? null : createPortal(<div className="old-maid-flight-layer" data-draw-path={centerReveal ? "center" : "direct"} data-card-id={event.cardId} data-source-x={origin ? Math.round(origin.rect.left + origin.rect.width / 2) : undefined} data-source-y={origin ? Math.round(origin.rect.top + origin.rect.height / 2) : undefined} aria-label={`${actorName}이 ${targetName}에게서 카드 한 장을 가져갑니다`}><div className="old-maid-flight-card" ref={cardRef}>{sourceFaceVisible || centerReveal && ready ? <CardFace face={face} assets={assets} odd={face.id === "joker"} /> : <CardBack />}</div></div>, document.body);
+
+  if (!centerReveal) return flight;
+
+  return <><div className="old-maid-reveal-stage" data-draw-path="center" data-card-id={event.cardId} aria-live="polite"><p><b>{actorName}</b>{subjectParticle(actorName)} {targetName}에게서 한 장을 뽑았습니다</p><div className="old-maid-reveal-card-space" aria-hidden="true" /><strong className="old-maid-revealed-name">{ready ? face.name : "카드 확인 중…"}</strong><span>{collecting ? `${actorName}의 손으로 이동합니다…` : "확인 후 자동으로 손패에 들어갑니다."}</span></div>{flight}</>;
+}
+
+function flightTransform(source: { left: number; top: number; width: number; height: number }, resting: DOMRect, forcedScale?: number): string {
+  const dx = source.left + source.width / 2 - (resting.left + resting.width / 2);
+  const dy = source.top + source.height / 2 - (resting.top + resting.height / 2);
+  const scale = forcedScale ?? Math.min(source.width / Math.max(1, resting.width), source.height / Math.max(1, resting.height));
+  return `translate(${dx}px,${dy}px) scale(${scale})`;
 }
 
 function CardBack() { return <div className="old-maid-card back standalone"><span>THE<br />MARGIN</span></div>; }
