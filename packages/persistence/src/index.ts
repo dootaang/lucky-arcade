@@ -88,6 +88,10 @@ export interface MatchRecord {
     reorderSignals: number;
     movedSlotDraws: number;
     successfulBaits: number;
+    offers: number;
+    reorderedOffers: number;
+    playerOfferConfirms: number;
+    npcToNpcOffers: number;
   };
 }
 

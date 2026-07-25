@@ -152,6 +152,9 @@ function autoplay(cartridge: OldMaidCartridge, seed: string, visit?: (transition
   for (let step = 0; state.status !== "complete" && step < 2_000; step += 1) {
     dispatch(state.status === "revealing" ? { type: "collect_draw" }
       : state.status === "discarding" ? { type: "discard_pair", cardIds: availablePairs(cartridge, state)[0] as [string, string] }
+      : state.status === "offering" && state.offer?.phase === "arranging" && state.offer.targetId === "player" ? { type: "finish_offer" }
+      : state.status === "offering" && state.offer?.phase === "arranging" ? { type: "prepare_cpu_offer" }
+      : state.status === "offering" ? { type: "finish_offer" }
       : state.currentPlayerId === "player" ? { type: "draw", index: 0 } : { type: "cpu_draw" });
   }
   expect(state.status).toBe("complete");

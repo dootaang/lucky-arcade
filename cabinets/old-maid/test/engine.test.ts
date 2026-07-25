@@ -1,7 +1,7 @@
 import { resultHash } from "@lucky-arcade/engine";
 import { describe, expect, it } from "vitest";
 import { PERSONA_PRESETS } from "@lucky-arcade/engine";
-import { OLD_MAID_LEGACY_VERSION, availablePairs, cpuDrawIndex, createOldMaidState, createTemerosaCasinoOldMaidCartridge, inspectCardReaction, legacyCpuDrawIndex, oldMaidOutcome, publicRead, reduceOldMaid, selectAmbientReaction, temerosaOldMaidCartridge, validateCartridge, type OldMaidAction, type OldMaidCartridge, type OldMaidCharacter, type OldMaidMode, type OldMaidState } from "../src/index.ts";
+import { OLD_MAID_LEGACY_VERSION, OLD_MAID_PREVIOUS_VERSION, availablePairs, cpuDrawIndex, createOldMaidState, createTemerosaCasinoOldMaidCartridge, inspectCardReaction, isOldMaidState, legacyCpuDrawIndex, oldMaidOutcome, publicRead, reduceOldMaid, selectAmbientReaction, temerosaOldMaidCartridge, validateCartridge, type OldMaidAction, type OldMaidCartridge, type OldMaidCharacter, type OldMaidMode, type OldMaidState } from "../src/index.ts";
 
 const extraCharacters: OldMaidCharacter[] = Array.from({ length: 22 }, (_, index) => ({
   id: `fixture-${index + 1}`,
@@ -26,9 +26,7 @@ function autoplay(seed: string): { state: OldMaidState; actions: OldMaidAction[]
   actions.push({ type: "finish_deal" });
   state = reduceOldMaid(temerosaOldMaidCartridge, state, actions[1] as OldMaidAction);
   while (state.status !== "complete" && actions.length < 2_000) {
-    const action: OldMaidAction = state.status === "revealing" ? { type: "collect_draw" }
-      : state.status === "discarding" ? { type: "discard_pair", cardIds: availablePairs(temerosaOldMaidCartridge, state)[0] as [string, string] }
-      : state.currentPlayerId === "player" ? { type: "draw", index: 0 } : { type: "cpu_draw" };
+    const action = nextAutoAction(temerosaOldMaidCartridge, state, "play");
     actions.push(action);
     state = reduceOldMaid(temerosaOldMaidCartridge, state, action);
   }
@@ -40,30 +38,98 @@ function autoplaySpectator(seed: string): OldMaidState {
   state = reduceOldMaid(temerosaOldMaidCartridge, state, { type: "start", mode: "spectate", characterIds: ["nemo", "pale", "kano", "alger"] });
   state = reduceOldMaid(temerosaOldMaidCartridge, state, { type: "finish_deal" });
   for (let step = 0; state.status !== "complete" && step < 2_000; step += 1) {
-    const action: OldMaidAction = state.status === "revealing" ? { type: "collect_draw" }
-      : state.status === "discarding" ? { type: "discard_pair", cardIds: availablePairs(temerosaOldMaidCartridge, state)[0] as [string, string] }
-      : { type: "cpu_draw" };
+    const action = nextAutoAction(temerosaOldMaidCartridge, state, "spectate");
     state = reduceOldMaid(temerosaOldMaidCartridge, state, action);
   }
   return state;
 }
 
-function autoplayCartridge(cartridge: OldMaidCartridge, seed: string, mode: OldMaidMode): OldMaidState {
-  let state = createOldMaidState(cartridge, seed, `${mode}-session`);
+function autoplayCartridge(cartridge: OldMaidCartridge, seed: string, mode: OldMaidMode, legacy = false): OldMaidState {
+  let state = legacy ? asVersion07(createOldMaidState(cartridge, seed, `${mode}-session`)) : createOldMaidState(cartridge, seed, `${mode}-session`);
   state = reduceOldMaid(cartridge, state, { type: "start", mode });
   state = reduceOldMaid(cartridge, state, { type: "finish_deal" });
   for (let step = 0; state.status !== "complete" && step < 2_000; step += 1) {
-    const action: OldMaidAction = state.status === "revealing" ? { type: "collect_draw" }
-      : state.status === "discarding" ? { type: "discard_pair", cardIds: availablePairs(cartridge, state)[0] as [string, string] }
-      : mode === "play" && state.currentPlayerId === "player" ? { type: "draw", index: 0 } : { type: "cpu_draw" };
+    const action = nextAutoAction(cartridge, state, mode);
     state = reduceOldMaid(cartridge, state, action);
   }
   return state;
 }
 
+function nextAutoAction(cartridge: OldMaidCartridge, state: OldMaidState, mode: OldMaidMode): OldMaidAction {
+  if (state.status === "revealing") return { type: "collect_draw" };
+  if (state.status === "discarding") return { type: "discard_pair", cardIds: availablePairs(cartridge, state)[0] as [string, string] };
+  if (state.status === "offering") {
+    if (state.offer?.phase === "arranging" && mode === "play" && state.offer.targetId === "player") return { type: "finish_offer" };
+    if (state.offer?.phase === "arranging") return { type: "prepare_cpu_offer" };
+    return { type: "finish_offer" };
+  }
+  return mode === "play" && state.currentPlayerId === "player" ? { type: "draw", index: 0 } : { type: "cpu_draw" };
+}
+
+function asVersion07(state: OldMaidState): OldMaidState {
+  const { offer: _offer, ...legacy } = state;
+  return { ...legacy, contract: "old-maid-state/0.6", version: OLD_MAID_PREVIOUS_VERSION };
+}
+
+function advanceToFirstOffer(cartridge = temerosaOldMaidCartridge, seed = "offer-phase"): OldMaidState {
+  let state = createOldMaidState(cartridge, seed, "offer-session");
+  state = reduceOldMaid(cartridge, state, { type: "start" });
+  state = reduceOldMaid(cartridge, state, { type: "finish_deal" });
+  while (state.status === "discarding") state = reduceOldMaid(cartridge, state, { type: "discard_pair", cardIds: availablePairs(cartridge, state)[0] as [string, string] });
+  return state;
+}
+
 describe("old maid deterministic engine", () => {
+  it("accepts released 0.6 and 0.7 snapshots while pairing 0.8 with its new contract", () => {
+    const current = createOldMaidState(temerosaOldMaidCartridge, "snapshot-contract");
+    expect(isOldMaidState(current)).toBe(true);
+    expect(isOldMaidState(asVersion07(current))).toBe(true);
+    expect(isOldMaidState({ ...asVersion07(current), version: OLD_MAID_LEGACY_VERSION })).toBe(true);
+    expect(isOldMaidState({ ...current, contract: "old-maid-state/0.6" })).toBe(false);
+  });
+
+  it("requires every 0.8 draw to pass through an explicit offering phase", () => {
+    let state = advanceToFirstOffer();
+    expect(state.status).toBe("offering");
+    expect(state.offer).toMatchObject({ phase: "arranging", actorId: state.currentPlayerId });
+    expect(() => reduceOldMaid(temerosaOldMaidCartridge, state, { type: "draw", index: 0 })).toThrow("old_maid_not_playing");
+    state = reduceOldMaid(temerosaOldMaidCartridge, state, { type: "prepare_cpu_offer" });
+    expect(state.offer?.phase).toBe("settling");
+    state = reduceOldMaid(temerosaOldMaidCartridge, state, { type: "finish_offer" });
+    expect(state.status).toBe("playing");
+    expect(state.offer?.phase).toBe("ready");
+  });
+
+  it("lets a human target rearrange at most three times before offering the hand", () => {
+    const base = advanceToFirstOffer(temerosaOldMaidCartridge, "human-offer");
+    let state: OldMaidState = {
+      ...base,
+      currentPlayerId: "cpu-3",
+      offer: { actorId: "cpu-3", targetId: "player", phase: "arranging", reorderCount: 0, lastMove: null, revision: base.sequence },
+    };
+    const before = [...state.hands.player];
+    state = reduceOldMaid(temerosaOldMaidCartridge, state, { type: "reorder_offer", from: 0, to: 1 });
+    state = reduceOldMaid(temerosaOldMaidCartridge, state, { type: "reorder_offer", from: 0, to: 1 });
+    state = reduceOldMaid(temerosaOldMaidCartridge, state, { type: "reorder_offer", from: 0, to: 1 });
+    expect([...state.hands.player].sort()).toEqual([...before].sort());
+    expect(state.offer?.reorderCount).toBe(3);
+    expect(() => reduceOldMaid(temerosaOldMaidCartridge, state, { type: "reorder_offer", from: 0, to: 1 })).toThrow("old_maid_reorder_limit");
+    state = reduceOldMaid(temerosaOldMaidCartridge, state, { type: "finish_offer" });
+    expect(() => reduceOldMaid(temerosaOldMaidCartridge, state, { type: "draw", index: 0 })).toThrow("old_maid_player_turn_required");
+    expect(() => reduceOldMaid(temerosaOldMaidCartridge, state, { type: "cpu_draw" })).not.toThrow();
+  });
+
+  it("prepares NPC offers deterministically without leaking card identities into the offer record", () => {
+    const left = reduceOldMaid(temerosaOldMaidCartridge, advanceToFirstOffer(temerosaOldMaidCartridge, "npc-offer"), { type: "prepare_cpu_offer" });
+    const right = reduceOldMaid(temerosaOldMaidCartridge, advanceToFirstOffer(temerosaOldMaidCartridge, "npc-offer"), { type: "prepare_cpu_offer" });
+    expect(left.hands).toEqual(right.hands);
+    expect(left.offer).toEqual(right.offer);
+    expect(JSON.stringify(left.offer)).not.toContain("cardId");
+    if (left.offer?.lastMove) expect(Object.keys(left.offer.lastMove).sort()).toEqual(["fromIndex", "toIndex"]);
+  });
+
   it("reorders only the player hand without consuming a turn and caps it at three", () => {
-    let state: OldMaidState = { ...createOldMaidState(temerosaOldMaidCartridge, "reorder"), status: "playing", currentPlayerId: "player" };
+    let state: OldMaidState = { ...asVersion07(createOldMaidState(temerosaOldMaidCartridge, "reorder")), status: "playing", currentPlayerId: "player" };
     const before = [...state.hands.player], turn = state.turn;
     state = reduceOldMaid(temerosaOldMaidCartridge, state, { type: "reorder_hand", from: 0, to: 2 });
     expect(state.turn).toBe(turn); expect([...state.hands.player].sort()).toEqual([...before].sort()); expect(state.hands.player[2]).toBe(before[0]);
@@ -270,6 +336,13 @@ describe("old maid deterministic engine", () => {
     for (const action of run.actions) replay = reduceOldMaid(temerosaOldMaidCartridge, replay, action);
     expect(run.state.status).toBe("complete");
     expect(resultHash(replay)).toBe(resultHash(run.state));
+  });
+
+  it("keeps the released 0.7 golden play and spectator results", () => {
+    const play = autoplayCartridge(temerosaOldMaidCartridge, "offer-golden", "play", true);
+    const spectate = autoplayCartridge(temerosaOldMaidCartridge, "offer-golden", "spectate", true);
+    expect(resultHash(play)).toBe("b222b7446e92e1b73a18dede32816db13bc99256c1b9a14edef797c497009e24");
+    expect(resultHash(spectate)).toBe("d24508f938c64634e5aabd6fc382f58bf2a6262733b46c378a375e9afacc9741");
   });
 
   it("replays the same 18-pair inputs to the same result hash", () => {

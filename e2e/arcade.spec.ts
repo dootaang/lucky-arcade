@@ -226,6 +226,7 @@ test("becomes a provisional navigator and restores the chosen Temerosa party", a
 test("plays and restores a complete Temerosa old maid table", async ({ page }, testInfo) => {
   test.setTimeout(180_000);
   test.skip(testInfo.project.metadata.mobile === true);
+  await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/");
   await page.locator(".arcade-entry").filter({ hasText: "테메로세 도둑잡기" }).getByRole("button", { name: "바로 시작" }).click();
   await expect(page.getByRole("heading", { name: "테메로세 도둑잡기" })).toBeVisible();
@@ -299,9 +300,13 @@ test("plays and restores a complete Temerosa old maid table", async ({ page }, t
       checkedDiscardPile = true;
       continue;
     }
-    const backs = page.getByRole("button", { name: /번째 뒷면 카드/ });
-    if (await backs.count()) await backs.first().click();
-    else await page.waitForTimeout(180);
+    const finishOffer = page.getByRole("button", { name: "재배열 종료 · 이대로 내밀기", exact: true });
+    if (await finishOffer.count()) await finishOffer.click();
+    else {
+      const backs = page.locator(".old-maid-offer-card:not([disabled]), .old-maid-draw-row button");
+      if (await backs.count()) await backs.first().click();
+      else await page.waitForTimeout(180);
+    }
   }
   await expect(page.getByText(/에게 조커가 남았습니다/)).toBeVisible();
   await expect(page.locator(".old-maid-discard-pile")).toHaveCount(0);
@@ -320,6 +325,7 @@ test("plays and restores a complete Temerosa old maid table", async ({ page }, t
 
 test("starts an open-hand four-NPC Temerosa spectator table", async ({ page }, testInfo) => {
   test.skip(testInfo.project.metadata.mobile === true);
+  await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/");
   await page.evaluate(() => new Promise<void>((resolve, reject) => {
     const opening = indexedDB.open("lucky-arcade", 6);
@@ -340,6 +346,7 @@ test("starts an open-hand four-NPC Temerosa spectator table", async ({ page }, t
   await page.getByRole("button", { name: "예측하고 NPC 대국 관전" }).click();
   await expect(page.getByText("카드를 나누는 중…")).toBeVisible();
   await expect(page.locator(".old-maid-spectator-seat")).toBeVisible({ timeout: 20_000 });
+  await page.getByRole("button", { name: "빠르게", exact: true }).click();
   await expect(page.getByText("상대끼리 뽑은 카드는 비공개")).toHaveCount(0);
   await expect(page.locator(".old-maid-spectator-hand .old-maid-card.face").first()).toBeVisible();
   await expect(page.locator(".old-maid-reveal-stage .old-maid-card.face").first()).toBeVisible({ timeout: 30_000 });
@@ -354,6 +361,7 @@ test("starts an open-hand four-NPC Temerosa spectator table", async ({ page }, t
 
 test("mobile Temerosa old maid keeps the draw cards reachable", async ({ page }, testInfo) => {
   test.skip(testInfo.project.metadata.mobile !== true);
+  await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/");
   await page.locator(".arcade-entry").filter({ hasText: "테메로세 도둑잡기" }).getByRole("button", { name: "바로 시작" }).click();
   while (await page.locator(".old-maid-opponent-picker button.selected").count()) await page.locator(".old-maid-opponent-picker button.selected").first().click();
@@ -364,9 +372,13 @@ test("mobile Temerosa old maid keeps the draw cards reachable", async ({ page },
     const discard = page.locator('button[aria-label$="두 장 버리기"]:not([disabled])').first();
     if (await discard.count()) await discard.click();
     else {
-      const backs = page.getByRole("button", { name: /번째 뒷면 카드/ });
-      if (await backs.count()) await backs.first().click();
-      else await page.waitForTimeout(120);
+      const finishOffer = page.getByRole("button", { name: "재배열 종료 · 이대로 내밀기", exact: true });
+      if (await finishOffer.count()) await finishOffer.click();
+      else {
+        const backs = page.locator(".old-maid-offer-card:not([disabled]), .old-maid-draw-row button");
+        if (await backs.count()) await backs.first().click();
+        else await page.waitForTimeout(120);
+      }
     }
   }
   await expect(speech).toBeVisible();

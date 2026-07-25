@@ -1,6 +1,6 @@
 import { PERSONA_PRESETS, XorShift32, expressSignal, fnv1a32, weightedChoice, type Persona } from "@lucky-arcade/engine";
 import type { OldMaidAction, OldMaidCard, OldMaidCartridge, OldMaidCpuSeatId, OldMaidDiscard, OldMaidDrawEvent, OldMaidReaction, OldMaidSeatId, OldMaidState } from "./contracts.ts";
-import { OLD_MAID_LEGACY_VERSION, OLD_MAID_VERSION } from "./contracts.ts";
+import { OLD_MAID_LEGACY_VERSION, OLD_MAID_PREVIOUS_VERSION, OLD_MAID_VERSION } from "./contracts.ts";
 import { publicRead, type OldMaidPublicRead } from "./read.ts";
 
 export const OLD_MAID_SEAT_ORDER: readonly OldMaidSeatId[] = ["player", "cpu-1", "cpu-2", "cpu-3"];
@@ -8,8 +8,11 @@ export const OLD_MAID_SEAT_ORDER: readonly OldMaidSeatId[] = ["player", "cpu-1",
 export function isOldMaidState(value: unknown): value is OldMaidState {
   if (!value || typeof value !== "object") return false;
   const state = value as Partial<OldMaidState>;
-  return state.contract === "old-maid-state/0.6"
-    && (state.version === OLD_MAID_VERSION || state.version === OLD_MAID_LEGACY_VERSION)
+  const compatible = state.version === OLD_MAID_VERSION
+    ? state.contract === "old-maid-state/0.7"
+    : state.contract === "old-maid-state/0.6";
+  return compatible
+    && (state.version === OLD_MAID_VERSION || state.version === OLD_MAID_PREVIOUS_VERSION || state.version === OLD_MAID_LEGACY_VERSION)
     && typeof state.packVersion === "string"
     && typeof state.sessionId === "string"
     && Boolean(state.hands && state.characters);
@@ -33,13 +36,13 @@ export function createOldMaidState(cartridge: OldMaidCartridge, seed: string, se
   });
   const selected = automaticCharacterIds(cartridge, seed, "play");
   return {
-    contract: "old-maid-state/0.6", version: OLD_MAID_VERSION, packVersion: cartridge.version,
+    contract: "old-maid-state/0.7", version: OLD_MAID_VERSION, packVersion: cartridge.version,
     sessionId, seed, sequence: 0, turn: 0, status: "ready", mode: "play", currentPlayerId: "player", hands, dealOrder,
     characters: { "cpu-1": selected[0] as string, "cpu-2": selected[1] as string, "cpu-3": selected[2] as string },
     spectatorCharacterId: null,
     reactions: { player: "neutral", "cpu-1": "neutral", "cpu-2": "neutral", "cpu-3": "neutral" },
     pendingDraw: null, discardMode: null, discardSeatIndex: null,
-    safeOrder: [], loserId: null, discards: [], lastDraw: null, history: [], lastReorder: null, lastReorders: {},
+    safeOrder: [], loserId: null, discards: [], lastDraw: null, history: [], lastReorder: null, lastReorders: {}, offer: null,
   };
 }
 
@@ -71,10 +74,15 @@ export function reduceOldMaid(cartridge: OldMaidCartridge, state: OldMaidState, 
   if (action.type === "collect_draw") return collectDraw(cartridge, state);
   if (action.type === "discard_pair") return discardPair(cartridge, state, action.cardIds);
 
+  if (action.type === "prepare_cpu_offer") return prepareCpuOffer(cartridge, state);
+  if (action.type === "reorder_offer") return reorderOffer(state, action.from, action.to);
+  if (action.type === "finish_offer") return finishOffer(state);
+
   assert(state.status === "playing", "old_maid_not_playing");
   const actorId = state.currentPlayerId;
   const isHuman = actorId === "player" && state.mode === "play";
   if (action.type === "reorder_hand") {
+    assert(state.version !== OLD_MAID_VERSION, "old_maid_legacy_reorder_only");
     assert(isHuman, "old_maid_player_turn_required");
     assert(Number.isInteger(action.from) && Number.isInteger(action.to) && action.from >= 0 && action.to >= 0 && action.from < state.hands.player.length && action.to < state.hands.player.length, "old_maid_reorder_index_invalid");
     const count = state.lastReorder?.turn === state.turn ? state.lastReorder.count : 0;
@@ -91,7 +99,7 @@ export function reduceOldMaid(cartridge: OldMaidCartridge, state: OldMaidState, 
   }
   if (action.type === "draw") assert(isHuman, "old_maid_player_turn_required");
   if (action.type === "cpu_draw") assert(!isHuman, "old_maid_cpu_turn_required");
-  const targetId = nextActiveSeat(state.hands, actorId);
+  const targetId = state.version === OLD_MAID_VERSION ? requireReadyOffer(state, actorId).targetId : nextActiveSeat(state.hands, actorId);
   const targetHand = state.hands[targetId];
   assert(targetHand.length > 0, "old_maid_target_empty");
   const actorCharacter = cartridge.characters.find((character) => character.id === characterIdForSeat(state, actorId));
@@ -108,6 +116,7 @@ export function reduceOldMaid(cartridge: OldMaidCartridge, state: OldMaidState, 
   const pendingDraw: OldMaidDrawEvent = { actorId, targetId, cardId, faceId: card.faceId, madePair: false };
   return {
     ...state, sequence: state.sequence + 1, status: "revealing", hands, pendingDraw,
+    ...(state.version === OLD_MAID_VERSION ? { offer: null } : {}),
     reactions: reactionsAfterDraw(cartridge, state, actorId, targetId, card.faceId === cartridge.oddFaceId, willMakePair),
   };
 }
@@ -123,7 +132,7 @@ export function discardingSeat(state: OldMaidState): OldMaidSeatId | null {
   return state.discardSeatIndex === null ? null : OLD_MAID_SEAT_ORDER[state.discardSeatIndex] ?? null;
 }
 
-export function targetSeat(state: OldMaidState): OldMaidSeatId { return nextActiveSeat(state.hands, state.currentPlayerId); }
+export function targetSeat(state: OldMaidState): OldMaidSeatId { return state.offer?.targetId ?? nextActiveSeat(state.hands, state.currentPlayerId); }
 
 export function cpuDrawIndex(persona: Persona, read: OldMaidPublicRead, seed: string, turn: number, actorId: OldMaidSeatId, targetId: OldMaidSeatId, targetCardCount: number): number {
   assert(Number.isInteger(targetCardCount) && targetCardCount > 0, "old_maid_target_count_invalid");
@@ -238,9 +247,12 @@ function continueInitialDiscard(cartridge: OldMaidCartridge, state: OldMaidState
 function finalizeInitialDiscard(state: OldMaidState): OldMaidState {
   const safeOrder = OLD_MAID_SEAT_ORDER.filter((seatId) => state.hands[seatId].length === 0);
   const active = OLD_MAID_SEAT_ORDER.filter((seatId) => state.hands[seatId].length > 0);
+  const currentPlayerId = active[0] ?? "player";
+  const complete = active.length <= 1;
   return {
-    ...state, status: active.length <= 1 ? "complete" : "playing", currentPlayerId: active[0] ?? "player",
-    safeOrder, loserId: active.length <= 1 ? active[0] ?? null : null, discardMode: null, discardSeatIndex: null,
+    ...state, status: complete ? "complete" : state.version === OLD_MAID_VERSION ? "offering" : "playing", currentPlayerId,
+    safeOrder, loserId: complete ? active[0] ?? null : null, discardMode: null, discardSeatIndex: null,
+    ...(state.version === OLD_MAID_VERSION && !complete ? { offer: beginOffer(state, currentPlayerId) } : {}),
   };
 }
 
@@ -255,10 +267,114 @@ function finalizeDraw(cartridge: OldMaidCartridge, state: OldMaidState, madePair
   const drawAlreadyLogged = state.history.some((entry) => entry.type === "draw" && entry.turn === state.turn && entry.actorId === event.actorId && entry.targetId === event.targetId);
   const reordered = complete ? state : maybeReorderCpuHand(cartridge, state, event.actorId);
   return {
-    ...reordered, turn: state.turn + 1, status: complete ? "complete" : "playing", currentPlayerId: nextId,
+    ...reordered, turn: state.turn + 1, status: complete ? "complete" : state.version === OLD_MAID_VERSION ? "offering" : "playing", currentPlayerId: nextId,
     safeOrder, loserId: complete ? active[0] ?? null : null, pendingDraw: null, discardMode: null, discardSeatIndex: null,
     lastDraw: event, history: drawAlreadyLogged ? state.history : [...state.history, { type: "draw", turn: state.turn, actorId: event.actorId, targetId: event.targetId, faceId: event.faceId, madePair }],
+    ...(state.version === OLD_MAID_VERSION ? { offer: complete ? null : beginOffer(state, nextId, state.sequence + 1) } : {}),
   };
+}
+
+function beginOffer(state: OldMaidState, actorId: OldMaidSeatId, revision = state.sequence): NonNullable<OldMaidState["offer"]> {
+  return {
+    actorId,
+    targetId: nextActiveSeat(state.hands, actorId),
+    phase: "arranging",
+    reorderCount: 0,
+    lastMove: null,
+    revision,
+  };
+}
+
+function requireOffer(state: OldMaidState): NonNullable<OldMaidState["offer"]> {
+  assert(state.version === OLD_MAID_VERSION && state.status === "offering" && state.offer, "old_maid_offer_required");
+  assert(state.offer.actorId === state.currentPlayerId && state.offer.targetId === nextActiveSeat(state.hands, state.currentPlayerId), "old_maid_offer_seat_invalid");
+  return state.offer;
+}
+
+function requireReadyOffer(state: OldMaidState, actorId: OldMaidSeatId): NonNullable<OldMaidState["offer"]> {
+  const offer = state.offer;
+  assert(offer && offer.phase === "ready" && offer.actorId === actorId, "old_maid_offer_not_ready");
+  assert(offer.targetId === nextActiveSeat(state.hands, actorId), "old_maid_offer_seat_invalid");
+  return offer;
+}
+
+function isHumanSeat(state: OldMaidState, seatId: OldMaidSeatId): boolean {
+  return state.mode === "play" && seatId === "player";
+}
+
+function prepareCpuOffer(cartridge: OldMaidCartridge, state: OldMaidState): OldMaidState {
+  const offer = requireOffer(state);
+  assert(offer.phase === "arranging", "old_maid_offer_phase_invalid");
+  assert(!isHumanSeat(state, offer.targetId), "old_maid_cpu_offer_target_human");
+  const moved = reorderOfferedHand(cartridge, state, offer.targetId);
+  return {
+    ...moved.state,
+    sequence: state.sequence + 1,
+    offer: {
+      ...offer,
+      phase: "settling",
+      reorderCount: moved.move ? 1 : 0,
+      lastMove: moved.move,
+      revision: offer.revision + 1,
+    },
+  };
+}
+
+function reorderOffer(state: OldMaidState, fromIndex: number, toIndex: number): OldMaidState {
+  const offer = requireOffer(state);
+  assert(offer.phase === "arranging" && isHumanSeat(state, offer.targetId), "old_maid_player_offer_required");
+  assert(Number.isInteger(fromIndex) && Number.isInteger(toIndex) && fromIndex >= 0 && toIndex >= 0 && fromIndex < state.hands.player.length && toIndex < state.hands.player.length, "old_maid_reorder_index_invalid");
+  assert(fromIndex !== toIndex, "old_maid_reorder_same_index");
+  assert(offer.reorderCount < 3, "old_maid_reorder_limit");
+  const hands = cloneHands(state.hands);
+  const [cardId] = hands.player.splice(fromIndex, 1);
+  hands.player.splice(toIndex, 0, cardId as string);
+  const record = { turn: state.turn, fromIndex, toIndex, count: offer.reorderCount + 1 };
+  return {
+    ...state,
+    sequence: state.sequence + 1,
+    hands,
+    lastReorder: { turn: state.turn, toIndex, count: record.count },
+    lastReorders: { ...state.lastReorders, player: record },
+    offer: { ...offer, reorderCount: record.count, lastMove: { fromIndex, toIndex }, revision: offer.revision + 1 },
+  };
+}
+
+function finishOffer(state: OldMaidState): OldMaidState {
+  const offer = requireOffer(state);
+  const humanTarget = isHumanSeat(state, offer.targetId);
+  assert(humanTarget ? offer.phase === "arranging" : offer.phase === "settling", "old_maid_offer_finish_invalid");
+  return {
+    ...state,
+    sequence: state.sequence + 1,
+    status: "playing",
+    offer: { ...offer, phase: "ready", revision: offer.revision + 1 },
+  };
+}
+
+function reorderOfferedHand(cartridge: OldMaidCartridge, state: OldMaidState, seatId: OldMaidSeatId): { state: OldMaidState; move: { fromIndex: number; toIndex: number } | null } {
+  const hand = state.hands[seatId];
+  if (hand.length < 2) return { state, move: null };
+  const characterId = characterIdForSeat(state, seatId);
+  const character = cartridge.characters.find((candidate) => candidate.id === characterId);
+  if (!character) return { state, move: null };
+  const jokerIndex = hand.findIndex((cardId) => cardById(cartridge.cards, cardId).faceId === cartridge.oddFaceId);
+  const hasJoker = jokerIndex >= 0;
+  const chance = character.tellStyle === "open" ? (hasJoker ? 0.75 : 0.05)
+    : character.tellStyle === "guarded" ? (hasJoker ? 0.25 : 0.04)
+      : character.tellStyle === "bluffer" ? (hasJoker ? 0.55 : 0.4)
+        : (hasJoker ? 0.2 : 0.08);
+  const seed = `${state.seed}:cpu-reorder:${state.turn}:${seatId}:${hand.length}`;
+  if ((fnv1a32(`${seed}:chance`) % 10_000) / 10_000 >= chance) return { state, move: null };
+  const moveJoker = hasJoker && (character.tellStyle !== "bluffer" || fnv1a32(`${seed}:truth`) % 2 === 0);
+  const fromIndex = moveJoker ? jokerIndex : fnv1a32(`${seed}:from`) % hand.length;
+  let toIndex = fnv1a32(`${seed}:to`) % (hand.length - 1);
+  if (toIndex >= fromIndex) toIndex += 1;
+  const hands = cloneHands(state.hands);
+  const [cardId] = hands[seatId].splice(fromIndex, 1);
+  hands[seatId].splice(toIndex, 0, cardId as string);
+  const record = { turn: state.turn, fromIndex, toIndex, count: 1 };
+  return { state: { ...state, hands, lastReorders: { ...state.lastReorders, [seatId]: record } }, move: { fromIndex, toIndex } };
 }
 
 function reactionsAfterDraw(cartridge: OldMaidCartridge, state: OldMaidState, actorId: OldMaidSeatId, targetId: OldMaidSeatId, drewJoker: boolean, madePair: boolean): Record<OldMaidSeatId, OldMaidReaction> {
@@ -279,7 +395,7 @@ function tellReaction(cartridge: OldMaidCartridge, state: OldMaidState, seatId: 
 }
 
 function maybeReorderCpuHand(cartridge: OldMaidCartridge, state: OldMaidState, seatId: OldMaidSeatId): OldMaidState {
-  if (state.version === OLD_MAID_LEGACY_VERSION || seatId === "player" && state.mode === "play" || state.hands[seatId].length < 2) return state;
+  if (state.version !== OLD_MAID_PREVIOUS_VERSION || seatId === "player" && state.mode === "play" || state.hands[seatId].length < 2) return state;
   const characterId = characterIdForSeat(state, seatId);
   const character = cartridge.characters.find((candidate) => candidate.id === characterId);
   if (!character) return state;

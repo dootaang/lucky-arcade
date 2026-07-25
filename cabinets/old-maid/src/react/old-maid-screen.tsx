@@ -1,10 +1,12 @@
 import { IconArrowLeft, IconCards, IconCheck, IconRefresh, IconX } from "@tabler/icons-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { isOldMaidSpeechSilent, oldMaidSpeechSnapshot, selectOldMaidSpeech, validateOldMaidLines, type OldMaidSpeech } from "../dialogue.ts";
 import { availablePairs, characterIdForSeat, createOldMaidState, discardingSeat, inspectCardReaction, reduceOldMaid, targetSeat } from "../engine.ts";
 import { publicRead } from "../read.ts";
 import { selectAmbientReaction } from "../tells.ts";
 import type { OldMaidAction, OldMaidCartridge, OldMaidFace, OldMaidMode, OldMaidPsychologySummary, OldMaidSeatId, OldMaidState } from "../contracts.ts";
+import { OLD_MAID_VERSION } from "../contracts.ts";
+import { oldMaidOfferTiming, type OldMaidSpectatorSpeed } from "./offer-timing.ts";
 import { pileOffset } from "./pile-layout.ts";
 import "./old-maid.css";
 
@@ -58,11 +60,13 @@ export function OldMaidScreen({ cartridge, assets, detailAssets = assets, initia
   const [predictionStake, setPredictionStake] = useState(() => economy?.prediction?.stakes[0] ?? 10);
   const [predictionError, setPredictionError] = useState("");
   const [predictionStarting, setPredictionStarting] = useState(false);
+  const [spectatorSpeed, setSpectatorSpeed] = useState<OldMaidSpectatorSpeed>("normal");
   const pointerKindRef = useRef("");
   const recentLineIdsRef = useRef<string[]>([]);
   const speechTimersRef = useRef<number[]>([]);
   const speechRevisionRef = useRef(0);
   const longPressRef = useRef<number | null>(null);
+  const playerHandRef = useRef<HTMLDivElement>(null);
   const stateRef = useRef(state);
   const persistQueueRef = useRef<Promise<void>>(Promise.resolve());
   const saveRevisionRef = useRef(0);
@@ -131,10 +135,31 @@ export function OldMaidScreen({ cartridge, assets, detailAssets = assets, initia
   }
 
   useEffect(() => {
-    if (state.status !== "playing" || state.currentPlayerId === "player" && state.mode === "play") return;
-    const timer = window.setTimeout(() => dispatch({ type: "cpu_draw" }), 300);
-    return () => window.clearTimeout(timer);
-  }, [state.currentPlayerId, state.status, state.turn]);
+    const humanActor = state.currentPlayerId === "player" && state.mode === "play";
+    if (state.version !== OLD_MAID_VERSION) {
+      if (state.status !== "playing" || humanActor) return;
+      const timer = window.setTimeout(() => dispatch({ type: "cpu_draw" }), 300);
+      return () => window.clearTimeout(timer);
+    }
+    const offer = state.offer;
+    if (!offer) return;
+    const humanTarget = offer.targetId === "player" && state.mode === "play";
+    const npcToNpc = !humanActor && !humanTarget;
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const timing = oldMaidOfferTiming({ moved: Boolean(offer.lastMove), npcToNpc, spectatorSpeed, reducedMotion });
+    if (state.status === "offering" && offer.phase === "arranging" && !humanTarget) {
+      const timer = window.setTimeout(() => dispatch({ type: "prepare_cpu_offer" }), timing.prepareDelay);
+      return () => window.clearTimeout(timer);
+    }
+    if (state.status === "offering" && offer.phase === "settling") {
+      const timer = window.setTimeout(() => dispatch({ type: "finish_offer" }), timing.settleDelay);
+      return () => window.clearTimeout(timer);
+    }
+    if (state.status === "playing" && offer.phase === "ready" && !humanActor) {
+      const timer = window.setTimeout(() => dispatch({ type: "cpu_draw" }), timing.drawDelay);
+      return () => window.clearTimeout(timer);
+    }
+  }, [state.sequence, state.status, state.turn, spectatorSpeed]);
 
   useEffect(() => () => cancelSpeechTimers(), []);
 
@@ -167,6 +192,13 @@ export function OldMaidScreen({ cartridge, assets, detailAssets = assets, initia
   const handVisible = !["ready", "dealing"].includes(state.status);
   const humanFinishedWatching = state.mode === "play" && state.safeOrder.includes("player") && state.hands.player.length === 0 && state.status !== "complete";
   const inspectedDrawCardId = hoveredDrawCardId ?? touchedDrawCardId;
+  const activeOfferTiming = oldMaidOfferTiming({
+    moved: Boolean(state.offer?.lastMove),
+    npcToNpc: Boolean(state.offer && !(state.mode === "play" && (state.offer.actorId === "player" || state.offer.targetId === "player"))),
+    spectatorSpeed,
+    reducedMotion: typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+  });
+  useHandFlip(playerHandRef, state.hands.player.join("|"), activeOfferTiming.moveDuration);
   const inspectedReaction = state.status === "playing" && state.currentPlayerId === "player" && targetId !== null && targetId !== "player" && inspectedDrawCardId && inspectedDrawCardIds.includes(inspectedDrawCardId) && state.hands[targetId].includes(inspectedDrawCardId)
     ? inspectCardReaction(cartridge, state, targetId, inspectedDrawCardId)
     : null;
@@ -210,6 +242,10 @@ export function OldMaidScreen({ cartridge, assets, detailAssets = assets, initia
       savePsychologySummary(stateRef.current.sessionId, stateRef.current.seed, psychologyRef.current);
       return [...current, cardId];
     });
+  }
+
+  function reorderPlayerHand(from: number, to: number) {
+    dispatch({ type: stateRef.current.version === OLD_MAID_VERSION ? "reorder_offer" : "reorder_hand", from, to });
   }
 
   return <main className="old-maid-shell" style={background ? { "--old-maid-bg": `url(${JSON.stringify(background)})` } as React.CSSProperties : undefined}>
@@ -257,12 +293,29 @@ export function OldMaidScreen({ cartridge, assets, detailAssets = assets, initia
 
         {state.status === "discarding" && discardOwner && discardPairs.length > 0 && <DiscardStage key={`${state.discardMode}:${discardOwner}:${discardPairs[0]?.join(":")}`} ownerId={discardOwner} ownerName={nameOf(discardOwner)} pairs={discardPairs} cards={cards} faces={faces} assets={assets} playerControls={discardOwner === "player" && state.mode === "play"} onDiscard={(cardIds) => dispatch({ type: "discard_pair", cardIds })} />}
 
+        {state.offer && (state.status === "offering" || state.status === "playing") && <OfferStage
+          state={state}
+          cards={cards}
+          faces={faces}
+          assets={assets}
+          actorName={nameOf(state.offer.actorId)}
+          targetName={nameOf(state.offer.targetId)}
+          revealFaces={state.mode === "spectate" || humanFinishedWatching}
+          moveDuration={activeOfferTiming.moveDuration}
+          inspectedCardId={inspectedDrawCardId}
+          onInspect={inspectDrawCard}
+          onDraw={(index) => dispatch({ type: "draw", index })}
+          onFinish={() => dispatch({ type: "finish_offer" })}
+        />}
+
+        {state.mode === "spectate" && state.offer && <div className="old-maid-speed-controls" aria-label="관전 속도"><button type="button" className={spectatorSpeed === "normal" ? "selected" : ""} onClick={() => setSpectatorSpeed("normal")}>보통</button><button type="button" className={spectatorSpeed === "fast" ? "selected" : ""} onClick={() => setSpectatorSpeed("fast")}>빠르게</button></div>}
+
         {state.status === "playing" && <>
           <div className={`old-maid-turn-callout ${state.currentPlayerId === "player" ? "player" : "cpu"}`}>
             <strong>{nameOf(state.currentPlayerId)}의 차례</strong>
             <span>{state.currentPlayerId === "player" && state.mode === "play" ? `${nameOf(targetId ?? "cpu-1")}의 뒷면 카드 한 장을 고르세요.` : `${nameOf(targetId ?? "player")}에게서 고르는 중…`}</span>
           </div>
-          {state.currentPlayerId === "player" && state.mode === "play" && targetId && <div className="old-maid-draw-row" aria-label={`${nameOf(targetId)}의 뒷면 카드`}>
+          {!state.offer && state.currentPlayerId === "player" && state.mode === "play" && targetId && <div className="old-maid-draw-row" aria-label={`${nameOf(targetId)}의 뒷면 카드`}>
             {state.hands[targetId].map((cardId, index) => <button
               key={cardId}
               className={`old-maid-card back ${inspectedDrawCardId === cardId ? "inspected" : ""}`}
@@ -320,9 +373,10 @@ export function OldMaidScreen({ cartridge, assets, detailAssets = assets, initia
 
       {state.mode === "spectate" && state.status !== "ready" ? <SpectatorSeat state={state} name={nameOf("player")} character={characters.get(state.spectatorCharacterId ?? "")} reaction={state.status === "revealing" || state.status === "discarding" ? state.reactions.player : selectAmbientReaction(cartridge, state, "player")} portrait={assets[(state.status === "complete" && state.loserId === "player" ? characters.get(state.spectatorCharacterId ?? "")?.despairPortrait : characters.get(state.spectatorCharacterId ?? "")?.portraits[state.status === "revealing" || state.status === "discarding" ? state.reactions.player : selectAmbientReaction(cartridge, state, "player")]) ?? ""] ?? null} cards={cards} faces={faces} assets={assets} onDetail={setDetail} /> : <section className={`old-maid-player ${state.currentPlayerId === "player" && state.status === "playing" ? "active" : ""}`} data-deal-target="player">
         <div><strong>플레이어</strong><span>{state.status === "ready" ? "배분 전" : state.status === "dealing" ? "배분 중" : `${state.hands.player.length}장`}</span></div>
-        <div className="old-maid-player-hand" aria-label="내 손패">
-          {handVisible && state.hands.player.map((cardId, index) => { const card = cards.get(cardId); const face = card ? faces.get(card.faceId) : null; const canReorder = state.status === "playing" && state.currentPlayerId === "player" && state.mode === "play" && (state.lastReorder?.turn !== state.turn || state.lastReorder.count < 3); return face ? <button key={cardId} className={`old-maid-card-button ${discardableIds.has(cardId) ? "discardable" : ""} ${reorderFrom === index ? "reordering" : ""}`} draggable={canReorder} onDragStart={(event) => event.dataTransfer.setData("text/old-maid-index", String(index))} onDragOver={(event) => { if (canReorder) event.preventDefault(); }} onDrop={(event) => { event.preventDefault(); const from = Number(event.dataTransfer.getData("text/old-maid-index")); if (canReorder && Number.isInteger(from)) dispatch({ type: "reorder_hand", from, to: index }); }} onPointerDown={(event) => { if (!canReorder || event.pointerType === "mouse") return; longPressRef.current = window.setTimeout(() => setReorderFrom(index), 450); }} onPointerUp={() => { if (longPressRef.current !== null) window.clearTimeout(longPressRef.current); longPressRef.current = null; }} onKeyDown={(event) => { if (!canReorder || event.key !== "ArrowLeft" && event.key !== "ArrowRight") return; event.preventDefault(); const to = Math.max(0, Math.min(state.hands.player.length - 1, index + (event.key === "ArrowLeft" ? -1 : 1))); if (to !== index) dispatch({ type: "reorder_hand", from: index, to }); }} onClick={() => { if (reorderFrom !== null && canReorder) { if (reorderFrom !== index) dispatch({ type: "reorder_hand", from: reorderFrom, to: index }); setReorderFrom(null); } else setDetail(face); }} aria-label={`${face.name} 크게 보기${canReorder ? ", 좌우 화살표로 재배열" : ""}`}><CardFace face={face} assets={assets} odd={face.id === cartridge.oddFaceId} /></button> : null; })}
-          {handVisible && state.status === "playing" && state.currentPlayerId === "player" && state.mode === "play" && <small className="old-maid-reorder-budget">손패 재배열 {Math.max(0, 3 - (state.lastReorder?.turn === state.turn ? state.lastReorder.count : 0))}회 남음</small>}
+        <div className="old-maid-player-hand" aria-label="내 손패" ref={playerHandRef}>
+          {handVisible && state.hands.player.map((cardId, index) => { const card = cards.get(cardId); const face = card ? faces.get(card.faceId) : null; const currentOfferReorder = state.status === "offering" && state.offer?.phase === "arranging" && state.offer.targetId === "player" && state.mode === "play" && state.offer.reorderCount < 3; const legacyReorder = state.version !== OLD_MAID_VERSION && state.status === "playing" && state.currentPlayerId === "player" && state.mode === "play" && (state.lastReorder?.turn !== state.turn || state.lastReorder.count < 3); const canReorder = currentOfferReorder || legacyReorder; return face ? <button key={cardId} data-card-id={cardId} className={`old-maid-card-button ${discardableIds.has(cardId) ? "discardable" : ""} ${reorderFrom === index ? "reordering" : ""}`} draggable={canReorder} onDragStart={(event) => event.dataTransfer.setData("text/old-maid-index", String(index))} onDragOver={(event) => { if (canReorder) event.preventDefault(); }} onDrop={(event) => { event.preventDefault(); const from = Number(event.dataTransfer.getData("text/old-maid-index")); if (canReorder && Number.isInteger(from) && from !== index) reorderPlayerHand(from, index); }} onPointerDown={(event) => { if (!canReorder || event.pointerType === "mouse") return; longPressRef.current = window.setTimeout(() => setReorderFrom(index), 450); }} onPointerUp={() => { if (longPressRef.current !== null) window.clearTimeout(longPressRef.current); longPressRef.current = null; }} onKeyDown={(event) => { if (!canReorder || event.key !== "ArrowLeft" && event.key !== "ArrowRight") return; event.preventDefault(); const to = Math.max(0, Math.min(state.hands.player.length - 1, index + (event.key === "ArrowLeft" ? -1 : 1))); if (to !== index) reorderPlayerHand(index, to); }} onClick={() => { if (reorderFrom !== null && canReorder) { if (reorderFrom !== index) reorderPlayerHand(reorderFrom, index); setReorderFrom(null); } else setDetail(face); }} aria-label={`${face.name} 크게 보기${canReorder ? ", 좌우 화살표로 재배열" : ""}`}><CardFace face={face} assets={assets} odd={face.id === cartridge.oddFaceId} /></button> : null; })}
+          {handVisible && state.status === "offering" && state.offer?.targetId === "player" && state.mode === "play" && <small className="old-maid-reorder-budget">손패 재배열 {Math.max(0, 3 - state.offer.reorderCount)}회 남음</small>}
+          {handVisible && state.version !== OLD_MAID_VERSION && state.status === "playing" && state.currentPlayerId === "player" && state.mode === "play" && <small className="old-maid-reorder-budget">손패 재배열 {Math.max(0, 3 - (state.lastReorder?.turn === state.turn ? state.lastReorder.count : 0))}회 남음</small>}
           {handVisible && state.hands.player.length === 0 && <span className="old-maid-safe"><IconCheck /> 손패를 모두 비웠습니다{humanFinishedWatching ? " · 남은 경기를 관전 중" : ""}</span>}
           {(state.status === "ready" || state.status === "dealing") && <span className="old-maid-hand-placeholder">{state.status === "ready" ? "시작하면 이곳에 내 카드가 놓입니다." : "카드가 날아오고 있습니다…"}</span>}
         </div>
@@ -371,6 +425,78 @@ function SpectatorSeat({ state, name, character, reaction, portrait, cards, face
     <span className="old-maid-spectator-label">관전 좌석 · 이번 판 반응 {tellStyleLabel(character?.tellStyle)}</span>
     {!safe && <div className="old-maid-spectator-hand old-maid-spectator-bottom-hand" aria-label={`${name}의 관전 손패`}>{state.hands.player.map((cardId) => { const face = faces.get(cards.get(cardId)?.faceId ?? ""); return face ? <button key={cardId} onClick={() => onDetail(face)} aria-label={`${face.name} 크게 보기`}><CardFace face={face} assets={assets} odd={face.id === "joker"} /></button> : null; })}</div>}
   </article>;
+}
+
+function OfferStage({ state, cards, faces, assets, actorName, targetName, revealFaces, moveDuration, inspectedCardId, onInspect, onDraw, onFinish }: {
+  state: OldMaidState;
+  cards: Map<string, { faceId: string }>;
+  faces: Map<string, OldMaidFace>;
+  assets: Readonly<Record<string, string>>;
+  actorName: string;
+  targetName: string;
+  revealFaces: boolean;
+  moveDuration: number;
+  inspectedCardId: string | null;
+  onInspect(cardId: string): void;
+  onDraw(index: number): void;
+  onFinish(): void;
+}) {
+  const handRef = useRef<HTMLDivElement>(null);
+  const offer = state.offer;
+  const targetHand = offer ? state.hands[offer.targetId] : [];
+  useHandFlip(handRef, targetHand.join("|"), moveDuration);
+  if (!offer) return null;
+  const humanTarget = state.mode === "play" && offer.targetId === "player";
+  const humanActorReady = state.mode === "play" && offer.actorId === "player" && state.status === "playing" && offer.phase === "ready";
+  const phaseCopy = offer.phase === "arranging" ? `${targetName}의 손패 정리 중` : offer.phase === "settling" ? `${targetName}이 카드를 내미는 중` : `${actorName}, 한 장을 고르세요`;
+  return <section className={`old-maid-offer-stage phase-${offer.phase}`} aria-label={`${targetName}의 손패 제시`}>
+    <div className="old-maid-offer-copy"><span>{actorName} → {targetName}</span><strong>{phaseCopy}</strong></div>
+    {!humanTarget && <div className="old-maid-offer-hand" ref={handRef}>
+      {targetHand.map((cardId, index) => {
+        const face = faces.get(cards.get(cardId)?.faceId ?? "");
+        const canDraw = humanActorReady;
+        return <button
+          type="button"
+          key={cardId}
+          data-card-id={cardId}
+          className={`old-maid-offer-card ${inspectedCardId === cardId ? "inspected" : ""}`}
+          disabled={!canDraw}
+          aria-label={`${index + 1}번째 ${revealFaces && face ? face.name : "뒷면 카드"}${canDraw ? ", 뽑기" : ""}`}
+          onPointerEnter={(event) => { if (canDraw && event.pointerType === "mouse") onInspect(cardId); }}
+          onClick={() => { if (canDraw) onDraw(index); }}
+        >{revealFaces && face ? <CardFace face={face} assets={assets} odd={face.id === "joker"} /> : <CardBack />}</button>;
+      })}
+    </div>}
+    {humanTarget && offer.phase === "arranging" && <div className="old-maid-offer-confirm"><p>카드 순서를 정한 뒤 상대에게 손패를 내밉니다.</p><button type="button" className="old-maid-primary" onClick={onFinish}>재배열 종료 · 이대로 내밀기</button></div>}
+    {!humanTarget && offer.phase === "settling" && <small>{offer.lastMove ? "카드 위치가 바뀌었습니다." : "순서를 유지했습니다."}</small>}
+  </section>;
+}
+
+function useHandFlip(containerRef: React.RefObject<HTMLElement | null>, orderKey: string, duration: number): void {
+  const previousRects = useRef(new Map<string, DOMRect>());
+  useLayoutEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+    const nextRects = new Map<string, DOMRect>();
+    for (const element of container.querySelectorAll<HTMLElement>("[data-card-id]")) {
+      const cardId = element.dataset.cardId;
+      if (!cardId) continue;
+      const next = element.getBoundingClientRect();
+      nextRects.set(cardId, next);
+      const previous = previousRects.current.get(cardId);
+      if (!previous || duration <= 0) continue;
+      const dx = previous.left - next.left;
+      const dy = previous.top - next.top;
+      if (Math.abs(dx) < 1 && Math.abs(dy) < 1) continue;
+      try {
+        element.animate([
+          { transform: `translate(${dx}px, ${dy}px)`, zIndex: 4 },
+          { transform: "translate(0, 0)", zIndex: 1 },
+        ], { duration, easing: "cubic-bezier(.2,.75,.2,1)" });
+      } catch { /* Motion is presentational; state and timers continue without it. */ }
+    }
+    previousRects.current = nextRects;
+  }, [containerRef, orderKey, duration]);
 }
 
 function CardFace({ face, assets, odd, large = false }: { face: OldMaidFace; assets: Readonly<Record<string, string>>; odd: boolean; large?: boolean }) {
@@ -569,7 +695,7 @@ function DealingAnimation({ state, onComplete }: { state: OldMaidState; onComple
 function dailySeed(): string { return new Date().toISOString().slice(0, 10); }
 function reactionLabel(reaction: string): string { return reaction === "pleased" ? "만족한 듯" : reaction === "tense" ? "긴장한 듯" : "침착한 듯"; }
 function tellStyleLabel(style: OldMaidCartridge["characters"][number]["tellStyle"] | undefined): string { return style === "open" ? "공개형" : style === "guarded" ? "경계형" : style === "bluffer" ? "허세형" : "표준형"; }
-function emptyPsychologySummary(): OldMaidPsychologySummary { return { inspectedCards: 0, reorderActions: 0, reorderTurns: 0, reorderSignals: 0, movedSlotDraws: 0, successfulBaits: 0 }; }
+function emptyPsychologySummary(): OldMaidPsychologySummary { return { inspectedCards: 0, reorderActions: 0, reorderTurns: 0, reorderSignals: 0, movedSlotDraws: 0, successfulBaits: 0, offers: 0, reorderedOffers: 0, playerOfferConfirms: 0, npcToNpcOffers: 0 }; }
 function psychologyStorageKey(sessionId: string, seed: string): string { return `lucky-arcade:old-maid-psychology:${sessionId}:${seed}`; }
 function loadPsychologySummary(sessionId: string, seed: string): OldMaidPsychologySummary {
   if (typeof window === "undefined") return emptyPsychologySummary();
@@ -583,9 +709,21 @@ function savePsychologySummary(sessionId: string, seed: string, summary: OldMaid
   try { window.localStorage.setItem(psychologyStorageKey(sessionId, seed), JSON.stringify(summary)); } catch { /* telemetry must never block play */ }
 }
 function recordPsychologyAction(cartridge: OldMaidCartridge, previous: OldMaidState, next: OldMaidState, action: OldMaidAction, summary: OldMaidPsychologySummary): void {
-  if (action.type === "reorder_hand") {
+  if (action.type === "reorder_hand" || action.type === "reorder_offer") {
     summary.reorderActions += 1;
-    if (previous.lastReorder?.turn !== previous.turn) summary.reorderTurns += 1;
+    if (action.type === "reorder_offer" ? previous.offer?.reorderCount === 0 : previous.lastReorder?.turn !== previous.turn) summary.reorderTurns += 1;
+    return;
+  }
+  if (action.type === "prepare_cpu_offer") {
+    summary.offers += 1;
+    if (next.offer?.lastMove) summary.reorderedOffers += 1;
+    if (previous.offer && (previous.mode === "spectate" || previous.offer.actorId !== "player" && previous.offer.targetId !== "player")) summary.npcToNpcOffers += 1;
+    return;
+  }
+  if (action.type === "finish_offer" && previous.offer?.targetId === "player" && previous.mode === "play") {
+    summary.offers += 1;
+    summary.playerOfferConfirms += 1;
+    if (previous.offer.reorderCount > 0) summary.reorderedOffers += 1;
     return;
   }
   if (action.type !== "cpu_draw" || !next.pendingDraw) return;

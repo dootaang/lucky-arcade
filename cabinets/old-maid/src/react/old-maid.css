@@ -64,3 +64,14 @@
 @keyframes old-maid-speech-in{from{opacity:0;transform:translateX(-50%) translateY(5px) scale(.97)}to{opacity:1;transform:translateX(-50%) translateY(0) scale(1)}}
 @media(max-width:680px){.old-maid-speech{top:8px;bottom:auto;max-width:min(72vw,22rem);padding:7px 9px}.old-maid-speech p{font-size:.68rem}.old-maid-seat.seat-cpu-1 .old-maid-speech{left:0;transform:none;animation:none}.old-maid-seat.seat-cpu-2 .old-maid-speech{left:50%;transform:translateX(-50%)}.old-maid-seat.seat-cpu-3 .old-maid-speech{right:0;left:auto;transform:none}}
 @media(prefers-reduced-motion:reduce){.old-maid-speech{animation:none}}
+
+/* 0.8 hand offering: the target settles the fan before the actor may draw. */
+.old-maid-offer-stage{position:absolute;inset:0;z-index:6;display:grid;place-content:center;justify-items:center;gap:12px;padding:54px 18px 22px;text-align:center;background:radial-gradient(circle,rgba(18,34,47,.7),rgba(4,13,21,.82) 76%)}
+.old-maid-offer-copy span,.old-maid-offer-copy strong{display:block}.old-maid-offer-copy span{color:#9fb2c7;font-size:.7rem}.old-maid-offer-copy strong{margin-top:4px;color:#f0d581;font-size:1rem}
+.old-maid-offer-hand{display:flex;justify-content:center;align-items:center;max-width:min(86vw,720px);padding:16px 28px 5px;overflow:visible}
+.old-maid-offer-card{position:relative;flex:0 0 auto;margin-left:-24px;padding:0;border:0;border-radius:9px;color:inherit;background:transparent}.old-maid-offer-card:first-child{margin-left:0}.old-maid-offer-card:disabled{opacity:1}.old-maid-offer-card:not(:disabled){cursor:pointer}.old-maid-offer-card:not(:disabled):hover,.old-maid-offer-card:not(:disabled):focus-visible,.old-maid-offer-card.inspected{z-index:5;transform:translateY(-12px)}
+.old-maid-offer-card .old-maid-card.back{margin:0}.old-maid-offer-card .old-maid-card.face{width:68px;height:101px}.old-maid-offer-card .old-maid-card.face strong{display:none}
+.old-maid-offer-confirm{display:grid;justify-items:center;gap:8px}.old-maid-offer-confirm p{margin:0;color:#b8c7d8;font-size:.78rem}.old-maid-offer-stage>small{color:#9fb2c7;font-size:.7rem}
+.old-maid-speed-controls{position:absolute;right:18px;top:18px;z-index:8;display:flex;gap:4px}.old-maid-speed-controls button{padding:5px 8px;border:1px solid rgba(255,255,255,.16);border-radius:999px;color:#aebed0;background:rgba(3,9,16,.78);font-size:.66rem}.old-maid-speed-controls button.selected{border-color:#e8c873;color:#17202a;background:#e8c873;font-weight:800}
+@media(max-width:680px){.old-maid-offer-stage{padding:46px 8px 12px}.old-maid-offer-hand{max-width:96vw;padding-inline:24px}.old-maid-offer-card{margin-left:-27px}.old-maid-offer-card .old-maid-card{width:58px;height:87px}.old-maid-speed-controls{right:8px;top:8px}}
+@media(prefers-reduced-motion:reduce){.old-maid-offer-card{transition:none}}

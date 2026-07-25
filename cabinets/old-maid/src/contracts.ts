@@ -1,10 +1,11 @@
 export const OLD_MAID_LEGACY_VERSION = "old-maid/0.6" as const;
-export const OLD_MAID_VERSION = "old-maid/0.7" as const;
+export const OLD_MAID_PREVIOUS_VERSION = "old-maid/0.7" as const;
+export const OLD_MAID_VERSION = "old-maid/0.8" as const;
 export const TEMEROSA_OLD_MAID_PACK_VERSION = "temerosa-old-maid/0.7" as const;
 
 export type OldMaidSeatId = "player" | "cpu-1" | "cpu-2" | "cpu-3";
 export type OldMaidCpuSeatId = Exclude<OldMaidSeatId, "player">;
-export type OldMaidStatus = "ready" | "dealing" | "playing" | "revealing" | "discarding" | "complete";
+export type OldMaidStatus = "ready" | "dealing" | "offering" | "playing" | "revealing" | "discarding" | "complete";
 export type OldMaidReaction = "neutral" | "pleased" | "tense";
 export type OldMaidTellStyle = "standard" | "open" | "guarded" | "bluffer";
 export type OldMaidMode = "play" | "spectate";
@@ -78,9 +79,18 @@ export interface OldMaidDealCard {
   seatId: OldMaidSeatId;
 }
 
+export interface OldMaidOffer {
+  actorId: OldMaidSeatId;
+  targetId: OldMaidSeatId;
+  phase: "arranging" | "settling" | "ready";
+  reorderCount: number;
+  lastMove: { fromIndex: number; toIndex: number } | null;
+  revision: number;
+}
+
 export interface OldMaidState {
-  contract: "old-maid-state/0.6";
-  version: typeof OLD_MAID_VERSION | typeof OLD_MAID_LEGACY_VERSION;
+  contract: "old-maid-state/0.6" | "old-maid-state/0.7";
+  version: typeof OLD_MAID_VERSION | typeof OLD_MAID_PREVIOUS_VERSION | typeof OLD_MAID_LEGACY_VERSION;
   packVersion: string;
   sessionId: string;
   seed: string;
@@ -105,6 +115,8 @@ export interface OldMaidState {
   lastReorder: { turn: number; toIndex: number; count: number } | null;
   /** Added for 0.7 games. The player entry mirrors lastReorder for 0.6 readers. */
   lastReorders?: Partial<Record<OldMaidSeatId, { turn: number; fromIndex: number; toIndex: number; count: number }>>;
+  /** Added for 0.8 games. Card identities deliberately remain in hands, never in this public phase record. */
+  offer?: OldMaidOffer | null;
 }
 
 export interface OldMaidPsychologySummary {
@@ -114,6 +126,10 @@ export interface OldMaidPsychologySummary {
   reorderSignals: number;
   movedSlotDraws: number;
   successfulBaits: number;
+  offers: number;
+  reorderedOffers: number;
+  playerOfferConfirms: number;
+  npcToNpcOffers: number;
 }
 
 export type OldMaidAction =
@@ -124,4 +140,7 @@ export type OldMaidAction =
   | { type: "collect_draw" }
   | { type: "discard_pair"; cardIds: [string, string] }
   | { type: "reorder_hand"; from: number; to: number }
+  | { type: "prepare_cpu_offer" }
+  | { type: "reorder_offer"; from: number; to: number }
+  | { type: "finish_offer" }
   | { type: "restart"; seed: string; mode?: OldMaidMode; characterIds?: string[] };
