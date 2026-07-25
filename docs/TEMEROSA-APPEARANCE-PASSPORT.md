@@ -69,6 +69,18 @@ Finale 원문상 현재 니은은 대멸종을 늦추기 위해 사상 지평을
 
 이로써 D1 장면 0~2의 오너 검수 7건은 전부 승인 완료다.
 
+### 4.1 V4 대사 확장 표정 관문
+
+V4.1은 장면 0~2의 표정 전환에 필요한 현재 시대 이미지 12개를 별도 `0.4.0` 검수 팩으로 분리했다.
+알제 4개, 카노 3개, 페일 2개, 바치칼 3개이며 모두 Finale 원본과 `*/finale/current` 외형 세트로
+제한했다. 이들은 후보일 뿐 아직 승인된 런타임 에셋이 아니다.
+
+- 후보 목록: `apps/content-cli/src/temerosa-d1-v4-expression-review-selection.json`
+- 검수 팩: `apps/web/public/content/temerosa-margin/0.4.0/manifest.json`
+- 검수 화면: `/review/temerosa`
+- 상태: 12개 전부 미검수. 오너가 승인 또는 보류한 결과를 내보내기 전 게임 본편 이식 금지.
+- 금지: 승인 전 기본 표정 대체, 다른 감정 대체, 다른 시대 외형 대체.
+
 ## 5. 기계적 금지선
 
 1. `appearanceSet`이 다른 이미지로 감정을 대체하지 않는다.
@@ -82,5 +94,6 @@ Finale 원문상 현재 니은은 대멸종을 늦추기 위해 사상 지평을
 
 - 전수 분류기: `apps/content-cli/src/temerosa-appearance-passport.ts`
 - 0.3.0 명시 허용 목록: `apps/content-cli/src/temerosa-d1-appearance-review-selection.json`
+- 0.4.0 V4 표정 후보 목록: `apps/content-cli/src/temerosa-d1-v4-expression-review-selection.json`
 - 오너 검수 화면: `/review/temerosa`
 - 장면 런타임은 콘텐츠 매니페스트의 `appearanceSet`을 읽고 장면 계약과 다르면 거부한다.

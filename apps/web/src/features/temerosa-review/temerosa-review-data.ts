@@ -29,90 +29,121 @@ interface ManifestVariant { size: "sm" | "md" | "lg"; path: string; width: numbe
 interface ManifestAsset { id: string; characterId?: string; expression?: string; appearanceSet?: string; variants: ManifestVariant[]; }
 export interface ReviewManifest { version: string; assets: ManifestAsset[]; }
 
-export const TEMEROSA_REVIEW_VERSION = "0.3.0";
+export const TEMEROSA_REVIEW_VERSION = "0.4.0";
 export const TEMEROSA_REVIEW_STORAGE_KEY = `temerosa-expression-review/${TEMEROSA_REVIEW_VERSION}`;
-export const TEMEROSA_PREVIOUS_REVIEW_STORAGE_KEY = "temerosa-expression-review/0.2.0";
+export const TEMEROSA_PREVIOUS_REVIEW_STORAGE_KEY = "temerosa-expression-review/0.3.0";
+
+const expressionBeat = (
+  id: string,
+  scene: string,
+  characterId: ReviewBeat["characterId"],
+  characterName: string,
+  appearanceSet: string,
+  line: string,
+  context: string,
+  observation: string,
+  assetId: string,
+  label: string,
+  reading: string,
+): ReviewBeat => ({
+  id,
+  kind: "expression",
+  scene,
+  characterId,
+  characterName,
+  appearanceSet,
+  line,
+  context,
+  observation,
+  frame: "stage",
+  candidates: [{ assetId, label, reading }],
+});
 
 export const reviewBeats: readonly ReviewBeat[] = [
-  {
-    id: "nieun-appearance-anchor", kind: "appearance", scene: "외형 기준 · 시대 확인", characterId: "nieun", characterName: "박니은",
-    appearanceSet: "nieun/finale/event-horizon-magical-girl", frame: "communication",
-    line: "현재 장면의 니은은 ‘붕괴 6년 후, 사상 지평을 유지하는 마법소녀’입니다.",
-    context: "카드에 들어 있는 서로 다른 시대의 니은을 나란히 비교합니다. 첫 번째 후보가 현재 정사 외형입니다.",
-    observation: "흰 프릴 상의만 보지 말고 검은 웨딩드레스·검은 장갑·노란 고리까지 한 벌로 확인하세요.",
-    candidates: [
-      { assetId: "passport-nieun-finale-current", label: "Finale 현재 · 권장", reading: "붕괴 6년 후 · 사상 지평 마법소녀 · 검은 예복" },
-      { assetId: "passport-nieun-bestiaization-information-broker", label: "Bestiaization 과거", reading: "테메로사 체제 말기 · 정보상 니은 · 검은 제복" },
-      { assetId: "passport-nieun-bestiaization-pluto", label: "Bestiaization 플루토", reading: "과거의 전투 역할 · 검은 플루토 형태" },
-      { assetId: "passport-nieun-root2-purification-team", label: "루트2 평행세계", reading: "정화팀 · 흰 셔츠와 허리 니트" },
-    ],
-  },
-  {
-    id: "nieun-first-contact", kind: "expression", scene: "장면 0 · 죽은 단말기", characterId: "nieun", characterName: "박니은",
-    appearanceSet: "nieun/finale/event-horizon-magical-girl", frame: "communication",
-    line: "누구야. 아니, 잠깐. 그 단말기에서 손부터 떼지 마.",
-    context: "134년 전에 끝난 플루토 긴급선이 현재의 생존자에게 응답한 첫 순간입니다.",
-    observation: "통신 영상보다 노란 경고선이 먼저 안정됩니다.",
-    candidates: [
-      { assetId: "passport-nieun-finale-current", label: "냉정", reading: "놀람보다 먼저 상황을 판단" },
-      { assetId: "review-nieun-current-angry", label: "통제", reading: "감정을 지우고 즉시 지시" },
-      { assetId: "review-nieun-current-upset", label: "불쾌한 동요", reading: "과거 신호가 되살아난 불편함" },
-      { assetId: "review-nieun-current-combat", label: "비상 대응", reading: "신호를 즉시 위협으로 판정" },
-    ],
-  },
-  {
-    id: "nieun-horizon", kind: "expression", scene: "장면 0 · 움직일 수 없는 니은", characterId: "nieun", characterName: "박니은",
-    appearanceSet: "nieun/finale/event-horizon-magical-girl", frame: "communication",
-    line: "내가 움직이면 세상 끝도 같이 움직여.",
-    context: "니은이 현장에 갈 수 없는 이유를 처음으로 짧게 드러냅니다. 진심일수록 통신 노이즈가 줄어듭니다.",
-    observation: "말하는 동안 장난스러운 말투와 통신 잡음이 함께 사라집니다.",
-    candidates: [
-      { assetId: "passport-nieun-finale-current", label: "담담함", reading: "위험을 이미 일상이 된 사실처럼 말함" },
-      { assetId: "review-nieun-current-upset-alt", label: "억눌린 불만", reading: "혼자 붙잡고 있는 임무에 대한 불만" },
-      { assetId: "review-nieun-current-looking-back", label: "고립", reading: "현재 세계를 등지고 경계를 유지하는 사람" },
-      { assetId: "review-nieun-current-smirk-alt", label: "농담 가면", reading: "무게를 웃음으로 한 번 더 감춤" },
-    ],
-  },
-  {
-    id: "alger-terminal", kind: "expression", scene: "장면 1 · 마지막 인사부", characterId: "alger", characterName: "알제",
-    appearanceSet: "alger/finale/current", frame: "stage",
-    line: "그런데 죽은 단말기가 네 손에는 대답했다.",
-    context: "게임기에서 눈을 떼지 않던 알제가 처음으로 플레이어의 계약 문양을 직접 봅니다.",
-    observation: "시선은 플레이어보다 손의 계약 문양에 오래 머뭅니다.",
-    candidates: [
-      { assetId: "review-alger-surprised", label: "균열", reading: "죽은 계약의 응답에 평정이 잠시 깨짐" },
-    ],
-  },
-  {
-    id: "pale-familiar", kind: "expression", scene: "장면 2 · 함께 갈 두 사람", characterId: "pale", characterName: "페일",
-    appearanceSet: "pale/finale/current", frame: "stage",
-    line: "아는 사람 같다는 뜻은 아니야. 아는 기분 같다는 뜻이지.",
-    context: "페일은 익숙함을 느끼지만 현재 플레이어와의 관계를 과거에서 빌려오지 않습니다.",
-    observation: "플레이어에게 다가오다가 스스로 한 걸음 멈춥니다.",
-    candidates: [
-      { assetId: "review-pale-smile", label: "호기심", reading: "익숙함을 반갑고 신기하게 받아들임" },
-    ],
-  },
-  {
-    id: "kano-supervisor", kind: "expression", scene: "장면 2 · 함께 갈 두 사람", characterId: "kano", characterName: "카노",
-    appearanceSet: "kano/finale/current", frame: "stage",
-    line: "좋아요. 제가 감독하죠. 과거를 함부로 열면 현재 쪽을 닫아 버릴 수도 있으니까.",
-    context: "카노는 임시 항해사의 직함을 의심하면서도 항로 오염을 막기 위해 동행합니다.",
-    observation: "서리가 출구 방향부터 막고 플레이어 쪽에서는 멈춥니다.",
-    candidates: [
-      { assetId: "review-kano-smirk", label: "허세", reading: "감독 역할에 자신 있는 척함" },
-    ],
-  },
-  {
-    id: "bacikal-warning", kind: "expression", scene: "장면 2 · 함께 갈 두 사람", characterId: "bacikal", characterName: "네모 / 바치칼",
-    appearanceSet: "bacikal/finale/current", frame: "stage",
-    line: "돌아갈 수 있다는 이유로 먼저 죽을 생각은 하지 마라.",
-    context: "회귀를 경험한 네모가 항해사의 자기희생을 단호하게 금지합니다.",
-    observation: "플레이어의 계약 문양을 본 뒤 창끝을 아래로 내립니다.",
-    candidates: [
-      { assetId: "review-bacikal-angry", label: "단호함", reading: "죽음을 전술로 쓰는 판단을 거부" },
-    ],
-  },
+  expressionBeat(
+    "alger-arrival-smirk", "장면 1 · 첫 대면", "alger", "알제", "alger/finale/current",
+    "방문 접수는 끝났어. 회사도 끝났고. 용건 없으면 화면 가리지 마.",
+    "게임기를 보던 알제가 방문자를 건조하게 돌려보내려는 첫 순간입니다.",
+    "미소가 호의보다 무심한 빈정거림으로 읽히는지 확인하세요.",
+    "review-alger-smirk", "무심한 빈정거림", "화면을 가린 방문자를 귀찮아하는 표정",
+  ),
+  expressionBeat(
+    "alger-standing-authority", "장면 1 · 긴급 권한", "alger", "알제", "alger/finale/current",
+    "그 권한 만료됐어. …발신자가 누군지는 서로 말 안 하는 걸로 하고.",
+    "니은의 과거를 알아보면서도 더 캐묻지 않는 장면입니다.",
+    "놀람이나 미소 없이 행정 사실을 확인하는 현재 복장인지 확인하세요.",
+    "review-alger-standing", "건조한 확인", "감정을 드러내지 않고 만료된 권한을 확인",
+  ),
+  expressionBeat(
+    "alger-disappointed-disposal", "장면 1 · 폐기 경고", "alger", "알제", "alger/finale/current",
+    "권한이 없으면 네가 폐기 대상이래. 헌터를 시키자니 시험관도 시험장도 죽었고.",
+    "플레이어를 살리기 위해 끝난 회사의 규정을 다시 뒤지는 순간입니다.",
+    "슬픔보다 피로와 난감함이 먼저 보이는지 확인하세요.",
+    "review-alger-disappointed", "피로한 난감함", "사람을 살리려면 죽은 행정을 다시 돌려야 하는 표정",
+  ),
+  expressionBeat(
+    "alger-smile-aptitude", "장면 1 · 적성 확인", "alger", "알제", "alger/finale/current",
+    "전력 배선은 맞게 바꿨어. 살아남은 이유가 운만은 아니네.",
+    "플레이어의 생존 판단을 처음으로 인정하는 장면입니다.",
+    "환한 칭찬보다 짧고 절제된 인정으로 읽히는지 확인하세요.",
+    "review-alger-smile", "짧은 인정", "운이 아니라 판단이었다고 인정하는 미소",
+  ),
+  expressionBeat(
+    "kano-standing-supervisor", "장면 2 · 감독 자처", "kano", "카노", "kano/finale/current",
+    "임시 항해사? 직함을 너무 쉽게 주는군요.",
+    "카노가 플레이어의 직함을 아직 신뢰하지 않는 첫 반응입니다.",
+    "현재의 얼음 외형이며 허세 섞인 미소가 나오기 전 중립 상태인지 확인하세요.",
+    "review-kano-standing", "경계하는 중립", "직함을 검토하는 감독자의 기본 자세",
+  ),
+  expressionBeat(
+    "kano-angry-departure", "장면 2 · 출항", "kano", "카노", "kano/finale/current",
+    "앞으로 튀어나가지 마요.",
+    "페일과 함께 출항하며 카노가 위험한 선행을 제지하는 장면입니다.",
+    "격노보다 즉각적인 제지와 걱정으로 읽히는지 확인하세요.",
+    "review-kano-angry", "즉각 제지", "위험 행동을 먼저 막는 감독자의 반응",
+  ),
+  expressionBeat(
+    "kano-upset-retort", "장면 2 · 출항 농담", "kano", "카노", "kano/finale/current",
+    "그게 튀어나간다는 뜻이에요!",
+    "페일의 말에 카노의 허세가 짧게 무너지는 장면입니다.",
+    "분노보다 당황과 발끈이 섞여 있는지 확인하세요.",
+    "review-kano-upset", "허세 붕괴", "동료의 농담에 즉시 발끈하는 표정",
+  ),
+  expressionBeat(
+    "pale-standing-boundary", "장면 2 · 관계 경계", "pale", "페일", "pale/finale/current",
+    "알겠어. 먼저 살아 돌아오고, 궁금한 건 그다음에 묻자.",
+    "플레이어가 임무와 감정을 분리하자고 정한 뒤 페일이 그 경계를 받아들이는 장면입니다.",
+    "웃음기가 빠져도 거절이나 적대로 보이지 않는지 확인하세요.",
+    "review-pale-standing", "경계 수용", "현재 관계를 강요하지 않고 한 걸음 물러난 표정",
+  ),
+  expressionBeat(
+    "pale-smirk-departure", "장면 2 · 출항", "pale", "페일", "pale/finale/current",
+    "임시 항해사가 앞을 고르잖아. 나는 그 앞의 앞을 볼게.",
+    "카노의 제지를 장난스럽게 비껴가며 앞장서려는 장면입니다.",
+    "유치한 장난보다 빠른 호기심과 자신감으로 읽히는지 확인하세요.",
+    "review-pale-smirk", "장난스러운 자신감", "위험한 호기심을 가볍게 드러내는 표정",
+  ),
+  expressionBeat(
+    "bacikal-standing-name", "장면 2 · 호칭", "bacikal", "네모 / 바치칼", "bacikal/finale/current",
+    "네모. 아직 어색해야 할 이유가 충분하니까.",
+    "플레이어가 네모라는 호칭을 고른 뒤 그 선택을 받아들이는 장면입니다.",
+    "분노나 호감 없이 짧고 정확하게 답하는 현재 외형인지 확인하세요.",
+    "review-bacikal-standing", "절제된 수용", "호칭을 판단하되 감정을 선고하지 않는 표정",
+  ),
+  expressionBeat(
+    "bacikal-smile-name", "장면 2 · 호칭", "bacikal", "네모 / 바치칼", "bacikal/finale/current",
+    "네모로 하겠다. 도망치지 않기 위해 되찾은 이름이다.",
+    "호칭 결정을 자신에게 돌려준 플레이어에게 네모가 직접 이름을 고르는 장면입니다.",
+    "밝은 호감 보상보다 자기 결정을 되찾은 아주 작은 변화인지 확인하세요.",
+    "review-bacikal-smile", "작은 자기결정", "이름을 스스로 선택한 뒤의 절제된 미소",
+  ),
+  expressionBeat(
+    "bacikal-disappointed-warning", "장면 2 · 자기희생 경고", "bacikal", "네모 / 바치칼", "bacikal/finale/current",
+    "돌아갈 수 있다는 이유로 먼저 죽을 생각은 하지 마라.",
+    "회귀를 겪은 네모가 항해사의 자기희생을 경고한 직후의 무언 반응입니다.",
+    "분노가 가라앉은 뒤 회귀에 대한 피로가 남는지 확인하세요.",
+    "review-bacikal-disappointed", "회귀의 피로", "경고 뒤에 남는 피로와 불신",
+  ),
 ] as const;
 
 let manifestPromise: Promise<ReviewManifest> | null = null;
@@ -128,13 +159,12 @@ export function loadTemerosaReviewManifest(): Promise<ReviewManifest> {
 }
 
 export function validateReviewManifest(manifest: ReviewManifest): void {
+  if (manifest.version !== TEMEROSA_REVIEW_VERSION) throw new Error("temerosa_review_manifest_version_mismatch");
   for (const beat of reviewBeats) {
     for (const candidate of beat.candidates) {
       const asset = manifest.assets.find((item) => item.id === candidate.assetId);
       if (!asset) throw new Error(`temerosa_review_asset_missing:${candidate.assetId}`);
-      if (beat.kind === "expression" && asset.appearanceSet !== beat.appearanceSet) {
-        throw new Error(`temerosa_review_appearance_mismatch:${beat.id}:${candidate.assetId}`);
-      }
+      if (asset.appearanceSet !== beat.appearanceSet) throw new Error(`temerosa_review_appearance_mismatch:${beat.id}:${candidate.assetId}`);
     }
   }
 }
@@ -147,18 +177,9 @@ export function reviewAssetUrl(manifest: ReviewManifest, assetId: string): strin
 }
 
 export function initialReviewChoices(): Record<string, ReviewChoice> {
-  const ownerApproved: Record<string, string> = {
-    "nieun-appearance-anchor": "passport-nieun-finale-current",
-    "nieun-first-contact": "review-nieun-current-angry",
-    "nieun-horizon": "review-nieun-current-smirk-alt",
-    "alger-terminal": "review-alger-surprised",
-    "pale-familiar": "review-pale-smile",
-    "kano-supervisor": "review-kano-smirk",
-    "bacikal-warning": "review-bacikal-angry",
-  };
   return Object.fromEntries(reviewBeats.map((beat) => [beat.id, {
-    selectedAssetId: ownerApproved[beat.id] ?? beat.candidates[0]!.assetId,
-    status: ownerApproved[beat.id] ? "approved" as const : "unreviewed" as const,
+    selectedAssetId: beat.candidates[0]!.assetId,
+    status: "unreviewed" as const,
   }]));
 }
 

@@ -9,17 +9,17 @@ describe("Temerosa owner review state", () => {
   });
 
   it("rejects stale or injected local choices", () => {
-    const state = sanitizeReviewChoices({ "nieun-first-contact": { selectedAssetId: "not-an-asset", status: "approved" } });
-    expect(state["nieun-first-contact"]).toEqual({ selectedAssetId: "review-nieun-current-angry", status: "approved" });
+    const state = sanitizeReviewChoices({ "alger-arrival-smirk": { selectedAssetId: "not-an-asset", status: "approved" } });
+    expect(state["alger-arrival-smirk"]).toEqual({ selectedAssetId: "review-alger-smirk", status: "unreviewed" });
   });
 
-  it("preserves all seven decisions the owner approved", () => {
+  it("starts the new twelve-expression gate unreviewed", () => {
     const state = initialReviewChoices();
     for (const id of reviewBeats.map((beat) => beat.id)) {
-      expect(state[id]?.status).toBe("approved");
+      expect(state[id]?.status).toBe("unreviewed");
     }
-    expect(state["nieun-first-contact"]?.selectedAssetId).toBe("review-nieun-current-angry");
-    expect(state["nieun-horizon"]?.selectedAssetId).toBe("review-nieun-current-smirk-alt");
+    expect(reviewBeats).toHaveLength(12);
+    expect(state["alger-arrival-smirk"]?.selectedAssetId).toBe("review-alger-smirk");
   });
 
   it("exports a versioned compact review result", () => {
@@ -32,8 +32,8 @@ describe("Temerosa owner review state", () => {
       appearanceSet: reviewBeats.find((beat) => beat.candidates.some((candidate) => candidate.assetId === id))!.appearanceSet,
       variants: [{ size: "md" as const, path: `${id}.webp`, width: 1, height: 1 }],
     }));
-    const target = assets.find((asset) => asset.id === "review-nieun-current-angry")!;
-    target.appearanceSet = "nieun/bestiaization/pluto";
-    expect(() => validateReviewManifest({ version: "0.3.0", assets })).toThrow("temerosa_review_appearance_mismatch");
+    const target = assets.find((asset) => asset.id === "review-alger-smirk")!;
+    target.appearanceSet = "alger/bestiaization/executive";
+    expect(() => validateReviewManifest({ version: "0.4.0", assets })).toThrow("temerosa_review_appearance_mismatch");
   });
 });

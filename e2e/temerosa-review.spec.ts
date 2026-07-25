@@ -7,12 +7,12 @@ test("reviews a Temerosa expression and restores the decision", async ({ page })
 
   await page.goto("/review/temerosa");
   await expect(page.locator(".temerosa-review-stage")).toBeVisible();
-  await expect(page.locator(".temerosa-review-candidate-grid button")).toHaveCount(4);
+  await expect(page.locator(".temerosa-review-candidate-grid button")).toHaveCount(1);
   await expect(page.locator(".temerosa-review-portrait img")).toHaveJSProperty("complete", true);
   await expect.poll(() => page.locator(".temerosa-review-portrait img").evaluate((image: HTMLImageElement) => image.naturalWidth)).toBeGreaterThan(0);
 
   await page.locator(".temerosa-review-actions .approve").click();
-  await expect(page.locator('.temerosa-review-scenes i[data-status="approved"]')).toHaveCount(7);
+  await expect(page.locator('.temerosa-review-scenes i[data-status="approved"]')).toHaveCount(1);
 
   await page.reload();
   await expect(page.locator(".temerosa-review-candidate-grid button").first()).toHaveAttribute("aria-pressed", "true");
@@ -21,7 +21,7 @@ test("reviews a Temerosa expression and restores the decision", async ({ page })
 });
 
 test("keeps Temerosa review controls usable on mobile", async ({ page }, testInfo) => {
-  test.skip(!testInfo.project.name.includes("mobile"));
+  test.skip(!testInfo.project.name.includes("phone"));
   await page.goto("/review/temerosa");
   await expect(page.locator(".temerosa-review-stage")).toBeVisible();
   await page.locator(".temerosa-review-actions .approve").scrollIntoViewIfNeeded();

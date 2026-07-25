@@ -1,0 +1,19 @@
+{
+  "contract": "temerosa-content-selection/0.1",
+  "packId": "temerosa-margin",
+  "version": "0.4.0",
+  "assets": [
+    { "id": "review-alger-standing", "source": "finale", "sourcePath": "assets/other/image/Alger_standing.png", "role": "portrait", "chunk": "pequod", "characterId": "alger", "expression": "standing", "appearanceSet": "alger/finale/current" },
+    { "id": "review-alger-smirk", "source": "finale", "sourcePath": "assets/other/image/Alger_smirk.png", "role": "portrait", "chunk": "pequod", "characterId": "alger", "expression": "smirk", "appearanceSet": "alger/finale/current" },
+    { "id": "review-alger-disappointed", "source": "finale", "sourcePath": "assets/other/image/Alger_disappointed.png", "role": "portrait", "chunk": "pequod", "characterId": "alger", "expression": "disappointed", "appearanceSet": "alger/finale/current" },
+    { "id": "review-alger-smile", "source": "finale", "sourcePath": "assets/other/image/Alger_smile.png", "role": "portrait", "chunk": "pequod", "characterId": "alger", "expression": "smile", "appearanceSet": "alger/finale/current" },
+    { "id": "review-kano-standing", "source": "finale", "sourcePath": "assets/other/image/Kano_standing.png", "role": "portrait", "chunk": "pequod", "characterId": "kano", "expression": "standing", "appearanceSet": "kano/finale/current" },
+    { "id": "review-kano-angry", "source": "finale", "sourcePath": "assets/other/image/Kano_angry.png", "role": "portrait", "chunk": "pequod", "characterId": "kano", "expression": "angry", "appearanceSet": "kano/finale/current" },
+    { "id": "review-kano-upset", "source": "finale", "sourcePath": "assets/other/image/Kano_upset.png", "role": "portrait", "chunk": "pequod", "characterId": "kano", "expression": "upset", "appearanceSet": "kano/finale/current" },
+    { "id": "review-pale-standing", "source": "finale", "sourcePath": "assets/other/image/Pale_standing.png", "role": "portrait", "chunk": "pequod", "characterId": "pale", "expression": "standing", "appearanceSet": "pale/finale/current" },
+    { "id": "review-pale-smirk", "source": "finale", "sourcePath": "assets/other/image/Pale_smirk.png", "role": "portrait", "chunk": "pequod", "characterId": "pale", "expression": "smirk", "appearanceSet": "pale/finale/current" },
+    { "id": "review-bacikal-standing", "source": "finale", "sourcePath": "assets/other/image/Bacikal_standing.png", "role": "portrait", "chunk": "pequod", "characterId": "bacikal", "expression": "standing", "appearanceSet": "bacikal/finale/current" },
+    { "id": "review-bacikal-smile", "source": "finale", "sourcePath": "assets/other/image/Bacikal_smile.png", "role": "portrait", "chunk": "pequod", "characterId": "bacikal", "expression": "smile", "appearanceSet": "bacikal/finale/current" },
+    { "id": "review-bacikal-disappointed", "source": "finale", "sourcePath": "assets/other/image/Bacikal_disappointed.png", "role": "portrait", "chunk": "pequod", "characterId": "bacikal", "expression": "disappointed", "appearanceSet": "bacikal/finale/current" }
+  ]
+}

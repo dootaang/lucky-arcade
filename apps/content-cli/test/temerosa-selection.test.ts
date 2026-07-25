@@ -7,6 +7,7 @@ import { assertTemerosaSelection, TEMEROSA_FORBIDDEN_ASSET_NAME } from "../src/t
 const selectionPath = fileURLToPath(new URL("../src/temerosa-d1-selection.json", import.meta.url));
 const reviewSelectionPath = fileURLToPath(new URL("../src/temerosa-d1-review-selection.json", import.meta.url));
 const appearanceReviewSelectionPath = fileURLToPath(new URL("../src/temerosa-d1-appearance-review-selection.json", import.meta.url));
+const v4ExpressionReviewSelectionPath = fileURLToPath(new URL("../src/temerosa-d1-v4-expression-review-selection.json", import.meta.url));
 describe("Temerosa D1 content selection", () => {
   it("is an explicit, unique SFW allowlist", async () => {
     const selection = temerosaContentSelectionSchema.parse(JSON.parse(await readFile(selectionPath, "utf8")));
@@ -42,6 +43,15 @@ describe("Temerosa D1 content selection", () => {
     expect(selection.assets).toHaveLength(15);
     expect(new Set(selection.assets.map((asset) => asset.id)).size).toBe(selection.assets.length);
     expect(selection.assets.every((asset) => Boolean(asset.appearanceSet))).toBe(true);
+    expect(() => assertTemerosaSelection(selection)).not.toThrow();
+  });
+
+  it("keeps the V4 expression gate explicit, unique, SFW, and current-era scoped", async () => {
+    const selection = temerosaContentSelectionSchema.parse(JSON.parse(await readFile(v4ExpressionReviewSelectionPath, "utf8")));
+    expect(selection.version).toBe("0.4.0");
+    expect(selection.assets).toHaveLength(12);
+    expect(new Set(selection.assets.map((asset) => asset.id)).size).toBe(selection.assets.length);
+    expect(selection.assets.every((asset) => asset.source === "finale" && asset.appearanceSet?.endsWith("/finale/current"))).toBe(true);
     expect(() => assertTemerosaSelection(selection)).not.toThrow();
   });
 });
