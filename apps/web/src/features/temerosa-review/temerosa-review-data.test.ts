@@ -10,13 +10,13 @@ describe("Temerosa owner review state", () => {
 
   it("rejects stale or injected local choices", () => {
     const state = sanitizeReviewChoices({ "alger-arrival-smirk": { selectedAssetId: "not-an-asset", status: "approved" } });
-    expect(state["alger-arrival-smirk"]).toEqual({ selectedAssetId: "review-alger-smirk", status: "unreviewed" });
+    expect(state["alger-arrival-smirk"]).toEqual({ selectedAssetId: "review-alger-smirk", status: "approved" });
   });
 
-  it("starts the new twelve-expression gate unreviewed", () => {
+  it("preserves all twelve V4 expression decisions the owner approved", () => {
     const state = initialReviewChoices();
     for (const id of reviewBeats.map((beat) => beat.id)) {
-      expect(state[id]?.status).toBe("unreviewed");
+      expect(state[id]?.status).toBe("approved");
     }
     expect(reviewBeats).toHaveLength(12);
     expect(state["alger-arrival-smirk"]?.selectedAssetId).toBe("review-alger-smirk");

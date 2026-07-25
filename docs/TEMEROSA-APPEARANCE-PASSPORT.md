@@ -78,7 +78,7 @@ V4.1은 장면 0~2의 표정 전환에 필요한 현재 시대 이미지 12개�
 - 후보 목록: `apps/content-cli/src/temerosa-d1-v4-expression-review-selection.json`
 - 검수 팩: `apps/web/public/content/temerosa-margin/0.4.0/manifest.json`
 - 검수 화면: `/review/temerosa`
-- 상태: 12개 전부 미검수. 오너가 승인 또는 보류한 결과를 내보내기 전 게임 본편 이식 금지.
+- 상태: **2026-07-25 오너가 12개 전부 승인했다.** 0.4.0은 장면 0~2 V4 표정의 승인된 현재 시대 허용 목록이다.
 - 금지: 승인 전 기본 표정 대체, 다른 감정 대체, 다른 시대 외형 대체.
 
 ## 5. 기계적 금지선

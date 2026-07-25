@@ -179,7 +179,7 @@ export function reviewAssetUrl(manifest: ReviewManifest, assetId: string): strin
 export function initialReviewChoices(): Record<string, ReviewChoice> {
   return Object.fromEntries(reviewBeats.map((beat) => [beat.id, {
     selectedAssetId: beat.candidates[0]!.assetId,
-    status: "unreviewed" as const,
+    status: "approved" as const,
   }]));
 }
 
