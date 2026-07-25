@@ -14,7 +14,7 @@ export interface WebCabinetRegistration {
 }
 
 type CabinetView = LazyExoticComponent<ComponentType<CabinetViewContext>>;
-const PUBLIC_CABINET_IDS = new Set(["temerosa-old-maid", "gfl-favorite-cup", "favorite-cup"]);
+const PUBLIC_CABINET_IDS = new Set(["temerosa-old-maid", "gfl-favorite-cup", "favorite-cup", "old-maid-card"]);
 
 const registrations: readonly WebCabinetRegistration[] = [
   {
@@ -79,6 +79,15 @@ const registrations: readonly WebCabinetRegistration[] = [
     },
     openingRank: 1, world: "내 카드", badge: "개봉식",
     load: async () => { const module = await import("../features/favorite-cup/favorite-cup-view.tsx"); return { default: (props) => props.analyzed ? <module.default analyzed={props.analyzed} onExit={props.onExit} /> : <MissingCard onExit={props.onExit} /> }; },
+  },
+  {
+    manifest: {
+      id: "old-maid-card", version: "old-maid/0.5", title: "내 카드 도둑잡기",
+      description: "내 카드의 인물과 표정으로 즐기는 도둑잡기.", requiredCapabilities: ["expressive-npcs>=4"],
+      sessionKind: "repeat", launchKind: "card", resumeLabel: "도둑잡기 이어하기", estimatedMinutes: { min: 2, max: 4 },
+    },
+    openingRank: 2, world: "내 카드", badge: "바로 한 판",
+    load: async () => { const module = await import("../features/card-old-maid/card-old-maid-view.tsx"); return { default: (props) => props.analyzed ? <module.default analyzed={props.analyzed} onExit={props.onExit} /> : <MissingCard onExit={props.onExit} /> }; },
   },
   {
     manifest: {

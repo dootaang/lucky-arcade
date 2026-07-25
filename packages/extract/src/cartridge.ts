@@ -4,10 +4,12 @@ import { buildLoreGraph, verifyPuzzles, type LoreGraph } from "./graph.ts";
 import { loreInputsFromCard, normalizeLoreEntries, type LoreEntry } from "./lore.ts";
 import { createSuitabilityReport } from "./report.ts";
 import { favoriteCupCartridgeFromGroups } from "./favorite-cup.ts";
+import { createCardOldMaidCartridge } from "./old-maid.ts";
 
 export function createAnalyzedCard(card: ParsedCard, now = new Date()): AnalyzedCard {
   const report = createSuitabilityReport(card, now);
-  return analyzedCardSchema.parse({ contract: "analyzed-card/0.2", report, loreCircuit: createLoreCircuitCartridge(card), favoriteCup: createFavoriteCupCartridge(card) });
+  const groups = extractNpcGroups(card.assets).groups;
+  return analyzedCardSchema.parse({ contract: "analyzed-card/0.3", report, loreCircuit: createLoreCircuitCartridge(card), favoriteCup: favoriteCupCartridgeSchema.parse(favoriteCupCartridgeFromGroups(card.fingerprint, card.name, groups)), oldMaid: createCardOldMaidCartridge(card.fingerprint, card.name, groups) });
 }
 
 export function createFavoriteCupCartridge(card: ParsedCard): FavoriteCupCartridge {

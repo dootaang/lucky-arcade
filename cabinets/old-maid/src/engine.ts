@@ -1,6 +1,6 @@
 import { XorShift32 } from "@lucky-arcade/engine";
 import type { OldMaidAction, OldMaidCard, OldMaidCartridge, OldMaidCpuSeatId, OldMaidDiscard, OldMaidDrawEvent, OldMaidReaction, OldMaidSeatId, OldMaidState } from "./contracts.ts";
-import { OLD_MAID_VERSION, TEMEROSA_OLD_MAID_PACK_VERSION } from "./contracts.ts";
+import { OLD_MAID_VERSION } from "./contracts.ts";
 
 export const OLD_MAID_SEAT_ORDER: readonly OldMaidSeatId[] = ["player", "cpu-1", "cpu-2", "cpu-3"];
 
@@ -17,7 +17,7 @@ export function createOldMaidState(cartridge: OldMaidCartridge, seed: string, se
   });
   const selected = shuffle(cartridge.characters.map((character) => character.id), new XorShift32(`${cartridge.version}:${seed}:characters`)).slice(0, 3);
   return {
-    contract: "old-maid-state/0.5", version: OLD_MAID_VERSION, packVersion: TEMEROSA_OLD_MAID_PACK_VERSION,
+    contract: "old-maid-state/0.5", version: OLD_MAID_VERSION, packVersion: cartridge.version,
     sessionId, seed, sequence: 0, turn: 0, status: "ready", mode: "play", currentPlayerId: "player", hands, dealOrder,
     characters: { "cpu-1": selected[0] as string, "cpu-2": selected[1] as string, "cpu-3": selected[2] as string },
     spectatorCharacterId: null,

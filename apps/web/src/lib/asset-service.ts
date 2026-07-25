@@ -10,6 +10,7 @@ export class CardAssetService {
   readonly #worker = new Worker(new URL("../workers/asset.worker.ts", import.meta.url), { type: "module" });
   readonly #pending = new Map<number, { resolve(value: AssetWorkerSuccess): void; reject(reason: Error): void }>();
   readonly #urls = new Map<string, string>();
+  readonly #pinned = new Set<string>();
   #requestId = 0;
   #ready: Promise<void>;
 
@@ -25,10 +26,11 @@ export class CardAssetService {
     this.#ready = this.#send({ type: "initialize", file }).then(() => undefined);
   }
 
-  async thumbnailUrl(assetId: string, maxEdge = 512): Promise<string> {
+  async thumbnailUrl(assetId: string, maxEdge = 512, pin = false): Promise<string> {
     await this.#ready;
     const key = `${assetId}:${maxEdge}`;
     const cached = this.#urls.get(key);
+    if (pin) this.#pinned.add(key);
     if (cached) { this.#urls.delete(key); this.#urls.set(key, cached); return cached; }
     const response = await this.#send({ type: "thumbnail", assetId, maxEdge });
     if (response.type !== "thumbnail") throw new Error("asset_thumbnail_response_invalid");
@@ -38,11 +40,20 @@ export class CardAssetService {
     return url;
   }
 
+  unpinAll(): void { this.#pinned.clear(); this.#trim(); }
+
+  setPinned(assetIds: readonly string[], maxEdge = 512): void {
+    this.#pinned.clear();
+    for (const assetId of assetIds) this.#pinned.add(`${assetId}:${maxEdge}`);
+    this.#trim();
+  }
+
   dispose(): void {
     this.#worker.terminate();
     this.#failAll(new Error("asset_service_disposed"));
     for (const url of this.#urls.values()) URL.revokeObjectURL(url);
     this.#urls.clear();
+    this.#pinned.clear();
   }
 
   #send(request: AssetWorkerInput): Promise<AssetWorkerSuccess> {
@@ -55,7 +66,7 @@ export class CardAssetService {
 
   #trim(): void {
     while (this.#urls.size > MAX_URLS) {
-      const oldest = this.#urls.entries().next().value as [string, string] | undefined;
+      const oldest = [...this.#urls.entries()].find(([key]) => !this.#pinned.has(key));
       if (!oldest) return;
       URL.revokeObjectURL(oldest[1]);
       this.#urls.delete(oldest[0]);

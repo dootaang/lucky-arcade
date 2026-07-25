@@ -7,7 +7,7 @@ import { loadCardSource } from "../../lib/database.ts";
 
 export default function FavoriteCupView({ analyzed, onExit }: CabinetViewProps) {
   const [service, setService] = useState<CardAssetService | null>(null), [error, setError] = useState<string | null>(null);
-  const cartridge = analyzed.contract === "analyzed-card/0.2" ? analyzed.favoriteCup : null;
+  const cartridge = analyzed.contract === "analyzed-card/0.2" || analyzed.contract === "analyzed-card/0.3" ? analyzed.favoriteCup : null;
   const eligible = cartridge ? favoriteCupEligibility(cartridge) : null;
   useEffect(() => {
     if (!cartridge) return;

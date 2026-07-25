@@ -142,11 +142,11 @@ export function OldMaidScreen({ cartridge, assets, initialState, onPersist, onEx
   return <main className="old-maid-shell" style={background ? { "--old-maid-bg": `url(${JSON.stringify(background)})` } as React.CSSProperties : undefined}>
     <header className="old-maid-header">
       <button onClick={onExit} aria-label="오락실로 돌아가기"><IconArrowLeft /></button>
-      <div><span>TEMEROSA · TABLE GAME</span><h1>테메로세 도둑잡기</h1></div>
+      <div><span>BOT CARD · TABLE GAME</span><h1>{cartridge.title}</h1></div>
       <div className="old-maid-meters"><span>{state.turn}턴</span><small aria-live="polite">{saveState === "saving" ? "저장 중…" : saveState === "error" ? "저장 재시도 필요" : "자동 저장됨"}</small></div>
     </header>
 
-    <section className="old-maid-table" aria-label="테메로세 도둑잡기 테이블">
+    <section className="old-maid-table" aria-label={`${cartridge.title} 테이블`}>
       <div className="old-maid-opponents">
         {(["cpu-1", "cpu-2", "cpu-3"] as const).map((seatId) => {
           const character = characters.get(state.characters[seatId]);
@@ -160,7 +160,7 @@ export function OldMaidScreen({ cartridge, assets, initialState, onPersist, onEx
         {!['ready', 'dealing', 'complete'].includes(state.status) && <DiscardPile state={state} faces={faces} assets={assets} />}
         {state.status === "ready" && <div className="old-maid-intro">
           <IconCards size={48} />
-          <span className="eyebrow">테메로세 캐릭터 카드 게임</span>
+          <span className="eyebrow">캐릭터 카드 게임</span>
           <h2>마지막 조커를 피하세요</h2>
           <p>같은 그림 두 장을 맞춰 버리세요. 차례가 오면 지정된 상대에게서 한 장을 뽑고, 마지막까지 조커를 가진 사람이 집니다.</p>
           <div className="old-maid-mode-picker" aria-label="대국 방식"><button type="button" className={lobbyMode === "play" ? "selected" : ""} onClick={() => chooseMode("play")}>직접 플레이</button><button type="button" className={lobbyMode === "spectate" ? "selected" : ""} onClick={() => chooseMode("spectate")}>NPC 4명 관전</button></div>

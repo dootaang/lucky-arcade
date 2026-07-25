@@ -23,7 +23,7 @@ export function Home() {
       if (!alive) return;
       setCards(items); setSelected(items[0] ?? null);
       for (const item of items) {
-        if (item.analyzed.contract !== "analyzed-card/0.1") continue;
+        if (item.analyzed.contract === "analyzed-card/0.3") continue;
         const source = await loadCardSource(item.fingerprint);
         if (!source || !alive) continue;
         try {

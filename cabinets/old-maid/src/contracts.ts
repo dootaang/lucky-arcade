@@ -41,7 +41,7 @@ export interface OldMaidCharacter {
 
 export interface OldMaidCartridge {
   contract: "old-maid-cartridge/0.5";
-  version: typeof TEMEROSA_OLD_MAID_PACK_VERSION;
+  version: string;
   title: string;
   oddFaceId: string;
   faces: OldMaidFace[];
@@ -77,7 +77,7 @@ export interface OldMaidDealCard {
 export interface OldMaidState {
   contract: "old-maid-state/0.5";
   version: typeof OLD_MAID_VERSION;
-  packVersion: typeof TEMEROSA_OLD_MAID_PACK_VERSION;
+  packVersion: string;
   sessionId: string;
   seed: string;
   sequence: number;

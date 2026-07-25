@@ -19,7 +19,7 @@ export async function listCards(): Promise<StoredCard[]> {
   const output = await request<StoredCard[]>(transaction.objectStore(STORES.cards).getAll());
   await complete(transaction); db.close();
   return output
-    .filter((item) => item?.analyzed?.contract === "analyzed-card/0.1" || item?.analyzed?.contract === "analyzed-card/0.2")
+    .filter((item) => item?.analyzed?.contract === "analyzed-card/0.1" || item?.analyzed?.contract === "analyzed-card/0.2" || item?.analyzed?.contract === "analyzed-card/0.3")
     .sort((a, b) => b.importedAt.localeCompare(a.importedAt));
 }
 export async function loadCardSource(fingerprint: string): Promise<File | null> {

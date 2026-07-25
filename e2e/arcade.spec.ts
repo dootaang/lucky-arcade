@@ -8,6 +8,7 @@ const entries = Array.from({ length: 4 }, (_, index) => [
 const card = JSON.stringify({ spec: "chara_card_v3", spec_version: "3.0", data: { name: "E2E 유적 카드", character_book: { entries } } });
 const pixel = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=";
 const portraitCard = (people: number, variants: number, name: string) => JSON.stringify({ spec: "chara_card_v3", spec_version: "3.0", data: { name, assets: Array.from({ length: people }, (_, person) => Array.from({ length: variants }, (_, variant) => ({ name: `Hero${String.fromCharCode(65 + person)}_${variant === 0 ? "default" : `emotion${variant}`}`, ext: "png", uri: `data:image/png;base64,${pixel}` }))).flat() } });
+const oldMaidCard = (people: number, name: string) => JSON.stringify({ spec: "chara_card_v3", spec_version: "3.0", data: { name, assets: Array.from({ length: people }, (_, person) => ["default", "happy", "angry"].map((emotion) => ({ name: `Hero${String.fromCharCode(65 + person)}_${emotion}`, ext: "png", uri: `data:image/png;base64,${pixel}` }))).flat() } });
 
 test("imports a local card, plays a deterministic puzzle, and restores it", async ({ page }) => {
   const browserErrors: string[] = [];
@@ -96,6 +97,27 @@ test("opens a card into the favorite cup and completes every round", async ({ pa
   for (let pick = 0; pick < 7; pick += 1) await page.locator(".favorite-choice").first().click();
   await expect(page.getByText("오늘의 최애", { exact: true })).toBeVisible();
   await expect(page.locator(".favorite-result")).toContainText("화면을 캡처해 자랑해 보세요");
+});
+
+test("opens an expressive personal card as an old maid table", async ({ page }, testInfo) => {
+  test.skip(testInfo.project.metadata.mobile === true);
+  await page.goto("/");
+  await page.locator('input[type="file"]').setInputFiles({ name: "old-maid.json", mimeType: "application/json", buffer: Buffer.from(oldMaidCard(4, "E2E 도둑잡기 카드")) });
+  await expect(page.getByRole("heading", { name: "E2E 도둑잡기 카드 도둑잡기" })).toBeVisible();
+  await expect(page.locator(".old-maid-opponent-picker button")).toHaveCount(4);
+  await page.getByRole("button", { name: "카드 배분 시작" }).click();
+  await expect(page.locator(".old-maid-player-hand")).toBeVisible({ timeout: 20_000 });
+  await expect(page.locator(".old-maid-card.face img").first()).toBeVisible();
+});
+
+test("keeps personal old maid closed with only three expressive characters", async ({ page }, testInfo) => {
+  test.skip(testInfo.project.metadata.mobile === true);
+  await page.goto("/");
+  await page.locator('input[type="file"]').setInputFiles({ name: "old-maid-short.json", mimeType: "application/json", buffer: Buffer.from(oldMaidCard(3, "E2E 재료 부족 카드")) });
+  await expect(page.getByRole("heading", { name: "E2E 재료 부족 카드" })).toBeVisible();
+  const cabinet = page.locator(".cabinet-card").filter({ hasText: "내 카드 도둑잡기" });
+  await expect(cabinet).toContainText("최소 4명");
+  await expect(cabinet.getByRole("button", { name: "게임 시작" })).toBeDisabled();
 });
 
 test("falls back to restoration crew and finishes a run", async ({ page }) => {

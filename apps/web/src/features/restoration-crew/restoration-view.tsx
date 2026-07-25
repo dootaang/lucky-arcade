@@ -6,7 +6,7 @@ import { CardAssetService } from "../../lib/asset-service.ts";
 import { loadCardSource } from "../../lib/database.ts";
 
 export default function RestorationView({ analyzed, onExit }: CabinetViewProps) {
-  const cartridge = analyzed.contract === "analyzed-card/0.2" ? analyzed.favoriteCup : null;
+  const cartridge = analyzed.contract === "analyzed-card/0.2" || analyzed.contract === "analyzed-card/0.3" ? analyzed.favoriteCup : null;
   const [service,setService]=useState<CardAssetService|null>(null),[attempt,setAttempt]=useState(0);
   const seed = `${new Date().toISOString().slice(0,10)}:${attempt}`;
   const deck = useMemo(()=>cartridge?generateRestorationDeck(cartridge,seed):null,[cartridge,seed]);

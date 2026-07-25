@@ -6,3 +6,4 @@ export * from "./report.ts";
 export * from "./cartridge.ts";
 export * from "./favorite-cup.ts";
 export * from "./restoration.ts";
+export * from "./old-maid.ts";

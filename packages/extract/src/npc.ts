@@ -39,6 +39,7 @@ export function extractNpcGroups(assets: AssetReference[]): { groups: NpcGroup[]
       emotions,
       representativeAssetId: representative.id,
       variantAssetIds: ordered.map((sprite) => sprite.asset.id),
+      variants: ordered.map((sprite) => ({ assetId: sprite.asset.id, emotion: sprite.emotion })),
       confidence,
       evidence: [`filename-prefix:${id}`, `sprites:${sprites.length}`, `emotions:${emotions.length}`, `representative:${representative.id}`],
     };

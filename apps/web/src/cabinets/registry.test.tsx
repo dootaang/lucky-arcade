@@ -14,6 +14,7 @@ describe("public cabinet visibility", () => {
   it("keeps hidden cabinets out of resume and lookup UI", () => {
     expect(getCabinetRegistration("temerosa-old-maid")?.manifest.title).toContain("도둑잡기");
     expect(getCabinetRegistration("favorite-cup")?.manifest.title).toBe("최애 월드컵");
+    expect(getCabinetRegistration("old-maid-card")?.manifest.title).toBe("내 카드 도둑잡기");
     for (const id of ["temerosa-margin", "lucky-derby-lab", "gfl-sprite-memory", "gfl-ember", "restoration-crew", "lore-circuit"]) {
       expect(getCabinetRegistration(id)).toBeUndefined();
     }
@@ -27,5 +28,9 @@ describe("public cabinet visibility", () => {
     ] };
     expect(selectOpeningCabinet(report)).toBe("favorite-cup");
     expect(selectOpeningCabinet({ cabinets: report.cabinets.filter((item) => item.cabinetId !== "favorite-cup") })).toBeNull();
+  });
+
+  it("opens personal old maid when the world cup is unavailable", () => {
+    expect(selectOpeningCabinet({ cabinets: [{ cabinetId: "old-maid-card", available: true }] })).toBe("old-maid-card");
   });
 });

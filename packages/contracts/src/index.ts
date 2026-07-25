@@ -83,6 +83,7 @@ export const npcGroupSchema = npcGroupV1Schema.extend({
   displayNameSource: z.enum(["card-explicit", "asset-filename", "technical-id"]),
   representativeAssetId: z.string().min(1),
   variantAssetIds: z.array(z.string().min(1)).min(1),
+  variants: z.array(z.object({ assetId: z.string().min(1), emotion: z.string().min(1) })).min(1),
 });
 export type NpcGroup = z.infer<typeof npcGroupSchema>;
 
@@ -122,12 +123,17 @@ const suitabilityReportBaseSchema = z.object({
   warnings: z.array(z.string()),
 });
 export const suitabilityReportV1Schema = suitabilityReportBaseSchema;
-export const suitabilityReportSchema = suitabilityReportBaseSchema.extend({
+export const suitabilityReportV2Schema = suitabilityReportBaseSchema.extend({
   contract: z.literal("suitability-report/0.2"),
+  npcs: suitabilityReportBaseSchema.shape.npcs.extend({ groups: z.array(npcGroupSchema.omit({ variants: true })) }),
+});
+export const suitabilityReportSchema = suitabilityReportBaseSchema.extend({
+  contract: z.literal("suitability-report/0.3"),
   npcs: suitabilityReportBaseSchema.shape.npcs.extend({ groups: z.array(npcGroupSchema) }),
 });
 export type SuitabilityReport = z.infer<typeof suitabilityReportSchema>;
 export type SuitabilityReportV1 = z.infer<typeof suitabilityReportV1Schema>;
+export type SuitabilityReportV2 = z.infer<typeof suitabilityReportV2Schema>;
 
 export const favoriteCupCandidateSchema = z.object({
   npcId: z.string().min(1),
@@ -147,6 +153,34 @@ export const favoriteCupCartridgeSchema = z.object({
   candidates: z.array(favoriteCupCandidateSchema),
 });
 export type FavoriteCupCartridge = z.infer<typeof favoriteCupCartridgeSchema>;
+
+export const cardOldMaidFaceSchema = z.object({
+  faceId: z.string().min(1),
+  name: z.string().min(1),
+  assetId: z.string().min(1),
+  npcId: z.string().min(1),
+  emotion: z.string().min(1),
+});
+export type CardOldMaidFace = z.infer<typeof cardOldMaidFaceSchema>;
+
+export const cardOldMaidSeatSchema = z.object({
+  npcId: z.string().min(1),
+  displayName: z.string().min(1),
+  portraits: z.object({ neutral: z.string().min(1), pleased: z.string().min(1), tense: z.string().min(1) }),
+  despairAssetId: z.string().min(1),
+  confidence: z.number().min(0).max(1),
+  evidence: z.array(z.string()),
+});
+export type CardOldMaidSeat = z.infer<typeof cardOldMaidSeatSchema>;
+
+export const cardOldMaidCartridgeSchema = z.object({
+  contract: z.literal("card-old-maid-cartridge/0.1"),
+  cardFingerprint: z.string().regex(/^[a-f0-9]{64}$/),
+  cardName: z.string(),
+  faces: z.array(cardOldMaidFaceSchema),
+  seats: z.array(cardOldMaidSeatSchema),
+});
+export type CardOldMaidCartridge = z.infer<typeof cardOldMaidCartridgeSchema>;
 
 export const loreCircuitClueSchema = z.object({
   keyword: z.string().min(1),
@@ -188,14 +222,22 @@ export const analyzedCardV1Schema = z.object({
 });
 export type AnalyzedCardV1 = z.infer<typeof analyzedCardV1Schema>;
 
-export const analyzedCardSchema = z.object({
+export const analyzedCardV2Schema = z.object({
   contract: z.literal("analyzed-card/0.2"),
-  report: suitabilityReportSchema,
+  report: suitabilityReportV2Schema,
   loreCircuit: loreCircuitCartridgeSchema,
   favoriteCup: favoriteCupCartridgeSchema,
 });
+export type AnalyzedCardV2 = z.infer<typeof analyzedCardV2Schema>;
+export const analyzedCardSchema = z.object({
+  contract: z.literal("analyzed-card/0.3"),
+  report: suitabilityReportSchema,
+  loreCircuit: loreCircuitCartridgeSchema,
+  favoriteCup: favoriteCupCartridgeSchema,
+  oldMaid: cardOldMaidCartridgeSchema,
+});
 export type AnalyzedCard = z.infer<typeof analyzedCardSchema>;
-export const anyAnalyzedCardSchema = z.union([analyzedCardSchema, analyzedCardV1Schema]);
+export const anyAnalyzedCardSchema = z.union([analyzedCardSchema, analyzedCardV2Schema, analyzedCardV1Schema]);
 export type AnyAnalyzedCard = z.infer<typeof anyAnalyzedCardSchema>;
 
 export const builtInCharacterSchema = z.object({

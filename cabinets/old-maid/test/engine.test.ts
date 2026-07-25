@@ -32,6 +32,10 @@ function autoplaySpectator(seed: string): OldMaidState {
 }
 
 describe("old maid deterministic engine", () => {
+  it("stores the supplying cartridge version without changing the Temerosa value", () => {
+    expect(createOldMaidState(temerosaOldMaidCartridge, "pack-version").packVersion).toBe(temerosaOldMaidCartridge.version);
+    expect(createOldMaidState({ ...temerosaOldMaidCartridge, version: "card-old-maid/0.1" }, "card-pack").packVersion).toBe("card-old-maid/0.1");
+  });
   it("validates the expanded face pool, nine possible opponents, and exactly one joker", () => {
     expect(() => validateCartridge(temerosaOldMaidCartridge)).not.toThrow();
     expect(temerosaOldMaidCartridge.cards.length).toBeGreaterThan(60);
