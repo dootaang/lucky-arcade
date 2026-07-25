@@ -14,6 +14,7 @@ export interface WebCabinetRegistration {
 }
 
 type CabinetView = LazyExoticComponent<ComponentType<CabinetViewContext>>;
+const PUBLIC_CABINET_IDS = new Set(["temerosa-old-maid", "gfl-favorite-cup", "favorite-cup"]);
 
 const registrations: readonly WebCabinetRegistration[] = [
   {
@@ -101,12 +102,12 @@ const registrations: readonly WebCabinetRegistration[] = [
 
 const views: Readonly<Record<string, CabinetView>> = Object.fromEntries(registrations.map((entry) => [entry.manifest.id, lazy(entry.load)]));
 
-export function listBuiltInCabinets(): readonly WebCabinetRegistration[] { return registrations.filter((entry) => entry.manifest.launchKind === "built-in" || entry.manifest.launchKind === "both"); }
-export function getCabinetRegistration(id: string): WebCabinetRegistration | undefined { return registrations.find((entry) => entry.manifest.id === id); }
+export function listBuiltInCabinets(): readonly WebCabinetRegistration[] { return registrations.filter((entry) => PUBLIC_CABINET_IDS.has(entry.manifest.id) && (entry.manifest.launchKind === "built-in" || entry.manifest.launchKind === "both")); }
+export function getCabinetRegistration(id: string): WebCabinetRegistration | undefined { return PUBLIC_CABINET_IDS.has(id) ? registrations.find((entry) => entry.manifest.id === id) : undefined; }
 
 export function selectOpeningCabinet(report: { cabinets: Array<{ cabinetId: string; available: boolean }> }): string | null {
   const available = new Set(report.cabinets.filter((item) => item.available).map((item) => item.cabinetId));
-  return registrations.filter((entry) => entry.openingRank !== null && available.has(entry.manifest.id)).sort((left, right) => (left.openingRank ?? Infinity) - (right.openingRank ?? Infinity))[0]?.manifest.id ?? null;
+  return registrations.filter((entry) => PUBLIC_CABINET_IDS.has(entry.manifest.id) && entry.openingRank !== null && available.has(entry.manifest.id)).sort((left, right) => (left.openingRank ?? Infinity) - (right.openingRank ?? Infinity))[0]?.manifest.id ?? null;
 }
 
 export function CabinetHost({ cabinetId, ...props }: CabinetHostProps) {

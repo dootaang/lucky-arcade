@@ -9,7 +9,7 @@ const card = JSON.stringify({ spec: "chara_card_v3", spec_version: "3.0", data: 
 const pixel = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=";
 const portraitCard = (people: number, variants: number, name: string) => JSON.stringify({ spec: "chara_card_v3", spec_version: "3.0", data: { name, assets: Array.from({ length: people }, (_, person) => Array.from({ length: variants }, (_, variant) => ({ name: `Hero${String.fromCharCode(65 + person)}_${variant === 0 ? "default" : `emotion${variant}`}`, ext: "png", uri: `data:image/png;base64,${pixel}` }))).flat() } });
 
-test("imports a local card, plays a deterministic puzzle, and restores it", async ({ page }) => {
+test.skip("imports a local card, plays a deterministic puzzle, and restores it", async ({ page }) => {
   const browserErrors: string[] = [];
   page.on("pageerror", (error) => browserErrors.push(error.message));
   page.on("console", (message) => { if (message.type() === "error") browserErrors.push(message.text()); });
@@ -41,19 +41,19 @@ test("mobile navigation remains reachable", async ({ page }, testInfo) => {
 test("opens built-in quick cabinets without a card", async ({ page }) => {
   await page.goto("/");
   await expect(page.getByRole("heading", { name: "기다리는 동안, 바로 한 판" })).toBeVisible();
-  await expect(page.locator(".arcade-entry")).toHaveCount(6);
+  await expect(page.locator(".arcade-entry")).toHaveCount(2);
   await page.locator(".arcade-entry").filter({ hasText: "소녀전선 최애 월드컵" }).getByRole("button", { name: "바로 시작" }).click();
   await expect(page.getByRole("heading", { name: "최애 월드컵" })).toBeVisible();
   for (let pick = 0; pick < 11; pick += 1) await page.locator(".favorite-choice").first().click();
   await expect(page.getByText("오늘의 최애", { exact: true })).toBeVisible();
   await page.getByRole("button", { name: "다른 놀이 보기" }).click();
-  await page.locator(".arcade-entry").filter({ hasText: "작전 암호 기억" }).getByRole("button", { name: "바로 시작" }).click();
-  await page.getByRole("button", { name: "시작", exact: true }).click();
-  await expect(page.locator(".memory-portrait img")).toBeVisible();
-  await expect(page.locator(".memory-grid")).toBeVisible({ timeout: 4_000 });
+  await expect(page.locator(".arcade-entry").filter({ hasText: "테메로세: 여백의 도둑" })).toBeVisible();
+  for (const hiddenTitle of ["작전 암호 기억", "럭키★더비 엔진 실험장", "소녀전선: 잔불 작전", "테메로세: 여백 — 첫 항로"]) {
+    await expect(page.locator(".arcade-entry").filter({ hasText: hiddenTitle })).toHaveCount(0);
+  }
 });
 
-test("replays one deterministic derby through all four rendering engines", async ({ page }) => {
+test.skip("replays one deterministic derby through all four rendering engines", async ({ page }) => {
   test.setTimeout(75_000);
   const browserErrors: string[] = [];
   page.on("pageerror", (error) => browserErrors.push(error.message));
@@ -70,7 +70,7 @@ test("replays one deterministic derby through all four rendering engines", async
   expect(browserErrors).toEqual([]);
 });
 
-test("mobile derby keeps the race and controls on screen", async ({ page }, testInfo) => {
+test.skip("mobile derby keeps the race and controls on screen", async ({ page }, testInfo) => {
   test.skip(testInfo.project.metadata.mobile !== true);
   await page.goto("/");
   await page.locator(".arcade-entry").filter({ hasText: "럭키★더비 엔진 실험장" }).getByRole("button", { name: "바로 시작" }).click();
@@ -98,7 +98,7 @@ test("opens a card into the favorite cup and completes every round", async ({ pa
   await expect(page.locator(".favorite-result")).toContainText("화면을 캡처해 자랑해 보세요");
 });
 
-test("falls back to restoration crew and finishes a run", async ({ page }) => {
+test.skip("falls back to restoration crew and finishes a run", async ({ page }) => {
   await page.goto("/");
   await page.locator('input[type="file"]').setInputFiles({ name: "restoration.json", mimeType: "application/json", buffer: Buffer.from(portraitCard(4, 3, "E2E 복구 카드")) });
   await expect(page.getByRole("heading", { name: "카드 복구반" })).toBeVisible();
@@ -109,7 +109,7 @@ test("falls back to restoration crew and finishes a run", async ({ page }) => {
   await expect(page.getByText("복구 완료", { exact: true })).toBeVisible();
 });
 
-test("opens the built-in GFL operation, resolves combat, and restores the reward step", async ({ page }) => {
+test.skip("opens the built-in GFL operation, resolves combat, and restores the reward step", async ({ page }) => {
   const browserErrors: string[] = [];
   page.on("pageerror", (error) => browserErrors.push(error.message));
   page.on("console", (message) => { if (message.type() === "error") browserErrors.push(message.text()); });
@@ -139,7 +139,7 @@ test("opens the built-in GFL operation, resolves combat, and restores the reward
   expect(browserErrors).toEqual([]);
 });
 
-test("becomes a provisional navigator and restores the chosen Temerosa party", async ({ page }) => {
+test.skip("becomes a provisional navigator and restores the chosen Temerosa party", async ({ page }) => {
   await page.goto("/");
   await page.locator(".arcade-entry").filter({ hasText: "테메로세: 여백" }).getByRole("button", { name: "작전 시작" }).click();
   await expect(page.getByRole("heading", { name: "테메로세: 여백" })).toBeVisible();
@@ -212,7 +212,7 @@ test("mobile Temerosa old maid keeps the draw cards reachable", async ({ page },
   await expect(page.locator(".old-maid-player-hand")).toBeInViewport();
 });
 
-test("mobile Temerosa pilot keeps the first choice and dialogue controls reachable", async ({ page }, testInfo) => {
+test.skip("mobile Temerosa pilot keeps the first choice and dialogue controls reachable", async ({ page }, testInfo) => {
   test.skip(testInfo.project.metadata.mobile !== true);
   await page.goto("/");
   await page.locator(".arcade-entry").filter({ hasText: "테메로세: 여백" }).getByRole("button", { name: "작전 시작" }).click();
