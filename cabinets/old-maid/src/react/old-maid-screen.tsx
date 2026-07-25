@@ -167,7 +167,14 @@ export function OldMaidScreen({ cartridge, assets, initialState, onPersist, onEx
           <p>{state.mode === "spectate" ? `${nameOf(state.loserId)}이 마지막 조커를 피하지 못했습니다.` : state.loserId === "player" ? "이번 판은 플레이어가 졌습니다." : `플레이어는 ${state.safeOrder.indexOf("player") + 1}번째로 손을 비웠습니다.`}</p>
           <ol>{state.safeOrder.map((seatId, index) => <li key={seatId}><IconCheck size={16} /><b>{index + 1}</b><span>{nameOf(seatId)}</span></li>)}</ol>
           <div className="old-maid-result-actions">
-            <button onClick={() => dispatch({ type: "restart", seed: state.seed })}><IconRefresh /> 같은 판 다시 하기</button>
+            <button onClick={() => dispatch({
+              type: "restart",
+              seed: state.seed,
+              mode: state.mode,
+              characterIds: state.mode === "spectate" && state.spectatorCharacterId
+                ? [...Object.values(state.characters), state.spectatorCharacterId]
+                : Object.values(state.characters),
+            })}><IconRefresh /> 같은 판 다시 하기</button>
             <button className="old-maid-primary" onClick={() => dispatch({ type: "restart", seed: `${dailySeed()}:${Date.now().toString(36)}` })}>새 상대와 섞기</button>
           </div>
         </div>}

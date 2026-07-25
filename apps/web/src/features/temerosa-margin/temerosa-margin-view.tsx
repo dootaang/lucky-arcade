@@ -1,8 +1,9 @@
-import { createTemerosaRun, TEMEROSA_MARGIN_VERSION, TEMEROSA_PACK_VERSION, type TemerosaAction, type TemerosaRunState } from "@lucky-arcade/temerosa-margin";
+import { createTemerosaRun, reduceTemerosaRun, temerosaStoryContent, TEMEROSA_MARGIN_VERSION, TEMEROSA_PACK_VERSION, type TemerosaAction, type TemerosaRunState } from "@lucky-arcade/temerosa-margin";
 import { TemerosaMarginScreen } from "@lucky-arcade/temerosa-margin/react";
 import { makeReceipt, resultHash } from "@lucky-arcade/engine";
 import { useEffect, useState } from "react";
-import { appendAction, loadSnapshot, saveSnapshot } from "../../lib/database.ts";
+import { appendAction, saveSnapshot } from "../../lib/database.ts";
+import { recoverSession } from "../../lib/session-recovery.ts";
 import { loadTemerosaPilotAssets } from "../../lib/temerosa-content.ts";
 
 const SESSION = "temerosa-margin:pilot";
@@ -12,11 +13,16 @@ export default function TemerosaMarginView({ onExit }: { onExit(): void }) {
   const [error, setError] = useState(false);
   useEffect(() => {
     let alive = true;
-    void Promise.all([loadTemerosaPilotAssets(), loadSnapshot<TemerosaRunState>(SESSION)]).then(([assets, snapshot]) => {
+    void Promise.all([loadTemerosaPilotAssets(), recoverSession<TemerosaRunState, TemerosaAction>({
+      sessionId: SESSION,
+      fresh: createTemerosaRun(temerosaStoryContent, new Date().toISOString().slice(0, 10), SESSION),
+      cabinetVersion: TEMEROSA_MARGIN_VERSION,
+      packVersion: TEMEROSA_PACK_VERSION,
+      isState: (value): value is TemerosaRunState => Boolean(value && typeof value === "object" && (value as Partial<TemerosaRunState>).version === TEMEROSA_MARGIN_VERSION && (value as Partial<TemerosaRunState>).packVersion === TEMEROSA_PACK_VERSION),
+      reduce: (state, action) => reduceTemerosaRun(temerosaStoryContent, state, action),
+    })]).then(([assets, recovered]) => {
       if (!alive) return;
-      const saved = snapshot?.state;
-      const state = saved?.version === TEMEROSA_MARGIN_VERSION && saved.packVersion === TEMEROSA_PACK_VERSION ? saved : null;
-      setReady({ assets, state });
+      setReady({ assets, state: recovered.state });
     }).catch(() => { if (alive) setError(true); });
     return () => { alive = false; };
   }, []);

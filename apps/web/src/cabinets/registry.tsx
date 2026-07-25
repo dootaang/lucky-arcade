@@ -102,12 +102,12 @@ const registrations: readonly WebCabinetRegistration[] = [
 
 const views: Readonly<Record<string, CabinetView>> = Object.fromEntries(registrations.map((entry) => [entry.manifest.id, lazy(entry.load)]));
 
-export function listBuiltInCabinets(): readonly WebCabinetRegistration[] { return registrations.filter((entry) => PUBLIC_CABINET_IDS.has(entry.manifest.id) && (entry.manifest.launchKind === "built-in" || entry.manifest.launchKind === "both")); }
-export function getCabinetRegistration(id: string): WebCabinetRegistration | undefined { return PUBLIC_CABINET_IDS.has(id) ? registrations.find((entry) => entry.manifest.id === id) : undefined; }
+export function listBuiltInCabinets(includePrivate = false): readonly WebCabinetRegistration[] { return registrations.filter((entry) => (includePrivate || PUBLIC_CABINET_IDS.has(entry.manifest.id)) && (entry.manifest.launchKind === "built-in" || entry.manifest.launchKind === "both")); }
+export function getCabinetRegistration(id: string, includePrivate = false): WebCabinetRegistration | undefined { return includePrivate || PUBLIC_CABINET_IDS.has(id) ? registrations.find((entry) => entry.manifest.id === id) : undefined; }
 
-export function selectOpeningCabinet(report: { cabinets: Array<{ cabinetId: string; available: boolean }> }): string | null {
+export function selectOpeningCabinet(report: { cabinets: Array<{ cabinetId: string; available: boolean }> }, includePrivate = false): string | null {
   const available = new Set(report.cabinets.filter((item) => item.available).map((item) => item.cabinetId));
-  return registrations.filter((entry) => PUBLIC_CABINET_IDS.has(entry.manifest.id) && entry.openingRank !== null && available.has(entry.manifest.id)).sort((left, right) => (left.openingRank ?? Infinity) - (right.openingRank ?? Infinity))[0]?.manifest.id ?? null;
+  return registrations.filter((entry) => (includePrivate || PUBLIC_CABINET_IDS.has(entry.manifest.id)) && entry.openingRank !== null && available.has(entry.manifest.id)).sort((left, right) => (left.openingRank ?? Infinity) - (right.openingRank ?? Infinity))[0]?.manifest.id ?? null;
 }
 
 export function CabinetHost({ cabinetId, ...props }: CabinetHostProps) {

@@ -2,7 +2,8 @@ import type { LoreCircuitCartridge } from "@lucky-arcade/contracts";
 import { ENGINE_VERSION, makeReceipt, resultHash } from "@lucky-arcade/engine";
 import { LORE_CIRCUIT_VERSION, createLoreCircuitState, migrateLoreCircuit, reduceLoreCircuit, type LoreCircuitAction, type LoreCircuitState } from "@lucky-arcade/lore-circuit";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { appendAction, listActionsAfter, loadSnapshot, saveSnapshot } from "../../lib/database.ts";
+import { appendAction, saveSnapshot } from "../../lib/database.ts";
+import { recoverSession } from "../../lib/session-recovery.ts";
 
 interface Runtime { state: LoreCircuitState; sequence: number; }
 
@@ -50,17 +51,12 @@ function loreProgress(state: LoreCircuitState): string {
 
 async function restore(cartridge: LoreCircuitCartridge): Promise<Runtime> {
   const fresh = createLoreCircuitState(cartridge, new Date().toISOString().slice(0, 10));
-  const snapshot = await loadSnapshot<LoreCircuitState>(fresh.sessionId);
-  let state = fresh, sequence = 0;
-  if (snapshot) {
-    try { state = migrateLoreCircuit(snapshot.cabinetVersion, snapshot.state); sequence = snapshot.sequence; if (snapshot.stateHash !== resultHash(state)) throw new Error("snapshot_hash_mismatch"); }
-    catch { state = fresh; sequence = 0; }
-  }
-  for (const receipt of await listActionsAfter<LoreCircuitAction>(fresh.sessionId, sequence)) {
-    if (receipt.previousHash !== resultHash(state)) break;
-    const next = reduceLoreCircuit(state, receipt.action, cartridge);
-    if (receipt.resultHash !== resultHash(next)) break;
-    state = next; sequence = receipt.sequence;
-  }
-  return { state, sequence };
+  return recoverSession<LoreCircuitState, LoreCircuitAction>({
+    sessionId: fresh.sessionId,
+    fresh,
+    cabinetVersion: LORE_CIRCUIT_VERSION,
+    isState: (value): value is LoreCircuitState => Boolean(value && typeof value === "object"),
+    restoreSnapshot: migrateLoreCircuit,
+    reduce: (state, action) => reduceLoreCircuit(state, action, cartridge),
+  });
 }

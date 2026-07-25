@@ -29,6 +29,16 @@ describe("lazy card parser", () => {
     expect(bytesRead).toBeLessThan(200 * 1024);
   });
 
+  it("rejects a ZIP entry whose body no longer matches its central-directory CRC", async () => {
+    const original = zipSync({ "card.json": strToU8("AAAA") }, { level: 0 });
+    const corrupted = original.slice();
+    const marker = strToU8("AAAA");
+    const offset = findBytes(corrupted, marker);
+    expect(offset).toBeGreaterThanOrEqual(0);
+    corrupted.set(strToU8("BBBB"), offset);
+    await expect(parseCardSource(new MemoryBinarySource("corrupt.charx", corrupted))).rejects.toThrow("zip_entry_crc_mismatch");
+  });
+
   it("resolves one ZIP asset without copying unrelated image bodies", async () => {
     const card = { spec: "chara_card_v3", data: { name: "ZIP", assets: [{ name: "Alice_default", uri: "assets/alice.png", ext: "png" }, { name: "unused", uri: "assets/unused.png", ext: "png" }] } };
     const bytes = zipSync({ "card.json": strToU8(JSON.stringify(card)), "assets/alice.png": tinyPng, "assets/unused.png": new Uint8Array(4 * 1024 * 1024) }, { level: 0 });
@@ -66,3 +76,11 @@ describe("lazy card parser", () => {
     await expect(resolver.read(resolver.assets[0]!.id)).rejects.toThrow("asset_mime_signature_not_displayable");
   });
 });
+
+function findBytes(bytes: Uint8Array, target: Uint8Array): number {
+  outer: for (let offset = 0; offset <= bytes.length - target.length; offset += 1) {
+    for (let index = 0; index < target.length; index += 1) if (bytes[offset + index] !== target[index]) continue outer;
+    return offset;
+  }
+  return -1;
+}

@@ -8,6 +8,7 @@ import { analyzeCardFile } from "../lib/card-analysis.ts";
 import { listCards, listRecentPlays, loadCardSource, replaceAnalyzedCard, type StoredCard } from "../lib/database.ts";
 
 export function Home() {
+  const privatePreview = import.meta.env.DEV && new URLSearchParams(window.location.search).get("privateCabinets") === "1";
   const [cards, setCards] = useState<StoredCard[]>([]);
   const [selected, setSelected] = useState<StoredCard | null>(null);
   const [recent, setRecent] = useState<RecentPlay[]>([]);
@@ -41,11 +42,11 @@ export function Home() {
   const imported = (card: StoredCard) => {
     setCards((current) => [card, ...current.filter((item) => item.fingerprint !== card.fingerprint)]);
     setSelected(card);
-    setActiveCabinet(selectOpeningCabinet(card.analyzed.report));
+    setActiveCabinet(selectOpeningCabinet(card.analyzed.report, privatePreview));
   };
-  const recentPlay = recent.find((item) => getCabinetRegistration(item.cabinetId) && (!item.cardFingerprint || cards.some((card) => card.fingerprint === item.cardFingerprint)));
-  const recentCabinet = recentPlay ? getCabinetRegistration(recentPlay.cabinetId) : undefined;
-  const builtIns = listBuiltInCabinets();
+  const recentPlay = recent.find((item) => getCabinetRegistration(item.cabinetId, privatePreview) && (!item.cardFingerprint || cards.some((card) => card.fingerprint === item.cardFingerprint)));
+  const recentCabinet = recentPlay ? getCabinetRegistration(recentPlay.cabinetId, privatePreview) : undefined;
+  const builtIns = listBuiltInCabinets(privatePreview);
 
   return <div className="app-layout">
     <button className="mobile-menu" onClick={() => setMenu(true)} aria-label="메뉴 열기"><IconMenu2 /></button>
@@ -66,7 +67,7 @@ export function Home() {
 
       <section className="personal-arcade"><div className="section-heading"><div><span className="eyebrow">선택 기능</span><h2>내 카드로 놀기</h2><p>개인 봇카드를 넣으면 재료가 충분한 게임만 열어드립니다.</p></div></div><CardImporter onImported={imported} />
         {cards.length > 0 && <section className="library-strip"><div><span className="eyebrow">내 카드 보관함</span><h2>{cards.length}장의 카트리지</h2></div><div className="card-pills">{cards.map((card) => <button className={selected?.fingerprint === card.fingerprint ? "active" : ""} key={card.fingerprint} onClick={() => setSelected(card)}><strong>{card.analyzed.report.card.name}</strong><small>{card.analyzed.report.lore.verifiedPuzzleCount}개 퍼즐</small></button>)}</div></section>}
-        {selected && <ReportView card={selected} onPlay={setActiveCabinet} />}
+        {selected && <ReportView card={selected} onPlay={setActiveCabinet} includePrivate={privatePreview} />}
       </section>
     </main>
   </div>;

@@ -28,7 +28,18 @@ export function createOldMaidState(cartridge: OldMaidCartridge, seed: string, se
 }
 
 export function reduceOldMaid(cartridge: OldMaidCartridge, state: OldMaidState, action: OldMaidAction): OldMaidState {
-  if (action.type === "restart") return { ...createOldMaidState(cartridge, action.seed, state.sessionId), sequence: state.sequence + 1 };
+  if (action.type === "restart") {
+    const fresh = createOldMaidState(cartridge, action.seed, state.sessionId);
+    if (!action.mode || !action.characterIds) return { ...fresh, sequence: state.sequence + 1 };
+    const selection = selectedCharacters(cartridge, action.characterIds, action.mode);
+    return {
+      ...fresh,
+      sequence: state.sequence + 1,
+      mode: action.mode,
+      characters: selection.characters,
+      spectatorCharacterId: selection.spectatorCharacterId,
+    };
+  }
   if (action.type === "start") {
     assert(state.status === "ready", "old_maid_start_invalid");
     const mode = action.mode ?? "play";

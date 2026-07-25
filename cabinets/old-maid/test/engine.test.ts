@@ -67,6 +67,18 @@ describe("old maid deterministic engine", () => {
     expect(state.loserId).not.toBeNull();
   });
 
+  it("keeps the selected table when restarting the same game", () => {
+    let state = createOldMaidState(temerosaOldMaidCartridge, "same-table", "test-session");
+    const characterIds = ["nemo", "pale", "kano", "alger"];
+    state = reduceOldMaid(temerosaOldMaidCartridge, state, { type: "start", mode: "spectate", characterIds });
+    state = reduceOldMaid(temerosaOldMaidCartridge, state, { type: "restart", seed: state.seed, mode: state.mode, characterIds });
+    expect(state.status).toBe("ready");
+    expect(state.mode).toBe("spectate");
+    expect(Object.values(state.characters)).toEqual(characterIds.slice(0, 3));
+    expect(state.spectatorCharacterId).toBe("alger");
+    expect(state.seed).toBe("same-table");
+  });
+
   it("keeps initial pairs until each visible discard action", () => {
     let state = createOldMaidState(temerosaOldMaidCartridge, "initial-pairs-0", "test-session");
     for (let seed = 0; seed < 100; seed += 1) {

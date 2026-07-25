@@ -34,10 +34,11 @@ export async function replaceAnalyzedCard(previous: StoredCard, analyzed: Analyz
   await complete(transaction); db.close(); return record;
 }
 export async function saveSnapshot<State>(snapshot: SnapshotRecord<State>, recent?: RecentPlay): Promise<void> {
-  const stores = recent ? [STORES.sessions, STORES.recent] : [STORES.sessions];
+  const stores = recent ? [STORES.sessions, STORES.recent, STORES.actions] : [STORES.sessions, STORES.actions];
   const db = await openDatabase(), transaction = db.transaction(stores, "readwrite");
   transaction.objectStore(STORES.sessions).put(snapshot);
   if (recent) transaction.objectStore(STORES.recent).put(recent);
+  deleteActionsThrough(transaction.objectStore(STORES.actions), snapshot.sessionId, snapshot.sequence);
   await complete(transaction); db.close();
 }
 export async function loadSnapshot<State>(sessionId: string): Promise<SnapshotRecord<State> | null> {
@@ -52,9 +53,15 @@ export async function appendAction<Action>(sessionId: string, receipt: StoredAct
 }
 export async function listActionsAfter<Action>(sessionId: string, sequence: number): Promise<StoredActionReceipt<Action>[]> {
   const db = await openDatabase(), transaction = db.transaction(STORES.actions, "readonly");
-  const all = await request<Array<StoredActionReceipt<Action> & { sessionId: string }>>(transaction.objectStore(STORES.actions).getAll());
+  const range = IDBKeyRange.bound([sessionId, sequence], [sessionId, Number.MAX_SAFE_INTEGER], true, false);
+  const all = await request<Array<StoredActionReceipt<Action> & { sessionId: string }>>(transaction.objectStore(STORES.actions).index("by-session-sequence").getAll(range));
   await complete(transaction); db.close();
-  return all.filter((item) => item.sessionId === sessionId && item.sequence > sequence).sort((a, b) => a.sequence - b.sequence);
+  return all.sort((a, b) => a.sequence - b.sequence);
+}
+export async function truncateActionsAfter(sessionId: string, sequence: number): Promise<void> {
+  const db = await openDatabase(), transaction = db.transaction(STORES.actions, "readwrite");
+  deleteActionsAfter(transaction.objectStore(STORES.actions), sessionId, sequence);
+  await complete(transaction); db.close();
 }
 export async function listRecentPlays(): Promise<RecentPlay[]> {
   const db = await openDatabase(), transaction = db.transaction(STORES.recent, "readonly");
@@ -81,3 +88,23 @@ function openDatabase(): Promise<IDBDatabase> {
 }
 function request<T>(value: IDBRequest<T>): Promise<T> { return new Promise((resolve, reject) => { value.onsuccess = () => resolve(value.result); value.onerror = () => reject(value.error ?? new Error("indexeddb_request_failed")); }); }
 function complete(transaction: IDBTransaction): Promise<void> { return new Promise((resolve, reject) => { transaction.oncomplete = () => resolve(); transaction.onerror = () => reject(transaction.error ?? new Error("indexeddb_transaction_failed")); transaction.onabort = () => reject(transaction.error ?? new Error("indexeddb_transaction_aborted")); }); }
+function deleteActionsThrough(store: IDBObjectStore, sessionId: string, sequence: number): void {
+  const range = IDBKeyRange.bound([sessionId, Number.MIN_SAFE_INTEGER], [sessionId, sequence]);
+  const cursorRequest = store.index("by-session-sequence").openKeyCursor(range);
+  cursorRequest.onsuccess = () => {
+    const cursor = cursorRequest.result;
+    if (!cursor) return;
+    store.delete(cursor.primaryKey);
+    cursor.continue();
+  };
+}
+function deleteActionsAfter(store: IDBObjectStore, sessionId: string, sequence: number): void {
+  const range = IDBKeyRange.bound([sessionId, sequence], [sessionId, Number.MAX_SAFE_INTEGER], true, false);
+  const cursorRequest = store.index("by-session-sequence").openKeyCursor(range);
+  cursorRequest.onsuccess = () => {
+    const cursor = cursorRequest.result;
+    if (!cursor) return;
+    store.delete(cursor.primaryKey);
+    cursor.continue();
+  };
+}

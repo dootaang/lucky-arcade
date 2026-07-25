@@ -8,6 +8,7 @@ export interface ZipEntry {
   compression: 0 | 8;
   compressedSize: number;
   size: number;
+  crc32: number;
   localHeaderOffset: number;
 }
 export interface ZipIndex { zipStart: number; totalEntries: number; entries: ZipEntry[]; centralDirectoryBytes: number; centralDirectoryHash: string; }
@@ -48,6 +49,7 @@ export async function indexZip(source: BinarySource): Promise<ZipIndex> {
       compression,
       compressedSize: item.getUint32(20, true),
       size: item.getUint32(24, true),
+      crc32: item.getUint32(16, true),
       localHeaderOffset: zipStart + item.getUint32(42, true),
     });
     offset += 46 + nameLength + extraLength + commentLength;
@@ -64,7 +66,20 @@ export async function readZipEntry(source: BinarySource, entry: ZipEntry, maxByt
   const compressed = await source.read(start, entry.compressedSize);
   const value = entry.compression === 0 ? compressed : inflateSync(compressed);
   if (value.length !== entry.size) throw new Error("zip_entry_size_mismatch");
+  if (crc32(value) !== entry.crc32) throw new Error("zip_entry_crc_mismatch");
   return value;
+}
+
+const CRC_TABLE = Uint32Array.from({ length: 256 }, (_, value) => {
+  let crc = value;
+  for (let bit = 0; bit < 8; bit += 1) crc = (crc & 1) !== 0 ? 0xedb88320 ^ (crc >>> 1) : crc >>> 1;
+  return crc >>> 0;
+});
+
+function crc32(bytes: Uint8Array): number {
+  let crc = 0xffff_ffff;
+  for (const value of bytes) crc = (CRC_TABLE[(crc ^ value) & 0xff] ?? 0) ^ (crc >>> 8);
+  return (crc ^ 0xffff_ffff) >>> 0;
 }
 
 function findEocd(bytes: Uint8Array): number {

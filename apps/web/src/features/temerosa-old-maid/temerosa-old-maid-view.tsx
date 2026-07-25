@@ -1,8 +1,9 @@
-import { OLD_MAID_VERSION, TEMEROSA_OLD_MAID_PACK_VERSION, temerosaOldMaidCartridge, type OldMaidAction, type OldMaidState } from "@lucky-arcade/old-maid";
+import { OLD_MAID_VERSION, TEMEROSA_OLD_MAID_PACK_VERSION, createOldMaidState, reduceOldMaid, temerosaOldMaidCartridge, type OldMaidAction, type OldMaidState } from "@lucky-arcade/old-maid";
 import { OldMaidScreen } from "@lucky-arcade/old-maid/react";
 import { makeReceipt, resultHash } from "@lucky-arcade/engine";
 import { useEffect, useState } from "react";
-import { appendAction, loadSnapshot, saveSnapshot } from "../../lib/database.ts";
+import { appendAction, saveSnapshot } from "../../lib/database.ts";
+import { recoverSession } from "../../lib/session-recovery.ts";
 import { loadTemerosaPilotAssets } from "../../lib/temerosa-content.ts";
 
 const SESSION = "temerosa-old-maid:table-1";
@@ -12,11 +13,16 @@ export default function TemerosaOldMaidView({ onExit }: { onExit(): void }) {
   const [error, setError] = useState(false);
   useEffect(() => {
     let alive = true;
-    void Promise.all([loadTemerosaPilotAssets(), loadSnapshot<OldMaidState>(SESSION)]).then(([assets, snapshot]) => {
+    void Promise.all([loadTemerosaPilotAssets(), recoverSession<OldMaidState, OldMaidAction>({
+      sessionId: SESSION,
+      fresh: createOldMaidState(temerosaOldMaidCartridge, new Date().toISOString().slice(0, 10), SESSION),
+      cabinetVersion: OLD_MAID_VERSION,
+      packVersion: TEMEROSA_OLD_MAID_PACK_VERSION,
+      isState: (value): value is OldMaidState => Boolean(value && typeof value === "object" && (value as Partial<OldMaidState>).version === OLD_MAID_VERSION && (value as Partial<OldMaidState>).packVersion === TEMEROSA_OLD_MAID_PACK_VERSION),
+      reduce: (state, action) => reduceOldMaid(temerosaOldMaidCartridge, state, action),
+    })]).then(([assets, recovered]) => {
       if (!alive) return;
-      const saved = snapshot?.state;
-      const state = saved?.version === OLD_MAID_VERSION && saved.packVersion === TEMEROSA_OLD_MAID_PACK_VERSION ? saved : null;
-      setReady({ assets, state });
+      setReady({ assets, state: recovered.state });
     }).catch(() => { if (alive) setError(true); });
     return () => { alive = false; };
   }, []);

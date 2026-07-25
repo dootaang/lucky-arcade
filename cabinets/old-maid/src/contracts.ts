@@ -96,4 +96,4 @@ export type OldMaidAction =
   | { type: "cpu_draw" }
   | { type: "collect_draw" }
   | { type: "discard_pair"; cardIds: [string, string] }
-  | { type: "restart"; seed: string };
+  | { type: "restart"; seed: string; mode?: OldMaidMode; characterIds?: string[] };

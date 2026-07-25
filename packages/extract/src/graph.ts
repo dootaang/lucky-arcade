@@ -57,6 +57,7 @@ export function verifiedPuzzles(graph: LoreGraph, allEntries: LoreEntry[], limit
 
 export function verifyPuzzles(graph: LoreGraph, allEntries: LoreEntry[], options: { limit?: number; maxRuns?: number } = {}): PuzzleVerification {
   const limit = options.limit ?? 200, maxRuns = options.maxRuns ?? 64;
+  const safeEntries = allEntries.filter((entry) => !entry.useRegex);
   const output: PuzzleCandidate[] = [], details: VerifiedPuzzleDetail[] = [];
   const starts = graph.nodes.flatMap((start) => {
     if (start.useRegex || start.constant) return [];
@@ -69,7 +70,7 @@ export function verifyPuzzles(graph: LoreGraph, allEntries: LoreEntry[], options
   let runs = 0;
   for (const { start, keyword, distances } of selected) {
     runs += 1;
-    const activation = activateLore(allEntries, [{ content: keyword }], { seed: 0, turn: 0, recursive: true, maxPasses: 4, tokenBudget: 0 });
+    const activation = activateLore(safeEntries, [{ content: keyword }], { seed: 0, turn: 0, recursive: true, maxPasses: 4, tokenBudget: 0 });
     const activated = new Map(activation.matched.map((item) => [item.id, item.activationPass]));
     for (const [target, distance] of distances) {
       if (distance < 2 || distance > 4) continue;
