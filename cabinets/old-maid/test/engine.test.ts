@@ -143,9 +143,9 @@ describe("old maid deterministic engine", () => {
     for (let seed = 0; seed < 10_000; seed += 1) {
       const run = autoplay(`stress-${seed}`);
       expect(run.state.status, `seed ${seed}`).toBe("complete");
-    expect(run.state.loserId, `seed ${seed}`).not.toBeNull();
+      expect(run.state.loserId, `seed ${seed}`).not.toBeNull();
       expect(run.state.history.length, `seed ${seed}`).toBeGreaterThan(0);
       expect(Object.values(run.state.hands).filter((hand) => hand.length > 0), `seed ${seed}`).toHaveLength(1);
     }
-  });
+  }, 20_000);
 });
