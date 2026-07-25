@@ -1,0 +1,105 @@
+{
+  "contract": "sprite-atlas/0.1",
+  "atlasId": "playing-cards",
+  "version": "1.0.0",
+  "cols": 4,
+  "rows": 4,
+  "frames": [
+    {
+      "id": "spades-j",
+      "col": 0,
+      "row": 0
+    },
+    {
+      "id": "spades-q",
+      "col": 1,
+      "row": 0
+    },
+    {
+      "id": "spades-k",
+      "col": 2,
+      "row": 0
+    },
+    {
+      "id": "hearts-j",
+      "col": 3,
+      "row": 0
+    },
+    {
+      "id": "hearts-q",
+      "col": 0,
+      "row": 1
+    },
+    {
+      "id": "hearts-k",
+      "col": 1,
+      "row": 1
+    },
+    {
+      "id": "diamonds-j",
+      "col": 2,
+      "row": 1
+    },
+    {
+      "id": "diamonds-q",
+      "col": 3,
+      "row": 1
+    },
+    {
+      "id": "diamonds-k",
+      "col": 0,
+      "row": 2
+    },
+    {
+      "id": "clubs-j",
+      "col": 1,
+      "row": 2
+    },
+    {
+      "id": "clubs-q",
+      "col": 2,
+      "row": 2
+    },
+    {
+      "id": "clubs-k",
+      "col": 3,
+      "row": 2
+    },
+    {
+      "id": "joker",
+      "col": 0,
+      "row": 3
+    }
+  ],
+  "sheets": [
+    {
+      "size": "sm",
+      "path": "court-atlas-sm.webp",
+      "mime": "image/webp",
+      "width": 460,
+      "height": 700,
+      "cell": {
+        "w": 112,
+        "h": 172
+      },
+      "gutter": 4,
+      "bytes": 96422
+    },
+    {
+      "size": "md",
+      "path": "court-atlas-md.webp",
+      "mime": "image/webp",
+      "width": 908,
+      "height": 1388,
+      "cell": {
+        "w": 224,
+        "h": 344
+      },
+      "gutter": 4,
+      "bytes": 290838
+    }
+  ],
+  "warnings": [
+    "J2.webp 원본은 195×300이므로 md 아틀라스에서 확대되어 다른 그림 카드보다 흐릴 수 있다."
+  ]
+}

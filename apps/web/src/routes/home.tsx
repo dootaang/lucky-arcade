@@ -6,12 +6,14 @@ import { CardImporter } from "../features/cards/card-importer.tsx";
 import { ReportView } from "../features/cards/report-view.tsx";
 import { analyzeCardFile } from "../lib/card-analysis.ts";
 import { listCards, listRecentPlays, loadCardSource, replaceAnalyzedCard, type StoredCard } from "../lib/database.ts";
+import { readWallet } from "../lib/wallet.ts";
 
 export function Home() {
   const privatePreview = import.meta.env.DEV && new URLSearchParams(window.location.search).get("privateCabinets") === "1";
   const [cards, setCards] = useState<StoredCard[]>([]);
   const [selected, setSelected] = useState<StoredCard | null>(null);
   const [recent, setRecent] = useState<RecentPlay[]>([]);
+  const [balance, setBalance] = useState(100);
   const [activeCabinet, setActiveCabinet] = useState<string | null>(null);
   const [menu, setMenu] = useState(false), [light, setLight] = useState(false);
   const refreshRecent = useCallback(() => { void listRecentPlays().then(setRecent); }, []);
@@ -19,6 +21,7 @@ export function Home() {
   useEffect(() => {
     let alive = true;
     refreshRecent();
+    void readWallet().then((wallet) => { if (alive) setBalance(wallet.balance); }).catch(() => undefined);
     void listCards().then(async (items) => {
       if (!alive) return;
       setCards(items); setSelected(items[0] ?? null);
@@ -38,7 +41,7 @@ export function Home() {
   }, [refreshRecent]);
   useEffect(() => { document.documentElement.dataset.theme = light ? "light" : "dark"; }, [light]);
 
-  if (activeCabinet) return <CabinetHost cabinetId={activeCabinet} {...(selected ? { analyzed: selected.analyzed } : {})} onExit={() => { setActiveCabinet(null); refreshRecent(); }} />;
+  if (activeCabinet) return <CabinetHost cabinetId={activeCabinet} {...(selected ? { analyzed: selected.analyzed } : {})} onExit={() => { setActiveCabinet(null); refreshRecent(); void readWallet().then((wallet) => setBalance(wallet.balance)).catch(() => undefined); }} />;
   const imported = (card: StoredCard) => {
     setCards((current) => [card, ...current.filter((item) => item.fingerprint !== card.fingerprint)]);
     setSelected(card);
@@ -59,7 +62,7 @@ export function Home() {
       </div>
     </aside>
     <main className="dashboard">
-      <header className="topbar"><div><h1>기다리는 동안, 바로 한 판</h1></div><button className="icon-button" onClick={() => setLight((value) => !value)} aria-label={light ? "어두운 테마" : "밝은 테마"}>{light ? <IconMoon /> : <IconSun />}</button></header>
+      <header className="topbar"><div><h1>기다리는 동안, 바로 한 판</h1></div><strong className="lobby-wallet">★{balance.toLocaleString("ko-KR")}</strong><button className="icon-button" onClick={() => setLight((value) => !value)} aria-label={light ? "어두운 테마" : "밝은 테마"}>{light ? <IconMoon /> : <IconSun />}</button></header>
 
       {recentPlay && recentCabinet && <section className="resume-hero" aria-label="이어하기"><div className="resume-icon"><IconClockPlay /></div><div><span className="eyebrow">최근 플레이 · {timeAgo(recentPlay.updatedAt)}</span><h2>{recentPlay.title}</h2><p>{recentPlay.progressLabel}에서 안전하게 저장되어 있습니다.</p></div><button onClick={() => { const card = recentPlay.cardFingerprint ? cards.find((item) => item.fingerprint === recentPlay.cardFingerprint) : undefined; if (card) setSelected(card); setActiveCabinet(recentPlay.cabinetId); }}><IconPlayerPlay /> {recentCabinet.manifest.resumeLabel}</button></section>}
 

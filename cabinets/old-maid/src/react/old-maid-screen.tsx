@@ -10,11 +10,28 @@ export interface OldMaidScreenProps {
   cartridge: OldMaidCartridge;
   assets: Readonly<Record<string, string>>;
   initialState: OldMaidState | null;
+  matchSummary?: OldMaidMatchSummary | null;
+  economy?: OldMaidEconomy;
   onPersist(previous: OldMaidState, next: OldMaidState, action: OldMaidAction): Promise<void>;
   onExit(): void;
 }
 
-export function OldMaidScreen({ cartridge, assets, initialState, onPersist, onExit }: OldMaidScreenProps) {
+export interface OldMaidEconomy {
+  balance: number;
+  award?: { amount: number; rank: number } | null;
+  unlockedFaceIds: readonly string[];
+  onUnlock(): Promise<void>;
+}
+
+export interface OldMaidMatchSummary {
+  played: number;
+  firstPlaces: number;
+  jokerHolds: number;
+  currentStreak: number;
+  opponents: Array<{ participantId: string; displayName: string; played: number; beaten: number }>;
+}
+
+export function OldMaidScreen({ cartridge, assets, initialState, matchSummary, economy, onPersist, onExit }: OldMaidScreenProps) {
   useMemo(() => validateOldMaidLines(cartridge), [cartridge]);
   const [state, setState] = useState(() => initialState ?? createOldMaidState(cartridge, dailySeed()));
   const [detail, setDetail] = useState<OldMaidFace | null>(null);
@@ -22,11 +39,16 @@ export function OldMaidScreen({ cartridge, assets, initialState, onPersist, onEx
   const [lobbyMode, setLobbyMode] = useState<OldMaidMode>(() => state.mode);
   const [hoveredDrawCardId, setHoveredDrawCardId] = useState<string | null>(null);
   const [touchedDrawCardId, setTouchedDrawCardId] = useState<string | null>(null);
+  const [inspectedDrawCardIds, setInspectedDrawCardIds] = useState<string[]>([]);
+  const [reorderFrom, setReorderFrom] = useState<number | null>(null);
   const [speech, setSpeech] = useState<DisplayedSpeech | null>(null);
+  const [collectionOpen, setCollectionOpen] = useState(false);
+  const [collectionError, setCollectionError] = useState("");
   const pointerKindRef = useRef("");
   const recentLineIdsRef = useRef<string[]>([]);
   const speechTimersRef = useRef<number[]>([]);
   const speechRevisionRef = useRef(0);
+  const longPressRef = useRef<number | null>(null);
   const stateRef = useRef(state);
   const persistQueueRef = useRef<Promise<void>>(Promise.resolve());
   const saveRevisionRef = useRef(0);
@@ -110,6 +132,8 @@ export function OldMaidScreen({ cartridge, assets, initialState, onPersist, onEx
   useEffect(() => {
     setHoveredDrawCardId(null);
     setTouchedDrawCardId(null);
+    setInspectedDrawCardIds([]);
+    setReorderFrom(null);
   }, [state.currentPlayerId, state.status, state.turn]);
 
   const nameOf = (seatId: OldMaidSeatId) => seatId === "player" && state.mode === "play" ? "플레이어" : characters.get(characterIdForSeat(state, seatId) ?? "")?.name ?? "상대";
@@ -120,7 +144,7 @@ export function OldMaidScreen({ cartridge, assets, initialState, onPersist, onEx
   const handVisible = !["ready", "dealing"].includes(state.status);
   const humanFinishedWatching = state.mode === "play" && state.safeOrder.includes("player") && state.hands.player.length === 0 && state.status !== "complete";
   const inspectedDrawCardId = hoveredDrawCardId ?? touchedDrawCardId;
-  const inspectedReaction = state.status === "playing" && state.currentPlayerId === "player" && targetId !== null && targetId !== "player" && inspectedDrawCardId && state.hands[targetId].includes(inspectedDrawCardId)
+  const inspectedReaction = state.status === "playing" && state.currentPlayerId === "player" && targetId !== null && targetId !== "player" && inspectedDrawCardId && inspectedDrawCardIds.includes(inspectedDrawCardId) && state.hands[targetId].includes(inspectedDrawCardId)
     ? inspectCardReaction(cartridge, state, targetId, inspectedDrawCardId)
     : null;
   const background = assets["pequod-ruins"];
@@ -140,11 +164,15 @@ export function OldMaidScreen({ cartridge, assets, initialState, onPersist, onEx
     });
   }
 
+  function inspectDrawCard(cardId: string) {
+    setInspectedDrawCardIds((current) => current.includes(cardId) ? current : current.length < 3 ? [...current, cardId] : current);
+  }
+
   return <main className="old-maid-shell" style={background ? { "--old-maid-bg": `url(${JSON.stringify(background)})` } as React.CSSProperties : undefined}>
     <header className="old-maid-header">
       <button onClick={onExit} aria-label="오락실로 돌아가기"><IconArrowLeft /></button>
       <div><span>BOT CARD · TABLE GAME</span><h1>{cartridge.title}</h1></div>
-      <div className="old-maid-meters"><span>{state.turn}턴</span><small aria-live="polite">{saveState === "saving" ? "저장 중…" : saveState === "error" ? "저장 재시도 필요" : "자동 저장됨"}</small></div>
+      <div className="old-maid-meters">{economy && <button className="old-maid-wallet" onClick={() => setCollectionOpen(true)}>★{economy.balance.toLocaleString("ko-KR")}</button>}<span>{state.turn}턴</span><small aria-live="polite">{saveState === "saving" ? "저장 중…" : saveState === "error" ? "저장 재시도 필요" : "자동 저장됨"}</small></div>
     </header>
 
     <section className="old-maid-table" aria-label={`${cartridge.title} 테이블`}>
@@ -187,14 +215,14 @@ export function OldMaidScreen({ cartridge, assets, initialState, onPersist, onEx
               key={cardId}
               className={`old-maid-card back ${inspectedDrawCardId === cardId ? "inspected" : ""}`}
               aria-label={`${index + 1}번째 뒷면 카드${touchedDrawCardId === cardId ? ", 한 번 더 누르면 뽑기" : ""}`}
-              onPointerEnter={(event) => { if (event.pointerType === "mouse") setHoveredDrawCardId(cardId); }}
+              onPointerEnter={(event) => { if (event.pointerType === "mouse") { inspectDrawCard(cardId); setHoveredDrawCardId(cardId); } }}
               onPointerLeave={(event) => { if (event.pointerType === "mouse") setHoveredDrawCardId(null); }}
               onPointerDown={(event) => {
                 pointerKindRef.current = event.pointerType;
                 if (event.pointerType === "mouse") return;
                 event.preventDefault();
                 if (touchedDrawCardId === cardId) dispatch({ type: "draw", index });
-                else setTouchedDrawCardId(cardId);
+                else { inspectDrawCard(cardId); setTouchedDrawCardId(cardId); }
               }}
               onClick={() => {
                 if (pointerKindRef.current && pointerKindRef.current !== "mouse") { pointerKindRef.current = ""; return; }
@@ -202,7 +230,7 @@ export function OldMaidScreen({ cartridge, assets, initialState, onPersist, onEx
                 dispatch({ type: "draw", index });
               }}
             ><span>THE<br />MARGIN</span></button>)}
-            <span className="old-maid-inspection-hint">카드에 손을 올려 표정을 살피세요<span> · 모바일은 한 번 더 눌러 뽑기</span></span>
+            <span className="old-maid-inspection-hint">표정 살피기 {Math.max(0, 3 - inspectedDrawCardIds.length)}회 남음<span> · 모바일은 한 번 더 눌러 뽑기</span></span>
           </div>}
           {state.lastDraw && <p className="old-maid-event" aria-live="polite">{state.lastDraw.madePair ? `${nameOf(state.lastDraw.actorId)}이 짝을 완성했습니다.` : state.lastDraw.faceId === cartridge.oddFaceId ? "조커가 다른 손으로 넘어갔습니다." : "뽑은 카드가 손패에 남았습니다."}</p>}
         </>}
@@ -214,6 +242,12 @@ export function OldMaidScreen({ cartridge, assets, initialState, onPersist, onEx
           {characterIdForSeat(state, state.loserId) && <img className="old-maid-loser-portrait" src={assets[characters.get(characterIdForSeat(state, state.loserId) ?? "")?.despairPortrait ?? ""]} alt={`${nameOf(state.loserId)}의 절망한 표정`} />}
           <p>{state.mode === "spectate" ? `${nameOf(state.loserId)}이 마지막 조커를 피하지 못했습니다.` : state.loserId === "player" ? "이번 판은 플레이어가 졌습니다." : `플레이어는 ${state.safeOrder.indexOf("player") + 1}번째로 손을 비웠습니다.`}</p>
           <ol>{state.safeOrder.map((seatId, index) => <li key={seatId}><IconCheck size={16} /><b>{index + 1}</b><span>{nameOf(seatId)}</span></li>)}</ol>
+          {matchSummary && matchSummary.played > 0 && <section className="old-maid-history" aria-label="누적 전적">
+            <strong>{matchSummary.played}판 · 1등 {matchSummary.firstPlaces}회 · 조커 {matchSummary.jokerHolds}회 · {streakLabel(matchSummary.currentStreak)}</strong>
+            {matchSummary.opponents.slice(0, 3).map((opponent) => <span key={opponent.participantId}>{opponent.displayName} {opponent.played}판 {opponent.beaten}승</span>)}
+          </section>}
+          {economy?.award && <p className="old-maid-award">{economy.award.amount >= 0 ? "+" : ""}{economy.award.amount} · {economy.award.rank}등</p>}
+          {economy && economy.balance < 20 && <small className="old-maid-recovery">참가 보상이 늘어난 상태입니다.</small>}
           <div className="old-maid-result-actions">
             <button onClick={() => dispatch({
               type: "restart",
@@ -233,7 +267,8 @@ export function OldMaidScreen({ cartridge, assets, initialState, onPersist, onEx
       {state.mode === "spectate" && state.status !== "ready" ? <SpectatorSeat state={state} name={nameOf("player")} character={characters.get(state.spectatorCharacterId ?? "")} portrait={assets[(state.status === "complete" && state.loserId === "player" ? characters.get(state.spectatorCharacterId ?? "")?.despairPortrait : characters.get(state.spectatorCharacterId ?? "")?.portraits[state.reactions.player]) ?? ""] ?? null} cards={cards} faces={faces} assets={assets} onDetail={setDetail} /> : <section className={`old-maid-player ${state.currentPlayerId === "player" && state.status === "playing" ? "active" : ""}`} data-deal-target="player">
         <div><strong>플레이어</strong><span>{state.status === "ready" ? "배분 전" : state.status === "dealing" ? "배분 중" : `${state.hands.player.length}장`}</span></div>
         <div className="old-maid-player-hand" aria-label="내 손패">
-          {handVisible && state.hands.player.map((cardId) => { const card = cards.get(cardId); const face = card ? faces.get(card.faceId) : null; return face ? <button key={cardId} className={`old-maid-card-button ${discardableIds.has(cardId) ? "discardable" : ""}`} onClick={() => setDetail(face)} aria-label={`${face.name} 크게 보기`}><CardFace face={face} assets={assets} odd={face.id === cartridge.oddFaceId} /></button> : null; })}
+          {handVisible && state.hands.player.map((cardId, index) => { const card = cards.get(cardId); const face = card ? faces.get(card.faceId) : null; const canReorder = state.status === "playing" && state.currentPlayerId === "player" && state.mode === "play" && (state.lastReorder?.turn !== state.turn || state.lastReorder.count < 3); return face ? <button key={cardId} className={`old-maid-card-button ${discardableIds.has(cardId) ? "discardable" : ""} ${reorderFrom === index ? "reordering" : ""}`} draggable={canReorder} onDragStart={(event) => event.dataTransfer.setData("text/old-maid-index", String(index))} onDragOver={(event) => { if (canReorder) event.preventDefault(); }} onDrop={(event) => { event.preventDefault(); const from = Number(event.dataTransfer.getData("text/old-maid-index")); if (canReorder && Number.isInteger(from)) dispatch({ type: "reorder_hand", from, to: index }); }} onPointerDown={(event) => { if (!canReorder || event.pointerType === "mouse") return; longPressRef.current = window.setTimeout(() => setReorderFrom(index), 450); }} onPointerUp={() => { if (longPressRef.current !== null) window.clearTimeout(longPressRef.current); longPressRef.current = null; }} onKeyDown={(event) => { if (!canReorder || event.key !== "ArrowLeft" && event.key !== "ArrowRight") return; event.preventDefault(); const to = Math.max(0, Math.min(state.hands.player.length - 1, index + (event.key === "ArrowLeft" ? -1 : 1))); if (to !== index) dispatch({ type: "reorder_hand", from: index, to }); }} onClick={() => { if (reorderFrom !== null && canReorder) { if (reorderFrom !== index) dispatch({ type: "reorder_hand", from: reorderFrom, to: index }); setReorderFrom(null); } else setDetail(face); }} aria-label={`${face.name} 크게 보기${canReorder ? ", 좌우 화살표로 재배열" : ""}`}><CardFace face={face} assets={assets} odd={face.id === cartridge.oddFaceId} /></button> : null; })}
+          {handVisible && state.status === "playing" && state.currentPlayerId === "player" && state.mode === "play" && <small className="old-maid-reorder-budget">손패 재배열 {Math.max(0, 3 - (state.lastReorder?.turn === state.turn ? state.lastReorder.count : 0))}회 남음</small>}
           {handVisible && state.hands.player.length === 0 && <span className="old-maid-safe"><IconCheck /> 손패를 모두 비웠습니다{humanFinishedWatching ? " · 남은 경기를 관전 중" : ""}</span>}
           {(state.status === "ready" || state.status === "dealing") && <span className="old-maid-hand-placeholder">{state.status === "ready" ? "시작하면 이곳에 내 카드가 놓입니다." : "카드가 날아오고 있습니다…"}</span>}
         </div>
@@ -243,10 +278,26 @@ export function OldMaidScreen({ cartridge, assets, initialState, onPersist, onEx
     </section>
     <footer className="old-maid-notice">표정은 힌트일 뿐입니다. 상대가 포커페이스로 속일 수도 있습니다.</footer>
     {detail && <CardDetail face={detail} assets={assets} odd={detail.id === cartridge.oddFaceId} onClose={() => setDetail(null)} />}
+    {collectionOpen && economy && <div className="old-maid-modal" role="dialog" aria-modal="true" aria-label="얼굴 도감"><div className="old-maid-collection-panel">
+      <button className="old-maid-modal-close" onClick={() => setCollectionOpen(false)} aria-label="도감 닫기"><IconX /></button>
+      <h2>얼굴 도감</h2><p>발견 {economy.unlockedFaceIds.length} / {cartridge.faces.length}</p>
+      <div className="old-maid-collection-grid">{cartridge.faces.map((face) => {
+        const unlocked = economy.unlockedFaceIds.includes(face.id);
+        return <div key={face.id} className={unlocked ? "unlocked" : "locked"}>{unlocked && face.assetId && assets[face.assetId] ? <img src={assets[face.assetId]} alt="" /> : <span>?</span>}<b>{unlocked ? face.name : "미발견"}</b></div>;
+      })}</div>
+      {economy.unlockedFaceIds.length < cartridge.faces.length && <button className="old-maid-primary" disabled={economy.balance < 12} onClick={() => { setCollectionError(""); void economy.onUnlock().catch((error: unknown) => setCollectionError(error instanceof Error && error.message === "insufficient_medals" ? "메달이 부족합니다." : "도감을 열지 못했습니다.")); }}>★12로 확정 신규 개봉</button>}
+      {collectionError && <p>{collectionError}</p>}
+    </div></div>}
   </main>;
 }
 
 interface DisplayedSpeech extends OldMaidSpeech { beat: number; revision: number; }
+
+function streakLabel(value: number): string {
+  if (value > 0) return `현재 ${value}연승`;
+  if (value < 0) return `현재 ${Math.abs(value)}연패`;
+  return "현재 연속 기록 없음";
+}
 
 function SeatPanel({ seatId, state, name, portrait, reaction, active, showHand, cards, faces, assets, speech, onDetail }: { seatId: Exclude<OldMaidSeatId, "player">; state: OldMaidState; name: string; portrait: string | null; reaction: string; active: boolean; showHand: boolean; cards: Map<string, { faceId: string }>; faces: Map<string, OldMaidFace>; assets: Readonly<Record<string, string>>; speech: DisplayedSpeech | null; onDetail(face: OldMaidFace): void }) {
   const safe = state.safeOrder.includes(seatId);

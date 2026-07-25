@@ -1,9 +1,13 @@
 import type { AnalyzedCard, AnyAnalyzedCard } from "@lucky-arcade/contracts";
-import type { RecentPlay, SnapshotRecord, StoredActionReceipt } from "@lucky-arcade/persistence";
+import { medalAward } from "@lucky-arcade/contracts";
+import type { CollectionSnapshot, MatchRecord, MedalGrant, MedalGrantInput, RecentPlay, SnapshotRecord, StoredActionReceipt, WalletSnapshot } from "@lucky-arcade/persistence";
+import { selectCollectionFace } from "./collection-rules.ts";
 
 const DATABASE = "lucky-arcade";
-const VERSION = 3;
-const STORES = { cards: "cards", sources: "sources", sessions: "sessions", actions: "actions", recent: "recent" } as const;
+const VERSION = 5;
+const STORES = { cards: "cards", sources: "sources", sessions: "sessions", actions: "actions", recent: "recent", matches: "matches", wallet: "wallet", grants: "grants", collection: "collection" } as const;
+const INITIAL_BALANCE = 100;
+const COLLECTION_COST = 12;
 
 export interface StoredCard { fingerprint: string; importedAt: string; analyzed: AnyAnalyzedCard; }
 
@@ -70,6 +74,88 @@ export async function listRecentPlays(): Promise<RecentPlay[]> {
   return output.filter((item) => item?.contract === "recent-play/0.1").sort((left, right) => right.updatedAt.localeCompare(left.updatedAt));
 }
 
+export async function appendMatchRecord(record: MatchRecord): Promise<void> {
+  const db = await openDatabase(), transaction = db.transaction(STORES.matches, "readwrite");
+  transaction.objectStore(STORES.matches).put(record);
+  await complete(transaction); db.close();
+}
+
+export async function listMatchRecordsForSession(sessionId: string, limit: number): Promise<MatchRecord[]> {
+  const db = await openDatabase(), transaction = db.transaction(STORES.matches, "readonly");
+  const index = transaction.objectStore(STORES.matches).index("by-session-completed-at");
+  const range = IDBKeyRange.bound([sessionId, ""], [sessionId, "\uffff"]);
+  const output = await collectCursor<MatchRecord>(index.openCursor(range, "prev"), Math.max(0, limit));
+  await complete(transaction); db.close(); return output;
+}
+
+export async function pruneMatchRecords(maxRecords: number): Promise<void> {
+  const db = await openDatabase(), transaction = db.transaction(STORES.matches, "readwrite");
+  const store = transaction.objectStore(STORES.matches);
+  const count = await request(store.count());
+  let remaining = Math.max(0, count - Math.max(0, maxRecords));
+  if (remaining > 0) {
+    const cursorRequest = store.index("by-completed-at").openKeyCursor();
+    cursorRequest.onsuccess = () => {
+      const cursor = cursorRequest.result;
+      if (!cursor || remaining <= 0) return;
+      store.delete(cursor.primaryKey);
+      remaining -= 1;
+      cursor.continue();
+    };
+  }
+  await complete(transaction); db.close();
+}
+
+export async function readWallet(): Promise<WalletSnapshot> {
+  const db = await openDatabase(), transaction = db.transaction(STORES.wallet, "readwrite");
+  const store = transaction.objectStore(STORES.wallet);
+  let wallet = await request<WalletSnapshot | undefined>(store.get("wallet"));
+  if (!wallet) {
+    wallet = { contract: "wallet/0.1", id: "wallet", balance: INITIAL_BALANCE, updatedAt: new Date().toISOString() };
+    store.put(wallet);
+  }
+  await complete(transaction); db.close(); return wallet;
+}
+
+export async function grantMedals(input: MedalGrantInput): Promise<{ wallet: WalletSnapshot; amount: number }> {
+  const db = await openDatabase(), transaction = db.transaction([STORES.wallet, STORES.grants], "readwrite");
+  const wallets = transaction.objectStore(STORES.wallet), grants = transaction.objectStore(STORES.grants);
+  const current = await request<WalletSnapshot | undefined>(wallets.get("wallet")) ?? { contract: "wallet/0.1", id: "wallet", balance: INITIAL_BALANCE, updatedAt: new Date().toISOString() };
+  const previousGrant = await request<MedalGrant | undefined>(grants.get(input.sessionId));
+  if (input.spectated || (previousGrant?.highestSequence ?? -1) >= input.sequence) {
+    if (!await request<WalletSnapshot | undefined>(wallets.get("wallet"))) wallets.put(current);
+    await complete(transaction); db.close(); return { wallet: current, amount: 0 };
+  }
+  const amount = medalAward(current.balance, input);
+  const now = new Date().toISOString();
+  const wallet: WalletSnapshot = { ...current, balance: Math.max(0, current.balance + amount), updatedAt: now };
+  wallets.put(wallet);
+  grants.put({ contract: "medal-grant/0.1", sessionId: input.sessionId, highestSequence: input.sequence, updatedAt: now } satisfies MedalGrant);
+  await complete(transaction); db.close(); return { wallet, amount };
+}
+
+export async function readCollection(id: string): Promise<CollectionSnapshot> {
+  const db = await openDatabase(), transaction = db.transaction(STORES.collection, "readonly");
+  const stored = await request<CollectionSnapshot | undefined>(transaction.objectStore(STORES.collection).get(id));
+  await complete(transaction); db.close();
+  return stored ?? { contract: "collection/0.1", id, unlockedFaceIds: [], updatedAt: new Date(0).toISOString() };
+}
+
+export async function openCollectionItem(id: string, allFaceIds: readonly string[]): Promise<{ wallet: WalletSnapshot; collection: CollectionSnapshot; unlockedFaceId: string }> {
+  const db = await openDatabase(), transaction = db.transaction([STORES.wallet, STORES.collection], "readwrite");
+  const wallets = transaction.objectStore(STORES.wallet), collections = transaction.objectStore(STORES.collection);
+  const wallet = await request<WalletSnapshot | undefined>(wallets.get("wallet")) ?? { contract: "wallet/0.1", id: "wallet", balance: INITIAL_BALANCE, updatedAt: new Date().toISOString() };
+  const collection = await request<CollectionSnapshot | undefined>(collections.get(id)) ?? { contract: "collection/0.1", id, unlockedFaceIds: [], updatedAt: new Date(0).toISOString() };
+  if (wallet.balance < COLLECTION_COST) { transaction.abort(); db.close(); throw new Error("insufficient_medals"); }
+  const unlockedFaceId = selectCollectionFace(id, collection.unlockedFaceIds, allFaceIds);
+  if (!unlockedFaceId) { transaction.abort(); db.close(); throw new Error("collection_complete"); }
+  const now = new Date().toISOString();
+  const nextWallet: WalletSnapshot = { ...wallet, balance: wallet.balance - COLLECTION_COST, updatedAt: now };
+  const nextCollection: CollectionSnapshot = { ...collection, unlockedFaceIds: [...collection.unlockedFaceIds, unlockedFaceId], updatedAt: now };
+  wallets.put(nextWallet); collections.put(nextCollection);
+  await complete(transaction); db.close(); return { wallet: nextWallet, collection: nextCollection, unlockedFaceId };
+}
+
 function openDatabase(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
     const opening = indexedDB.open(DATABASE, VERSION);
@@ -79,6 +165,12 @@ function openDatabase(): Promise<IDBDatabase> {
       if (!db.objectStoreNames.contains(STORES.sources)) db.createObjectStore(STORES.sources);
       if (!db.objectStoreNames.contains(STORES.sessions)) db.createObjectStore(STORES.sessions, { keyPath: "sessionId" });
       if (!db.objectStoreNames.contains(STORES.recent)) db.createObjectStore(STORES.recent, { keyPath: "cabinetId" });
+      if (!db.objectStoreNames.contains(STORES.wallet)) db.createObjectStore(STORES.wallet, { keyPath: "id" });
+      if (!db.objectStoreNames.contains(STORES.grants)) db.createObjectStore(STORES.grants, { keyPath: "sessionId" });
+      if (!db.objectStoreNames.contains(STORES.collection)) db.createObjectStore(STORES.collection, { keyPath: "id" });
+      const matches = db.objectStoreNames.contains(STORES.matches) ? opening.transaction!.objectStore(STORES.matches) : db.createObjectStore(STORES.matches, { keyPath: "recordId" });
+      if (!matches.indexNames.contains("by-completed-at")) matches.createIndex("by-completed-at", "completedAt");
+      if (!matches.indexNames.contains("by-session-completed-at")) matches.createIndex("by-session-completed-at", ["sessionId", "completedAt"]);
       const actions = db.objectStoreNames.contains(STORES.actions) ? opening.transaction!.objectStore(STORES.actions) : db.createObjectStore(STORES.actions, { keyPath: "key" });
       if (!actions.indexNames.contains("by-session-sequence")) actions.createIndex("by-session-sequence", ["sessionId", "sequence"], { unique: true });
     };
@@ -87,6 +179,18 @@ function openDatabase(): Promise<IDBDatabase> {
   });
 }
 function request<T>(value: IDBRequest<T>): Promise<T> { return new Promise((resolve, reject) => { value.onsuccess = () => resolve(value.result); value.onerror = () => reject(value.error ?? new Error("indexeddb_request_failed")); }); }
+function collectCursor<T>(cursorRequest: IDBRequest<IDBCursorWithValue | null>, limit: number): Promise<T[]> {
+  return new Promise((resolve, reject) => {
+    const output: T[] = [];
+    cursorRequest.onerror = () => reject(cursorRequest.error ?? new Error("indexeddb_cursor_failed"));
+    cursorRequest.onsuccess = () => {
+      const cursor = cursorRequest.result;
+      if (!cursor || output.length >= limit) { resolve(output); return; }
+      output.push(cursor.value as T);
+      cursor.continue();
+    };
+  });
+}
 function complete(transaction: IDBTransaction): Promise<void> { return new Promise((resolve, reject) => { transaction.oncomplete = () => resolve(); transaction.onerror = () => reject(transaction.error ?? new Error("indexeddb_transaction_failed")); transaction.onabort = () => reject(transaction.error ?? new Error("indexeddb_transaction_aborted")); }); }
 function deleteActionsThrough(store: IDBObjectStore, sessionId: string, sequence: number): void {
   const range = IDBKeyRange.bound([sessionId, Number.MIN_SAFE_INTEGER], [sessionId, sequence]);

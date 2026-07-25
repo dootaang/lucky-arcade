@@ -7,6 +7,10 @@ import { CardAssetService } from "../../lib/asset-service.ts";
 import { CARD_OLD_MAID_PACK_VERSION, cardOldMaidCartridge } from "../../lib/card-old-maid.ts";
 import { appendAction, loadCardSource, saveSnapshot } from "../../lib/database.ts";
 import { recoverSession } from "../../lib/session-recovery.ts";
+import { loadMatchSummary, recordOldMaidCompletion, type MatchSummary } from "../../lib/match-history.ts";
+import { readCollection, unlockCollectionItem } from "../../lib/collection.ts";
+import { grantOldMaidCompletion, readWallet } from "../../lib/wallet.ts";
+import type { CollectionSnapshot, WalletSnapshot } from "@lucky-arcade/persistence";
 
 const THUMBNAIL_EDGE = 192;
 
@@ -17,9 +21,14 @@ export default function CardOldMaidView({ analyzed, onExit }: CabinetViewProps) 
   const cartridge = useMemo(() => source ? cardOldMaidCartridge(source) : null, [source]);
   const [ready, setReady] = useState<Ready | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [matchSummary, setMatchSummary] = useState<MatchSummary | null>(null);
+  const [wallet, setWallet] = useState<WalletSnapshot | null>(null);
+  const [collection, setCollection] = useState<CollectionSnapshot | null>(null);
+  const [award, setAward] = useState<{ amount: number; rank: number } | null>(null);
   const serviceRef = useRef<CardAssetService | null>(null);
   const sourceFingerprint = source?.cardFingerprint ?? "";
   const sessionId = source ? `old-maid-card:${sourceFingerprint}` : "";
+  const collectionId = sessionId;
 
   useEffect(() => {
     if (!source || !cartridge) return;
@@ -36,9 +45,14 @@ export default function CardOldMaidView({ analyzed, onExit }: CabinetViewProps) 
       });
       const assets = await loadAssets(service, cartridge, recovered.state);
       if (alive) setReady({ cartridge, state: recovered.state, assets });
+      if (alive && recovered.state.status === "complete") void loadMatchSummary(sessionId).then(setMatchSummary).catch(() => undefined);
     }).catch(() => { if (alive) setError("원본 카드에서 도둑잡기 그림을 불러오지 못했습니다. 카드를 다시 넣어 주세요."); });
     return () => { alive = false; serviceRef.current?.dispose(); serviceRef.current = null; };
   }, [cartridge, sessionId, source]);
+  useEffect(() => {
+    if (!collectionId) return;
+    void Promise.all([readWallet(), readCollection(collectionId)]).then(([nextWallet, nextCollection]) => { setWallet(nextWallet); setCollection(nextCollection); }).catch(() => undefined);
+  }, [collectionId]);
 
   async function persist(previous: OldMaidState, next: OldMaidState, action: OldMaidAction) {
     const service = serviceRef.current;
@@ -49,12 +63,25 @@ export default function CardOldMaidView({ analyzed, onExit }: CabinetViewProps) 
       contract: "recent-play/0.1", cabinetId: "old-maid-card", sessionId, cardFingerprint: sourceFingerprint,
       title: cartridge?.title ?? "내 카드 도둑잡기", progressLabel: progressLabel(next), updatedAt: new Date().toISOString(),
     });
+    if (cartridge && previous.status !== "complete" && next.status === "complete") {
+      void recordOldMaidCompletion(cartridge, previous, next, {
+        cabinetId: "old-maid-card", sessionId, cabinetVersion: OLD_MAID_VERSION, packVersion: CARD_OLD_MAID_PACK_VERSION, cardFingerprint: sourceFingerprint,
+      }).then((summary) => { if (summary) setMatchSummary(summary); }).catch(() => undefined);
+      void grantOldMaidCompletion(previous, next, "old-maid-card").then((result) => { if (result) { setWallet(result.wallet); setAward({ amount: result.amount, rank: result.rank }); } }).catch(() => undefined);
+    }
   }
 
   if (!source || !cartridge) return <main className="game-shell"><div className="game-loading">이 카드에는 도둑잡기에 필요한 인물과 표정이 부족합니다.<button onClick={onExit}>돌아가기</button></div></main>;
   if (error) return <main className="game-shell"><div className="game-loading">{error}<button onClick={onExit}>돌아가기</button></div></main>;
   if (!ready) return <main className="game-shell"><div className="game-loading">카드 얼굴과 좌석 초상을 준비하고 있어요…</div></main>;
-  return <OldMaidScreen cartridge={ready.cartridge} assets={ready.assets} initialState={ready.state} onPersist={persist} onExit={onExit} />;
+  const economy = wallet && collection ? { balance: wallet.balance, award, unlockedFaceIds: collection.unlockedFaceIds, onUnlock: async () => {
+    const result = await unlockCollectionItem(collectionId, ready.cartridge.faces.map((face) => face.id));
+    setWallet(result.wallet); setCollection(result.collection);
+    const face = ready.cartridge.faces.find((item) => item.id === result.unlockedFaceId);
+    const service = serviceRef.current;
+    if (face?.assetId && service) { const url = await service.thumbnailUrl(face.assetId, THUMBNAIL_EDGE, true); setReady((current) => current ? { ...current, assets: { ...current.assets, [face.assetId!]: url } } : current); }
+  } } : undefined;
+  return <OldMaidScreen cartridge={ready.cartridge} assets={ready.assets} initialState={ready.state} matchSummary={matchSummary} {...(economy ? { economy } : {})} onPersist={persist} onExit={onExit} />;
 }
 
 async function loadAssets(service: CardAssetService, cartridge: OldMaidCartridge, state: OldMaidState): Promise<Readonly<Record<string, string>>> {

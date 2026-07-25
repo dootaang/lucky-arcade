@@ -18,6 +18,8 @@
     "content:temerosa": "pnpm --filter @lucky-arcade/content-cli temerosa --",
     "content:temerosa:audit": "pnpm --filter @lucky-arcade/content-cli temerosa:audit --",
     "content:temerosa:expressions": "pnpm --filter @lucky-arcade/content-cli temerosa:expressions --",
+    "content:cards": "pnpm --filter @lucky-arcade/content-cli cards --",
+    "content:cards:audit": "pnpm --filter @lucky-arcade/content-cli cards:audit --",
     "content:validate": "pnpm --filter @lucky-arcade/content-cli validate --",
     "test": "pnpm boundaries && pnpm -r test",
     "typecheck": "pnpm -r typecheck",

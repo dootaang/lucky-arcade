@@ -1,6 +1,6 @@
 # SPEC-A8 — 전적 기록
 
-> 상태: v1.0 구현 계약 (2026-07-25). 읽기 전용 누적이며 게임 규칙·판정·저장 상태를 바꾸지 않는다.
+> 상태: v1.1 구현 완료 (2026-07-25). 읽기 전용 누적이며 게임 규칙·판정·저장 상태를 바꾸지 않는다.
 >
 > 이 문서는 경제(메달)와 눈치싸움 확장의 **선행 관문**이다. 셋의 순서는 `전적 → 경제 → 심리`다.
 
@@ -93,9 +93,13 @@ export interface MatchRecord {
 export interface MatchRecordStore {
   append(record: MatchRecord): Promise<void>;   // 같은 recordId면 덮어쓴다
   list(cabinetId: string, limit: number): Promise<MatchRecord[]>;
+  listSession(sessionId: string, limit: number): Promise<MatchRecord[]>;
   prune(maxRecords: number): Promise<void>;
 }
 ```
+
+구현 정정: 개인 카드 캐비닛은 `cabinetId`가 같으므로 그것만으로 조회하면 서로 다른 카드의 전적이
+섞인다. 결과 화면 집계는 `by-session-completed-at` 복합 인덱스로 현재 카드 세션만 조회한다.
 
 `outcome`은 플레이어 관점이다. 관전 모드는 `spectated`, 그 외에는 `loserId === "player"`면 `loss`, 아니면 `win`이다.
 

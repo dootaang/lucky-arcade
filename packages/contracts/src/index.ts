@@ -315,3 +315,47 @@ export const temerosaContentSelectionSchema = z.object({
   })).min(1),
 });
 export type TemerosaContentSelection = z.infer<typeof temerosaContentSelectionSchema>;
+
+export const medalAwardSchema = z.object({
+  sessionId: z.string().min(1),
+  sequence: z.number().int().nonnegative(),
+  cabinetId: z.string().min(1),
+  rank: z.number().int().positive(),
+  seatCount: z.number().int().min(2),
+  spectated: z.boolean(),
+});
+export type MedalAwardInput = z.infer<typeof medalAwardSchema>;
+
+export function medalAward(balance: number, input: MedalAwardInput): number {
+  if (input.spectated) return 0;
+  const participation = balance < 20 ? 6 : 2;
+  const placement = input.rank === 1 ? 10 : input.rank === 2 ? 5 : input.rank === 3 ? 1 : input.rank === input.seatCount ? -6 : 0;
+  return Math.max(-balance, participation + placement);
+}
+
+export const spriteAtlasFrameSchema = z.object({
+  id: z.string().regex(/^[a-z0-9][a-z0-9-]*$/),
+  col: z.number().int().nonnegative(),
+  row: z.number().int().nonnegative(),
+});
+export const spriteAtlasSheetSchema = z.object({
+  size: z.enum(["sm", "md"]),
+  path: z.string().min(1),
+  mime: z.literal("image/webp"),
+  width: z.number().int().positive(),
+  height: z.number().int().positive(),
+  cell: z.object({ w: z.number().int().positive(), h: z.number().int().positive() }),
+  gutter: z.number().int().nonnegative(),
+  bytes: z.number().int().positive(),
+});
+export const spriteAtlasManifestSchema = z.object({
+  contract: z.literal("sprite-atlas/0.1"),
+  atlasId: z.literal("playing-cards"),
+  version: z.string().regex(/^\d+\.\d+\.\d+$/),
+  cols: z.number().int().positive(),
+  rows: z.number().int().positive(),
+  frames: z.array(spriteAtlasFrameSchema).min(1),
+  sheets: z.array(spriteAtlasSheetSchema).min(1),
+  warnings: z.array(z.string()),
+});
+export type SpriteAtlasManifest = z.infer<typeof spriteAtlasManifestSchema>;

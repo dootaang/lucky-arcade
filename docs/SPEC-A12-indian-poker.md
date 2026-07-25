@@ -1,6 +1,6 @@
 # SPEC-A12 — 인디언 포커
 
-> 상태: v1.0 구현 계약 (2026-07-25).
+> 상태: v1.1 비공개 구현 완료 (2026-07-25). 공개 로비 승인은 별도다.
 >
 > **선행: [SPEC-A10](./SPEC-A10-bluffing-and-reads.md)(심리 3층)과 [SPEC-A11](./SPEC-A11-playing-card-deck.md)(덱).**
 > A10의 2·3층을 그대로 쓰고 1층만 새로 쓴다. 그 구조가 실제로 재사용되는지 검증하는 첫 사례다.
@@ -108,7 +108,7 @@ export interface IndianPokerState {
   seed: string;
   sequence: number;
   round: number;                    // 0 … 5
-  status: "ready" | "dealing" | "choosing" | "revealing" | "complete";
+  status: "ready" | "choosing" | "revealing" | "complete";
   seats: Record<SeatId, { characterId: string | null; score: number }>;
   hands: Record<SeatId, string | null>;   // 카드 ID
   choices: Record<SeatId, "continue" | "fold" | null>;
@@ -117,6 +117,10 @@ export interface IndianPokerState {
   history: RoundResult[];
 }
 ```
+
+**구현 정정:** 비동기 배분 애니메이션을 위한 별도 액션이 없고 저장 경계도 라운드 시작/종료이므로,
+관측될 수 없는 `dealing` 상태를 만들지 않는다. `start`와 `next_round`가 결정론적으로 배분한 뒤 곧바로
+`choosing`에 진입한다.
 
 `hands`에 플레이어 카드도 들어 있다. **화면이 가린다.** 판정 코어는 알아야 하고 UI가 숨기는 구조다.
 
@@ -130,19 +134,24 @@ export interface IndianPokerState {
 ## 8. 1층 — 공개 정보
 
 ```ts
-export interface IndianPokerRead {
-  visibleRanks: number[];        // 관측자가 볼 수 있는 카드들의 세기
-  myVisibleToOthers: number;     // 남들이 보는 내 카드의 세기 — 관측자는 모른다
+export interface IndianPokerDecisionRead {
+  visibleStrengths: number[];    // 관측자가 볼 수 있는 카드들의 세기
   round: number;
   scoreGap: number;              // 선두와의 점수 차
   foldsSoFar: number;            // 이전 라운드들의 기권 횟수
 }
 
-export function publicRead(state: IndianPokerState, seatId: SeatId): IndianPokerRead;
+export interface IndianPokerExpressionRead {
+  playerCardStrength: number;    // 표출을 만들 때만 사용
+  round: number;
+}
+
+export function decisionRead(state: IndianPokerState, seatId: SeatId): IndianPokerDecisionRead;
+export function expressionRead(state: IndianPokerState): IndianPokerExpressionRead;
 ```
 
-**`myVisibleToOthers`는 관측자 본인에게 넘기지 않는다.** 이 필드는 3층(표출)이 반응을 만들 때만 쓴다.
-1층 결과를 NPC 결정에 넘길 때는 제외한다. 타입을 분리해 구조적으로 막는다.
+결정 입력과 표출 입력을 별도 타입으로 분리한다. 따라서 NPC 결정 함수에는 자기 카드나
+`playerCardStrength`를 전달할 수 없고, 플레이어 카드 세기는 3층 표출에만 들어간다.
 
 ## 9. 2층·3층 — A10 재사용
 

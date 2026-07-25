@@ -1,6 +1,7 @@
 import { resultHash } from "@lucky-arcade/engine";
 import { describe, expect, it } from "vitest";
-import { availablePairs, cpuDrawIndex, createOldMaidState, inspectCardReaction, reduceOldMaid, temerosaOldMaidCartridge, validateCartridge, type OldMaidAction, type OldMaidState } from "../src/index.ts";
+import { PERSONA_PRESETS } from "@lucky-arcade/engine";
+import { availablePairs, cpuDrawIndex, createOldMaidState, inspectCardReaction, publicRead, reduceOldMaid, temerosaOldMaidCartridge, validateCartridge, type OldMaidAction, type OldMaidState } from "../src/index.ts";
 
 function autoplay(seed: string): { state: OldMaidState; actions: OldMaidAction[] } {
   let state = createOldMaidState(temerosaOldMaidCartridge, seed, "test-session");
@@ -32,6 +33,15 @@ function autoplaySpectator(seed: string): OldMaidState {
 }
 
 describe("old maid deterministic engine", () => {
+  it("reorders only the player hand without consuming a turn and caps it at three", () => {
+    let state: OldMaidState = { ...createOldMaidState(temerosaOldMaidCartridge, "reorder"), status: "playing", currentPlayerId: "player" };
+    const before = [...state.hands.player], turn = state.turn;
+    state = reduceOldMaid(temerosaOldMaidCartridge, state, { type: "reorder_hand", from: 0, to: 2 });
+    expect(state.turn).toBe(turn); expect([...state.hands.player].sort()).toEqual([...before].sort()); expect(state.hands.player[2]).toBe(before[0]);
+    state = reduceOldMaid(temerosaOldMaidCartridge, state, { type: "reorder_hand", from: 0, to: 1 });
+    state = reduceOldMaid(temerosaOldMaidCartridge, state, { type: "reorder_hand", from: 0, to: 1 });
+    expect(() => reduceOldMaid(temerosaOldMaidCartridge, state, { type: "reorder_hand", from: 0, to: 1 })).toThrow("old_maid_reorder_limit");
+  });
   it("stores the supplying cartridge version without changing the Temerosa value", () => {
     expect(createOldMaidState(temerosaOldMaidCartridge, "pack-version").packVersion).toBe(temerosaOldMaidCartridge.version);
     expect(createOldMaidState({ ...temerosaOldMaidCartridge, version: "card-old-maid/0.1" }, "card-pack").packVersion).toBe("card-old-maid/0.1");
@@ -101,8 +111,10 @@ describe("old maid deterministic engine", () => {
   });
 
   it("uses only public turn metadata and target size for CPU draw selection", () => {
-    expect(cpuDrawIndex("seed", 4, "cpu-1", "cpu-2", 5)).toBe(cpuDrawIndex("seed", 4, "cpu-1", "cpu-2", 5));
-    expect(cpuDrawIndex("seed", 4, "cpu-1", "cpu-2", 5)).toBeLessThan(5);
+    const state = createOldMaidState(temerosaOldMaidCartridge, "seed");
+    const read = publicRead(state, "cpu-2");
+    expect(cpuDrawIndex(PERSONA_PRESETS.open, read, "seed", 4, "cpu-1", "cpu-2", 5)).toBe(cpuDrawIndex(PERSONA_PRESETS.open, read, "seed", 4, "cpu-1", "cpu-2", 5));
+    expect(cpuDrawIndex(PERSONA_PRESETS.open, read, "seed", 4, "cpu-1", "cpu-2", 5)).toBeLessThan(5);
   });
 
   it("lets an open opponent visibly react to the hovered joker", () => {

@@ -85,6 +85,9 @@ importers:
       '@lucky-arcade/gfl-ember':
         specifier: workspace:*
         version: link:../../cabinets/gfl-ember
+      '@lucky-arcade/indian-poker':
+        specifier: workspace:*
+        version: link:../../cabinets/indian-poker
       '@lucky-arcade/lore-circuit':
         specifier: workspace:*
         version: link:../../cabinets/lore-circuit
@@ -195,6 +198,28 @@ importers:
       zod:
         specifier: 4.4.3
         version: 4.4.3
+    devDependencies:
+      '@types/react':
+        specifier: 19.2.17
+        version: 19.2.17
+
+  cabinets/indian-poker:
+    dependencies:
+      '@lucky-arcade/cabinet-sdk':
+        specifier: workspace:*
+        version: link:../../packages/cabinet-sdk
+      '@lucky-arcade/engine':
+        specifier: workspace:*
+        version: link:../../packages/engine
+      '@lucky-arcade/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
+      '@tabler/icons-react':
+        specifier: 3.45.0
+        version: 3.45.0(react@19.2.8)
+      react:
+        specifier: 19.2.8
+        version: 19.2.8
     devDependencies:
       '@types/react':
         specifier: 19.2.17

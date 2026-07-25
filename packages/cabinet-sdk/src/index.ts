@@ -13,6 +13,17 @@ export interface CabinetManifest {
   estimatedMinutes: { min: number; max: number };
 }
 
+export type SeatTellStyle = "open" | "guarded" | "bluffer";
+export type SeatReaction = "neutral" | "pleased" | "tense";
+export interface TableSeatCharacter {
+  id: string;
+  name: string;
+  appearanceSet: string;
+  tellStyle: SeatTellStyle;
+  portraits: Record<SeatReaction, string>;
+  despairPortrait: string;
+}
+
 export interface RuntimeViewport {
   width: number;
   height: number;

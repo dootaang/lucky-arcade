@@ -18,8 +18,13 @@ const PUBLIC_CABINET_IDS = new Set(["temerosa-old-maid", "gfl-favorite-cup", "fa
 
 const registrations: readonly WebCabinetRegistration[] = [
   {
+    manifest: { id: "indian-poker", version: "indian-poker/0.1", title: "테메로세 인디언 포커", description: "상대의 표정을 읽고 계속할지 기권할지 고르는 5라운드 카드 게임.", requiredCapabilities: [], sessionKind: "repeat", launchKind: "built-in", resumeLabel: "인디언 포커 이어하기", estimatedMinutes: { min: 1, max: 2 } },
+    openingRank: null, world: "테메로세", badge: "비공개 실험",
+    load: async () => { const module = await import("../features/indian-poker/indian-poker-view.tsx"); return { default: ({ onExit }) => <module.default onExit={onExit} /> }; },
+  },
+  {
     manifest: {
-      id: "temerosa-old-maid", version: "old-maid/0.5", title: "테메로세 도둑잡기",
+      id: "temerosa-old-maid", version: "old-maid/0.6", title: "테메로세 도둑잡기",
       description: "테메로세 인물들과 즐기는 도둑잡기.", requiredCapabilities: [],
       sessionKind: "repeat", launchKind: "built-in", resumeLabel: "도둑잡기 이어하기", estimatedMinutes: { min: 2, max: 4 },
     },
@@ -82,7 +87,7 @@ const registrations: readonly WebCabinetRegistration[] = [
   },
   {
     manifest: {
-      id: "old-maid-card", version: "old-maid/0.5", title: "내 카드 도둑잡기",
+      id: "old-maid-card", version: "old-maid/0.6", title: "내 카드 도둑잡기",
       description: "내 카드의 인물과 표정으로 즐기는 도둑잡기.", requiredCapabilities: ["expressive-npcs>=4"],
       sessionKind: "repeat", launchKind: "card", resumeLabel: "도둑잡기 이어하기", estimatedMinutes: { min: 2, max: 4 },
     },

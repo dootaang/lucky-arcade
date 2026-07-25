@@ -1,6 +1,6 @@
 # SPEC-A10 — 눈치싸움: 손패 재배열과 NPC 심리 3층
 
-> 상태: v1.0 구현 계약 (2026-07-25).
+> 상태: v1.1 구현 완료 (2026-07-25).
 >
 > **선행: [SPEC-A8](./SPEC-A8-match-history.md).** ROADMAP은 도둑잡기 규칙 확장을 반복 플레이 수요 확인
 > 뒤로 묶어 두었고, 그것을 잴 수단이 전적이다. 전적 데이터를 본 뒤 착수한다.
@@ -151,12 +151,16 @@ export interface OldMaidPublicRead {
   targetHandSize: number;
   targetDiscardCount: number;
   turnsSinceTargetDrew: number;
-  reorderedThisTurn: boolean;
+  reorderedSinceTargetDraw: boolean;
   reorderIndex: number | null;   // 플레이어가 마지막으로 옮겨 놓은 자리
 }
 
 export function publicRead(state: OldMaidState, targetId: OldMaidSeatId): OldMaidPublicRead;
 ```
+
+**구현 정정:** 플레이어 턴의 재배열을 `이번 턴`으로만 보면 여러 좌석을 거쳐 CPU가 플레이어에게서
+뽑는 시점에는 신호가 사라진다. 마지막 재배열은 플레이어 손에서 다음 카드가 실제로 뽑힐 때까지
+공개 신호로 유지하며, 그 뒤 `history`의 draw 기록으로 만료한다.
 
 `state.history`·`state.discards`·손패 **길이**·`lastReorder`만 본다. **카드 ID를 읽지 않는다.**
 
@@ -170,6 +174,7 @@ export function cpuDrawIndex(
   turn: number,
   actorId: OldMaidSeatId,
   targetId: OldMaidSeatId,
+  targetCardCount: number,
 ): number;
 ```
 

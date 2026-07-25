@@ -54,6 +54,29 @@ test("opens built-in quick cabinets without a card", async ({ page }) => {
   }
 });
 
+test("plays and restores the private five-round Indian poker table", async ({ page }, testInfo) => {
+  test.skip(testInfo.project.metadata.mobile === true);
+  const browserErrors: string[] = [];
+  page.on("pageerror", (error) => browserErrors.push(error.message));
+  await page.goto("/?privateCabinets=1");
+  await page.locator(".arcade-entry").filter({ hasText: "테메로세 인디언 포커" }).getByRole("button", { name: "바로 시작" }).click();
+  await expect(page.getByRole("heading", { name: "테메로세 인디언 포커" })).toBeVisible();
+  await page.getByRole("button", { name: "5라운드 시작" }).click();
+  await expect(page.locator(".indian-poker-player").getByRole("img", { name: "공개 전인 내 카드" })).toBeVisible();
+  await page.getByRole("button", { name: /계속 · 승/ }).click();
+  await expect(page.locator(".indian-poker-player").getByRole("img", { name: "공개 전인 내 카드" })).toHaveCount(0);
+  await page.getByRole("button", { name: "다음 라운드" }).click();
+  await page.reload();
+  await page.getByRole("button", { name: "인디언 포커 이어하기" }).click();
+  await expect(page.getByText("2/5 라운드")).toBeVisible();
+  for (let round = 2; round <= 5; round += 1) {
+    await page.getByRole("button", { name: /계속 · 승/ }).click();
+    await page.getByRole("button", { name: round === 5 ? "최종 결과" : "다음 라운드" }).click();
+  }
+  await expect(page.getByRole("heading", { name: "5라운드 최종 순위" })).toBeVisible();
+  expect(browserErrors).toEqual([]);
+});
+
 test("replays one deterministic derby through all four rendering engines", async ({ page }) => {
   test.setTimeout(75_000);
   const browserErrors: string[] = [];

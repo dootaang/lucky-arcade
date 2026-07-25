@@ -12,6 +12,7 @@ import {
 } from "./playing-card-layout.ts";
 
 export * from "./playing-card-layout.ts";
+export * from "./court-card.tsx";
 
 /**
  * 표준 트럼프 핍 카드(A~10)를 벡터로 그린다. 이미지 요청이 없고 크기 제한이 없다.

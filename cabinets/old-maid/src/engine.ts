@@ -1,6 +1,7 @@
-import { XorShift32 } from "@lucky-arcade/engine";
+import { PERSONA_PRESETS, XorShift32, expressSignal, fnv1a32, weightedChoice, type Persona } from "@lucky-arcade/engine";
 import type { OldMaidAction, OldMaidCard, OldMaidCartridge, OldMaidCpuSeatId, OldMaidDiscard, OldMaidDrawEvent, OldMaidReaction, OldMaidSeatId, OldMaidState } from "./contracts.ts";
 import { OLD_MAID_VERSION } from "./contracts.ts";
+import { publicRead, type OldMaidPublicRead } from "./read.ts";
 
 export const OLD_MAID_SEAT_ORDER: readonly OldMaidSeatId[] = ["player", "cpu-1", "cpu-2", "cpu-3"];
 
@@ -17,13 +18,13 @@ export function createOldMaidState(cartridge: OldMaidCartridge, seed: string, se
   });
   const selected = shuffle(cartridge.characters.map((character) => character.id), new XorShift32(`${cartridge.version}:${seed}:characters`)).slice(0, 3);
   return {
-    contract: "old-maid-state/0.5", version: OLD_MAID_VERSION, packVersion: cartridge.version,
+    contract: "old-maid-state/0.6", version: OLD_MAID_VERSION, packVersion: cartridge.version,
     sessionId, seed, sequence: 0, turn: 0, status: "ready", mode: "play", currentPlayerId: "player", hands, dealOrder,
     characters: { "cpu-1": selected[0] as string, "cpu-2": selected[1] as string, "cpu-3": selected[2] as string },
     spectatorCharacterId: null,
     reactions: { player: "neutral", "cpu-1": "neutral", "cpu-2": "neutral", "cpu-3": "neutral" },
     pendingDraw: null, discardMode: null, discardSeatIndex: null,
-    safeOrder: [], loserId: null, discards: [], lastDraw: null, history: [],
+    safeOrder: [], loserId: null, discards: [], lastDraw: null, history: [], lastReorder: null,
   };
 }
 
@@ -57,12 +58,23 @@ export function reduceOldMaid(cartridge: OldMaidCartridge, state: OldMaidState, 
   assert(state.status === "playing", "old_maid_not_playing");
   const actorId = state.currentPlayerId;
   const isHuman = actorId === "player" && state.mode === "play";
+  if (action.type === "reorder_hand") {
+    assert(isHuman, "old_maid_player_turn_required");
+    assert(Number.isInteger(action.from) && Number.isInteger(action.to) && action.from >= 0 && action.to >= 0 && action.from < state.hands.player.length && action.to < state.hands.player.length, "old_maid_reorder_index_invalid");
+    const count = state.lastReorder?.turn === state.turn ? state.lastReorder.count : 0;
+    assert(count < 3, "old_maid_reorder_limit");
+    const hands = cloneHands(state.hands);
+    const [cardId] = hands.player.splice(action.from, 1);
+    hands.player.splice(action.to, 0, cardId as string);
+    return { ...state, sequence: state.sequence + 1, hands, lastReorder: { turn: state.turn, toIndex: action.to, count: count + 1 } };
+  }
   if (action.type === "draw") assert(isHuman, "old_maid_player_turn_required");
   if (action.type === "cpu_draw") assert(!isHuman, "old_maid_cpu_turn_required");
   const targetId = nextActiveSeat(state.hands, actorId);
   const targetHand = state.hands[targetId];
   assert(targetHand.length > 0, "old_maid_target_empty");
-  const index = action.type === "draw" ? action.index : cpuDrawIndex(state.seed, state.turn, actorId, targetId, targetHand.length);
+  const actorCharacter = cartridge.characters.find((character) => character.id === characterIdForSeat(state, actorId));
+  const index = action.type === "draw" ? action.index : cpuDrawIndex(actorCharacter ? PERSONA_PRESETS[actorCharacter.tellStyle] : PERSONA_PRESETS.open, publicRead(state, targetId), state.seed, state.turn, actorId, targetId, targetHand.length);
   assert(Number.isInteger(index) && index >= 0 && index < targetHand.length, "old_maid_draw_index_invalid");
   const cardId = targetHand[index] as string;
   const card = cardById(cartridge.cards, cardId);
@@ -89,10 +101,19 @@ export function discardingSeat(state: OldMaidState): OldMaidSeatId | null {
 
 export function targetSeat(state: OldMaidState): OldMaidSeatId { return nextActiveSeat(state.hands, state.currentPlayerId); }
 
-export function cpuDrawIndex(seed: string, turn: number, actorId: OldMaidSeatId, targetId: OldMaidSeatId, targetCardCount: number): number {
+export function cpuDrawIndex(persona: Persona, read: OldMaidPublicRead, seed: string, turn: number, actorId: OldMaidSeatId, targetId: OldMaidSeatId, targetCardCount: number): number {
   assert(Number.isInteger(targetCardCount) && targetCardCount > 0, "old_maid_target_count_invalid");
-  const rng = new XorShift32(`${seed}:turn:${turn}:actor:${actorId}:target:${targetId}:count:${targetCardCount}`);
-  return rng.nextUint32() % targetCardCount;
+  const choiceSeed = `${seed}:turn:${turn}:actor:${actorId}:target:${targetId}:count:${targetCardCount}`;
+  const weights = Array.from({ length: targetCardCount }, (_, index) => {
+    const jitterUnit = (fnv1a32(`${choiceSeed}:jitter:${index}`) % 2_001) / 1_000 - 1;
+    let weight = 1 + jitterUnit * (1 - persona.consistency) * 0.35;
+    if (read.reorderedSinceTargetDraw && read.reorderIndex !== null) {
+      if (index === read.reorderIndex) weight *= 1 + persona.readAccuracy * persona.riskAppetite * 1.4;
+      else if (Math.abs(index - read.reorderIndex) === 1) weight *= 1 - persona.readAccuracy * 0.25;
+    }
+    return Math.max(0.01, weight);
+  });
+  return weightedChoice(weights, choiceSeed);
 }
 
 export function inspectCardReaction(cartridge: OldMaidCartridge, state: OldMaidState, targetId: OldMaidCpuSeatId, cardId: string): OldMaidReaction {
@@ -100,16 +121,13 @@ export function inspectCardReaction(cartridge: OldMaidCartridge, state: OldMaidS
   assert(character, `old_maid_character_missing:${state.characters[targetId]}`);
   assert(state.hands[targetId].includes(cardId), "old_maid_inspection_card_missing");
   const truth: OldMaidReaction = cardById(cartridge.cards, cardId).faceId === cartridge.oddFaceId ? "pleased" : "tense";
-  if (character.tellStyle === "open") return truth;
-  const rng = new XorShift32(`${state.seed}:inspect:${state.turn}:${targetId}:${cardId}`);
-  const roll = rng.nextUint32() % 100;
-  if (character.tellStyle === "guarded") return roll < 35 ? truth : "neutral";
-  if (roll < 55) return truth === "pleased" ? "tense" : "pleased";
-  return "neutral";
+  const deceptive = truth === "pleased" ? "tense" : "pleased";
+  const weights = character.tellStyle === "open" ? { truth: 1, neutral: 0, deceptive: 0 } : character.tellStyle === "guarded" ? { truth: 35, neutral: 65, deceptive: 0 } : { truth: 0, neutral: 45, deceptive: 55 };
+  return expressSignal(truth, "neutral", deceptive, weights, `${state.seed}:inspect:${state.turn}:${targetId}:${cardId}`);
 }
 
 export function validateCartridge(cartridge: OldMaidCartridge): void {
-  assert(cartridge.contract === "old-maid-cartridge/0.5", "old_maid_cartridge_contract");
+  assert(cartridge.contract === "old-maid-cartridge/0.6", "old_maid_cartridge_contract");
   assert(cartridge.characters.length >= 4, "old_maid_characters_too_few");
   assert(new Set(cartridge.characters.map((character) => character.id)).size === cartridge.characters.length, "old_maid_character_duplicate");
   assert(new Set(cartridge.faces.map((face) => face.id)).size === cartridge.faces.length, "old_maid_face_duplicate");
@@ -197,12 +215,9 @@ function tellReaction(cartridge: OldMaidCartridge, state: OldMaidState, seatId: 
   const characterId = characterIdForSeat(state, seatId);
   const character = cartridge.characters.find((candidate) => candidate.id === characterId);
   assert(character, `old_maid_character_missing:${characterId ?? seatId}`);
-  const rng = new XorShift32(`${state.seed}:tell:${state.turn}:${seatId}:${role}`);
-  const roll = rng.nextUint32() % 100;
-  if (character.tellStyle === "open") return roll < 80 ? truth : "neutral";
-  if (character.tellStyle === "guarded") return roll < 45 ? truth : "neutral";
-  if (roll < 40) return truth === "tense" ? "pleased" : "tense";
-  return roll < 70 ? truth : "neutral";
+  const deceptive = truth === "tense" ? "pleased" : "tense";
+  const weights = character.tellStyle === "open" ? { truth: 80, neutral: 20, deceptive: 0 } : character.tellStyle === "guarded" ? { truth: 45, neutral: 55, deceptive: 0 } : { truth: 30, neutral: 30, deceptive: 40 };
+  return expressSignal(truth, "neutral", deceptive, weights, `${state.seed}:tell:${state.turn}:${seatId}:${role}`);
 }
 
 function pairsInHand(hand: string[], cards: OldMaidCard[]): [string, string][] {

@@ -2,13 +2,13 @@ import type { CardOldMaidCartridge } from "@lucky-arcade/contracts";
 import { XorShift32 } from "@lucky-arcade/engine";
 import { validateCartridge, type OldMaidCartridge, type OldMaidTellStyle } from "@lucky-arcade/old-maid";
 
-export const CARD_OLD_MAID_PACK_VERSION = "card-old-maid/0.1" as const;
+export const CARD_OLD_MAID_PACK_VERSION = "card-old-maid/0.2" as const;
 
 export function cardOldMaidCartridge(source: CardOldMaidCartridge): OldMaidCartridge | null {
   if (source.seats.length < 4 || source.faces.length < 12) return null;
   const faces = source.faces.map((face) => ({ id: face.faceId, name: face.name, assetId: face.assetId }));
   const cartridge: OldMaidCartridge = {
-    contract: "old-maid-cartridge/0.5",
+    contract: "old-maid-cartridge/0.6",
     version: CARD_OLD_MAID_PACK_VERSION,
     title: `${source.cardName} 도둑잡기`,
     oddFaceId: "joker",
