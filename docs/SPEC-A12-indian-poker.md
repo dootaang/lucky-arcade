@@ -1,5 +1,8 @@
 # SPEC-A12 — 인디언 포커
 
+> 공개 범위 정정 (2026-07-25): 이 문서의 개별 공개 승인 대기는 [SPEC-A16](./SPEC-A16-temerosa-casino-venue.md)이
+> 대체한다. 인디언 포커는 테메로세 카지노 내부 공개 후보이며, 앤티·베팅·콜·폴드 개정 뒤 노출한다.
+
 > 상태: v1.1 비공개 구현 완료 (2026-07-25). 공개 로비 승인은 별도다.
 >
 > **선행: [SPEC-A10](./SPEC-A10-bluffing-and-reads.md)(심리 3층)과 [SPEC-A11](./SPEC-A11-playing-card-deck.md)(덱).**
