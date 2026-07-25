@@ -1,7 +1,23 @@
 import { resultHash } from "@lucky-arcade/engine";
 import { describe, expect, it } from "vitest";
 import { PERSONA_PRESETS } from "@lucky-arcade/engine";
-import { availablePairs, cpuDrawIndex, createOldMaidState, inspectCardReaction, publicRead, reduceOldMaid, temerosaOldMaidCartridge, validateCartridge, type OldMaidAction, type OldMaidState } from "../src/index.ts";
+import { availablePairs, cpuDrawIndex, createOldMaidState, inspectCardReaction, oldMaidOutcome, publicRead, reduceOldMaid, temerosaOldMaidCartridge, validateCartridge, type OldMaidAction, type OldMaidCartridge, type OldMaidCharacter, type OldMaidMode, type OldMaidState } from "../src/index.ts";
+
+const extraCharacters: OldMaidCharacter[] = Array.from({ length: 22 }, (_, index) => ({
+  id: `fixture-${index + 1}`,
+  name: `Fixture ${index + 1}`,
+  appearanceSet: "fixture",
+  tellStyle: (["open", "guarded", "bluffer"] as const)[index % 3]!,
+  portraits: { neutral: "fixture-neutral", pleased: "fixture-pleased", tense: "fixture-tense" },
+  despairPortrait: "fixture-despair",
+}));
+const thirtyCharacterCartridge: OldMaidCartridge = {
+  ...temerosaOldMaidCartridge,
+  version: "old-maid-fixture/18-pairs",
+  dealPairCount: 18,
+  characters: [...temerosaOldMaidCartridge.characters, ...extraCharacters],
+  selectableCharacterIds: [...temerosaOldMaidCartridge.characters.filter(({ id }) => id !== "bacikal").map(({ id }) => id), ...extraCharacters.map(({ id }) => id)],
+};
 
 function autoplay(seed: string): { state: OldMaidState; actions: OldMaidAction[] } {
   let state = createOldMaidState(temerosaOldMaidCartridge, seed, "test-session");
@@ -28,6 +44,19 @@ function autoplaySpectator(seed: string): OldMaidState {
       : state.status === "discarding" ? { type: "discard_pair", cardIds: availablePairs(temerosaOldMaidCartridge, state)[0] as [string, string] }
       : { type: "cpu_draw" };
     state = reduceOldMaid(temerosaOldMaidCartridge, state, action);
+  }
+  return state;
+}
+
+function autoplayCartridge(cartridge: OldMaidCartridge, seed: string, mode: OldMaidMode): OldMaidState {
+  let state = createOldMaidState(cartridge, seed, `${mode}-session`);
+  state = reduceOldMaid(cartridge, state, { type: "start", mode });
+  state = reduceOldMaid(cartridge, state, { type: "finish_deal" });
+  for (let step = 0; state.status !== "complete" && step < 2_000; step += 1) {
+    const action: OldMaidAction = state.status === "revealing" ? { type: "collect_draw" }
+      : state.status === "discarding" ? { type: "discard_pair", cardIds: availablePairs(cartridge, state)[0] as [string, string] }
+      : mode === "play" && state.currentPlayerId === "player" ? { type: "draw", index: 0 } : { type: "cpu_draw" };
+    state = reduceOldMaid(cartridge, state, action);
   }
   return state;
 }
@@ -65,6 +94,55 @@ describe("old maid deterministic engine", () => {
     expect(state.status).toBe("dealing");
     state = reduceOldMaid(temerosaOldMaidCartridge, state, { type: "finish_deal" });
     expect(state.status).toBe("discarding");
+  });
+
+  it("keeps legacy cartridges at 12 pairs and deals configured 18-pair games as 37 cards", () => {
+    const legacy = createOldMaidState(temerosaOldMaidCartridge, "legacy-twelve", "test-session");
+    const expanded = createOldMaidState(thirtyCharacterCartridge, "expanded-eighteen", "test-session");
+    expect(legacy.dealOrder).toHaveLength(25);
+    expect(expanded.dealOrder).toHaveLength(37);
+    expect(new Set(expanded.dealOrder.map(({ cardId }) => thirtyCharacterCartridge.cards.find((card) => card.id === cardId)?.pairId).filter(Boolean)).size).toBe(18);
+    expect(() => validateCartridge({ ...thirtyCharacterCartridge, dealPairCount: 10_000 })).toThrow("old_maid_deal_pairs_insufficient");
+  });
+
+  it("rotates the first dealt seat deterministically across seeds", () => {
+    const counts = new Map<string, number>();
+    for (let seed = 0; seed < 1_000; seed += 1) {
+      const first = createOldMaidState(thirtyCharacterCartridge, `seat-${seed}`, "test-session").dealOrder[0]!.seatId;
+      counts.set(first, (counts.get(first) ?? 0) + 1);
+      expect(createOldMaidState(thirtyCharacterCartridge, `seat-${seed}`, "test-session").dealOrder[0]!.seatId).toBe(first);
+    }
+    expect([...counts.keys()].sort()).toEqual(["cpu-1", "cpu-2", "cpu-3", "player"]);
+    expect([...counts.values()].every((count) => count >= 200 && count <= 300)).toBe(true);
+  });
+
+  it("uses only the selectable 30-character roster for automatic and explicit starts", () => {
+    expect(thirtyCharacterCartridge.selectableCharacterIds).toHaveLength(30);
+    expect(() => validateCartridge(thirtyCharacterCartridge)).not.toThrow();
+    for (let seed = 0; seed < 100; seed += 1) {
+      const state = createOldMaidState(thirtyCharacterCartridge, `roster-${seed}`, "test-session");
+      expect(Object.values(state.characters)).not.toContain("bacikal");
+    }
+    const ready = createOldMaidState(thirtyCharacterCartridge, "reject-legacy", "test-session");
+    expect(() => reduceOldMaid(thirtyCharacterCartridge, ready, { type: "start", characterIds: ["nemo", "pale", "bacikal"] })).toThrow("old_maid_character_selection_invalid");
+    expect(() => validateCartridge({ ...thirtyCharacterCartridge, selectableCharacterIds: ["nemo", "nemo", "pale", "kano"] })).toThrow("old_maid_selectable_character_duplicate");
+    expect(() => validateCartridge({ ...thirtyCharacterCartridge, selectableCharacterIds: ["nemo", "pale", "kano", "missing"] })).toThrow("old_maid_selectable_character_missing");
+  });
+
+  it("selects three characters for play and four for spectate deterministically", () => {
+    const playReady = createOldMaidState(thirtyCharacterCartridge, "automatic-table", "test-session");
+    const play = reduceOldMaid(thirtyCharacterCartridge, playReady, { type: "start", mode: "play" });
+    const spectate = reduceOldMaid(thirtyCharacterCartridge, playReady, { type: "start", mode: "spectate" });
+    const replay = reduceOldMaid(thirtyCharacterCartridge, createOldMaidState(thirtyCharacterCartridge, "automatic-table", "test-session"), { type: "start", mode: "spectate" });
+    expect([...Object.values(play.characters), play.spectatorCharacterId].filter(Boolean)).toHaveLength(3);
+    expect([...Object.values(spectate.characters), spectate.spectatorCharacterId].filter(Boolean)).toHaveLength(4);
+    expect([spectate.characters, spectate.spectatorCharacterId]).toEqual([replay.characters, replay.spectatorCharacterId]);
+  });
+
+  it("continues to interpret a legacy state that references a non-selectable character", () => {
+    const base = createOldMaidState(thirtyCharacterCartridge, "legacy-state", "test-session");
+    const legacy = { ...base, status: "complete", loserId: "cpu-1", safeOrder: ["player", "cpu-2", "cpu-3"], characters: { ...base.characters, "cpu-1": "bacikal" } } as OldMaidState;
+    expect(oldMaidOutcome(legacy)).toMatchObject({ oddCardHolderId: "cpu-1", oddCardHolderCharacterId: "bacikal" });
   });
 
   it("uses an explicitly selected set of three opponents", () => {
@@ -139,13 +217,28 @@ describe("old maid deterministic engine", () => {
     expect(resultHash(replay)).toBe(resultHash(run.state));
   });
 
-  it("finishes 10,000 seeded games without a loop or a missing loser", () => {
+  it("replays the same 18-pair inputs to the same result hash", () => {
+    const left = autoplayCartridge(thirtyCharacterCartridge, "expanded-replay", "spectate");
+    const right = autoplayCartridge(thirtyCharacterCartridge, "expanded-replay", "spectate");
+    expect(left.status).toBe("complete");
+    expect(resultHash(left)).toBe(resultHash(right));
+  });
+
+  it("finishes 10,000 seeded 18-pair play games without a loop or a missing loser", () => {
     for (let seed = 0; seed < 10_000; seed += 1) {
-      const run = autoplay(`stress-${seed}`);
-      expect(run.state.status, `seed ${seed}`).toBe("complete");
-      expect(run.state.loserId, `seed ${seed}`).not.toBeNull();
-      expect(run.state.history.length, `seed ${seed}`).toBeGreaterThan(0);
-      expect(Object.values(run.state.hands).filter((hand) => hand.length > 0), `seed ${seed}`).toHaveLength(1);
+      const state = autoplayCartridge(thirtyCharacterCartridge, `play-stress-${seed}`, "play");
+      expect(state.status, `seed ${seed}`).toBe("complete");
+      expect(state.loserId, `seed ${seed}`).not.toBeNull();
+      expect(state.history.length, `seed ${seed}`).toBeGreaterThan(0);
+      expect(Object.values(state.hands).filter((hand) => hand.length > 0), `seed ${seed}`).toHaveLength(1);
     }
-  }, 20_000);
+  }, 30_000);
+
+  it("finishes 10,000 seeded 18-pair spectator games", () => {
+    for (let seed = 0; seed < 10_000; seed += 1) {
+      const state = autoplayCartridge(thirtyCharacterCartridge, `spectate-stress-${seed}`, "spectate");
+      expect(state.status, `seed ${seed}`).toBe("complete");
+      expect(oldMaidOutcome(state)?.oddCardHolderCharacterId, `seed ${seed}`).not.toBeNull();
+    }
+  }, 30_000);
 });

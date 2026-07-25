@@ -8,15 +8,16 @@ export const OLD_MAID_SEAT_ORDER: readonly OldMaidSeatId[] = ["player", "cpu-1",
 export function createOldMaidState(cartridge: OldMaidCartridge, seed: string, sessionId = `old-maid-${Date.now().toString(36)}`): OldMaidState {
   validateCartridge(cartridge);
   const rng = new XorShift32(`${cartridge.version}:${seed}:deal`);
-  const pairIds = shuffle([...new Set(cartridge.cards.map((card) => card.pairId).filter((pairId): pairId is string => pairId !== null))], rng).slice(0, 12);
+  const pairIds = shuffle([...new Set(cartridge.cards.map((card) => card.pairId).filter((pairId): pairId is string => pairId !== null))], rng).slice(0, dealPairCount(cartridge));
   const shuffled = shuffle(cartridge.cards.filter((card) => card.pairId === null || pairIds.includes(card.pairId)).map((card) => card.id), rng);
   const hands = emptyHands();
+  const firstSeatIndex = new XorShift32(`${cartridge.version}:${seed}:first-seat`).nextUint32() % OLD_MAID_SEAT_ORDER.length;
   const dealOrder = shuffled.map((cardId, index) => {
-    const seatId = OLD_MAID_SEAT_ORDER[index % OLD_MAID_SEAT_ORDER.length] as OldMaidSeatId;
+    const seatId = OLD_MAID_SEAT_ORDER[(firstSeatIndex + index) % OLD_MAID_SEAT_ORDER.length] as OldMaidSeatId;
     hands[seatId].push(cardId);
     return { cardId, seatId };
   });
-  const selected = shuffle(cartridge.characters.map((character) => character.id), new XorShift32(`${cartridge.version}:${seed}:characters`)).slice(0, 3);
+  const selected = automaticCharacterIds(cartridge, seed, "play");
   return {
     contract: "old-maid-state/0.6", version: OLD_MAID_VERSION, packVersion: cartridge.version,
     sessionId, seed, sequence: 0, turn: 0, status: "ready", mode: "play", currentPlayerId: "player", hands, dealOrder,
@@ -31,12 +32,13 @@ export function createOldMaidState(cartridge: OldMaidCartridge, seed: string, se
 export function reduceOldMaid(cartridge: OldMaidCartridge, state: OldMaidState, action: OldMaidAction): OldMaidState {
   if (action.type === "restart") {
     const fresh = createOldMaidState(cartridge, action.seed, state.sessionId);
-    if (!action.mode || !action.characterIds) return { ...fresh, sequence: state.sequence + 1 };
-    const selection = selectedCharacters(cartridge, action.characterIds, action.mode);
+    const mode = action.mode ?? "play";
+    const ids = action.characterIds ?? automaticCharacterIds(cartridge, action.seed, mode);
+    const selection = selectedCharacters(cartridge, ids, mode);
     return {
       ...fresh,
       sequence: state.sequence + 1,
-      mode: action.mode,
+      mode,
       characters: selection.characters,
       spectatorCharacterId: selection.spectatorCharacterId,
     };
@@ -44,7 +46,7 @@ export function reduceOldMaid(cartridge: OldMaidCartridge, state: OldMaidState, 
   if (action.type === "start") {
     assert(state.status === "ready", "old_maid_start_invalid");
     const mode = action.mode ?? "play";
-    const ids = action.characterIds ?? Object.values(state.characters);
+    const ids = action.characterIds ?? (mode === "play" ? Object.values(state.characters) : automaticCharacterIds(cartridge, state.seed, mode));
     const selection = selectedCharacters(cartridge, ids, mode);
     return { ...state, sequence: state.sequence + 1, status: "dealing", mode, characters: selection.characters, spectatorCharacterId: selection.spectatorCharacterId };
   }
@@ -130,6 +132,11 @@ export function validateCartridge(cartridge: OldMaidCartridge): void {
   assert(cartridge.contract === "old-maid-cartridge/0.6", "old_maid_cartridge_contract");
   assert(cartridge.characters.length >= 4, "old_maid_characters_too_few");
   assert(new Set(cartridge.characters.map((character) => character.id)).size === cartridge.characters.length, "old_maid_character_duplicate");
+  const selectableIds = selectableCharacterIds(cartridge);
+  assert(selectableIds.length >= 4, "old_maid_selectable_characters_too_few");
+  assert(new Set(selectableIds).size === selectableIds.length, "old_maid_selectable_character_duplicate");
+  const characterIds = new Set(cartridge.characters.map((character) => character.id));
+  assert(selectableIds.every((id) => characterIds.has(id)), "old_maid_selectable_character_missing");
   assert(new Set(cartridge.faces.map((face) => face.id)).size === cartridge.faces.length, "old_maid_face_duplicate");
   assert(new Set(cartridge.cards.map((card) => card.id)).size === cartridge.cards.length, "old_maid_card_duplicate");
   const faceIds = new Set(cartridge.faces.map((face) => face.id));
@@ -139,6 +146,9 @@ export function validateCartridge(cartridge: OldMaidCartridge): void {
   const pairs = new Map<string, number>();
   for (const card of cartridge.cards) if (card.pairId) pairs.set(card.pairId, (pairs.get(card.pairId) ?? 0) + 1);
   assert([...pairs.values()].every((count) => count === 2), "old_maid_pair_count_invalid");
+  const requestedPairCount = dealPairCount(cartridge);
+  assert(Number.isInteger(requestedPairCount) && requestedPairCount > 0, "old_maid_deal_pair_count_invalid");
+  assert(pairs.size >= requestedPairCount, "old_maid_deal_pairs_insufficient");
 }
 
 function collectDraw(cartridge: OldMaidCartridge, state: OldMaidState): OldMaidState {
@@ -239,9 +249,15 @@ function emptyHands(): Record<OldMaidSeatId, string[]> { return { player: [], "c
 function selectedCharacters(cartridge: OldMaidCartridge, ids: string[], mode: OldMaidState["mode"]): { characters: Record<OldMaidCpuSeatId, string>; spectatorCharacterId: string | null } {
   const required = mode === "spectate" ? 4 : 3;
   assert(ids.length === required && new Set(ids).size === required, "old_maid_character_selection_duplicate");
-  const valid = new Set(cartridge.characters.map((character) => character.id));
+  const valid = new Set(selectableCharacterIds(cartridge));
   assert(ids.every((id) => valid.has(id)), "old_maid_character_selection_invalid");
   return { characters: { "cpu-1": ids[0] as string, "cpu-2": ids[1] as string, "cpu-3": ids[2] as string }, spectatorCharacterId: mode === "spectate" ? ids[3] as string : null };
+}
+function selectableCharacterIds(cartridge: OldMaidCartridge): readonly string[] { return cartridge.selectableCharacterIds ?? cartridge.characters.map((character) => character.id); }
+function dealPairCount(cartridge: OldMaidCartridge): number { return cartridge.dealPairCount ?? 12; }
+function automaticCharacterIds(cartridge: OldMaidCartridge, seed: string, mode: OldMaidState["mode"]): string[] {
+  const required = mode === "spectate" ? 4 : 3;
+  return shuffle(selectableCharacterIds(cartridge), new XorShift32(`${cartridge.version}:${seed}:characters`)).slice(0, required);
 }
 export function characterIdForSeat(state: OldMaidState, seatId: OldMaidSeatId): string | null { return seatId === "player" ? state.spectatorCharacterId : state.characters[seatId]; }
 function cloneHands(hands: Record<OldMaidSeatId, string[]>): Record<OldMaidSeatId, string[]> { return { player: [...hands.player], "cpu-1": [...hands["cpu-1"]], "cpu-2": [...hands["cpu-2"]], "cpu-3": [...hands["cpu-3"]] }; }

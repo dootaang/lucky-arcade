@@ -47,6 +47,9 @@ export interface OldMaidCartridge {
   faces: OldMaidFace[];
   cards: OldMaidCard[];
   characters: OldMaidCharacter[];
+  /** Omitted only by legacy 0.6 cartridges, which treat every character as selectable. */
+  readonly selectableCharacterIds?: readonly string[];
+  readonly dealPairCount?: number;
   lines?: readonly OldMaidLine[];
 }
 
