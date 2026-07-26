@@ -9,8 +9,9 @@ describe("Venue registry", () => {
   });
 
   it("owns each public cabinet through its Venue manifest", () => {
-    expect([...PUBLIC_CABINET_IDS]).toEqual(["temerosa-old-maid"]);
+    expect([...PUBLIC_CABINET_IDS]).toEqual(["temerosa-old-maid", "temerosa-match-pairs"]);
     expect(getVenueForCabinet("temerosa-old-maid")?.title).toBe("테메로세 카지노");
+    expect(getVenueForCabinet("temerosa-match-pairs")?.title).toBe("테메로세 카지노");
     expect(getVenueForCabinet("gfl-favorite-cup")).toBeUndefined();
   });
 

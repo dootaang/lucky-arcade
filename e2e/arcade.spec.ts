@@ -42,25 +42,26 @@ test("mobile navigation and Venue floor remain reachable", async ({ page }, test
   await expect(page.getByRole("button", { name: "카지노", exact: true })).toBeVisible();
   await page.getByRole("button", { name: "카지노", exact: true }).click();
   await expect(page.getByRole("heading", { name: "테이블을 골라주세요" })).toBeVisible();
-  await expect(page.getByRole("button", { name: "시작", exact: true })).toBeInViewport();
+  await expect(page.locator(".table-card.playable").filter({ hasText: "도둑잡기" }).getByRole("button", { name: "시작", exact: true })).toBeInViewport();
 });
 
-test("opens the sole public Venue and exposes only the playable old maid table", async ({ page }) => {
+test("opens the sole public Venue and exposes its two playable tables", async ({ page }) => {
   await page.goto("/");
   await expect(page.locator(".venue-card")).toHaveCount(1);
   await expect(page.getByRole("heading", { name: "테메로세 카지노" })).toBeVisible();
   await expect(page.getByText("내 카드로 놀기")).toHaveCount(0);
   await page.getByRole("button", { name: "카지노 입장" }).click();
-  await expect(page.locator(".table-card.playable")).toHaveCount(1);
-  await expect(page.getByRole("button", { name: "시작", exact: true })).toBeVisible();
+  await expect(page.locator(".table-card.playable")).toHaveCount(2);
+  await expect(page.locator(".table-card.playable").filter({ hasText: "도둑잡기" }).getByRole("button", { name: "시작", exact: true })).toBeVisible();
+  await expect(page.locator(".table-card.playable").filter({ hasText: "짝맞추기" }).getByRole("button", { name: "시작", exact: true })).toBeVisible();
   await expect(page.locator(".table-card.coming-soon")).toHaveCount(4);
   await expect(page.locator(".table-card.coming-soon button")).toHaveCount(0);
-  await page.getByRole("button", { name: "시작", exact: true }).click();
+  await page.locator(".table-card.playable").filter({ hasText: "도둑잡기" }).getByRole("button", { name: "시작", exact: true }).click();
   await expect(page.getByRole("heading", { name: "테메로세 도둑잡기" })).toBeVisible();
 });
 
 test("keeps the Venue title and entry action when its hero image fails", async ({ page }) => {
-  await page.route("**/npc-raven-neutral/*.webp", (route) => route.abort());
+  await page.route("**/temerosa-casino-venue/0.1.0/**/*.webp", (route) => route.abort());
   await page.goto("/");
   await expect(page.locator(".venue-art img")).toBeHidden();
   const fallbackLayout = await page.locator(".venue-card").evaluate((card) => {
@@ -75,6 +76,69 @@ test("keeps the Venue title and entry action when its hero image fails", async (
   await expect(page.getByRole("heading", { name: "테메로세 카지노" })).toBeVisible();
   await page.getByRole("button", { name: "카지노 입장" }).click();
   await expect(page.getByRole("heading", { name: "테이블을 골라주세요" })).toBeVisible();
+});
+
+test("plays, records, and restores the public image-only match-pairs table without changing points", async ({ page }, testInfo) => {
+  test.skip(testInfo.project.metadata.mobile === true);
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/");
+  await page.evaluate(() => new Promise<void>((resolve, reject) => {
+    const opening = indexedDB.open("lucky-arcade", 7);
+    opening.onerror = () => reject(opening.error);
+    opening.onsuccess = () => {
+      const db = opening.result;
+      const transaction = db.transaction("wallet", "readwrite");
+      transaction.objectStore("wallet").put({ contract: "wallet/0.1", id: "wallet", balance: 37, updatedAt: new Date().toISOString() });
+      transaction.onerror = () => reject(transaction.error);
+      transaction.oncomplete = () => { db.close(); resolve(); };
+    };
+  }));
+  await page.getByRole("button", { name: "카지노 입장" }).click();
+  await page.locator(".table-card.playable").filter({ hasText: "짝맞추기" }).getByRole("button", { name: "시작", exact: true }).click();
+  await expect(page.getByRole("heading", { name: "짝맞추기" })).toBeVisible();
+  expect(await page.locator(".match-pairs-card-front").evaluateAll((fronts) => fronts.every((front) => (front.textContent ?? "").trim() === ""))).toBe(true);
+  await expect(page.locator(".match-pairs-card-front img").first()).toHaveAttribute("alt", "");
+  await page.getByRole("button", { name: "시작", exact: true }).click();
+  const pairs = await page.locator(".match-pairs-card").evaluateAll((cards) => {
+    const indexes = new Map<string, number[]>();
+    cards.forEach((card, index) => {
+      const src = card.querySelector("img")?.getAttribute("src") ?? "";
+      indexes.set(src, [...(indexes.get(src) ?? []), index]);
+    });
+    return [...indexes.values()];
+  });
+  expect(pairs).toHaveLength(6);
+  for (let pair = 0; pair < pairs.length; pair += 1) {
+    const [first, second] = pairs[pair]!;
+    await page.locator(".match-pairs-card").nth(first!).click();
+    await page.locator(".match-pairs-card").nth(second!).click();
+    await expect(page.locator(".match-pairs-card.is-matched")).toHaveCount((pair + 1) * 2);
+  }
+  await expect(page.getByRole("heading", { name: "모든 짝을 찾았습니다" })).toBeVisible();
+  const persisted = await page.evaluate(async () => {
+    const database = await new Function("return import('/src/lib/database.ts')")();
+    return { wallet: await database.readWallet(), records: await database.listMatchRecordsForSession("temerosa-match-pairs:table-1", 10) };
+  });
+  expect(persisted.wallet.balance).toBe(37);
+  expect(persisted.records).toHaveLength(1);
+  expect(persisted.records[0]).toMatchObject({ cabinetId: "temerosa-match-pairs", outcome: "win", turns: 6 });
+  await page.goto("/");
+  await expect(page.getByRole("region", { name: "이어하기" })).toContainText("테메로세 카지노 · 짝맞추기");
+  await page.getByRole("button", { name: "짝맞추기 이어하기", exact: true }).click();
+  await expect(page.getByRole("heading", { name: "모든 짝을 찾았습니다" })).toBeVisible();
+});
+
+test("mobile match-pairs keeps the whole board inside the viewport", async ({ page }, testInfo) => {
+  test.skip(testInfo.project.metadata.mobile !== true);
+  await page.goto("/play/temerosa-match-pairs");
+  await expect(page.getByRole("heading", { name: "짝맞추기" })).toBeVisible();
+  const layout = await page.locator(".match-pairs-board").evaluate((board) => {
+    const box = board.getBoundingClientRect();
+    return { left: box.left, right: box.right, viewport: window.innerWidth, scrollWidth: document.documentElement.scrollWidth };
+  });
+  expect(layout.left).toBeGreaterThanOrEqual(0);
+  expect(layout.right).toBeLessThanOrEqual(layout.viewport + 1);
+  expect(layout.scrollWidth).toBeLessThanOrEqual(layout.viewport + 1);
 });
 
 test("blocks hidden cabinets at direct public URLs", async ({ page }) => {
@@ -282,7 +346,7 @@ test("plays and restores a complete Temerosa old maid table", async ({ page }, t
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/");
   await page.getByRole("button", { name: "카지노 입장" }).click();
-  await page.getByRole("button", { name: "시작", exact: true }).click();
+  await page.locator(".table-card.playable").filter({ hasText: "도둑잡기" }).getByRole("button", { name: "시작", exact: true }).click();
   await expect(page.getByRole("heading", { name: "테메로세 도둑잡기" })).toBeVisible();
   await expect(page.getByText("마지막 조커를 피하세요")).toBeVisible();
   await expect(page.getByText("배분 전").first()).toBeVisible();

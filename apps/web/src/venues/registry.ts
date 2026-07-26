@@ -23,7 +23,7 @@ export interface VenueManifest {
 
 export const PUBLIC_VENUE_IDS = new Set(["temerosa-casino"]);
 
-const CONTENT_ROOT = "/content/temerosa-margin/0.8.0/assets/margin/npc-raven-neutral";
+const CONTENT_ROOT = "/content/temerosa-casino-venue/0.1.0/assets/venue-temerosa";
 
 const venues: readonly VenueManifest[] = [
   {
@@ -31,13 +31,13 @@ const venues: readonly VenueManifest[] = [
     title: "테메로세 카지노",
     tagline: "여백에 열린 한 판의 항로",
     heroImage: {
-      sm: { src: `${CONTENT_ROOT}/sm.webp`, width: 131, height: 192, bytes: 4_344 },
-      md: { src: `${CONTENT_ROOT}/md.webp`, width: 525, height: 768, bytes: 30_746 },
-      alt: "테메로세 카지노 안내인",
+      sm: { src: `${CONTENT_ROOT}/sm.webp`, width: 640, height: 360, bytes: 21_966 },
+      md: { src: `${CONTENT_ROOT}/md.webp`, width: 1280, height: 720, bytes: 47_386 },
+      alt: "테메로세 카지노 풍경",
     },
     entryLabel: "카지노 입장",
     order: 10,
-    cabinetIds: ["temerosa-old-maid"],
+    cabinetIds: ["temerosa-old-maid", "temerosa-match-pairs"],
   },
 ] as const;
 

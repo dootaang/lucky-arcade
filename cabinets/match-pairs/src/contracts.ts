@@ -67,3 +67,17 @@ export const MATCH_PAIRS_ERRORS = {
 } as const;
 
 export type MatchPairsErrorCode = (typeof MATCH_PAIRS_ERRORS)[keyof typeof MATCH_PAIRS_ERRORS];
+
+export function isMatchPairsState(value: unknown): value is MatchPairsState {
+  if (!value || typeof value !== "object") return false;
+  const state = value as Partial<MatchPairsState>;
+  if (state.contract !== MATCH_PAIRS_STATE_CONTRACT || state.version !== MATCH_PAIRS_VERSION) return false;
+  if (typeof state.packVersion !== "string" || typeof state.sessionId !== "string" || typeof state.seed !== "string") return false;
+  if (!Number.isInteger(state.sequence) || !Number.isInteger(state.attempts) || !state.difficulty || !state.status) return false;
+  if (!(state.difficulty in MATCH_PAIRS_PAIR_COUNTS) || !["ready", "playing", "checking", "complete"].includes(state.status)) return false;
+  if (!Array.isArray(state.cards) || !Array.isArray(state.openIndexes) || !Array.isArray(state.matchedPairIds) || !Array.isArray(state.history)) return false;
+  return state.cards.every((card) => Boolean(card) && typeof card.cardId === "string" && typeof card.pairId === "string")
+    && state.openIndexes.every((index) => Number.isInteger(index))
+    && state.matchedPairIds.every((id) => typeof id === "string")
+    && state.history.every((entry) => Boolean(entry) && Number.isInteger(entry.sequence) && Boolean(entry.action));
+}

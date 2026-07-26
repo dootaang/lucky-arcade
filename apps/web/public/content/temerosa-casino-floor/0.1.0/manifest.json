@@ -1,0 +1,109 @@
+{
+  "contract": "temerosa-casino-asset-pack/1.0",
+  "packId": "temerosa-casino-floor",
+  "version": "0.1.0",
+  "provenance": "docs/THIRD_PARTY_PROVENANCE.md#내장-콘텐츠-허가-확인",
+  "assets": [
+    {
+      "id": "floor-flood-cliff",
+      "use": "table-art",
+      "displayName": "Flood_Cliff",
+      "sourceCardId": "temerosa-finale",
+      "sourceEntryPath": "assets/other/image/Flood_Cliff.png",
+      "sourceByteHash": "b7aa77cbefeb69fa1105f8cd600a843d32f14a0e2531de2731a959c1ab710e97",
+      "reviewEvidence": "owner-decision:2026-07-26; implementation authorized before visual review; mandatory post-implementation screen confirmation",
+      "postImplementationReview": "pending",
+      "cropFocus": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "variants": [
+        {
+          "scale": "md",
+          "path": "assets/floor-flood-cliff/md.webp",
+          "mime": "image/webp",
+          "width": 960,
+          "height": 540,
+          "bytes": 11222,
+          "sha256": "0b2c9d35b613e9e6584ca58526246346abf01ef9cb5841e9be2eeaa63b4b116e"
+        }
+      ]
+    },
+    {
+      "id": "floor-erosion-canyon",
+      "use": "table-art",
+      "displayName": "Erosion_Canyon",
+      "sourceCardId": "temerosa-finale",
+      "sourceEntryPath": "assets/other/image/Erosion_Canyon.png",
+      "sourceByteHash": "0260777b1907bcb3383033cb6142d5c421d11547519e14aaf86263a1272f44f3",
+      "reviewEvidence": "owner-decision:2026-07-26; implementation authorized before visual review; mandatory post-implementation screen confirmation",
+      "postImplementationReview": "pending",
+      "cropFocus": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "variants": [
+        {
+          "scale": "md",
+          "path": "assets/floor-erosion-canyon/md.webp",
+          "mime": "image/webp",
+          "width": 960,
+          "height": 540,
+          "bytes": 18436,
+          "sha256": "48cc0b7184cd6ab5e54244301bb2e5118feb837f672e8b2b41a40544f6c231aa"
+        }
+      ]
+    },
+    {
+      "id": "floor-mist-basin",
+      "use": "table-art",
+      "displayName": "Mist_Basin",
+      "sourceCardId": "temerosa-finale",
+      "sourceEntryPath": "assets/other/image/Mist_Basin.png",
+      "sourceByteHash": "d28523f46fddb324b96538d459d1c99a3e666d0aebb49cd17a5fd421d7b683cc",
+      "reviewEvidence": "owner-decision:2026-07-26; implementation authorized before visual review; mandatory post-implementation screen confirmation",
+      "postImplementationReview": "pending",
+      "cropFocus": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "variants": [
+        {
+          "scale": "md",
+          "path": "assets/floor-mist-basin/md.webp",
+          "mime": "image/webp",
+          "width": 960,
+          "height": 540,
+          "bytes": 10828,
+          "sha256": "2c01b697824368a387c30c4b9d3c754f6d54463df1c0e30bf52ed21984643208"
+        }
+      ]
+    },
+    {
+      "id": "floor-sunken-city",
+      "use": "table-art",
+      "displayName": "Sunken_City",
+      "sourceCardId": "temerosa-finale",
+      "sourceEntryPath": "assets/other/image/Sunken_City.png",
+      "sourceByteHash": "ed29c576edc152520f39b396fa267106172bf2a35125dfb4a24e39ca106c9424",
+      "reviewEvidence": "owner-decision:2026-07-26; implementation authorized before visual review; mandatory post-implementation screen confirmation",
+      "postImplementationReview": "pending",
+      "cropFocus": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "variants": [
+        {
+          "scale": "md",
+          "path": "assets/floor-sunken-city/md.webp",
+          "mime": "image/webp",
+          "width": 960,
+          "height": 540,
+          "bytes": 18472,
+          "sha256": "2fe2af1d9f9e40afc2f2275b0d6045a5f1904d8383b2e0f7c735154ea32e21ab"
+        }
+      ]
+    }
+  ],
+  "totalBytes": 58958
+}

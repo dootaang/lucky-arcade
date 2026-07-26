@@ -3,9 +3,9 @@ import { getCabinetRegistration, getCabinetWorld, listBuiltInCabinets, selectOpe
 import { PUBLIC_CABINET_IDS } from "../venues/registry.ts";
 
 describe("public cabinet visibility", () => {
-  it("derives the only public cabinet from the public Venue", () => {
-    expect([...PUBLIC_CABINET_IDS]).toEqual(["temerosa-old-maid"]);
-    expect(listBuiltInCabinets().map((entry) => entry.manifest.id)).toEqual(["temerosa-old-maid"]);
+  it("derives public cabinets from the public Venue", () => {
+    expect([...PUBLIC_CABINET_IDS]).toEqual(["temerosa-old-maid", "temerosa-match-pairs"]);
+    expect(listBuiltInCabinets().map((entry) => entry.manifest.id)).toEqual(["temerosa-old-maid", "temerosa-match-pairs"]);
     expect(getCabinetWorld("temerosa-old-maid")).toBe("테메로세 카지노");
   });
 

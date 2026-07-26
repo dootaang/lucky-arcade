@@ -94,6 +94,9 @@ importers:
       '@lucky-arcade/lucky-derby':
         specifier: workspace:*
         version: link:../../cabinets/lucky-derby
+      '@lucky-arcade/match-pairs':
+        specifier: workspace:*
+        version: link:../../cabinets/match-pairs
       '@lucky-arcade/old-maid':
         specifier: workspace:*
         version: link:../../cabinets/old-maid

@@ -1,6 +1,6 @@
 {
   "contract": "temerosa-casino-asset-inventory/1.0",
-  "generatedAt": "2026-07-26T06:46:00.530Z",
+  "generatedAt": "2026-07-26T07:15:15.043Z",
   "sources": [
     {
       "sourceCardId": "overture-root2",
@@ -42,8 +42,8 @@
   "totals": {
     "entries": 2003,
     "bytes": 260204004,
-    "unreviewed": 1721,
-    "approved": 0,
+    "unreviewed": 1700,
+    "approved": 21,
     "rejected": 282,
     "byteDuplicateEntries": 159,
     "byteDuplicateGroups": 78,
@@ -8434,9 +8434,12 @@
       },
       "geometryQueue": "square",
       "semanticTags": [],
-      "semanticStatus": "unreviewed",
-      "approvedUses": [],
-      "byteDuplicateGroup": "sha256-0018"
+      "semanticStatus": "approved",
+      "approvedUses": [
+        "slot-symbol"
+      ],
+      "byteDuplicateGroup": "sha256-0018",
+      "reviewEvidence": "owner-decision:2026-07-26; implementation authorized before visual review; mandatory post-implementation screen confirmation"
     },
     {
       "sourceCardId": "temerosa-bestiaization",
@@ -9889,9 +9892,12 @@
       },
       "geometryQueue": "square",
       "semanticTags": [],
-      "semanticStatus": "unreviewed",
-      "approvedUses": [],
-      "byteDuplicateGroup": "sha256-0022"
+      "semanticStatus": "approved",
+      "approvedUses": [
+        "slot-symbol"
+      ],
+      "byteDuplicateGroup": "sha256-0022",
+      "reviewEvidence": "owner-decision:2026-07-26; implementation authorized before visual review; mandatory post-implementation screen confirmation"
     },
     {
       "sourceCardId": "temerosa-bestiaization",
@@ -11349,8 +11355,11 @@
       },
       "geometryQueue": "square",
       "semanticTags": [],
-      "semanticStatus": "unreviewed",
-      "approvedUses": []
+      "semanticStatus": "approved",
+      "approvedUses": [
+        "slot-symbol"
+      ],
+      "reviewEvidence": "owner-decision:2026-07-26; implementation authorized before visual review; mandatory post-implementation screen confirmation"
     },
     {
       "sourceCardId": "temerosa-bestiaization",
@@ -12777,8 +12786,11 @@
       },
       "geometryQueue": "landscape",
       "semanticTags": [],
-      "semanticStatus": "unreviewed",
-      "approvedUses": []
+      "semanticStatus": "approved",
+      "approvedUses": [
+        "venue-hero"
+      ],
+      "reviewEvidence": "owner-decision:2026-07-26; implementation authorized before visual review; mandatory post-implementation screen confirmation"
     },
     {
       "sourceCardId": "temerosa-bestiaization",
@@ -13634,9 +13646,12 @@
       },
       "geometryQueue": "square",
       "semanticTags": [],
-      "semanticStatus": "unreviewed",
-      "approvedUses": [],
-      "byteDuplicateGroup": "sha256-0026"
+      "semanticStatus": "approved",
+      "approvedUses": [
+        "slot-symbol"
+      ],
+      "byteDuplicateGroup": "sha256-0026",
+      "reviewEvidence": "owner-decision:2026-07-26; implementation authorized before visual review; mandatory post-implementation screen confirmation"
     },
     {
       "sourceCardId": "temerosa-bestiaization",
@@ -13920,9 +13935,12 @@
       },
       "geometryQueue": "square",
       "semanticTags": [],
-      "semanticStatus": "unreviewed",
-      "approvedUses": [],
-      "byteDuplicateGroup": "sha256-0027"
+      "semanticStatus": "approved",
+      "approvedUses": [
+        "slot-symbol"
+      ],
+      "byteDuplicateGroup": "sha256-0027",
+      "reviewEvidence": "owner-decision:2026-07-26; implementation authorized before visual review; mandatory post-implementation screen confirmation"
     },
     {
       "sourceCardId": "temerosa-bestiaization",
@@ -16815,9 +16833,12 @@
       },
       "geometryQueue": "square",
       "semanticTags": [],
-      "semanticStatus": "unreviewed",
-      "approvedUses": [],
-      "byteDuplicateGroup": "sha256-0037"
+      "semanticStatus": "approved",
+      "approvedUses": [
+        "slot-symbol"
+      ],
+      "byteDuplicateGroup": "sha256-0037",
+      "reviewEvidence": "owner-decision:2026-07-26; implementation authorized before visual review; mandatory post-implementation screen confirmation"
     },
     {
       "sourceCardId": "temerosa-bestiaization",
@@ -17413,9 +17434,12 @@
       },
       "geometryQueue": "square",
       "semanticTags": [],
-      "semanticStatus": "unreviewed",
-      "approvedUses": [],
-      "byteDuplicateGroup": "sha256-0039"
+      "semanticStatus": "approved",
+      "approvedUses": [
+        "slot-symbol"
+      ],
+      "byteDuplicateGroup": "sha256-0039",
+      "reviewEvidence": "owner-decision:2026-07-26; implementation authorized before visual review; mandatory post-implementation screen confirmation"
     },
     {
       "sourceCardId": "temerosa-bestiaization",
@@ -17652,9 +17676,12 @@
       },
       "geometryQueue": "square",
       "semanticTags": [],
-      "semanticStatus": "unreviewed",
-      "approvedUses": [],
-      "byteDuplicateGroup": "sha256-0040"
+      "semanticStatus": "approved",
+      "approvedUses": [
+        "slot-symbol"
+      ],
+      "byteDuplicateGroup": "sha256-0040",
+      "reviewEvidence": "owner-decision:2026-07-26; implementation authorized before visual review; mandatory post-implementation screen confirmation"
     },
     {
       "sourceCardId": "temerosa-bestiaization",
@@ -18013,9 +18040,12 @@
       },
       "geometryQueue": "square",
       "semanticTags": [],
-      "semanticStatus": "unreviewed",
-      "approvedUses": [],
-      "byteDuplicateGroup": "sha256-0045"
+      "semanticStatus": "approved",
+      "approvedUses": [
+        "slot-symbol"
+      ],
+      "byteDuplicateGroup": "sha256-0045",
+      "reviewEvidence": "owner-decision:2026-07-26; implementation authorized before visual review; mandatory post-implementation screen confirmation"
     },
     {
       "sourceCardId": "temerosa-bestiaization",
@@ -18039,9 +18069,12 @@
       },
       "geometryQueue": "square",
       "semanticTags": [],
-      "semanticStatus": "unreviewed",
-      "approvedUses": [],
-      "byteDuplicateGroup": "sha256-0046"
+      "semanticStatus": "approved",
+      "approvedUses": [
+        "slot-symbol"
+      ],
+      "byteDuplicateGroup": "sha256-0046",
+      "reviewEvidence": "owner-decision:2026-07-26; implementation authorized before visual review; mandatory post-implementation screen confirmation"
     },
     {
       "sourceCardId": "temerosa-bestiaization",
@@ -18065,9 +18098,12 @@
       },
       "geometryQueue": "square",
       "semanticTags": [],
-      "semanticStatus": "unreviewed",
-      "approvedUses": [],
-      "byteDuplicateGroup": "sha256-0047"
+      "semanticStatus": "approved",
+      "approvedUses": [
+        "slot-symbol"
+      ],
+      "byteDuplicateGroup": "sha256-0047",
+      "reviewEvidence": "owner-decision:2026-07-26; implementation authorized before visual review; mandatory post-implementation screen confirmation"
     },
     {
       "sourceCardId": "temerosa-bestiaization",
@@ -18193,8 +18229,11 @@
       },
       "geometryQueue": "square",
       "semanticTags": [],
-      "semanticStatus": "unreviewed",
-      "approvedUses": []
+      "semanticStatus": "approved",
+      "approvedUses": [
+        "slot-symbol"
+      ],
+      "reviewEvidence": "owner-decision:2026-07-26; implementation authorized before visual review; mandatory post-implementation screen confirmation"
     },
     {
       "sourceCardId": "temerosa-bestiaization",
@@ -18219,8 +18258,11 @@
       },
       "geometryQueue": "square",
       "semanticTags": [],
-      "semanticStatus": "unreviewed",
-      "approvedUses": []
+      "semanticStatus": "approved",
+      "approvedUses": [
+        "slot-symbol"
+      ],
+      "reviewEvidence": "owner-decision:2026-07-26; implementation authorized before visual review; mandatory post-implementation screen confirmation"
     },
     {
       "sourceCardId": "temerosa-bestiaization",
@@ -18245,8 +18287,11 @@
       },
       "geometryQueue": "square",
       "semanticTags": [],
-      "semanticStatus": "unreviewed",
-      "approvedUses": []
+      "semanticStatus": "approved",
+      "approvedUses": [
+        "slot-symbol"
+      ],
+      "reviewEvidence": "owner-decision:2026-07-26; implementation authorized before visual review; mandatory post-implementation screen confirmation"
     },
     {
       "sourceCardId": "temerosa-bestiaization",
@@ -18427,8 +18472,11 @@
       },
       "geometryQueue": "square",
       "semanticTags": [],
-      "semanticStatus": "unreviewed",
-      "approvedUses": []
+      "semanticStatus": "approved",
+      "approvedUses": [
+        "slot-symbol"
+      ],
+      "reviewEvidence": "owner-decision:2026-07-26; implementation authorized before visual review; mandatory post-implementation screen confirmation"
     },
     {
       "sourceCardId": "temerosa-bestiaization",
@@ -18707,9 +18755,12 @@
       },
       "geometryQueue": "square",
       "semanticTags": [],
-      "semanticStatus": "unreviewed",
-      "approvedUses": [],
-      "byteDuplicateGroup": "sha256-0020"
+      "semanticStatus": "approved",
+      "approvedUses": [
+        "slot-symbol"
+      ],
+      "byteDuplicateGroup": "sha256-0020",
+      "reviewEvidence": "owner-decision:2026-07-26; implementation authorized before visual review; mandatory post-implementation screen confirmation"
     },
     {
       "sourceCardId": "temerosa-bestiaization",
@@ -27589,8 +27640,11 @@
       },
       "geometryQueue": "landscape",
       "semanticTags": [],
-      "semanticStatus": "unreviewed",
-      "approvedUses": []
+      "semanticStatus": "approved",
+      "approvedUses": [
+        "table-art"
+      ],
+      "reviewEvidence": "owner-decision:2026-07-26; implementation authorized before visual review; mandatory post-implementation screen confirmation"
     },
     {
       "sourceCardId": "temerosa-finale",
@@ -28267,8 +28321,11 @@
       },
       "geometryQueue": "landscape",
       "semanticTags": [],
-      "semanticStatus": "unreviewed",
-      "approvedUses": []
+      "semanticStatus": "approved",
+      "approvedUses": [
+        "table-art"
+      ],
+      "reviewEvidence": "owner-decision:2026-07-26; implementation authorized before visual review; mandatory post-implementation screen confirmation"
     },
     {
       "sourceCardId": "temerosa-finale",
@@ -32955,8 +33012,11 @@
       },
       "geometryQueue": "landscape",
       "semanticTags": [],
-      "semanticStatus": "unreviewed",
-      "approvedUses": []
+      "semanticStatus": "approved",
+      "approvedUses": [
+        "table-art"
+      ],
+      "reviewEvidence": "owner-decision:2026-07-26; implementation authorized before visual review; mandatory post-implementation screen confirmation"
     },
     {
       "sourceCardId": "temerosa-finale",
@@ -41156,8 +41216,11 @@
       },
       "geometryQueue": "landscape",
       "semanticTags": [],
-      "semanticStatus": "unreviewed",
-      "approvedUses": []
+      "semanticStatus": "approved",
+      "approvedUses": [
+        "table-art"
+      ],
+      "reviewEvidence": "owner-decision:2026-07-26; implementation authorized before visual review; mandatory post-implementation screen confirmation"
     },
     {
       "sourceCardId": "temerosa-finale",

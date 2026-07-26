@@ -1,6 +1,6 @@
 # SPEC-A22 — 짝맞추기 기본판
 
-> 상태: v1.0 구현 계약 (2026-07-26). 선행: [SPEC-A16](./SPEC-A16-temerosa-casino-venue.md).
+> 상태: v1.0 구현 완료 (2026-07-26). 선행: [SPEC-A16](./SPEC-A16-temerosa-casino-venue.md).
 >
 > 결정 근거: [짝맞추기와 로드맵 교차검토](./MATCH-PAIRS-AND-ROADMAP-REVIEW-2026-07-26.md).
 

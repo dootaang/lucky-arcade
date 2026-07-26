@@ -73,6 +73,7 @@ export type CasinoReviewQueueItem = {
   semanticStatus: CasinoSemanticStatus;
   approvedUses: CasinoAssetUse[];
   reviewEvidence?: string;
+  postImplementationReview?: "pending" | "accepted" | "rejected";
   appearanceSet?: string;
   cropFocus: { x: number; y: number };
   frequency?: { tier: "base" | "low" | "medium" | "high"; weight: number; evidence: string };
@@ -82,6 +83,7 @@ export type CasinoReviewQueueItem = {
 export type CasinoReviewQueue = {
   contract: "temerosa-casino-review-queue/1.0";
   provenance: "docs/THIRD_PARTY_PROVENANCE.md#내장-콘텐츠-허가-확인";
+  reviewPolicy: "pre-release-visual" | "post-implementation-visual";
   releaseState: "candidate-only" | "approved";
   items: CasinoReviewQueueItem[];
 };
@@ -104,6 +106,7 @@ export type CasinoPackAsset = {
   sourceEntryPath: string;
   sourceByteHash: string;
   reviewEvidence: string;
+  postImplementationReview: "pending" | "accepted";
   cropFocus: { x: number; y: number };
   frequency?: { tier: "base" | "low" | "medium" | "high"; weight: number; evidence: string };
   variants: CasinoPackVariant[];
@@ -196,6 +199,8 @@ export function assertCasinoReviewQueue(queue: CasinoReviewQueue, inventory: Cas
     if (item.semanticStatus === "approved") {
       if (!item.reviewEvidence?.trim()) throw new Error(`casino_review_evidence_missing:${item.id}`);
       if (!item.approvedUses.includes(item.intendedUse)) throw new Error(`casino_review_use_not_approved:${item.id}`);
+      if (queue.reviewPolicy === "post-implementation-visual" && !item.postImplementationReview) throw new Error(`casino_post_implementation_review_status_missing:${item.id}`);
+      if (item.postImplementationReview === "rejected") throw new Error(`casino_post_implementation_review_rejected:${item.id}`);
     } else if (item.approvedUses.length > 0) {
       throw new Error(`casino_unapproved_item_has_approved_use:${item.id}`);
     }

@@ -38,23 +38,25 @@ describe("Temerosa casino A17 asset gates", () => {
     expect(casinoGeometryQueue(500, 1000)).toBe("portrait");
   });
 
-  it("keeps the first deliverable at 1 hero, 16 symbols, and 4 backgrounds, all unreviewed", async () => {
+  it("authorizes the first deliverable before visual confirmation and tracks the post-implementation review", async () => {
     const queue = JSON.parse(await readFile(queuePath, "utf8")) as CasinoReviewQueue;
     const inventory = inventoryFor(queue);
     expect(() => assertCasinoReviewQueue(queue, inventory)).not.toThrow();
     expect(countReviewUses(queue)).toEqual({ "venue-hero": 1, "slot-symbol": 16, "table-art": 4 });
-    expect(queue.releaseState).toBe("candidate-only");
-    expect(queue.items.every((item) => item.semanticStatus === "unreviewed" && item.approvedUses.length === 0)).toBe(true);
+    expect(queue.releaseState).toBe("approved");
+    expect(queue.reviewPolicy).toBe("post-implementation-visual");
+    expect(queue.items.every((item) => item.semanticStatus === "approved" && item.approvedUses.includes(item.intendedUse) && item.postImplementationReview === "pending")).toBe(true);
   });
 
   it("rejects approval propagation and unreviewed public selection", async () => {
     const queue = JSON.parse(await readFile(queuePath, "utf8")) as CasinoReviewQueue;
     const inventory = inventoryFor(queue);
     const unsafe = structuredClone(queue);
-    unsafe.items[0]!.approvedUses = ["venue-hero"];
-    expect(() => assertCasinoReviewQueue(unsafe, inventory)).toThrow("casino_unapproved_item_has_approved_use");
+    unsafe.items[0]!.approvedUses = [];
+    expect(() => assertCasinoReviewQueue(unsafe, inventory)).toThrow("casino_review_use_not_approved");
     const incompleteApproval = structuredClone(queue);
-    incompleteApproval.releaseState = "approved";
+    incompleteApproval.items[0]!.semanticStatus = "unreviewed";
+    incompleteApproval.items[0]!.approvedUses = [];
     expect(() => assertCasinoReviewQueue(incompleteApproval, inventory)).toThrow("casino_release_state_approved_with_unreviewed_items");
   });
 
@@ -82,15 +84,16 @@ function inventoryFor(queue: CasinoReviewQueue): CasinoInventoryReport {
     normalizedName: { value: item.id, evidence: ["source-string-preserved:originalName"] },
     geometryQueue: item.intendedUse === "slot-symbol" ? "square" : "landscape",
     semanticTags: [],
-    semanticStatus: "unreviewed",
-    approvedUses: [],
+    semanticStatus: item.semanticStatus,
+    approvedUses: [...item.approvedUses],
+    ...(item.reviewEvidence ? { reviewEvidence: item.reviewEvidence } : {}),
   }));
   return {
     contract: "temerosa-casino-asset-inventory/1.0",
     generatedAt: "2026-07-26T00:00:00.000Z",
     sources: [{ sourceCardId: "synthetic", sourceCardName: "Synthetic", entries: inventory.length, bytes: inventory.length }],
     duplicatePolicy: { byteHash: "sha256", perceptualHash: "dhash-64", perceptualThreshold: 5, perceptualGroupsAreCandidatesOnly: true },
-    totals: { entries: inventory.length, bytes: inventory.length, unreviewed: inventory.length, approved: 0, rejected: 0, byteDuplicateEntries: 0, byteDuplicateGroups: 0, perceptualCandidateEntries: 0, perceptualCandidateGroups: 0, sourcePathMimeMismatches: 0 },
+    totals: { entries: inventory.length, bytes: inventory.length, unreviewed: inventory.filter((item) => item.semanticStatus === "unreviewed").length, approved: inventory.filter((item) => item.semanticStatus === "approved").length, rejected: 0, byteDuplicateEntries: 0, byteDuplicateGroups: 0, perceptualCandidateEntries: 0, perceptualCandidateGroups: 0, sourcePathMimeMismatches: 0 },
     geometryQueues: { portrait: 0, card: 0, square: 16, landscape: 5, other: 0 },
     inventory,
   };
@@ -102,7 +105,7 @@ function pack(packId: CasinoPackManifest["packId"], count: number, totalBytes: n
     packId,
     version: "0.1.0",
     provenance: "docs/THIRD_PARTY_PROVENANCE.md#내장-콘텐츠-허가-확인",
-    assets: Array.from({ length: count }, (_, index) => ({ id: `asset-${index}`, use: packId === "temerosa-casino-venue" ? "venue-hero" as const : packId === "temerosa-casino-slots" ? "slot-symbol" as const : "table-art" as const, displayName: `Asset ${index}`, sourceCardId: "source", sourceEntryPath: `asset-${index}.png`, sourceByteHash: "0".repeat(64), reviewEvidence: "review", cropFocus: { x: 0.5, y: 0.5 }, variants: [] })),
+    assets: Array.from({ length: count }, (_, index) => ({ id: `asset-${index}`, use: packId === "temerosa-casino-venue" ? "venue-hero" as const : packId === "temerosa-casino-slots" ? "slot-symbol" as const : "table-art" as const, displayName: `Asset ${index}`, sourceCardId: "source", sourceEntryPath: `asset-${index}.png`, sourceByteHash: "0".repeat(64), reviewEvidence: "review", postImplementationReview: "pending" as const, cropFocus: { x: 0.5, y: 0.5 }, variants: [] })),
     totalBytes,
   };
 }

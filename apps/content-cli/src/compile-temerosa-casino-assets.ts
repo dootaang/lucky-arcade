@@ -79,6 +79,7 @@ async function main(): Promise<void> {
             sourceEntryPath: item.sourceEntryPath,
             sourceByteHash: candidate.byteHash,
             reviewEvidence: item.reviewEvidence!,
+            postImplementationReview: item.postImplementationReview === "accepted" ? "accepted" : "pending",
             cropFocus: item.cropFocus,
             ...(item.frequency ? { frequency: item.frequency } : {}),
             variants,

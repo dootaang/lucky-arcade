@@ -1,0 +1,633 @@
+{
+  "contract": "temerosa-casino-asset-pack/1.0",
+  "packId": "temerosa-casino-slots",
+  "version": "0.1.0",
+  "provenance": "docs/THIRD_PARTY_PROVENANCE.md#내장-콘텐츠-허가-확인",
+  "assets": [
+    {
+      "id": "slot-aranya",
+      "use": "slot-symbol",
+      "displayName": "Aranya",
+      "sourceCardId": "temerosa-bestiaization",
+      "sourceEntryPath": "assets/other/image/1.png",
+      "sourceByteHash": "cb8ed25f90a408492ffbd4d77077d16da00455b003a10d4f795ea742213c3d93",
+      "reviewEvidence": "owner-decision:2026-07-26; implementation authorized before visual review; mandatory post-implementation screen confirmation",
+      "postImplementationReview": "pending",
+      "cropFocus": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "frequency": {
+        "tier": "base",
+        "weight": 1,
+        "evidence": "Conservative equal default; no lore-backed rarity approval yet."
+      },
+      "variants": [
+        {
+          "scale": "1x",
+          "path": "assets/slot-aranya/1x.webp",
+          "mime": "image/webp",
+          "width": 128,
+          "height": 128,
+          "bytes": 3378,
+          "sha256": "f1494c5b59047913955e51ef082ebc6b30e6cbca8e42c2527a10f526f5635c59"
+        },
+        {
+          "scale": "2x",
+          "path": "assets/slot-aranya/2x.webp",
+          "mime": "image/webp",
+          "width": 256,
+          "height": 256,
+          "bytes": 11362,
+          "sha256": "aa3933b6bf77a2ea3eaab621081700af15b2e9ef67e7b7af858f59b30126df04"
+        }
+      ]
+    },
+    {
+      "id": "slot-kudryavka",
+      "use": "slot-symbol",
+      "displayName": "Kudryavka",
+      "sourceCardId": "temerosa-bestiaization",
+      "sourceEntryPath": "assets/other/image/7.png",
+      "sourceByteHash": "c1e1f51c57e992c8f2a3154005fc05afe6eeed62270a13cb432a70513ded18c6",
+      "reviewEvidence": "owner-decision:2026-07-26; implementation authorized before visual review; mandatory post-implementation screen confirmation",
+      "postImplementationReview": "pending",
+      "cropFocus": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "frequency": {
+        "tier": "base",
+        "weight": 1,
+        "evidence": "Conservative equal default; no lore-backed rarity approval yet."
+      },
+      "variants": [
+        {
+          "scale": "1x",
+          "path": "assets/slot-kudryavka/1x.webp",
+          "mime": "image/webp",
+          "width": 128,
+          "height": 128,
+          "bytes": 4020,
+          "sha256": "db21c3baafa6d07f5d423d624bfa134a174833542340acee2e172bca07663a0f"
+        },
+        {
+          "scale": "2x",
+          "path": "assets/slot-kudryavka/2x.webp",
+          "mime": "image/webp",
+          "width": 256,
+          "height": 256,
+          "bytes": 12280,
+          "sha256": "2e46a6ff6528535c9979351e633be056a2d2bc36173d3a80496e36499d87ee37"
+        }
+      ]
+    },
+    {
+      "id": "slot-lagarto",
+      "use": "slot-symbol",
+      "displayName": "Lagarto",
+      "sourceCardId": "temerosa-bestiaization",
+      "sourceEntryPath": "assets/other/image/8.png",
+      "sourceByteHash": "fb373019b932bc274d267649da0385460c913bf7ba679189bd9121694ed64051",
+      "reviewEvidence": "owner-decision:2026-07-26; implementation authorized before visual review; mandatory post-implementation screen confirmation",
+      "postImplementationReview": "pending",
+      "cropFocus": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "frequency": {
+        "tier": "base",
+        "weight": 1,
+        "evidence": "Conservative equal default; no lore-backed rarity approval yet."
+      },
+      "variants": [
+        {
+          "scale": "1x",
+          "path": "assets/slot-lagarto/1x.webp",
+          "mime": "image/webp",
+          "width": 128,
+          "height": 128,
+          "bytes": 5050,
+          "sha256": "9d1b47d667f48a02b83aed2db568cdc428b071ac877eab959d10ba15ba8f53e5"
+        },
+        {
+          "scale": "2x",
+          "path": "assets/slot-lagarto/2x.webp",
+          "mime": "image/webp",
+          "width": 256,
+          "height": 256,
+          "bytes": 18836,
+          "sha256": "ff25976cca1e4b4bfbddf6bc5da3a67b046f64485ccebc99d5f686ea771965b0"
+        }
+      ]
+    },
+    {
+      "id": "slot-polyphemus",
+      "use": "slot-symbol",
+      "displayName": "Polyphemus",
+      "sourceCardId": "temerosa-bestiaization",
+      "sourceEntryPath": "assets/other/image/15.png",
+      "sourceByteHash": "8ebe3539a77dcc5ca24bf4d3b8b421073581d9615a3a1946074f56ec6da064e5",
+      "reviewEvidence": "owner-decision:2026-07-26; implementation authorized before visual review; mandatory post-implementation screen confirmation",
+      "postImplementationReview": "pending",
+      "cropFocus": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "frequency": {
+        "tier": "base",
+        "weight": 1,
+        "evidence": "Conservative equal default; no lore-backed rarity approval yet."
+      },
+      "variants": [
+        {
+          "scale": "1x",
+          "path": "assets/slot-polyphemus/1x.webp",
+          "mime": "image/webp",
+          "width": 128,
+          "height": 128,
+          "bytes": 3228,
+          "sha256": "2bf604761bbf71c68d4b5e9346a14a745dfbd19e69c74584e9379c38f496e00c"
+        },
+        {
+          "scale": "2x",
+          "path": "assets/slot-polyphemus/2x.webp",
+          "mime": "image/webp",
+          "width": 256,
+          "height": 256,
+          "bytes": 10726,
+          "sha256": "43d57e436316cb54ea9648247e74a3cf5d60bc6ff680e9e233c73cacb53a38b7"
+        }
+      ]
+    },
+    {
+      "id": "slot-steel-fortress",
+      "use": "slot-symbol",
+      "displayName": "Steel Fortress",
+      "sourceCardId": "temerosa-bestiaization",
+      "sourceEntryPath": "assets/other/image/20.png",
+      "sourceByteHash": "09345cb7de760e359752e4de5feed5391e1f421b12809b60b6fe78072facf469",
+      "reviewEvidence": "owner-decision:2026-07-26; implementation authorized before visual review; mandatory post-implementation screen confirmation",
+      "postImplementationReview": "pending",
+      "cropFocus": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "frequency": {
+        "tier": "base",
+        "weight": 1,
+        "evidence": "Conservative equal default; no lore-backed rarity approval yet."
+      },
+      "variants": [
+        {
+          "scale": "1x",
+          "path": "assets/slot-steel-fortress/1x.webp",
+          "mime": "image/webp",
+          "width": 128,
+          "height": 128,
+          "bytes": 3600,
+          "sha256": "f88318e6cf25a5f467a1b34a2509fcbc172256ec47d5eb9852ad10979cf7c333"
+        },
+        {
+          "scale": "2x",
+          "path": "assets/slot-steel-fortress/2x.webp",
+          "mime": "image/webp",
+          "width": 256,
+          "height": 256,
+          "bytes": 13118,
+          "sha256": "8a290bd5000eaae5bc26bf787e208fd3599fb5fd71a2c0424ed38247c3a09791"
+        }
+      ]
+    },
+    {
+      "id": "slot-big-rat",
+      "use": "slot-symbol",
+      "displayName": "big rat",
+      "sourceCardId": "temerosa-bestiaization",
+      "sourceEntryPath": "assets/other/image/28.png",
+      "sourceByteHash": "3b4d077e6d6fd2f380240437334e4696dd0bdf640815c1344dd8b05f003a630f",
+      "reviewEvidence": "owner-decision:2026-07-26; implementation authorized before visual review; mandatory post-implementation screen confirmation",
+      "postImplementationReview": "pending",
+      "cropFocus": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "frequency": {
+        "tier": "base",
+        "weight": 1,
+        "evidence": "Conservative equal default; no lore-backed rarity approval yet."
+      },
+      "variants": [
+        {
+          "scale": "1x",
+          "path": "assets/slot-big-rat/1x.webp",
+          "mime": "image/webp",
+          "width": 128,
+          "height": 128,
+          "bytes": 3600,
+          "sha256": "cb355dcfe989434ad6cf46ca6fe8c410043be2bf34a15399e5539903d849871e"
+        },
+        {
+          "scale": "2x",
+          "path": "assets/slot-big-rat/2x.webp",
+          "mime": "image/webp",
+          "width": 256,
+          "height": 256,
+          "bytes": 11534,
+          "sha256": "e4d88320109c972fe326a1449f470c6688133acc3eaad42f696f8fd1343204bc"
+        }
+      ]
+    },
+    {
+      "id": "slot-big-spider",
+      "use": "slot-symbol",
+      "displayName": "big spider",
+      "sourceCardId": "temerosa-bestiaization",
+      "sourceEntryPath": "assets/other/image/29.png",
+      "sourceByteHash": "bfe93ec41455c20d1a7922dccd2f9998b06465230685213181bd90837882360e",
+      "reviewEvidence": "owner-decision:2026-07-26; implementation authorized before visual review; mandatory post-implementation screen confirmation",
+      "postImplementationReview": "pending",
+      "cropFocus": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "frequency": {
+        "tier": "base",
+        "weight": 1,
+        "evidence": "Conservative equal default; no lore-backed rarity approval yet."
+      },
+      "variants": [
+        {
+          "scale": "1x",
+          "path": "assets/slot-big-spider/1x.webp",
+          "mime": "image/webp",
+          "width": 128,
+          "height": 128,
+          "bytes": 1814,
+          "sha256": "cc28f2b9e5bb9449747d676bdd5ff952e0cf663a4942b15bdf89b54b3c067d27"
+        },
+        {
+          "scale": "2x",
+          "path": "assets/slot-big-spider/2x.webp",
+          "mime": "image/webp",
+          "width": 256,
+          "height": 256,
+          "bytes": 5794,
+          "sha256": "a7192701b0eb4399be71e782044b024c7b48f3e761aa5abbd78b0899bca96db1"
+        }
+      ]
+    },
+    {
+      "id": "slot-ironclad-snake",
+      "use": "slot-symbol",
+      "displayName": "ironclad snake",
+      "sourceCardId": "temerosa-bestiaization",
+      "sourceEntryPath": "assets/other/image/39.png",
+      "sourceByteHash": "597fa6dc3f120be4d07578d123275dc97ed4718bcb965abe2fe96d928d77c5fc",
+      "reviewEvidence": "owner-decision:2026-07-26; implementation authorized before visual review; mandatory post-implementation screen confirmation",
+      "postImplementationReview": "pending",
+      "cropFocus": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "frequency": {
+        "tier": "base",
+        "weight": 1,
+        "evidence": "Conservative equal default; no lore-backed rarity approval yet."
+      },
+      "variants": [
+        {
+          "scale": "1x",
+          "path": "assets/slot-ironclad-snake/1x.webp",
+          "mime": "image/webp",
+          "width": 128,
+          "height": 128,
+          "bytes": 2430,
+          "sha256": "c2f8026dfb52ab67f30d38254fccba19267c0df2190ff979c71e913d434bfd21"
+        },
+        {
+          "scale": "2x",
+          "path": "assets/slot-ironclad-snake/2x.webp",
+          "mime": "image/webp",
+          "width": 256,
+          "height": 256,
+          "bytes": 7718,
+          "sha256": "bcc1fd8ffe4ca167729df882922e6d5c66b85207106f5a339b214908c31582be"
+        }
+      ]
+    },
+    {
+      "id": "slot-novemdecillion",
+      "use": "slot-symbol",
+      "displayName": "Novemdecillion",
+      "sourceCardId": "temerosa-bestiaization",
+      "sourceEntryPath": "assets/other/image/41.png",
+      "sourceByteHash": "850f4856bb589c6bf4094a73f7a86250160543298cdb654c61ad3cbf993d75dc",
+      "reviewEvidence": "owner-decision:2026-07-26; implementation authorized before visual review; mandatory post-implementation screen confirmation",
+      "postImplementationReview": "pending",
+      "cropFocus": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "frequency": {
+        "tier": "base",
+        "weight": 1,
+        "evidence": "Conservative equal default; no lore-backed rarity approval yet."
+      },
+      "variants": [
+        {
+          "scale": "1x",
+          "path": "assets/slot-novemdecillion/1x.webp",
+          "mime": "image/webp",
+          "width": 128,
+          "height": 128,
+          "bytes": 4536,
+          "sha256": "21dff373e03298e380dd6a63d01d1113c4a0dc4f1228609e9afaae45c4d0ad74"
+        },
+        {
+          "scale": "2x",
+          "path": "assets/slot-novemdecillion/2x.webp",
+          "mime": "image/webp",
+          "width": 256,
+          "height": 256,
+          "bytes": 13954,
+          "sha256": "4e82f4adf5aeb6007a241cbd4175ddddbd122137653bfe86b7564ea9f8cf530b"
+        }
+      ]
+    },
+    {
+      "id": "slot-plagueworm",
+      "use": "slot-symbol",
+      "displayName": "Plagueworm",
+      "sourceCardId": "temerosa-bestiaization",
+      "sourceEntryPath": "assets/other/image/42.png",
+      "sourceByteHash": "6e923532e1f40b7129bc19dbc91d62034a0364e11a4a6ce4b06412207a12ad8a",
+      "reviewEvidence": "owner-decision:2026-07-26; implementation authorized before visual review; mandatory post-implementation screen confirmation",
+      "postImplementationReview": "pending",
+      "cropFocus": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "frequency": {
+        "tier": "base",
+        "weight": 1,
+        "evidence": "Conservative equal default; no lore-backed rarity approval yet."
+      },
+      "variants": [
+        {
+          "scale": "1x",
+          "path": "assets/slot-plagueworm/1x.webp",
+          "mime": "image/webp",
+          "width": 128,
+          "height": 128,
+          "bytes": 3090,
+          "sha256": "9969f01c4f84c49184ac5ed96a34550a6475e129d16773e2ea1446a4ba48aaf0"
+        },
+        {
+          "scale": "2x",
+          "path": "assets/slot-plagueworm/2x.webp",
+          "mime": "image/webp",
+          "width": 256,
+          "height": 256,
+          "bytes": 9028,
+          "sha256": "324d07bb0b0a049580eef1d08509a9ae2acf7e1d6b779bd8d2c1b3550b1a9bb7"
+        }
+      ]
+    },
+    {
+      "id": "slot-doppelganger",
+      "use": "slot-symbol",
+      "displayName": "doppelganger",
+      "sourceCardId": "temerosa-bestiaization",
+      "sourceEntryPath": "assets/other/image/55.png",
+      "sourceByteHash": "aa877ba0327355a1e159fbbcbecdda93142d9730bbf88d52bab7044d91eeb46f",
+      "reviewEvidence": "owner-decision:2026-07-26; implementation authorized before visual review; mandatory post-implementation screen confirmation",
+      "postImplementationReview": "pending",
+      "cropFocus": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "frequency": {
+        "tier": "base",
+        "weight": 1,
+        "evidence": "Conservative equal default; no lore-backed rarity approval yet."
+      },
+      "variants": [
+        {
+          "scale": "1x",
+          "path": "assets/slot-doppelganger/1x.webp",
+          "mime": "image/webp",
+          "width": 128,
+          "height": 128,
+          "bytes": 3032,
+          "sha256": "d8ecc395ff85f64ea17675806f5e228bb040d59381c199ec903ba0e435181a4a"
+        },
+        {
+          "scale": "2x",
+          "path": "assets/slot-doppelganger/2x.webp",
+          "mime": "image/webp",
+          "width": 256,
+          "height": 256,
+          "bytes": 9006,
+          "sha256": "969874ca835961b61da305d76a5ee59970b8555969defbb9b89ff18fa9155bac"
+        }
+      ]
+    },
+    {
+      "id": "slot-dullahan",
+      "use": "slot-symbol",
+      "displayName": "Dullahan",
+      "sourceCardId": "temerosa-bestiaization",
+      "sourceEntryPath": "assets/other/image/56.png",
+      "sourceByteHash": "5c4b16d0c559bd065ecb7907fb7dc23d2918f810988d74707d81c756b910148d",
+      "reviewEvidence": "owner-decision:2026-07-26; implementation authorized before visual review; mandatory post-implementation screen confirmation",
+      "postImplementationReview": "pending",
+      "cropFocus": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "frequency": {
+        "tier": "base",
+        "weight": 1,
+        "evidence": "Conservative equal default; no lore-backed rarity approval yet."
+      },
+      "variants": [
+        {
+          "scale": "1x",
+          "path": "assets/slot-dullahan/1x.webp",
+          "mime": "image/webp",
+          "width": 128,
+          "height": 128,
+          "bytes": 2630,
+          "sha256": "d605214df442dad842a99b7eb116c25a66329a968efa24bd4a97f1f388c66b89"
+        },
+        {
+          "scale": "2x",
+          "path": "assets/slot-dullahan/2x.webp",
+          "mime": "image/webp",
+          "width": 256,
+          "height": 256,
+          "bytes": 8824,
+          "sha256": "8e687b0b2ae762daf8c558b529a17b9e118ed03c43a8fa6121e3a167c7a99431"
+        }
+      ]
+    },
+    {
+      "id": "slot-non-promotion",
+      "use": "slot-symbol",
+      "displayName": "Non-promotion",
+      "sourceCardId": "temerosa-bestiaization",
+      "sourceEntryPath": "assets/other/image/57.png",
+      "sourceByteHash": "02089e0285f7cddd1d3f60d64974c572ba16ad7694add029b27d65653427abb6",
+      "reviewEvidence": "owner-decision:2026-07-26; implementation authorized before visual review; mandatory post-implementation screen confirmation",
+      "postImplementationReview": "pending",
+      "cropFocus": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "frequency": {
+        "tier": "base",
+        "weight": 1,
+        "evidence": "Conservative equal default; no lore-backed rarity approval yet."
+      },
+      "variants": [
+        {
+          "scale": "1x",
+          "path": "assets/slot-non-promotion/1x.webp",
+          "mime": "image/webp",
+          "width": 128,
+          "height": 128,
+          "bytes": 2378,
+          "sha256": "f9d7035f97084d5fb91be76bc9a41db722209124c4e32f6d9e57813b655434b9"
+        },
+        {
+          "scale": "2x",
+          "path": "assets/slot-non-promotion/2x.webp",
+          "mime": "image/webp",
+          "width": 256,
+          "height": 256,
+          "bytes": 7272,
+          "sha256": "c3bbc481b0f8f60125a67b0431d8da0086da224cbf81f3817f3dace175434cd1"
+        }
+      ]
+    },
+    {
+      "id": "slot-claw-denomination",
+      "use": "slot-symbol",
+      "displayName": "Claw denomination symbol",
+      "sourceCardId": "temerosa-bestiaization",
+      "sourceEntryPath": "assets/other/image/61.png",
+      "sourceByteHash": "36fe490f4229b62bb6c42a8d6bde5e741f75b4b5d01b081a623808a1dba2bbb5",
+      "reviewEvidence": "owner-decision:2026-07-26; implementation authorized before visual review; mandatory post-implementation screen confirmation",
+      "postImplementationReview": "pending",
+      "cropFocus": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "frequency": {
+        "tier": "base",
+        "weight": 1,
+        "evidence": "Conservative equal default; no lore-backed rarity approval yet."
+      },
+      "variants": [
+        {
+          "scale": "1x",
+          "path": "assets/slot-claw-denomination/1x.webp",
+          "mime": "image/webp",
+          "width": 128,
+          "height": 128,
+          "bytes": 2598,
+          "sha256": "3b21fd70b9d3655867f88f6c97e26ae006ca0921858d1c17d4b1170e376735d2"
+        },
+        {
+          "scale": "2x",
+          "path": "assets/slot-claw-denomination/2x.webp",
+          "mime": "image/webp",
+          "width": 256,
+          "height": 256,
+          "bytes": 7764,
+          "sha256": "655036065d073226547dcabd237caa14a9e2e3db04aeff167f4d930c7cc75a01"
+        }
+      ]
+    },
+    {
+      "id": "slot-eye-denomination",
+      "use": "slot-symbol",
+      "displayName": "Eye denomination symbol",
+      "sourceCardId": "temerosa-bestiaization",
+      "sourceEntryPath": "assets/other/image/62.png",
+      "sourceByteHash": "32e912555ea95c58b593cd48a01ce8817155a300225522004ae2b25e411014a3",
+      "reviewEvidence": "owner-decision:2026-07-26; implementation authorized before visual review; mandatory post-implementation screen confirmation",
+      "postImplementationReview": "pending",
+      "cropFocus": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "frequency": {
+        "tier": "base",
+        "weight": 1,
+        "evidence": "Conservative equal default; no lore-backed rarity approval yet."
+      },
+      "variants": [
+        {
+          "scale": "1x",
+          "path": "assets/slot-eye-denomination/1x.webp",
+          "mime": "image/webp",
+          "width": 128,
+          "height": 128,
+          "bytes": 2712,
+          "sha256": "f3555c7243acda980def462951dc33f896d2b4dc47a5667c973585070df91d53"
+        },
+        {
+          "scale": "2x",
+          "path": "assets/slot-eye-denomination/2x.webp",
+          "mime": "image/webp",
+          "width": 256,
+          "height": 256,
+          "bytes": 8196,
+          "sha256": "81af11209521a23a124714e0807c91a9d5e99978a8925a0845aaf2cb4d69ee5e"
+        }
+      ]
+    },
+    {
+      "id": "slot-heart-denomination",
+      "use": "slot-symbol",
+      "displayName": "Heart denomination symbol",
+      "sourceCardId": "temerosa-bestiaization",
+      "sourceEntryPath": "assets/other/image/63.png",
+      "sourceByteHash": "276f127f1e25c2475f2fc702660bb0d3a21a22bb0d6df1b0c7b0e8db95833d7e",
+      "reviewEvidence": "owner-decision:2026-07-26; implementation authorized before visual review; mandatory post-implementation screen confirmation",
+      "postImplementationReview": "pending",
+      "cropFocus": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "frequency": {
+        "tier": "base",
+        "weight": 1,
+        "evidence": "Conservative equal default; no lore-backed rarity approval yet."
+      },
+      "variants": [
+        {
+          "scale": "1x",
+          "path": "assets/slot-heart-denomination/1x.webp",
+          "mime": "image/webp",
+          "width": 128,
+          "height": 128,
+          "bytes": 2334,
+          "sha256": "094cb8c63df81f22391610175c3f75460ffa74c4348751574d15d387b49aa157"
+        },
+        {
+          "scale": "2x",
+          "path": "assets/slot-heart-denomination/2x.webp",
+          "mime": "image/webp",
+          "width": 256,
+          "height": 256,
+          "bytes": 7674,
+          "sha256": "4e4807b393cef78bf763759a1ef47bf47bed33687a02529cd11f4ec28fc29588"
+        }
+      ]
+    }
+  ],
+  "totalBytes": 213516
+}

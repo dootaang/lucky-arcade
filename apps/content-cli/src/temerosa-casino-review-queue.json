@@ -1,7 +1,7 @@
 {
   "contract": "temerosa-casino-review-queue/1.0",
   "provenance": "docs/THIRD_PARTY_PROVENANCE.md#내장-콘텐츠-허가-확인",
-  "releaseState": "candidate-only",
+  "releaseState": "approved",
   "items": [
     {
       "id": "venue-temerosa",
@@ -9,10 +9,23 @@
       "sourceCardId": "temerosa-bestiaization",
       "sourceEntryPath": "assets/other/image/25.webp",
       "requestedDisplayName": "Temerosa",
-      "semanticStatus": "unreviewed",
-      "approvedUses": [],
-      "cropFocus": { "x": 0.5, "y": 0.5 },
-      "requiredChecks": ["visual:SFW", "semantic:venue-scene", "era:canonical", "crop:16x9-sm-md", "provenance:redistribution"]
+      "semanticStatus": "approved",
+      "approvedUses": [
+        "venue-hero"
+      ],
+      "cropFocus": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "requiredChecks": [
+        "visual:SFW",
+        "semantic:venue-scene",
+        "era:canonical",
+        "crop:16x9-sm-md",
+        "provenance:redistribution"
+      ],
+      "reviewEvidence": "owner-decision:2026-07-26; implementation authorized before visual review; mandatory post-implementation screen confirmation",
+      "postImplementationReview": "pending"
     },
     {
       "id": "slot-aranya",
@@ -20,11 +33,28 @@
       "sourceCardId": "temerosa-bestiaization",
       "sourceEntryPath": "assets/other/image/1.png",
       "requestedDisplayName": "Aranya",
-      "semanticStatus": "unreviewed",
-      "approvedUses": [],
-      "cropFocus": { "x": 0.5, "y": 0.5 },
-      "frequency": { "tier": "base", "weight": 1, "evidence": "Conservative equal default; no lore-backed rarity approval yet." },
-      "requiredChecks": ["visual:SFW", "semantic:slot-symbol", "era:canonical", "crop:square-1x-2x", "frequency:lore-and-card-occurrence"]
+      "semanticStatus": "approved",
+      "approvedUses": [
+        "slot-symbol"
+      ],
+      "cropFocus": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "frequency": {
+        "tier": "base",
+        "weight": 1,
+        "evidence": "Conservative equal default; no lore-backed rarity approval yet."
+      },
+      "requiredChecks": [
+        "visual:SFW",
+        "semantic:slot-symbol",
+        "era:canonical",
+        "crop:square-1x-2x",
+        "frequency:lore-and-card-occurrence"
+      ],
+      "reviewEvidence": "owner-decision:2026-07-26; implementation authorized before visual review; mandatory post-implementation screen confirmation",
+      "postImplementationReview": "pending"
     },
     {
       "id": "slot-kudryavka",
@@ -32,11 +62,28 @@
       "sourceCardId": "temerosa-bestiaization",
       "sourceEntryPath": "assets/other/image/7.png",
       "requestedDisplayName": "Kudryavka",
-      "semanticStatus": "unreviewed",
-      "approvedUses": [],
-      "cropFocus": { "x": 0.5, "y": 0.5 },
-      "frequency": { "tier": "base", "weight": 1, "evidence": "Conservative equal default; no lore-backed rarity approval yet." },
-      "requiredChecks": ["visual:SFW", "semantic:slot-symbol", "era:canonical", "crop:square-1x-2x", "frequency:lore-and-card-occurrence"]
+      "semanticStatus": "approved",
+      "approvedUses": [
+        "slot-symbol"
+      ],
+      "cropFocus": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "frequency": {
+        "tier": "base",
+        "weight": 1,
+        "evidence": "Conservative equal default; no lore-backed rarity approval yet."
+      },
+      "requiredChecks": [
+        "visual:SFW",
+        "semantic:slot-symbol",
+        "era:canonical",
+        "crop:square-1x-2x",
+        "frequency:lore-and-card-occurrence"
+      ],
+      "reviewEvidence": "owner-decision:2026-07-26; implementation authorized before visual review; mandatory post-implementation screen confirmation",
+      "postImplementationReview": "pending"
     },
     {
       "id": "slot-lagarto",
@@ -44,11 +91,28 @@
       "sourceCardId": "temerosa-bestiaization",
       "sourceEntryPath": "assets/other/image/8.png",
       "requestedDisplayName": "Lagarto",
-      "semanticStatus": "unreviewed",
-      "approvedUses": [],
-      "cropFocus": { "x": 0.5, "y": 0.5 },
-      "frequency": { "tier": "base", "weight": 1, "evidence": "Conservative equal default; no lore-backed rarity approval yet." },
-      "requiredChecks": ["visual:SFW", "semantic:slot-symbol", "era:canonical", "crop:square-1x-2x", "frequency:lore-and-card-occurrence"]
+      "semanticStatus": "approved",
+      "approvedUses": [
+        "slot-symbol"
+      ],
+      "cropFocus": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "frequency": {
+        "tier": "base",
+        "weight": 1,
+        "evidence": "Conservative equal default; no lore-backed rarity approval yet."
+      },
+      "requiredChecks": [
+        "visual:SFW",
+        "semantic:slot-symbol",
+        "era:canonical",
+        "crop:square-1x-2x",
+        "frequency:lore-and-card-occurrence"
+      ],
+      "reviewEvidence": "owner-decision:2026-07-26; implementation authorized before visual review; mandatory post-implementation screen confirmation",
+      "postImplementationReview": "pending"
     },
     {
       "id": "slot-polyphemus",
@@ -56,11 +120,28 @@
       "sourceCardId": "temerosa-bestiaization",
       "sourceEntryPath": "assets/other/image/15.png",
       "requestedDisplayName": "Polyphemus",
-      "semanticStatus": "unreviewed",
-      "approvedUses": [],
-      "cropFocus": { "x": 0.5, "y": 0.5 },
-      "frequency": { "tier": "base", "weight": 1, "evidence": "Conservative equal default; no lore-backed rarity approval yet." },
-      "requiredChecks": ["visual:SFW", "semantic:slot-symbol", "era:canonical", "crop:square-1x-2x", "frequency:lore-and-card-occurrence"]
+      "semanticStatus": "approved",
+      "approvedUses": [
+        "slot-symbol"
+      ],
+      "cropFocus": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "frequency": {
+        "tier": "base",
+        "weight": 1,
+        "evidence": "Conservative equal default; no lore-backed rarity approval yet."
+      },
+      "requiredChecks": [
+        "visual:SFW",
+        "semantic:slot-symbol",
+        "era:canonical",
+        "crop:square-1x-2x",
+        "frequency:lore-and-card-occurrence"
+      ],
+      "reviewEvidence": "owner-decision:2026-07-26; implementation authorized before visual review; mandatory post-implementation screen confirmation",
+      "postImplementationReview": "pending"
     },
     {
       "id": "slot-steel-fortress",
@@ -68,11 +149,28 @@
       "sourceCardId": "temerosa-bestiaization",
       "sourceEntryPath": "assets/other/image/20.png",
       "requestedDisplayName": "Steel Fortress",
-      "semanticStatus": "unreviewed",
-      "approvedUses": [],
-      "cropFocus": { "x": 0.5, "y": 0.5 },
-      "frequency": { "tier": "base", "weight": 1, "evidence": "Conservative equal default; no lore-backed rarity approval yet." },
-      "requiredChecks": ["visual:SFW", "semantic:slot-symbol", "era:canonical", "crop:square-1x-2x", "frequency:lore-and-card-occurrence"]
+      "semanticStatus": "approved",
+      "approvedUses": [
+        "slot-symbol"
+      ],
+      "cropFocus": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "frequency": {
+        "tier": "base",
+        "weight": 1,
+        "evidence": "Conservative equal default; no lore-backed rarity approval yet."
+      },
+      "requiredChecks": [
+        "visual:SFW",
+        "semantic:slot-symbol",
+        "era:canonical",
+        "crop:square-1x-2x",
+        "frequency:lore-and-card-occurrence"
+      ],
+      "reviewEvidence": "owner-decision:2026-07-26; implementation authorized before visual review; mandatory post-implementation screen confirmation",
+      "postImplementationReview": "pending"
     },
     {
       "id": "slot-big-rat",
@@ -80,11 +178,28 @@
       "sourceCardId": "temerosa-bestiaization",
       "sourceEntryPath": "assets/other/image/28.png",
       "requestedDisplayName": "big rat",
-      "semanticStatus": "unreviewed",
-      "approvedUses": [],
-      "cropFocus": { "x": 0.5, "y": 0.5 },
-      "frequency": { "tier": "base", "weight": 1, "evidence": "Conservative equal default; no lore-backed rarity approval yet." },
-      "requiredChecks": ["visual:SFW", "semantic:slot-symbol", "era:canonical", "crop:square-1x-2x", "frequency:lore-and-card-occurrence"]
+      "semanticStatus": "approved",
+      "approvedUses": [
+        "slot-symbol"
+      ],
+      "cropFocus": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "frequency": {
+        "tier": "base",
+        "weight": 1,
+        "evidence": "Conservative equal default; no lore-backed rarity approval yet."
+      },
+      "requiredChecks": [
+        "visual:SFW",
+        "semantic:slot-symbol",
+        "era:canonical",
+        "crop:square-1x-2x",
+        "frequency:lore-and-card-occurrence"
+      ],
+      "reviewEvidence": "owner-decision:2026-07-26; implementation authorized before visual review; mandatory post-implementation screen confirmation",
+      "postImplementationReview": "pending"
     },
     {
       "id": "slot-big-spider",
@@ -92,11 +207,28 @@
       "sourceCardId": "temerosa-bestiaization",
       "sourceEntryPath": "assets/other/image/29.png",
       "requestedDisplayName": "big spider",
-      "semanticStatus": "unreviewed",
-      "approvedUses": [],
-      "cropFocus": { "x": 0.5, "y": 0.5 },
-      "frequency": { "tier": "base", "weight": 1, "evidence": "Conservative equal default; no lore-backed rarity approval yet." },
-      "requiredChecks": ["visual:SFW", "semantic:slot-symbol", "era:canonical", "crop:square-1x-2x", "frequency:lore-and-card-occurrence"]
+      "semanticStatus": "approved",
+      "approvedUses": [
+        "slot-symbol"
+      ],
+      "cropFocus": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "frequency": {
+        "tier": "base",
+        "weight": 1,
+        "evidence": "Conservative equal default; no lore-backed rarity approval yet."
+      },
+      "requiredChecks": [
+        "visual:SFW",
+        "semantic:slot-symbol",
+        "era:canonical",
+        "crop:square-1x-2x",
+        "frequency:lore-and-card-occurrence"
+      ],
+      "reviewEvidence": "owner-decision:2026-07-26; implementation authorized before visual review; mandatory post-implementation screen confirmation",
+      "postImplementationReview": "pending"
     },
     {
       "id": "slot-ironclad-snake",
@@ -104,11 +236,28 @@
       "sourceCardId": "temerosa-bestiaization",
       "sourceEntryPath": "assets/other/image/39.png",
       "requestedDisplayName": "ironclad snake",
-      "semanticStatus": "unreviewed",
-      "approvedUses": [],
-      "cropFocus": { "x": 0.5, "y": 0.5 },
-      "frequency": { "tier": "base", "weight": 1, "evidence": "Conservative equal default; no lore-backed rarity approval yet." },
-      "requiredChecks": ["visual:SFW", "semantic:slot-symbol", "era:canonical", "crop:square-1x-2x", "frequency:lore-and-card-occurrence"]
+      "semanticStatus": "approved",
+      "approvedUses": [
+        "slot-symbol"
+      ],
+      "cropFocus": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "frequency": {
+        "tier": "base",
+        "weight": 1,
+        "evidence": "Conservative equal default; no lore-backed rarity approval yet."
+      },
+      "requiredChecks": [
+        "visual:SFW",
+        "semantic:slot-symbol",
+        "era:canonical",
+        "crop:square-1x-2x",
+        "frequency:lore-and-card-occurrence"
+      ],
+      "reviewEvidence": "owner-decision:2026-07-26; implementation authorized before visual review; mandatory post-implementation screen confirmation",
+      "postImplementationReview": "pending"
     },
     {
       "id": "slot-novemdecillion",
@@ -116,11 +265,28 @@
       "sourceCardId": "temerosa-bestiaization",
       "sourceEntryPath": "assets/other/image/41.png",
       "requestedDisplayName": "Novemdecillion",
-      "semanticStatus": "unreviewed",
-      "approvedUses": [],
-      "cropFocus": { "x": 0.5, "y": 0.5 },
-      "frequency": { "tier": "base", "weight": 1, "evidence": "Conservative equal default; no lore-backed rarity approval yet." },
-      "requiredChecks": ["visual:SFW", "semantic:slot-symbol", "era:canonical", "crop:square-1x-2x", "frequency:lore-and-card-occurrence"]
+      "semanticStatus": "approved",
+      "approvedUses": [
+        "slot-symbol"
+      ],
+      "cropFocus": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "frequency": {
+        "tier": "base",
+        "weight": 1,
+        "evidence": "Conservative equal default; no lore-backed rarity approval yet."
+      },
+      "requiredChecks": [
+        "visual:SFW",
+        "semantic:slot-symbol",
+        "era:canonical",
+        "crop:square-1x-2x",
+        "frequency:lore-and-card-occurrence"
+      ],
+      "reviewEvidence": "owner-decision:2026-07-26; implementation authorized before visual review; mandatory post-implementation screen confirmation",
+      "postImplementationReview": "pending"
     },
     {
       "id": "slot-plagueworm",
@@ -128,11 +294,28 @@
       "sourceCardId": "temerosa-bestiaization",
       "sourceEntryPath": "assets/other/image/42.png",
       "requestedDisplayName": "Plagueworm",
-      "semanticStatus": "unreviewed",
-      "approvedUses": [],
-      "cropFocus": { "x": 0.5, "y": 0.5 },
-      "frequency": { "tier": "base", "weight": 1, "evidence": "Conservative equal default; no lore-backed rarity approval yet." },
-      "requiredChecks": ["visual:SFW", "semantic:slot-symbol", "era:canonical", "crop:square-1x-2x", "frequency:lore-and-card-occurrence"]
+      "semanticStatus": "approved",
+      "approvedUses": [
+        "slot-symbol"
+      ],
+      "cropFocus": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "frequency": {
+        "tier": "base",
+        "weight": 1,
+        "evidence": "Conservative equal default; no lore-backed rarity approval yet."
+      },
+      "requiredChecks": [
+        "visual:SFW",
+        "semantic:slot-symbol",
+        "era:canonical",
+        "crop:square-1x-2x",
+        "frequency:lore-and-card-occurrence"
+      ],
+      "reviewEvidence": "owner-decision:2026-07-26; implementation authorized before visual review; mandatory post-implementation screen confirmation",
+      "postImplementationReview": "pending"
     },
     {
       "id": "slot-doppelganger",
@@ -140,11 +323,28 @@
       "sourceCardId": "temerosa-bestiaization",
       "sourceEntryPath": "assets/other/image/55.png",
       "requestedDisplayName": "doppelganger",
-      "semanticStatus": "unreviewed",
-      "approvedUses": [],
-      "cropFocus": { "x": 0.5, "y": 0.5 },
-      "frequency": { "tier": "base", "weight": 1, "evidence": "Conservative equal default; no lore-backed rarity approval yet." },
-      "requiredChecks": ["visual:SFW", "semantic:slot-symbol", "era:canonical", "crop:square-1x-2x", "frequency:lore-and-card-occurrence"]
+      "semanticStatus": "approved",
+      "approvedUses": [
+        "slot-symbol"
+      ],
+      "cropFocus": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "frequency": {
+        "tier": "base",
+        "weight": 1,
+        "evidence": "Conservative equal default; no lore-backed rarity approval yet."
+      },
+      "requiredChecks": [
+        "visual:SFW",
+        "semantic:slot-symbol",
+        "era:canonical",
+        "crop:square-1x-2x",
+        "frequency:lore-and-card-occurrence"
+      ],
+      "reviewEvidence": "owner-decision:2026-07-26; implementation authorized before visual review; mandatory post-implementation screen confirmation",
+      "postImplementationReview": "pending"
     },
     {
       "id": "slot-dullahan",
@@ -152,11 +352,28 @@
       "sourceCardId": "temerosa-bestiaization",
       "sourceEntryPath": "assets/other/image/56.png",
       "requestedDisplayName": "Dullahan",
-      "semanticStatus": "unreviewed",
-      "approvedUses": [],
-      "cropFocus": { "x": 0.5, "y": 0.5 },
-      "frequency": { "tier": "base", "weight": 1, "evidence": "Conservative equal default; no lore-backed rarity approval yet." },
-      "requiredChecks": ["visual:SFW", "semantic:slot-symbol", "era:canonical", "crop:square-1x-2x", "frequency:lore-and-card-occurrence"]
+      "semanticStatus": "approved",
+      "approvedUses": [
+        "slot-symbol"
+      ],
+      "cropFocus": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "frequency": {
+        "tier": "base",
+        "weight": 1,
+        "evidence": "Conservative equal default; no lore-backed rarity approval yet."
+      },
+      "requiredChecks": [
+        "visual:SFW",
+        "semantic:slot-symbol",
+        "era:canonical",
+        "crop:square-1x-2x",
+        "frequency:lore-and-card-occurrence"
+      ],
+      "reviewEvidence": "owner-decision:2026-07-26; implementation authorized before visual review; mandatory post-implementation screen confirmation",
+      "postImplementationReview": "pending"
     },
     {
       "id": "slot-non-promotion",
@@ -164,11 +381,28 @@
       "sourceCardId": "temerosa-bestiaization",
       "sourceEntryPath": "assets/other/image/57.png",
       "requestedDisplayName": "Non-promotion",
-      "semanticStatus": "unreviewed",
-      "approvedUses": [],
-      "cropFocus": { "x": 0.5, "y": 0.5 },
-      "frequency": { "tier": "base", "weight": 1, "evidence": "Conservative equal default; no lore-backed rarity approval yet." },
-      "requiredChecks": ["visual:SFW", "semantic:slot-symbol", "era:canonical", "crop:square-1x-2x", "frequency:lore-and-card-occurrence"]
+      "semanticStatus": "approved",
+      "approvedUses": [
+        "slot-symbol"
+      ],
+      "cropFocus": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "frequency": {
+        "tier": "base",
+        "weight": 1,
+        "evidence": "Conservative equal default; no lore-backed rarity approval yet."
+      },
+      "requiredChecks": [
+        "visual:SFW",
+        "semantic:slot-symbol",
+        "era:canonical",
+        "crop:square-1x-2x",
+        "frequency:lore-and-card-occurrence"
+      ],
+      "reviewEvidence": "owner-decision:2026-07-26; implementation authorized before visual review; mandatory post-implementation screen confirmation",
+      "postImplementationReview": "pending"
     },
     {
       "id": "slot-claw-denomination",
@@ -176,11 +410,28 @@
       "sourceCardId": "temerosa-bestiaization",
       "sourceEntryPath": "assets/other/image/61.png",
       "requestedDisplayName": "Claw denomination symbol",
-      "semanticStatus": "unreviewed",
-      "approvedUses": [],
-      "cropFocus": { "x": 0.5, "y": 0.5 },
-      "frequency": { "tier": "base", "weight": 1, "evidence": "Conservative equal default; no lore-backed rarity approval yet." },
-      "requiredChecks": ["visual:SFW", "semantic:slot-symbol", "era:canonical", "crop:square-1x-2x", "frequency:lore-and-card-occurrence"]
+      "semanticStatus": "approved",
+      "approvedUses": [
+        "slot-symbol"
+      ],
+      "cropFocus": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "frequency": {
+        "tier": "base",
+        "weight": 1,
+        "evidence": "Conservative equal default; no lore-backed rarity approval yet."
+      },
+      "requiredChecks": [
+        "visual:SFW",
+        "semantic:slot-symbol",
+        "era:canonical",
+        "crop:square-1x-2x",
+        "frequency:lore-and-card-occurrence"
+      ],
+      "reviewEvidence": "owner-decision:2026-07-26; implementation authorized before visual review; mandatory post-implementation screen confirmation",
+      "postImplementationReview": "pending"
     },
     {
       "id": "slot-eye-denomination",
@@ -188,11 +439,28 @@
       "sourceCardId": "temerosa-bestiaization",
       "sourceEntryPath": "assets/other/image/62.png",
       "requestedDisplayName": "Eye denomination symbol",
-      "semanticStatus": "unreviewed",
-      "approvedUses": [],
-      "cropFocus": { "x": 0.5, "y": 0.5 },
-      "frequency": { "tier": "base", "weight": 1, "evidence": "Conservative equal default; no lore-backed rarity approval yet." },
-      "requiredChecks": ["visual:SFW", "semantic:slot-symbol", "era:canonical", "crop:square-1x-2x", "frequency:lore-and-card-occurrence"]
+      "semanticStatus": "approved",
+      "approvedUses": [
+        "slot-symbol"
+      ],
+      "cropFocus": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "frequency": {
+        "tier": "base",
+        "weight": 1,
+        "evidence": "Conservative equal default; no lore-backed rarity approval yet."
+      },
+      "requiredChecks": [
+        "visual:SFW",
+        "semantic:slot-symbol",
+        "era:canonical",
+        "crop:square-1x-2x",
+        "frequency:lore-and-card-occurrence"
+      ],
+      "reviewEvidence": "owner-decision:2026-07-26; implementation authorized before visual review; mandatory post-implementation screen confirmation",
+      "postImplementationReview": "pending"
     },
     {
       "id": "slot-heart-denomination",
@@ -200,11 +468,28 @@
       "sourceCardId": "temerosa-bestiaization",
       "sourceEntryPath": "assets/other/image/63.png",
       "requestedDisplayName": "Heart denomination symbol",
-      "semanticStatus": "unreviewed",
-      "approvedUses": [],
-      "cropFocus": { "x": 0.5, "y": 0.5 },
-      "frequency": { "tier": "base", "weight": 1, "evidence": "Conservative equal default; no lore-backed rarity approval yet." },
-      "requiredChecks": ["visual:SFW", "semantic:slot-symbol", "era:canonical", "crop:square-1x-2x", "frequency:lore-and-card-occurrence"]
+      "semanticStatus": "approved",
+      "approvedUses": [
+        "slot-symbol"
+      ],
+      "cropFocus": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "frequency": {
+        "tier": "base",
+        "weight": 1,
+        "evidence": "Conservative equal default; no lore-backed rarity approval yet."
+      },
+      "requiredChecks": [
+        "visual:SFW",
+        "semantic:slot-symbol",
+        "era:canonical",
+        "crop:square-1x-2x",
+        "frequency:lore-and-card-occurrence"
+      ],
+      "reviewEvidence": "owner-decision:2026-07-26; implementation authorized before visual review; mandatory post-implementation screen confirmation",
+      "postImplementationReview": "pending"
     },
     {
       "id": "floor-flood-cliff",
@@ -212,10 +497,23 @@
       "sourceCardId": "temerosa-finale",
       "sourceEntryPath": "assets/other/image/Flood_Cliff.png",
       "requestedDisplayName": "Flood_Cliff",
-      "semanticStatus": "unreviewed",
-      "approvedUses": [],
-      "cropFocus": { "x": 0.5, "y": 0.5 },
-      "requiredChecks": ["visual:SFW", "semantic:background", "era:canonical", "crop:16x9-table", "provenance:redistribution"]
+      "semanticStatus": "approved",
+      "approvedUses": [
+        "table-art"
+      ],
+      "cropFocus": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "requiredChecks": [
+        "visual:SFW",
+        "semantic:background",
+        "era:canonical",
+        "crop:16x9-table",
+        "provenance:redistribution"
+      ],
+      "reviewEvidence": "owner-decision:2026-07-26; implementation authorized before visual review; mandatory post-implementation screen confirmation",
+      "postImplementationReview": "pending"
     },
     {
       "id": "floor-erosion-canyon",
@@ -223,10 +521,23 @@
       "sourceCardId": "temerosa-finale",
       "sourceEntryPath": "assets/other/image/Erosion_Canyon.png",
       "requestedDisplayName": "Erosion_Canyon",
-      "semanticStatus": "unreviewed",
-      "approvedUses": [],
-      "cropFocus": { "x": 0.5, "y": 0.5 },
-      "requiredChecks": ["visual:SFW", "semantic:background", "era:canonical", "crop:16x9-table", "provenance:redistribution"]
+      "semanticStatus": "approved",
+      "approvedUses": [
+        "table-art"
+      ],
+      "cropFocus": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "requiredChecks": [
+        "visual:SFW",
+        "semantic:background",
+        "era:canonical",
+        "crop:16x9-table",
+        "provenance:redistribution"
+      ],
+      "reviewEvidence": "owner-decision:2026-07-26; implementation authorized before visual review; mandatory post-implementation screen confirmation",
+      "postImplementationReview": "pending"
     },
     {
       "id": "floor-mist-basin",
@@ -234,10 +545,23 @@
       "sourceCardId": "temerosa-finale",
       "sourceEntryPath": "assets/other/image/Mist_Basin.png",
       "requestedDisplayName": "Mist_Basin",
-      "semanticStatus": "unreviewed",
-      "approvedUses": [],
-      "cropFocus": { "x": 0.5, "y": 0.5 },
-      "requiredChecks": ["visual:SFW", "semantic:background", "era:canonical", "crop:16x9-table", "provenance:redistribution"]
+      "semanticStatus": "approved",
+      "approvedUses": [
+        "table-art"
+      ],
+      "cropFocus": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "requiredChecks": [
+        "visual:SFW",
+        "semantic:background",
+        "era:canonical",
+        "crop:16x9-table",
+        "provenance:redistribution"
+      ],
+      "reviewEvidence": "owner-decision:2026-07-26; implementation authorized before visual review; mandatory post-implementation screen confirmation",
+      "postImplementationReview": "pending"
     },
     {
       "id": "floor-sunken-city",
@@ -245,10 +569,24 @@
       "sourceCardId": "temerosa-finale",
       "sourceEntryPath": "assets/other/image/Sunken_City.png",
       "requestedDisplayName": "Sunken_City",
-      "semanticStatus": "unreviewed",
-      "approvedUses": [],
-      "cropFocus": { "x": 0.5, "y": 0.5 },
-      "requiredChecks": ["visual:SFW", "semantic:background", "era:canonical", "crop:16x9-table", "provenance:redistribution"]
+      "semanticStatus": "approved",
+      "approvedUses": [
+        "table-art"
+      ],
+      "cropFocus": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "requiredChecks": [
+        "visual:SFW",
+        "semantic:background",
+        "era:canonical",
+        "crop:16x9-table",
+        "provenance:redistribution"
+      ],
+      "reviewEvidence": "owner-decision:2026-07-26; implementation authorized before visual review; mandatory post-implementation screen confirmation",
+      "postImplementationReview": "pending"
     }
-  ]
+  ],
+  "reviewPolicy": "post-implementation-visual"
 }

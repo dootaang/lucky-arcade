@@ -32,6 +32,15 @@ const registrations: readonly WebCabinetRegistration[] = [
   },
   {
     manifest: {
+      id: "temerosa-match-pairs", version: "match-pairs/0.1", title: "짝맞추기",
+      description: "이름 없이 그림만 보고 같은 얼굴 두 장을 찾는 기억 게임.", requiredCapabilities: [],
+      sessionKind: "repeat", launchKind: "built-in", resumeLabel: "짝맞추기 이어하기", estimatedMinutes: { min: 1, max: 3 },
+    },
+    openingRank: null, badge: "기억 테이블",
+    load: async () => { const module = await import("../features/match-pairs/match-pairs-view.tsx"); return { default: ({ onExit }) => <module.default onExit={onExit} /> }; },
+  },
+  {
+    manifest: {
       id: "temerosa-margin", version: "temerosa-margin/0.2", title: "테메로세: 여백 — 첫 항로",
       description: "죽은 단말기를 깨우고 임시 항해사가 되어, 함께 갈 두 사람과 첫 계약을 맺습니다.", requiredCapabilities: [],
       sessionKind: "deep", launchKind: "built-in", resumeLabel: "첫 항로 이어하기", estimatedMinutes: { min: 5, max: 10 },

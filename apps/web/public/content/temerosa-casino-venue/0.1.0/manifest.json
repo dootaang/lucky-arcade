@@ -1,0 +1,43 @@
+{
+  "contract": "temerosa-casino-asset-pack/1.0",
+  "packId": "temerosa-casino-venue",
+  "version": "0.1.0",
+  "provenance": "docs/THIRD_PARTY_PROVENANCE.md#내장-콘텐츠-허가-확인",
+  "assets": [
+    {
+      "id": "venue-temerosa",
+      "use": "venue-hero",
+      "displayName": "Temerosa",
+      "sourceCardId": "temerosa-bestiaization",
+      "sourceEntryPath": "assets/other/image/25.webp",
+      "sourceByteHash": "029e5c259fd0efcba6ad4c4d9b3dcff7a830d7d97ad537f2d9696e135e23ba4a",
+      "reviewEvidence": "owner-decision:2026-07-26; implementation authorized before visual review; mandatory post-implementation screen confirmation",
+      "postImplementationReview": "pending",
+      "cropFocus": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "variants": [
+        {
+          "scale": "sm",
+          "path": "assets/venue-temerosa/sm.webp",
+          "mime": "image/webp",
+          "width": 640,
+          "height": 360,
+          "bytes": 21966,
+          "sha256": "54b90b3443ef4656528b19496c2bbdd8354da38cab71244f7e389c1b21556085"
+        },
+        {
+          "scale": "md",
+          "path": "assets/venue-temerosa/md.webp",
+          "mime": "image/webp",
+          "width": 1280,
+          "height": 720,
+          "bytes": 47386,
+          "sha256": "8d6e70b8ede6bdd58210dd06ea1563ccc728ac8b14839d639c189b0c18f67aff"
+        }
+      ]
+    }
+  ],
+  "totalBytes": 69352
+}

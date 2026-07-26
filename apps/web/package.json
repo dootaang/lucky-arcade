@@ -20,6 +20,7 @@
     "@lucky-arcade/indian-poker": "workspace:*",
     "@lucky-arcade/lore-circuit": "workspace:*",
     "@lucky-arcade/lucky-derby": "workspace:*",
+    "@lucky-arcade/match-pairs": "workspace:*",
     "@lucky-arcade/old-maid": "workspace:*",
     "@lucky-arcade/persistence": "workspace:*",
     "@lucky-arcade/restoration-crew": "workspace:*",
