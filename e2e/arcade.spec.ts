@@ -355,8 +355,13 @@ test("plays and restores a complete Temerosa old maid table", async ({ page }, t
           await offeredCard.dispatchEvent("pointerdown", { pointerType: "touch", pointerId: 1, isPrimary: true });
           const flight = page.locator(`.old-maid-flight-layer[data-draw-path="center"][data-card-id="${offeredCardId}"]`);
           await expect(flight).toBeVisible();
+          await expect(flight).toHaveAttribute("data-reveal-phase", "back");
+          await expect(flight.locator(".old-maid-flight-back .old-maid-card.back")).toHaveCount(1);
+          await expect(flight.locator(".old-maid-flight-front .old-maid-card.face")).toHaveCount(1);
           await expect(flight).toHaveAttribute("data-source-x", String(Math.round((offeredCardBox?.x ?? 0) + (offeredCardBox?.width ?? 0) / 2)));
           await expect(flight).toHaveAttribute("data-source-y", String(Math.round((offeredCardBox?.y ?? 0) + (offeredCardBox?.height ?? 0) / 2)));
+          await expect(flight).toHaveAttribute("data-reveal-phase", "face");
+          await expect.poll(() => flight.locator(".old-maid-flight-card-inner").evaluate((element) => getComputedStyle(element).transform)).not.toBe("none");
           drewWithTouch = true;
           checkedOfferReaction = true;
         }

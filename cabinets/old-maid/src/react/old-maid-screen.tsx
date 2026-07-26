@@ -673,16 +673,19 @@ function DrawReveal({ event, face, assets, actorName, targetName, origin, center
   const collectingRef = useRef(false);
   const [ready, setReady] = useState(false);
   const [collecting, setCollecting] = useState(false);
+  const [revealPhase, setRevealPhase] = useState<"back" | "flipping" | "face" | "collecting">(sourceFaceVisible ? "face" : "back");
   collectRef.current = onCollect;
 
   useLayoutEffect(() => {
     if (paused) return;
     let revealTimer = 0;
+    let revealCompleteTimer = 0;
     let autoTimer = 0;
     const element = cardRef.current;
     const fallback = document.querySelector<HTMLElement>(`[data-deal-target="${event.targetId}"]`)?.getBoundingClientRect();
     const source = origin?.rect ?? fallback;
     if (!element || !source) {
+      if (centerReveal) setRevealPhase("face");
       setReady(true);
       autoTimer = window.setTimeout(() => collect(), centerReveal ? 900 : 120);
       return () => window.clearTimeout(autoTimer);
@@ -707,9 +710,20 @@ function DrawReveal({ event, face, assets, actorName, targetName, origin, center
       { transform: sourceTransform, opacity: .72 },
       { transform: centerTransform, opacity: 1 },
     ], { duration: reducedMotion ? 220 : 620, easing: "cubic-bezier(.2,.75,.2,1)", fill: "forwards" });
-    revealTimer = window.setTimeout(() => setReady(true), reducedMotion ? 220 : 620);
-    autoTimer = window.setTimeout(() => collect(), reducedMotion ? 760 : 1_350);
-    return () => { window.clearTimeout(revealTimer); window.clearTimeout(autoTimer); };
+    revealTimer = window.setTimeout(() => {
+      if (sourceFaceVisible) {
+        setReady(true);
+        return;
+      }
+      setRevealPhase(reducedMotion ? "face" : "flipping");
+      if (reducedMotion) setReady(true);
+    }, reducedMotion ? 220 : 620);
+    if (!sourceFaceVisible && !reducedMotion) revealCompleteTimer = window.setTimeout(() => {
+      setRevealPhase("face");
+      setReady(true);
+    }, 960);
+    autoTimer = window.setTimeout(() => collect(), reducedMotion ? 760 : 1_480);
+    return () => { window.clearTimeout(revealTimer); window.clearTimeout(revealCompleteTimer); window.clearTimeout(autoTimer); };
   }, [event.cardId, paused]);
 
   useEffect(() => {
@@ -722,6 +736,7 @@ function DrawReveal({ event, face, assets, actorName, targetName, origin, center
     if (collectingRef.current) return;
     collectingRef.current = true;
     setCollecting(true);
+    setRevealPhase("collecting");
     const element = cardRef.current;
     const target = document.querySelector<HTMLElement>(`[data-deal-target="${event.actorId}"]`);
     if (!element || !target) return;
@@ -735,7 +750,7 @@ function DrawReveal({ event, face, assets, actorName, targetName, origin, center
     } catch { /* 이동 연출이 불가능해도 판정 단계는 위 타이머로 계속 진행한다. */ }
   }
 
-  const flight = typeof document === "undefined" ? null : createPortal(<div className="old-maid-flight-layer" data-draw-path={centerReveal ? "center" : "direct"} data-card-id={event.cardId} data-source-x={origin ? Math.round(origin.rect.left + origin.rect.width / 2) : undefined} data-source-y={origin ? Math.round(origin.rect.top + origin.rect.height / 2) : undefined} aria-label={`${actorName}이 ${targetName}에게서 카드 한 장을 가져갑니다`}><div className="old-maid-flight-card" ref={cardRef}>{sourceFaceVisible || centerReveal && ready ? <CardFace face={face} assets={assets} odd={face.id === "joker"} /> : <CardBack />}</div></div>, document.body);
+  const flight = typeof document === "undefined" ? null : createPortal(<div className="old-maid-flight-layer" data-draw-path={centerReveal ? "center" : "direct"} data-card-id={event.cardId} data-reveal-phase={revealPhase} data-source-x={origin ? Math.round(origin.rect.left + origin.rect.width / 2) : undefined} data-source-y={origin ? Math.round(origin.rect.top + origin.rect.height / 2) : undefined} aria-label={`${actorName}이 ${targetName}에게서 카드 한 장을 가져갑니다`}><div className="old-maid-flight-card" ref={cardRef}><div className="old-maid-flight-card-inner" data-reveal-phase={revealPhase}><div className="old-maid-flight-side old-maid-flight-back"><CardBack /></div><div className="old-maid-flight-side old-maid-flight-front"><CardFace face={face} assets={assets} odd={face.id === "joker"} /></div></div></div></div>, document.body);
 
   if (!centerReveal) return flight;
 
