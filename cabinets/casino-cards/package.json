@@ -1,0 +1,10 @@
+{
+  "name": "@lucky-arcade/casino-cards",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": { ".": "./src/index.ts", "./react": "./src/react/casino-card-screen.tsx" },
+  "scripts": { "typecheck": "tsc -p tsconfig.json", "test": "vitest run" },
+  "dependencies": { "@lucky-arcade/engine": "workspace:*", "@lucky-arcade/ui": "workspace:*", "react": "19.2.8" },
+  "devDependencies": { "@types/react": "19.2.17", "@types/react-dom": "19.2.3", "react-dom": "19.2.8" }
+}

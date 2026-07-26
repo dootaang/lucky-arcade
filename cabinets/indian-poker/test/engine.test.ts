@@ -4,8 +4,8 @@ import { INDIAN_POKER_DECK, cardStrength, createIndianPokerState, indianPokerRan
 
 describe("indian poker engine", () => {
   it("orders all 52 cards uniquely", () => { const strengths = INDIAN_POKER_DECK.map(cardStrength); expect(new Set(strengths).size).toBe(52); expect(Math.min(...strengths)).toBe(0); expect(Math.max(...strengths)).toBe(51); });
-  it("deals four unique cards and scores continue/fold", () => {
-    let state = reduceIndianPoker(temerosaIndianPokerCartridge, createIndianPokerState(temerosaIndianPokerCartridge, "deal"), { type: "start" });
+  it("deals four unique cards and scores call/fold", () => {
+    let state = reduceIndianPoker(temerosaIndianPokerCartridge, createIndianPokerState(temerosaIndianPokerCartridge, "deal"), { type: "start", seed: "deal", stake: 10, wagerId: "wager" });
     expect(new Set(Object.values(state.hands)).size).toBe(4);
     state = reduceIndianPoker(temerosaIndianPokerCartridge, state, { type: "choose", choice: "fold" });
     expect(state.lastRound?.scoreDelta.player).toBe(0); expect(state.status).toBe("revealing");
@@ -18,7 +18,7 @@ describe("indian poker engine", () => {
 });
 
 function play(seed: string): IndianPokerState {
-  let state = reduceIndianPoker(temerosaIndianPokerCartridge, createIndianPokerState(temerosaIndianPokerCartridge, seed), { type: "start" });
-  while (state.status !== "complete") state = state.status === "choosing" ? reduceIndianPoker(temerosaIndianPokerCartridge, state, { type: "choose", choice: "continue" }) : reduceIndianPoker(temerosaIndianPokerCartridge, state, { type: "next_round" });
+  let state = reduceIndianPoker(temerosaIndianPokerCartridge, createIndianPokerState(temerosaIndianPokerCartridge, seed), { type: "start", seed, stake: 10, wagerId: `wager-${seed}` });
+  while (state.status !== "complete") state = state.status === "choosing" ? reduceIndianPoker(temerosaIndianPokerCartridge, state, { type: "choose", choice: "call" }) : reduceIndianPoker(temerosaIndianPokerCartridge, state, { type: "next_round" });
   return state;
 }

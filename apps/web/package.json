@@ -12,6 +12,7 @@
   "dependencies": {
     "@lucky-arcade/card-io": "workspace:*",
     "@lucky-arcade/cabinet-sdk": "workspace:*",
+    "@lucky-arcade/casino-cards": "workspace:*",
     "@lucky-arcade/contracts": "workspace:*",
     "@lucky-arcade/engine": "workspace:*",
     "@lucky-arcade/extract": "workspace:*",

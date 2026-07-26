@@ -17,6 +17,26 @@ type CabinetView = LazyExoticComponent<ComponentType<CabinetViewContext>>;
 
 const registrations: readonly WebCabinetRegistration[] = [
   {
+    manifest: { id: "temerosa-high-low", version: "casino-cards/0.1", title: "하이로우", description: "다음 카드가 더 높을지 낮을지 맞히고 배당을 쌓는 빠른 게임.", requiredCapabilities: [], sessionKind: "instant", launchKind: "built-in", resumeLabel: "하이로우로 돌아가기", estimatedMinutes: { min: 1, max: 2 }, entry: "wager", wagerTiers: [10, 50, 200] },
+    openingRank: null, badge: "빠른 테이블", load: async () => { const module = await import("../features/casino-cards/casino-card-view.tsx"); return { default: ({ onExit }) => <module.default gameId="high-low" onExit={onExit} /> }; },
+  },
+  {
+    manifest: { id: "temerosa-blackjack", version: "casino-cards/0.1", title: "블랙잭", description: "21을 넘지 않게 카드를 받고 하우스보다 높은 수를 만든다.", requiredCapabilities: [], sessionKind: "instant", launchKind: "built-in", resumeLabel: "블랙잭으로 돌아가기", estimatedMinutes: { min: 1, max: 2 }, entry: "wager", wagerTiers: [10, 50, 200] },
+    openingRank: null, badge: "빠른 테이블", load: async () => { const module = await import("../features/casino-cards/casino-card-view.tsx"); return { default: ({ onExit }) => <module.default gameId="blackjack" onExit={onExit} /> }; },
+  },
+  {
+    manifest: { id: "temerosa-doubt", version: "casino-cards/0.1", title: "다우트", description: "상대의 선언과 표정을 읽고 진실인지 거짓인지 가려낸다.", requiredCapabilities: [], sessionKind: "repeat", launchKind: "built-in", resumeLabel: "다우트로 돌아가기", estimatedMinutes: { min: 1, max: 2 }, entry: "wager", wagerTiers: [10, 50, 200] },
+    openingRank: null, badge: "심리 테이블", load: async () => { const module = await import("../features/casino-cards/casino-card-view.tsx"); return { default: ({ onExit }) => <module.default gameId="doubt" onExit={onExit} /> }; },
+  },
+  {
+    manifest: { id: "temerosa-one-card", version: "casino-cards/0.1", title: "원카드", description: "같은 무늬나 숫자를 이어 내고 먼저 손을 비운다.", requiredCapabilities: [], sessionKind: "repeat", launchKind: "built-in", resumeLabel: "원카드로 돌아가기", estimatedMinutes: { min: 2, max: 5 }, entry: "wager", wagerTiers: [10, 50, 200] },
+    openingRank: null, badge: "카드 테이블", load: async () => { const module = await import("../features/casino-cards/casino-card-view.tsx"); return { default: ({ onExit }) => <module.default gameId="one-card" onExit={onExit} /> }; },
+  },
+  {
+    manifest: { id: "temerosa-texas-holdem", version: "casino-cards/0.1", title: "텍사스 홀덤", description: "공용 카드와 두 장의 패로 족보를 만들고 네 거리에서 판돈을 결정한다.", requiredCapabilities: [], sessionKind: "repeat", launchKind: "built-in", resumeLabel: "홀덤으로 돌아가기", estimatedMinutes: { min: 3, max: 7 }, entry: "wager", wagerTiers: [10, 50, 200] },
+    openingRank: null, badge: "메인 테이블", load: async () => { const module = await import("../features/casino-cards/casino-card-view.tsx"); return { default: ({ onExit }) => <module.default gameId="texas-holdem" onExit={onExit} /> }; },
+  },
+  {
     manifest: {
       id: "temerosa-slot", version: "slot-machine/0.1", title: "슬롯 777",
       description: "테메로세의 유물과 괴물 심볼로 다섯 당첨선을 맞추는 결정론 슬롯머신.", requiredCapabilities: [],
@@ -27,8 +47,8 @@ const registrations: readonly WebCabinetRegistration[] = [
     load: async () => { const module = await import("../features/slot-machine/temerosa-slot-view.tsx"); return { default: ({ onExit }) => <module.default onExit={onExit} /> }; },
   },
   {
-    manifest: { id: "indian-poker", version: "indian-poker/0.1", title: "테메로세 인디언 포커", description: "상대의 표정을 읽고 계속할지 기권할지 고르는 5라운드 카드 게임.", requiredCapabilities: [], sessionKind: "repeat", launchKind: "built-in", resumeLabel: "인디언 포커 이어하기", estimatedMinutes: { min: 1, max: 2 } },
-    openingRank: null, badge: "비공개 실험",
+    manifest: { id: "indian-poker", version: "indian-poker/0.2", title: "테메로세 인디언 포커", description: "내 카드를 본 상대의 표정을 읽고 콜·레이즈·폴드를 고르는 5라운드 승부.", requiredCapabilities: [], sessionKind: "repeat", launchKind: "built-in", resumeLabel: "인디언 포커 이어하기", estimatedMinutes: { min: 1, max: 2 }, entry: "wager", wagerTiers: [10, 50, 200] },
+    openingRank: null, badge: "심리 테이블",
     load: async () => { const module = await import("../features/indian-poker/indian-poker-view.tsx"); return { default: ({ onExit }) => <module.default onExit={onExit} /> }; },
   },
   {

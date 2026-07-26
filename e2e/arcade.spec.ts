@@ -45,17 +45,18 @@ test("mobile navigation and Venue floor remain reachable", async ({ page }, test
   await expect(page.locator(".table-card.playable").filter({ hasText: "도둑잡기" }).getByRole("button", { name: "시작", exact: true })).toBeInViewport();
 });
 
-test("opens the sole public Venue and exposes its three playable tables", async ({ page }) => {
+test("opens the sole public Venue and exposes its nine playable tables", async ({ page }) => {
   await page.goto("/");
   await expect(page.locator(".venue-card")).toHaveCount(1);
   await expect(page.getByRole("heading", { name: "테메로세 카지노" })).toBeVisible();
   await expect(page.getByText("내 카드로 놀기")).toHaveCount(0);
   await page.getByRole("button", { name: "카지노 입장" }).click();
-  await expect(page.locator(".table-card.playable")).toHaveCount(3);
+  await expect(page.locator(".table-card.playable")).toHaveCount(9);
   await expect(page.locator(".table-card.playable").filter({ hasText: "도둑잡기" }).getByRole("button", { name: "시작", exact: true })).toBeVisible();
   await expect(page.locator(".table-card.playable").filter({ hasText: "짝맞추기" }).getByRole("button", { name: "시작", exact: true })).toBeVisible();
   await expect(page.locator(".table-card.playable").filter({ hasText: "슬롯 777" })).toContainText("10 P부터");
-  await expect(page.locator(".table-card.coming-soon")).toHaveCount(4);
+  await expect(page.locator(".table-card.playable").filter({ hasText: "텍사스 홀덤" })).toContainText("10 P부터");
+  await expect(page.locator(".table-card.coming-soon")).toHaveCount(2);
   await expect(page.locator(".table-card.coming-soon button")).toHaveCount(0);
   await page.locator(".table-card.playable").filter({ hasText: "도둑잡기" }).getByRole("button", { name: "시작", exact: true }).click();
   await expect(page.getByRole("heading", { name: "도둑잡기", exact: true })).toBeVisible();
@@ -202,23 +203,23 @@ test("filters hidden RecentPlay records and ignores the retired query preview", 
   await expect(page.getByText("소녀전선: 잔불 작전")).toHaveCount(0);
 });
 
-test("plays and restores the private five-round Indian poker table", async ({ page }, testInfo) => {
+test("plays, wagers, and restores the public five-round Indian poker table", async ({ page }, testInfo) => {
   test.skip(testInfo.project.metadata.mobile === true);
   const browserErrors: string[] = [];
   page.on("pageerror", (error) => browserErrors.push(error.message));
-  await page.goto("/dev");
-  await page.locator(".arcade-entry").filter({ hasText: "테메로세 인디언 포커" }).getByRole("button", { name: "바로 시작" }).click();
+  await page.goto("/");
+  await page.evaluate(() => new Promise<void>((resolve, reject) => { const opening = indexedDB.open("lucky-arcade", 7); opening.onerror = () => reject(opening.error); opening.onsuccess = () => { const db = opening.result, transaction = db.transaction("wallet", "readwrite"); transaction.objectStore("wallet").put({ contract: "wallet/0.1", id: "wallet", balance: 1_000, updatedAt: new Date().toISOString() }); transaction.onerror = () => reject(transaction.error); transaction.oncomplete = () => { db.close(); resolve(); }; }; }));
+  await page.goto("/play/indian-poker");
   await expect(page.getByRole("heading", { name: "테메로세 인디언 포커" })).toBeVisible();
   await page.getByRole("button", { name: "5라운드 시작" }).click();
   await expect(page.locator(".indian-poker-player").getByRole("img", { name: "공개 전인 내 카드" })).toBeVisible();
-  await page.getByRole("button", { name: /계속 · 승/ }).click();
+  await page.getByRole("button", { name: /콜 · 승/ }).click();
   await expect(page.locator(".indian-poker-player").getByRole("img", { name: "공개 전인 내 카드" })).toHaveCount(0);
   await page.getByRole("button", { name: "다음 라운드" }).click();
   await page.reload();
-  await page.getByRole("button", { name: "인디언 포커 이어하기" }).click();
   await expect(page.getByText("2/5 라운드")).toBeVisible();
   for (let round = 2; round <= 5; round += 1) {
-    await page.getByRole("button", { name: /계속 · 승/ }).click();
+    await page.getByRole("button", { name: /콜 · 승/ }).click();
     await page.getByRole("button", { name: round === 5 ? "최종 결과" : "다음 라운드" }).click();
   }
   await expect(page.getByRole("heading", { name: "5라운드 최종 순위" })).toBeVisible();

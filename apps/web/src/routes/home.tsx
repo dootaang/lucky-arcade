@@ -102,14 +102,12 @@ function VenueCard({ venue, eager, onEnter }: { venue: VenueManifest; eager: boo
 }
 
 const plannedTables = [
-  { group: "빠른 테이블", title: "인디언 포커", description: "짧은 라운드 테이블을 준비하고 있습니다." },
-  { group: "심리 테이블", title: "다음 심리전", description: "새 규칙과 배역 검수를 진행 중입니다." },
   { group: "관전", title: "관전석", description: "다른 대국을 보는 자리를 준비 중입니다." },
   { group: "교환소", title: "알제의 교환소", description: "포인트 교환 품목을 정리하고 있습니다." },
 ] as const;
 
 /** A suit stamped on each table, so a bare card still reads as a casino table. */
-const TABLE_SUITS: Record<string, string> = { "temerosa-old-maid": "♠", "temerosa-match-pairs": "♥", "temerosa-slot": "♦", "인디언 포커": "♦", "다음 심리전": "♣", "관전석": "♠", "알제의 교환소": "♦" };
+const TABLE_SUITS: Record<string, string> = { "temerosa-old-maid": "♠", "temerosa-match-pairs": "♥", "temerosa-slot": "♦", "indian-poker": "♦", "temerosa-high-low": "♠", "temerosa-blackjack": "♣", "temerosa-doubt": "♦", "temerosa-one-card": "♥", "temerosa-texas-holdem": "♠", "관전석": "♠", "알제의 교환소": "♦" };
 
 function VenueFloor({ venue, onPlay }: { venue: VenueManifest; onPlay(id: string): void }) {
   const playable = venue.cabinetIds.map((id) => getCabinetRegistration(id)).filter((entry): entry is WebCabinetRegistration => Boolean(entry));
