@@ -97,6 +97,24 @@ describe.sequential("point wallet and spectator predictions", () => {
     expect(result.spectated).toMatchObject({ amount: 0, wallet: { balance: 5 } });
   });
 
+  it("grants a caller-selected rank reward idempotently", async () => {
+    const result = await page.evaluate(async () => {
+      const database = await new Function("return import('/src/lib/database.ts')")();
+      const first = await database.grantCompletionPoints({ sessionId: "ranked-play", sequence: 4, cabinetId: "old-maid", spectated: false, amount: 10 });
+      const repeated = await database.grantCompletionPoints({ sessionId: "ranked-play", sequence: 4, cabinetId: "old-maid", spectated: false, amount: 1 });
+      const next = await database.grantCompletionPoints({ sessionId: "ranked-play", sequence: 8, cabinetId: "old-maid", spectated: false, amount: 3 });
+      let invalid = "";
+      try { await database.grantCompletionPoints({ sessionId: "invalid", sequence: 1, cabinetId: "old-maid", spectated: false, amount: -1 }); }
+      catch (caught) { invalid = caught instanceof Error ? caught.message : String(caught); }
+      return { first, repeated, next, invalid };
+    });
+
+    expect(result.first).toMatchObject({ amount: 10, wallet: { balance: 10 } });
+    expect(result.repeated).toMatchObject({ amount: 0, wallet: { balance: 10 } });
+    expect(result.next).toMatchObject({ amount: 3, wallet: { balance: 13 } });
+    expect(result.invalid).toBe("invalid_completion_reward");
+  });
+
   it("reserves valid stakes, supports multiple reservations, and never overdrafts", async () => {
     await seedWallet(page, 100);
     const result = await page.evaluate(async () => {

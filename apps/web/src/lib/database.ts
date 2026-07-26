@@ -25,7 +25,7 @@ const VERSION = 6;
 const STORES = { cards: "cards", sources: "sources", sessions: "sessions", actions: "actions", recent: "recent", matches: "matches", wallet: "wallet", grants: "grants", collection: "collection", wagers: "wagers" } as const;
 const INITIAL_POINT_BALANCE = 0;
 const COLLECTION_COST = 12;
-const COMPLETION_REWARD = 5;
+const DEFAULT_COMPLETION_REWARD = 5;
 const VALID_STAKES = new Set([10, 50, 200]);
 const VALID_MULTIPLIERS = new Set<PredictionMultiplier>([2, 3, 4, 5]);
 const VALID_MARKETS = new Set(["joker-holder", "first-place"]);
@@ -140,6 +140,8 @@ export async function readWallet(): Promise<WalletSnapshot> {
 }
 
 export async function grantCompletionPoints(input: CompletionPointGrantInput): Promise<{ wallet: PointWalletSnapshot; amount: number }> {
+  const reward = input.amount ?? DEFAULT_COMPLETION_REWARD;
+  if (!Number.isSafeInteger(reward) || reward < 0) throw new Error("invalid_completion_reward");
   const db = await openDatabase(), transaction = db.transaction([STORES.wallet, STORES.grants], "readwrite");
   const wallets = transaction.objectStore(STORES.wallet), grants = transaction.objectStore(STORES.grants);
   const storedWallet = await request<PointWalletSnapshot | undefined>(wallets.get("wallet"));
@@ -150,10 +152,10 @@ export async function grantCompletionPoints(input: CompletionPointGrantInput): P
     await complete(transaction); db.close(); return { wallet: current, amount: 0 };
   }
   const now = new Date().toISOString();
-  const wallet: PointWalletSnapshot = { ...current, balance: current.balance + COMPLETION_REWARD, updatedAt: now };
+  const wallet: PointWalletSnapshot = { ...current, balance: current.balance + reward, updatedAt: now };
   wallets.put(wallet);
-  grants.put({ contract: "point-grant/0.1", sessionId: input.sessionId, highestSequence: input.sequence, amount: COMPLETION_REWARD, updatedAt: now } satisfies CompletionPointGrant);
-  await complete(transaction); db.close(); return { wallet, amount: COMPLETION_REWARD };
+  grants.put({ contract: "point-grant/0.1", sessionId: input.sessionId, highestSequence: input.sequence, amount: reward, updatedAt: now } satisfies CompletionPointGrant);
+  await complete(transaction); db.close(); return { wallet, amount: reward };
 }
 
 /** @deprecated Kept until non-old-maid callers adopt the point-named API. */

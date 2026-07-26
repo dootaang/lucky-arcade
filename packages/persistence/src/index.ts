@@ -135,7 +135,7 @@ export interface CompletionPointGrant {
   contract: "point-grant/0.1";
   sessionId: string;
   highestSequence: number;
-  amount: 5;
+  amount: number;
   updatedAt: string;
 }
 
@@ -146,9 +146,10 @@ export interface CompletionPointGrantInput {
   sequence: number;
   cabinetId: string;
   spectated: boolean;
+  amount?: number;
 }
 
-/** @deprecated Completion points no longer depend on placement. */
+/** @deprecated Medal-era request shape. Use CompletionPointGrantInput.amount for the caller's reward policy. */
 export interface MedalGrantInput extends CompletionPointGrantInput {
   rank: number;
   seatCount: number;

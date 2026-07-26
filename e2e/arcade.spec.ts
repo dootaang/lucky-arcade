@@ -128,7 +128,7 @@ test("opens an expressive personal card as an old maid table", async ({ page }, 
   await page.locator('input[type="file"]').setInputFiles({ name: "old-maid.json", mimeType: "application/json", buffer: Buffer.from(oldMaidCard(4, "E2E 도둑잡기 카드")) });
   await expect(page.getByRole("heading", { name: "E2E 도둑잡기 카드 도둑잡기" })).toBeVisible();
   await expect(page.locator(".old-maid-opponent-picker button")).toHaveCount(4);
-  await page.getByRole("button", { name: "무료로 시작" }).click();
+  await page.getByRole("button", { name: "시작", exact: true }).click();
   await expect(page.locator(".old-maid-player-hand")).toBeVisible({ timeout: 20_000 });
   await expect(page.locator(".old-maid-card.face img").first()).toBeVisible();
 });
@@ -255,7 +255,7 @@ test("plays and restores a complete Temerosa old maid table", async ({ page }, t
   await expect(page.locator(".seat-cpu-1 strong")).toHaveText("에코");
   await expect(page.locator(".seat-cpu-2 strong")).toHaveText("아데샤");
   await expect(page.locator(".seat-cpu-3 strong")).toHaveText("땡칠이");
-  await page.getByRole("button", { name: "무료로 시작" }).click();
+  await page.getByRole("button", { name: "시작", exact: true }).click();
   await expect(page.getByText("카드를 나누는 중…")).toBeVisible();
   await page.getByRole("button", { name: "일시정지", exact: true }).click();
   await page.waitForTimeout(400);
@@ -378,6 +378,10 @@ test("plays and restores a complete Temerosa old maid table", async ({ page }, t
   expect(checkedArrival).toBe(true);
   expect(checkedSpeech).toBe(true);
   expect(checkedOfferReaction).toBe(true);
+  const award = page.locator(".old-maid-award");
+  await expect(award).toHaveText(/^\+(10|5|3|1) P · [1-4]등 순위 보상$/);
+  const awardMatch = /\+(\d+) P · (\d)등/.exec(await award.innerText());
+  expect(Number(awardMatch?.[1])).toBe(({ 1: 10, 2: 5, 3: 3, 4: 1 } as Record<number, number>)[Number(awardMatch?.[2])]);
   await expect(page.getByText("자동 저장됨")).toBeVisible();
   await page.reload();
   await expect(page.getByRole("region", { name: "이어하기" })).toContainText("대국 완료");
@@ -389,7 +393,7 @@ test("plays and restores a complete Temerosa old maid table", async ({ page }, t
   await expect(page.getByText("같은 상대와 새 패로 다시 시작합니다")).toBeVisible();
   await expect(page.locator(".old-maid-opponent-picker")).toHaveCount(0);
   await expect(page.locator(".old-maid-card.face")).toHaveCount(0);
-  await expect(page.getByRole("button", { name: "무료로 시작" })).toBeEnabled();
+  await expect(page.getByRole("button", { name: "시작", exact: true })).toBeEnabled();
 });
 
 test("keeps direct play free and offers an optional self prediction", async ({ page }, testInfo) => {
@@ -408,7 +412,8 @@ test("keeps direct play free and offers an optional self prediction", async ({ p
   }));
   await page.reload();
   await page.locator(".arcade-entry").filter({ hasText: "테메로세 도둑잡기" }).getByRole("button", { name: "바로 시작" }).click();
-  await expect(page.getByRole("button", { name: "무료로 시작" })).toBeEnabled();
+  await expect(page.getByRole("button", { name: "시작", exact: true })).toBeEnabled();
+  await expect(page.getByText("순위 보상 · 1등 10 P · 2등 5 P · 3등 3 P · 패배 1 P")).toBeVisible();
   await page.getByRole("button", { name: "선택 베팅 열기" }).click();
   await expect(page.getByRole("button", { name: "나", exact: true })).toHaveClass(/selected/);
   await page.getByRole("button", { name: "베팅하고 시작" }).click();
@@ -490,7 +495,7 @@ test("mobile Temerosa old maid keeps the draw cards reachable", async ({ page },
   expect(mobileAngles).toEqual(["180deg", "180deg", "180deg", "0deg"]);
   while (await page.locator(".old-maid-opponent-picker button.selected").count()) await page.locator(".old-maid-opponent-picker button.selected").first().click();
   for (const name of ["페일", "카노", "네모"]) await page.getByRole("button", { name, exact: true }).click();
-  await page.getByRole("button", { name: "무료로 시작" }).click();
+  await page.getByRole("button", { name: "시작", exact: true }).click();
   const speech = page.locator(".old-maid-speech").first();
   for (let step = 0; step < 160 && !await speech.isVisible(); step += 1) {
     const discard = page.locator('button[aria-label$="두 장 버리기"]:not([disabled])').first();

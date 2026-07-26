@@ -139,7 +139,7 @@ const settlementCredit = won ? prediction.stake * 4 : 0;   // 적중 시 4배 �
 
 지적한 그대로다. **딸 때는 3배, 잃을 때는 1배.**
 
-관련 상수는 `INITIAL_POINT_BALANCE 0` · `COMPLETION_REWARD 5`(완주, 등수 무관) · `COLLECTION_COST 12`.
+관련 상수는 `INITIAL_POINT_BALANCE 0` · `OLD_MAID_RANK_REWARDS {1:10,2:5,3:3,4:1}` · `COLLECTION_COST 12`.
 
 ### 계약
 
