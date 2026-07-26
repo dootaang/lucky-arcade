@@ -57,7 +57,7 @@ test("opens the sole public Venue and exposes its two playable tables", async ({
   await expect(page.locator(".table-card.coming-soon")).toHaveCount(4);
   await expect(page.locator(".table-card.coming-soon button")).toHaveCount(0);
   await page.locator(".table-card.playable").filter({ hasText: "도둑잡기" }).getByRole("button", { name: "시작", exact: true }).click();
-  await expect(page.getByRole("heading", { name: "테메로세 도둑잡기" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "도둑잡기", exact: true })).toBeVisible();
 });
 
 test("keeps the Venue title and entry action when its hero image fails", async ({ page }) => {
@@ -347,8 +347,8 @@ test("plays and restores a complete Temerosa old maid table", async ({ page }, t
   await page.goto("/");
   await page.getByRole("button", { name: "카지노 입장" }).click();
   await page.locator(".table-card.playable").filter({ hasText: "도둑잡기" }).getByRole("button", { name: "시작", exact: true }).click();
-  await expect(page.getByRole("heading", { name: "테메로세 도둑잡기" })).toBeVisible();
-  await expect(page.getByText("마지막 조커를 피하세요")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "도둑잡기", exact: true })).toBeVisible();
+  await expect(page.getByText("조커를 피해라")).toBeVisible();
   await expect(page.getByText("배분 전").first()).toBeVisible();
   const desktopAngles = await page.locator(".old-maid-center").evaluate((center) => {
     const read = (owner: string) => {
@@ -547,6 +547,7 @@ test("keeps direct play free and offers an optional self prediction", async ({ p
 
 test("starts an open-hand four-NPC Temerosa spectator table", async ({ page }, testInfo) => {
   test.skip(testInfo.project.metadata.mobile === true);
+  await page.setViewportSize({ width: 920, height: 760 });
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/");
   await page.evaluate(() => new Promise<void>((resolve, reject) => {
@@ -569,7 +570,30 @@ test("starts an open-hand four-NPC Temerosa spectator table", async ({ page }, t
   await expect(page.getByRole("button", { name: "2배", exact: true })).toHaveClass(/selected/);
   await page.getByRole("button", { name: "예측하고 NPC 대국 관전" }).click();
   await expect(page.getByText("카드를 나누는 중…")).toBeVisible();
+  await page.getByRole("button", { name: "수동", exact: true }).click();
   await expect(page.locator(".old-maid-spectator-seat")).toBeVisible({ timeout: 20_000 });
+  const npcOffer = page.locator(".old-maid-offer-card:disabled").first();
+  await expect(npcOffer).toBeVisible();
+  await npcOffer.hover({ force: true });
+  expect(await npcOffer.evaluate((button) => ({
+    pointerEvents: getComputedStyle(button).pointerEvents,
+    cardTransform: getComputedStyle(button.querySelector<HTMLElement>(".old-maid-card")!).transform,
+  }))).toEqual({ pointerEvents: "none", cardTransform: "none" });
+  await page.getByRole("button", { name: "자동", exact: true }).click();
+  const desktopControls = page.locator(".old-maid-progress-controls-desktop");
+  await expect(desktopControls).toBeVisible();
+  await expect(page.locator(".old-maid-progress-controls-mobile")).toBeHidden();
+  await expect(desktopControls.getByRole("button", { name: "보통", exact: true })).toBeVisible();
+  await expect(desktopControls.getByRole("button", { name: "빠르게", exact: true })).toBeVisible();
+  const controlBounds = await desktopControls.evaluate((controls) => {
+    const box = controls.getBoundingClientRect();
+    const table = controls.closest(".old-maid-table")!.getBoundingClientRect();
+    return { left: box.left, right: box.right, top: box.top, tableLeft: table.left, tableRight: table.right, tableTop: table.top, viewportWidth: window.innerWidth, insideClippedCenter: Boolean(controls.closest(".old-maid-center")) };
+  });
+  expect(controlBounds.insideClippedCenter).toBe(false);
+  expect(controlBounds.left).toBeGreaterThanOrEqual(controlBounds.tableLeft);
+  expect(controlBounds.right).toBeLessThanOrEqual(Math.min(controlBounds.tableRight, controlBounds.viewportWidth));
+  expect(controlBounds.top).toBeGreaterThanOrEqual(controlBounds.tableTop);
   await page.evaluate(() => {
     const selector = '.old-maid-flight-layer[data-draw-path="direct"] .old-maid-card.face';
     document.body.dataset.directFaceSeen = document.querySelector(selector) ? "true" : "false";
@@ -615,6 +639,8 @@ test("mobile Temerosa old maid keeps the draw cards reachable", async ({ page },
   while (await page.locator(".old-maid-opponent-picker button.selected").count()) await page.locator(".old-maid-opponent-picker button.selected").first().click();
   for (const name of ["페일", "카노", "네모"]) await page.getByRole("button", { name, exact: true }).click();
   await page.getByRole("button", { name: "시작", exact: true }).click();
+  await expect(page.locator(".old-maid-progress-controls-mobile")).toBeVisible();
+  await expect(page.locator(".old-maid-progress-controls-desktop")).toBeHidden();
   const speech = page.locator(".old-maid-speech").first();
   for (let step = 0; step < 160 && !await speech.isVisible(); step += 1) {
     const discard = page.locator('button[aria-label$="두 장 버리기"]:not([disabled])').first();

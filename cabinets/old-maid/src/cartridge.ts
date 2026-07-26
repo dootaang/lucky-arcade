@@ -47,7 +47,7 @@ export interface TemerosaCasinoPortraitAsset {
 export const temerosaOldMaidCartridge: OldMaidCartridge = {
   contract: "old-maid-cartridge/0.6",
   version: TEMEROSA_OLD_MAID_PACK_VERSION,
-  title: "테메로세 도둑잡기",
+  title: "도둑잡기",
   oddFaceId: "joker",
   faces,
   cards,

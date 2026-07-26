@@ -365,6 +365,16 @@ export function OldMaidScreen({ cartridge, assets, thumbAssets = assets, detailA
     dispatch({ type: "restart", seed: `${dailySeed()}:${Date.now().toString(36)}`, mode: state.mode, characterIds });
   }
 
+  function renderProgressControls(placement: "mobile" | "desktop") {
+    if (state.status === "ready" || state.status === "complete") return null;
+    return <div className={`old-maid-speed-controls old-maid-progress-controls old-maid-progress-controls-${placement}`} aria-label="진행 방식">
+      <button type="button" className={progressMode === "auto" ? "selected" : ""} onClick={() => { setManualRunning(false); setProgressMode("auto"); }}>자동</button>
+      <button type="button" className={progressMode === "manual" ? "selected" : ""} onClick={() => setProgressMode("manual")}>수동</button>
+      {progressMode === "manual" && <button type="button" className="selected" disabled={paused || manualRunning || state.currentPlayerId === "player" && state.mode === "play"} onClick={advanceManualTurn}>{manualRunning ? "진행 중…" : "다음"}</button>}
+      {state.mode === "spectate" && <><button type="button" className={spectatorSpeed === "normal" ? "selected" : ""} onClick={() => setSpectatorSpeed("normal")}>보통</button><button type="button" className={spectatorSpeed === "fast" ? "selected" : ""} onClick={() => setSpectatorSpeed("fast")}>빠르게</button></>}
+    </div>;
+  }
+
   return <main className="old-maid-shell" data-presentation-hold={speechHolding || undefined} aria-busy={speechHolding || undefined} style={background ? { "--old-maid-bg": `url(${JSON.stringify(background)})` } as React.CSSProperties : undefined}>
     <header className="old-maid-header">
       <button onClick={onExit} aria-label="오락실로 돌아가기"><IconArrowLeft /></button>
@@ -388,11 +398,11 @@ export function OldMaidScreen({ cartridge, assets, thumbAssets = assets, detailA
         {!['ready', 'dealing', 'complete'].includes(state.status) && <DiscardPile state={state} faces={faces} assets={assets} />}
         {state.status === "ready" && <div className="old-maid-intro">
           <IconCards size={48} />
-          <span className="eyebrow">캐릭터 카드 게임</span>
-          <h2>마지막 조커를 피하세요</h2>
+          <span className="eyebrow">게임 룰</span>
+          <h2>조커를 피해라</h2>
           <p>같은 그림 두 장을 맞춰 버리세요. 차례가 오면 지정된 상대에게서 한 장을 뽑고, 마지막까지 조커를 가진 사람이 집니다.</p>
           {!replaySetup && <div className="old-maid-mode-picker" aria-label="대국 방식"><button type="button" className={lobbyMode === "play" ? "selected" : ""} onClick={() => chooseMode("play")}>직접 플레이</button><button type="button" className={lobbyMode === "spectate" ? "selected" : ""} onClick={() => chooseMode("spectate")}>NPC 4명 관전</button></div>}
-          <strong className="old-maid-opponent-title">{replaySetup ? "같은 상대와 새 패로 다시 시작합니다" : lobbyMode === "spectate" ? "관전할 NPC 4명을 고르세요" : "함께할 상대 3명을 고르세요"}</strong>
+          <strong className="old-maid-opponent-title">{replaySetup ? "같은 상대와 새 패로 다시 시작합니다" : lobbyMode === "spectate" ? "관전할 NPC 4명을 고르기" : "함께할 상대 3명 고르기"}</strong>
           {!replaySetup && <><button type="button" className="old-maid-random" onClick={chooseRandomOpponents}><IconRefresh size={15} /> 무작위 선택</button><div className="old-maid-opponent-picker">{selectableCharacters.map((character) => { const selected = opponentIds.includes(character.id); const portrait = thumbAssets[character.portraits.neutral] ?? assets[character.portraits.neutral]; return <button type="button" className={selected ? "selected" : ""} aria-pressed={selected} key={character.id} onClick={() => toggleOpponent(character.id)}>{portrait && <img src={portrait} alt="" decoding="async" loading="lazy" />}<span>{character.name}</span></button>; })}</div></>}
           <div className="old-maid-roster" aria-label="선택한 좌석 순서">{lobbyMode === "play" && <span>하단 · 플레이어</span>}{opponentIds.map((id, index) => <span key={id}>{index < 3 ? `상단 ${index + 1}` : "하단"} · {characters.get(id)?.name}</span>)}</div>
           {economy?.prediction && (lobbyMode === "spectate" || directPrediction) && <section className="old-maid-prediction" aria-label={lobbyMode === "spectate" ? "최종 조커 보유자 예측" : "1등 예측 베팅"}>
@@ -432,7 +442,7 @@ export function OldMaidScreen({ cartridge, assets, thumbAssets = assets, detailA
           onFinish={() => dispatch({ type: "finish_offer" })}
         />}
 
-        {state.status !== "ready" && state.status !== "complete" && <div className="old-maid-speed-controls old-maid-progress-controls" aria-label="진행 방식"><button type="button" className={progressMode === "auto" ? "selected" : ""} onClick={() => { setManualRunning(false); setProgressMode("auto"); }}>자동</button><button type="button" className={progressMode === "manual" ? "selected" : ""} onClick={() => setProgressMode("manual")}>수동</button>{progressMode === "manual" && <button type="button" className="selected" disabled={paused || manualRunning || state.currentPlayerId === "player" && state.mode === "play"} onClick={advanceManualTurn}>{manualRunning ? "진행 중…" : "다음"}</button>}{state.mode === "spectate" && <><button type="button" className={spectatorSpeed === "normal" ? "selected" : ""} onClick={() => setSpectatorSpeed("normal")}>보통</button><button type="button" className={spectatorSpeed === "fast" ? "selected" : ""} onClick={() => setSpectatorSpeed("fast")}>빠르게</button></>}</div>}
+        {renderProgressControls("mobile")}
 
         {state.status === "playing" && <>
           <div className={`old-maid-turn-callout ${state.currentPlayerId === "player" ? "player" : "cpu"}`}>
@@ -487,6 +497,8 @@ export function OldMaidScreen({ cartridge, assets, thumbAssets = assets, detailA
           </div>
         </div>}
       </div>
+
+      {renderProgressControls("desktop")}
 
       <GameLog state={state} faces={faces} nameOf={nameOf} revealCpuDraws={state.mode === "spectate" || humanFinishedWatching} />
 
