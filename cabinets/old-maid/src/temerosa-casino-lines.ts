@@ -211,4 +211,3 @@ export const temerosaCasinoOldMaidLines = [
   { id: "tumit-tu-joker-drawn", characterId: "tumit-tu", event: "joker-drawn", text: ["어… 이거 S랭크 난이도 아닙니까?"] },
   { id: "tumit-tu-joker-left", characterId: "tumit-tu", event: "joker-left", text: ["넘겼다! E랭크는 위기를 이렇게 넘깁니다!"] },
 ] as const satisfies readonly OldMaidLine[];
-
