@@ -93,3 +93,18 @@
    NPC-to-NPC cards contain a nested .back element, so neutralize the legacy
    direct-draw hover rule as a defensive fallback. */
 .old-maid-offer-card:disabled .old-maid-card.back:hover{z-index:auto;margin-right:0;transform:none}
+
+/* Temerosa casino dressing. Custom properties come from
+   @lucky-arcade/ui/casino.css and every one carries a literal fallback, so the
+   table still renders correctly if the kit is absent. */
+.old-maid-shell{background:radial-gradient(56% 38% at 16% -6%,color-mix(in srgb,var(--ca-gold,#f3bd55) 13%,transparent),transparent 62%),radial-gradient(44% 32% at 88% -8%,color-mix(in srgb,var(--ca-crimson,#8b0000) 22%,transparent),transparent 58%),linear-gradient(180deg,rgba(4,9,17,.88),rgba(5,10,18,.97)),var(--old-maid-bg) center/cover fixed}
+.old-maid-center{border-color:color-mix(in srgb,var(--ca-gold,#f3bd55) 24%,transparent);background:repeating-linear-gradient(45deg,rgba(255,255,255,.015) 0 2px,transparent 2px 4px),radial-gradient(circle at 50% 38%,#2a5a4d,#193a32 42%,#0a1c18 78%);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--ca-gold,#f3bd55) 13%,transparent),inset 0 0 100px rgba(0,0,0,.6),0 22px 64px rgba(0,0,0,.45)}
+.old-maid-intro h2,.old-maid-result h2{font-family:var(--ca-display,Georgia,"Noto Serif KR",serif);font-weight:700;letter-spacing:-.02em}
+.old-maid-shell button{transition:transform 90ms cubic-bezier(.2,.9,.3,1.25),filter 90ms ease}
+.old-maid-shell button:active:not(:disabled){transform:scale(.94) rotate(1.4deg);filter:brightness(1.28) saturate(1.15)}
+.old-maid-primary{border:0;border-radius:999px;color:var(--ca-ink,#17120b);background-color:transparent;background-image:linear-gradient(100deg,#77530a 0%,#f3bd55 22%,#ffdda4 40%,#f3bd55 58%,#77530a 100%);background-size:260% 100%;background-position:88% 50%;font-weight:900;filter:drop-shadow(0 6px 10px color-mix(in srgb,var(--ca-gold,#f3bd55) 30%,transparent));transition:background-position .85s ease,transform 90ms cubic-bezier(.2,.9,.3,1.25),filter 90ms ease}
+.old-maid-primary:hover:not(:disabled),.old-maid-primary:focus-visible{background-position:4% 50%}
+.old-maid-primary:disabled{filter:none}
+.old-maid-opponent-picker button.selected{position:relative;border-color:color-mix(in srgb,var(--ca-gold,#f3bd55) 30%,transparent)}
+.old-maid-opponent-picker button.selected::after{content:"";position:absolute;inset:3px;pointer-events:none;background-repeat:no-repeat;background-image:linear-gradient(#f3bd55 0 0),linear-gradient(#f3bd55 0 0),linear-gradient(#f3bd55 0 0),linear-gradient(#f3bd55 0 0),linear-gradient(#f3bd55 0 0),linear-gradient(#f3bd55 0 0),linear-gradient(#f3bd55 0 0),linear-gradient(#f3bd55 0 0);background-size:9px 2px,2px 9px,9px 2px,2px 9px,9px 2px,2px 9px,9px 2px,2px 9px;background-position:left top,left top,right top,right top,left bottom,left bottom,right bottom,right bottom}
+@media(prefers-reduced-motion:reduce){.old-maid-shell button{transition:none}.old-maid-shell button:active:not(:disabled){transform:none}}
