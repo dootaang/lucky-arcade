@@ -62,7 +62,7 @@ const registrations: readonly WebCabinetRegistration[] = [
   },
   {
     manifest: {
-      id: "temerosa-match-pairs", version: "match-pairs/0.1", title: "짝맞추기",
+      id: "temerosa-match-pairs", version: "match-pairs/0.2", title: "짝맞추기",
       description: "이름 없이 그림만 보고 같은 얼굴 두 장을 찾는 기억 게임.", requiredCapabilities: [],
       sessionKind: "repeat", launchKind: "built-in", resumeLabel: "짝맞추기 이어하기", estimatedMinutes: { min: 1, max: 3 },
     },

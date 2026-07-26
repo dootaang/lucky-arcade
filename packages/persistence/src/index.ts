@@ -79,7 +79,7 @@ export interface MatchRecord {
   completedAt: string;
   turns: number;
   standings: MatchStanding[];
-  outcome: "win" | "loss" | "spectated";
+  outcome: "win" | "loss" | "draw" | "spectated";
   resultHash: string;
   wager?: {
     market?: PredictionMarket;

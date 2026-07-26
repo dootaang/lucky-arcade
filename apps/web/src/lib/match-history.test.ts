@@ -9,6 +9,11 @@ describe("match history summary", () => {
     expect(summary).toMatchObject({ played: 3, wins: 2, firstPlaces: 1, jokerHolds: 1, currentStreak: 1, longestStreak: 1 });
     expect(summary.opponents[0]).toMatchObject({ participantId: "npc", played: 3, beaten: 2 });
   });
+
+  it("records a draw without turning it into a loss streak", () => {
+    const summary = summariseMatches([record("1", "win", 1, 2), record("2", "draw", 1, 1)]);
+    expect(summary).toMatchObject({ played: 2, wins: 1, currentStreak: 0, longestStreak: 1 });
+  });
 });
 
 function record(id: string, outcome: MatchRecord["outcome"], playerRank: number, opponentRank: number): MatchRecord {

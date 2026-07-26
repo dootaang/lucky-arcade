@@ -1,6 +1,6 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
-import { createMatchPairsState, reduceMatchPairs, type MatchPairsFace, type MatchPairsState } from "../../src/index.ts";
+import { createMatchPairsState, reduceMatchPairs, type MatchPairsFace, type MatchPairsOpponent, type MatchPairsState } from "../../src/index.ts";
 import {
   MATCH_PAIRS_MISMATCH_HOLD_MS,
   MatchPairsScreen,
@@ -16,6 +16,12 @@ const faces: MatchPairsFace[] = Array.from({ length: 10 }, (_, index) => ({
   confusionGroup: `group-${index}`,
 }));
 const assets = Object.fromEntries(faces.map((face, index) => [face.assetId, `/images/neutral-${index}.webp`]));
+const opponent: MatchPairsOpponent = {
+  id: "npc", name: "NPC", portraits: { neutral: "npc-neutral", pleased: "npc-pleased", tense: "npc-tense" },
+  despairPortrait: "npc-despair", memoryCapacity: 6, recallAccuracy: 0.8, explorationBias: 0.55, consistency: 0.72,
+};
+const opponents = [opponent];
+const allAssets = { ...assets, "npc-neutral": "/images/npc-neutral.webp", "npc-pleased": "/images/npc-pleased.webp", "npc-tense": "/images/npc-tense.webp", "npc-despair": "/images/npc-despair.webp" };
 
 describe("match pairs screen markup", () => {
   it.each([
@@ -24,14 +30,15 @@ describe("match pairs screen markup", () => {
   ] as const)("mounts every %s card front with coordinate-only accessible labels", (difficulty, cardCount, lastCoordinate) => {
     const markup = renderToStaticMarkup(<MatchPairsScreen
       faces={faces}
-      assets={assets}
+      opponents={opponents}
+      assets={allAssets}
       packVersion="pack"
       seed={`markup-${difficulty}`}
       sessionId="session"
       initialDifficulty={difficulty}
     />);
     expect(markup.match(/class="match-pairs-card"/g) ?? []).toHaveLength(cardCount);
-    expect(markup.match(/<img/g)).toHaveLength(cardCount);
+    expect(markup.match(/<img/g)).toHaveLength(cardCount + 2);
     expect(markup).toContain('alt=""');
     expect(markup).toContain('aria-label="A1 카드 뒤집기"');
     expect(markup).toContain(`aria-label="${lastCoordinate} 카드 뒤집기"`);
@@ -39,18 +46,19 @@ describe("match pairs screen markup", () => {
     expect(markup).not.toContain("title=");
   });
 
-  it("renders the specified anonymous completion copy without a face list", () => {
+  it("renders versus completion copy without exposing card-face names", () => {
     const complete = autoplay("complete");
     const markup = renderToStaticMarkup(<MatchPairsScreen
       faces={faces}
-      assets={assets}
+      opponents={opponents}
+      assets={allAssets}
       packVersion="pack"
       seed="ignored-by-restoration"
       sessionId="session"
       initialState={complete}
     />);
-    expect(markup).toContain("모든 짝을 찾았습니다");
-    expect(markup).toContain(`시도 ${complete.attempts}회`);
+    expect(markup).toContain("승리했습니다");
+    expect(markup).toContain(`나 ${complete.claims.player.length}짝`);
     expect(markup).not.toContain("화면에 나오면 안 되는 인물");
     expect(markup).not.toContain("표정");
   });
@@ -130,12 +138,12 @@ describe("match pairs checking timer", () => {
 });
 
 function autoplay(seed: string): MatchPairsState {
-  let state = reduceMatchPairs(faces, createMatchPairsState(faces, "pack", seed, "easy", "session"), { type: "start" });
+  let state = reduceMatchPairs(faces, opponents, createMatchPairsState(faces, opponents, "pack", seed, "easy", opponent.id, "session"), { type: "start" });
   for (const pairId of new Set(state.cards.map((card) => card.pairId))) {
     const indexes = state.cards.flatMap((card, index) => card.pairId === pairId ? [index] : []);
-    state = reduceMatchPairs(faces, state, { type: "reveal", index: indexes[0]! });
-    state = reduceMatchPairs(faces, state, { type: "reveal", index: indexes[1]! });
-    state = reduceMatchPairs(faces, state, { type: "resolve" });
+    state = reduceMatchPairs(faces, opponents, state, { type: "player-reveal", index: indexes[0]! });
+    state = reduceMatchPairs(faces, opponents, state, { type: "player-reveal", index: indexes[1]! });
+    state = reduceMatchPairs(faces, opponents, state, { type: "resolve" });
   }
   return state;
 }

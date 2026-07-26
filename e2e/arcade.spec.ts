@@ -146,10 +146,10 @@ test("plays, records, and restores the public image-only match-pairs table witho
     await page.locator(".match-pairs-card").nth(second!).click();
     await expect(page.locator(".match-pairs-card.is-matched")).toHaveCount((pair + 1) * 2);
   }
-  await expect(page.getByRole("heading", { name: "모든 짝을 찾았습니다" })).toBeVisible();
+  await expect(page.locator(".match-pairs-result")).toContainText("승리했습니다");
   const persisted = await page.evaluate(async () => {
     const database = await new Function("return import('/src/lib/database.ts')")();
-    return { wallet: await database.readWallet(), records: await database.listMatchRecordsForSession("temerosa-match-pairs:table-1", 10) };
+    return { wallet: await database.readWallet(), records: await database.listMatchRecordsForSession("temerosa-match-pairs:versus-1", 10) };
   });
   expect(persisted.wallet.balance).toBe(37);
   expect(persisted.records).toHaveLength(1);
@@ -157,7 +157,7 @@ test("plays, records, and restores the public image-only match-pairs table witho
   await page.goto("/");
   await expect(page.getByRole("region", { name: "이어하기" })).toContainText("테메로세 카지노 · 짝맞추기");
   await page.getByRole("button", { name: "짝맞추기 이어하기", exact: true }).click();
-  await expect(page.getByRole("heading", { name: "모든 짝을 찾았습니다" })).toBeVisible();
+  await expect(page.locator(".match-pairs-result")).toContainText("승리했습니다");
 });
 
 test("mobile match-pairs keeps the whole board inside the viewport", async ({ page }, testInfo) => {

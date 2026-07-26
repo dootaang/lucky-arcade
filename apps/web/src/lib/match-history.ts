@@ -81,7 +81,8 @@ export function summariseMatches(records: readonly MatchRecord[]): MatchSummary 
   let longestStreak = 0;
   for (const record of playedRecords) {
     if (record.outcome === "win") currentStreak = currentStreak >= 0 ? currentStreak + 1 : 1;
-    else currentStreak = currentStreak <= 0 ? currentStreak - 1 : -1;
+    else if (record.outcome === "loss") currentStreak = currentStreak <= 0 ? currentStreak - 1 : -1;
+    else currentStreak = 0;
     if (currentStreak > longestStreak) longestStreak = currentStreak;
   }
   const opponents = new Map<string, { participantId: string; displayName: string; played: number; beaten: number }>();

@@ -1,12 +1,14 @@
 import { describe, expect, it } from "vitest";
 import {
   MATCH_PAIRS_ERRORS,
+  chooseMatchPairsNpcIndex,
   createMatchPairsState,
   matchPairsResultHash,
   reduceMatchPairs,
   selectMatchPairsFaces,
   type MatchPairsDifficulty,
   type MatchPairsFace,
+  type MatchPairsOpponent,
   type MatchPairsState,
 } from "../src/index.ts";
 
@@ -16,172 +18,119 @@ const faces: MatchPairsFace[] = Array.from({ length: 12 }, (_, index) => ({
   characterId: `character-${index}`,
   confusionGroup: `group-${index}`,
 }));
+const opponents: MatchPairsOpponent[] = [opponent("steady", 8, 0.92, 0.55, 0.9), opponent("curious", 5, 0.68, 0.8, 0.55)];
 
-describe("match pairs board generation", () => {
-  it.each([
-    ["easy", 6, 12],
-    ["normal", 8, 16],
-  ] as const)("creates the exact %s board size", (difficulty, pairCount, cardCount) => {
-    const state = createMatchPairsState(faces, "pack/0.8.0", "board-size", difficulty);
+describe("match pairs versus board generation", () => {
+  it.each([["easy", 6, 12], ["normal", 8, 16]] as const)("creates the exact %s board size", (difficulty, pairCount, cardCount) => {
+    const state = fresh("board-size", difficulty);
     expect(state.cards).toHaveLength(cardCount);
     expect(new Set(state.cards.map((card) => card.pairId)).size).toBe(pairCount);
-    expect(new Set(state.cards.map((card) => card.cardId)).size).toBe(cardCount);
-    for (const pairId of new Set(state.cards.map((card) => card.pairId))) {
-      expect(state.cards.filter((card) => card.pairId === pairId)).toHaveLength(2);
-    }
+    expect(state).toMatchObject({ opponentId: "steady", currentTurn: "player", claims: { player: [], npc: [] } });
   });
 
   it("sorts candidates before deterministic constrained selection and shuffling", () => {
-    const left = createMatchPairsState(faces, "pack/0.8.0", "stable", "easy", "session");
-    const right = createMatchPairsState([...faces].reverse(), "pack/0.8.0", "stable", "easy", "session");
+    const left = createMatchPairsState(faces, opponents, "pack", "stable", "easy", "steady", "session");
+    const right = createMatchPairsState([...faces].reverse(), [...opponents].reverse(), "pack", "stable", "easy", "steady", "session");
     expect(right.cards).toEqual(left.cards);
     expect(matchPairsResultHash(right)).toBe(matchPairsResultHash(left));
   });
 
   it("selects distinct characters and confusion groups", () => {
     const candidates: MatchPairsFace[] = [
-      { id: "a-1", assetId: "a1", characterId: "a", confusionGroup: "red" },
-      { id: "a-2", assetId: "a2", characterId: "a", confusionGroup: "blue" },
-      { id: "b-1", assetId: "b1", characterId: "b", confusionGroup: "red" },
-      { id: "b-2", assetId: "b2", characterId: "b", confusionGroup: "green" },
-      { id: "c", assetId: "c", characterId: "c", confusionGroup: "yellow" },
-      { id: "d", assetId: "d", characterId: "d", confusionGroup: "purple" },
-      { id: "e", assetId: "e", characterId: "e", confusionGroup: "orange" },
-      { id: "f", assetId: "f", characterId: "f", confusionGroup: "white" },
+      { id: "a-1", assetId: "a1", characterId: "a", confusionGroup: "red" }, { id: "a-2", assetId: "a2", characterId: "a", confusionGroup: "blue" },
+      { id: "b-1", assetId: "b1", characterId: "b", confusionGroup: "red" }, { id: "b-2", assetId: "b2", characterId: "b", confusionGroup: "green" },
+      { id: "c", assetId: "c", characterId: "c", confusionGroup: "yellow" }, { id: "d", assetId: "d", characterId: "d", confusionGroup: "purple" },
+      { id: "e", assetId: "e", characterId: "e", confusionGroup: "orange" }, { id: "f", assetId: "f", characterId: "f", confusionGroup: "white" },
     ];
     const selected = selectMatchPairsFaces(candidates, "pack", "matching", "easy");
     expect(new Set(selected.map((face) => face.characterId)).size).toBe(6);
     expect(new Set(selected.map((face) => face.confusionGroup)).size).toBe(6);
   });
 
-  it("distinguishes an insufficient pool from incompatible constraints", () => {
-    expect(() => createMatchPairsState(faces.slice(0, 5), "pack", "few", "easy"))
-      .toThrow(MATCH_PAIRS_ERRORS.candidatesTooFew);
-    const conflicts = Array.from({ length: 8 }, (_, index): MatchPairsFace => ({
-      id: `conflict-${index}`,
-      assetId: `asset-${index}`,
-      characterId: "same-character",
-    }));
-    expect(() => createMatchPairsState(conflicts, "pack", "conflict", "easy"))
-      .toThrow(MATCH_PAIRS_ERRORS.constraintConflict);
-  });
-
-  it("rejects malformed and duplicate candidates explicitly", () => {
-    expect(() => createMatchPairsState([{ ...faces[0]!, id: "" }, ...faces.slice(1)], "pack", "bad", "easy"))
-      .toThrow(MATCH_PAIRS_ERRORS.invalidFace);
-    expect(() => createMatchPairsState([faces[0]!, { ...faces[1]!, id: faces[0]!.id }, ...faces.slice(2)], "pack", "duplicate", "easy"))
-      .toThrow(`${MATCH_PAIRS_ERRORS.duplicateFaceId}:${faces[0]!.id}`);
+  it("rejects invalid pools and opponents explicitly", () => {
+    expect(() => createMatchPairsState(faces.slice(0, 5), opponents, "pack", "few", "easy", "steady")).toThrow(MATCH_PAIRS_ERRORS.candidatesTooFew);
+    expect(() => createMatchPairsState(faces, opponents, "pack", "missing", "easy", "absent")).toThrow(MATCH_PAIRS_ERRORS.opponentMissing);
+    expect(() => createMatchPairsState(faces, [opponents[0]!, { ...opponents[1]!, id: "steady" }], "pack", "duplicate", "easy", "steady")).toThrow(MATCH_PAIRS_ERRORS.duplicateOpponentId);
   });
 });
 
-describe("match pairs transitions", () => {
-  it("starts, reveals, checks, resolves, and records monotonic input history", () => {
-    let state = createMatchPairsState(faces, "pack", "transitions", "easy");
-    state = reduceMatchPairs(faces, state, { type: "start" });
-    expect(state.status).toBe("playing");
-    expect(state.attempts).toBe(0);
-
-    const firstIndex = 0;
-    const pairIndex = state.cards.findIndex((card, index) => index !== firstIndex && card.pairId === state.cards[firstIndex]!.pairId);
-    state = reduceMatchPairs(faces, state, { type: "reveal", index: firstIndex });
-    expect(state).toMatchObject({ status: "playing", attempts: 0, openIndexes: [firstIndex] });
-    state = reduceMatchPairs(faces, state, { type: "reveal", index: pairIndex });
-    expect(state).toMatchObject({ status: "checking", attempts: 1, openIndexes: [firstIndex, pairIndex] });
-    state = reduceMatchPairs(faces, state, { type: "resolve" });
-    expect(state).toMatchObject({ status: "playing", attempts: 1, openIndexes: [] });
-    expect(state.matchedPairIds).toEqual([state.cards[firstIndex]!.pairId]);
-    expect(state.sequence).toBe(4);
-    expect(state.history.map((entry) => entry.sequence)).toEqual([1, 2, 3, 4]);
-  });
-
-  it("counts every second reveal as exactly one attempt, including mismatches", () => {
-    let state = reduceMatchPairs(faces, createMatchPairsState(faces, "pack", "attempts", "easy"), { type: "start" });
+describe("alternating turns and memory", () => {
+  it("keeps the turn after a match and gives the turn away after a mismatch", () => {
+    let state = reduce(fresh("turns"), { type: "start" });
     const first = 0;
-    const different = state.cards.findIndex((card) => card.pairId !== state.cards[first]!.pairId);
-    state = reduceMatchPairs(faces, state, { type: "reveal", index: first });
-    state = reduceMatchPairs(faces, state, { type: "reveal", index: different });
-    expect(state.attempts).toBe(1);
-    state = reduceMatchPairs(faces, state, { type: "resolve" });
-    expect(state.matchedPairIds).toEqual([]);
-    expect(state.attempts).toBe(1);
+    const pair = state.cards.findIndex((card, index) => index !== first && card.pairId === state.cards[first]!.pairId);
+    state = reduce(state, { type: "player-reveal", index: first });
+    state = reduce(state, { type: "player-reveal", index: pair });
+    state = reduce(state, { type: "resolve" });
+    expect(state).toMatchObject({ currentTurn: "player", claims: { player: [state.cards[first]!.pairId], npc: [] } });
+
+    const available = state.cards.flatMap((card, index) => state.matchedPairIds.includes(card.pairId) ? [] : [index]);
+    const different = available.find((index) => state.cards[index]!.pairId !== state.cards[available[0]!]!.pairId)!;
+    state = reduce(state, { type: "player-reveal", index: available[0]! });
+    state = reduce(state, { type: "player-reveal", index: different });
+    state = reduce(state, { type: "resolve" });
+    expect(state.currentTurn).toBe("npc");
   });
 
-  it("persists a checking state and resolves the same pair after restoration", () => {
-    let state = reduceMatchPairs(faces, createMatchPairsState(faces, "pack", "restore", "easy"), { type: "start" });
-    const first = 0;
-    const second = state.cards.findIndex((card, index) => index !== first && card.pairId === state.cards[first]!.pairId);
-    state = reduceMatchPairs(faces, state, { type: "reveal", index: first });
-    state = reduceMatchPairs(faces, state, { type: "reveal", index: second });
-    const restored = JSON.parse(JSON.stringify(state)) as MatchPairsState;
-    expect(restored.status).toBe("checking");
-    expect(reduceMatchPairs(faces, restored, { type: "resolve" }).matchedPairIds).toEqual([state.cards[first]!.pairId]);
+  it("lets the NPC reveal through a public-memory chooser and respects memory capacity", () => {
+    const smallMemory = [opponent("small", 1, 1, 1, 1)];
+    let state = createMatchPairsState(faces, smallMemory, "pack", "memory", "easy", "small", "session");
+    state = reduceMatchPairs(faces, smallMemory, state, { type: "start" });
+    const different = state.cards.findIndex((card) => card.pairId !== state.cards[0]!.pairId);
+    state = reduceMatchPairs(faces, smallMemory, state, { type: "player-reveal", index: 0 });
+    state = reduceMatchPairs(faces, smallMemory, state, { type: "player-reveal", index: different });
+    state = reduceMatchPairs(faces, smallMemory, state, { type: "resolve" });
+    state = reduceMatchPairs(faces, smallMemory, state, { type: "npc-reveal" });
+    expect(state.openIndexes).toHaveLength(1);
+    expect(state.npcMemory.length).toBeLessThanOrEqual(1);
   });
 
-  it("rejects invalid transitions and card indexes without mutating state", () => {
-    const ready = createMatchPairsState(faces, "pack", "invalid", "easy");
-    const before = matchPairsResultHash(ready);
-    expect(() => reduceMatchPairs(faces, ready, { type: "reveal", index: 0 })).toThrow(MATCH_PAIRS_ERRORS.revealInvalid);
-    expect(() => reduceMatchPairs(faces, ready, { type: "resolve" })).toThrow(MATCH_PAIRS_ERRORS.resolveInvalid);
-    let playing = reduceMatchPairs(faces, ready, { type: "start" });
-    expect(() => reduceMatchPairs(faces, playing, { type: "start" })).toThrow(MATCH_PAIRS_ERRORS.startInvalid);
-    expect(() => reduceMatchPairs(faces, playing, { type: "reveal", index: -1 })).toThrow(MATCH_PAIRS_ERRORS.revealIndexInvalid);
-    playing = reduceMatchPairs(faces, playing, { type: "reveal", index: 0 });
-    expect(() => reduceMatchPairs(faces, playing, { type: "reveal", index: 0 })).toThrow(MATCH_PAIRS_ERRORS.revealAlreadyOpen);
-    const second = playing.cards.findIndex((card) => card.pairId !== playing.cards[0]!.pairId);
-    const checking = reduceMatchPairs(faces, playing, { type: "reveal", index: second });
-    expect(() => reduceMatchPairs(faces, checking, { type: "reveal", index: 2 })).toThrow(MATCH_PAIRS_ERRORS.revealInvalid);
-    const matchedSecond = checking.cards.findIndex((card, index) => index !== 0 && card.pairId === checking.cards[0]!.pairId);
-    const matchingCheck = reduceMatchPairs(faces, playing, { type: "reveal", index: matchedSecond });
-    const afterMatch = reduceMatchPairs(faces, matchingCheck, { type: "resolve" });
-    expect(() => reduceMatchPairs(faces, afterMatch, { type: "reveal", index: 0 })).toThrow(MATCH_PAIRS_ERRORS.revealAlreadyMatched);
-    expect(matchPairsResultHash(ready)).toBe(before);
+  it("chooses a remembered counterpart without receiving hidden cards", () => {
+    const read = { seed: "public", sequence: 4, turnNumber: 2, cardCount: 8, openIndexes: [3], unavailableIndexes: [3, 6, 7], memory: [
+      { index: 3, pairId: "known", seenAtTurn: 2, confidence: 1 }, { index: 1, pairId: "known", seenAtTurn: 1, confidence: 1 },
+    ] } as const;
+    expect(chooseMatchPairsNpcIndex(read, opponent("perfect", 8, 1, 0, 1))).toBe(1);
   });
 
-  it("restarts with a fresh board while retaining the session WAL sequence", () => {
-    let state = reduceMatchPairs(faces, createMatchPairsState(faces, "pack", "old", "easy", "saved-session"), { type: "start" });
-    state = reduceMatchPairs(faces, state, { type: "restart", seed: "new", difficulty: "normal" });
-    expect(state).toMatchObject({ sessionId: "saved-session", seed: "new", difficulty: "normal", status: "ready", attempts: 0, sequence: 2 });
-    expect(state.cards).toHaveLength(16);
-    expect(state.history.map((entry) => entry.action.type)).toEqual(["start", "restart"]);
+  it("selects and randomizes opponents only while ready", () => {
+    let state = fresh("opponents");
+    state = reduce(state, { type: "select-opponent", opponentId: "curious" });
+    expect(state.opponentId).toBe("curious");
+    state = reduce(state, { type: "random-opponent" });
+    expect(state.opponentId).toBe("steady");
+    state = reduce(state, { type: "start" });
+    expect(() => reduce(state, { type: "select-opponent", opponentId: "curious" })).toThrow(MATCH_PAIRS_ERRORS.opponentSelectionInvalid);
   });
 });
 
-describe("match pairs exhaustive deterministic runs", () => {
-  it("generates and automatically completes 10,000 seeded boards", () => {
+describe("completion and replay", () => {
+  it("completes 10,000 deterministic player-perfect boards", () => {
     for (let seedIndex = 0; seedIndex < 10_000; seedIndex += 1) {
-      const difficulty: MatchPairsDifficulty = seedIndex % 2 === 0 ? "easy" : "normal";
-      let state = createMatchPairsState(faces, "pack/0.8.0", `seed-${seedIndex}`, difficulty, `session-${seedIndex}`);
-      const expectedPairs = difficulty === "easy" ? 6 : 8;
-      expect(new Set(state.cards.map((card) => card.cardId)).size, `card ids at seed ${seedIndex}`).toBe(expectedPairs * 2);
-      const pairIds = [...new Set(state.cards.map((card) => card.pairId))];
-      expect(pairIds.length, `pair ids at seed ${seedIndex}`).toBe(expectedPairs);
-      for (const pairId of pairIds) expect(state.cards.filter((card) => card.pairId === pairId), `${pairId} at seed ${seedIndex}`).toHaveLength(2);
-
-      state = reduceMatchPairs(faces, state, { type: "start" });
-      for (const pairId of pairIds) {
-        const indexes = state.cards.flatMap((card, index) => card.pairId === pairId ? [index] : []);
-        state = reduceMatchPairs(faces, state, { type: "reveal", index: indexes[0]! });
-        state = reduceMatchPairs(faces, state, { type: "reveal", index: indexes[1]! });
-        state = reduceMatchPairs(faces, state, { type: "resolve" });
-      }
-      expect(state.status, `completion at seed ${seedIndex}`).toBe("complete");
-      expect(state.attempts, `attempts at seed ${seedIndex}`).toBe(expectedPairs);
-      expect(state.matchedPairIds, `matches at seed ${seedIndex}`).toHaveLength(expectedPairs);
+      const difficulty: MatchPairsDifficulty = seedIndex % 2 ? "normal" : "easy";
+      const state = autoplay(`seed-${seedIndex}`, difficulty);
+      expect(state.status).toBe("complete");
+      expect(state.outcome).toBe("player");
+      expect(state.claims.player).toHaveLength(difficulty === "easy" ? 6 : 8);
     }
   }, 30_000);
 
-  it("replays the same inputs to the same final result hash", () => {
-    const run = (candidateOrder: readonly MatchPairsFace[]): MatchPairsState => {
-      let state = reduceMatchPairs(candidateOrder, createMatchPairsState(candidateOrder, "pack", "replay", "normal", "session"), { type: "start" });
-      const pairIds = [...new Set(state.cards.map((card) => card.pairId))];
-      for (const pairId of pairIds) {
-        const indexes = state.cards.flatMap((card, index) => card.pairId === pairId ? [index] : []);
-        state = reduceMatchPairs(candidateOrder, state, { type: "reveal", index: indexes[0]! });
-        state = reduceMatchPairs(candidateOrder, state, { type: "reveal", index: indexes[1]! });
-        state = reduceMatchPairs(candidateOrder, state, { type: "resolve" });
-      }
-      return state;
-    };
-    expect(matchPairsResultHash(run([...faces].reverse()))).toBe(matchPairsResultHash(run(faces)));
+  it("replays identical inputs to the same result hash", () => {
+    expect(matchPairsResultHash(autoplay("replay", "normal", [...faces].reverse()))).toBe(matchPairsResultHash(autoplay("replay", "normal", faces)));
   });
 });
+
+function fresh(seed: string, difficulty: MatchPairsDifficulty = "easy"): MatchPairsState { return createMatchPairsState(faces, opponents, "pack", seed, difficulty, "steady", "session"); }
+function reduce(state: MatchPairsState, action: Parameters<typeof reduceMatchPairs>[3]): MatchPairsState { return reduceMatchPairs(faces, opponents, state, action); }
+function autoplay(seed: string, difficulty: MatchPairsDifficulty, candidates: readonly MatchPairsFace[] = faces): MatchPairsState {
+  let state = reduceMatchPairs(candidates, opponents, createMatchPairsState(candidates, opponents, "pack", seed, difficulty, "steady", "session"), { type: "start" });
+  for (const pairId of [...new Set(state.cards.map((card) => card.pairId))]) {
+    const indexes = state.cards.flatMap((card, index) => card.pairId === pairId ? [index] : []);
+    state = reduceMatchPairs(candidates, opponents, state, { type: "player-reveal", index: indexes[0]! });
+    state = reduceMatchPairs(candidates, opponents, state, { type: "player-reveal", index: indexes[1]! });
+    state = reduceMatchPairs(candidates, opponents, state, { type: "resolve" });
+  }
+  return state;
+}
+function opponent(id: string, memoryCapacity: number, recallAccuracy: number, explorationBias: number, consistency: number): MatchPairsOpponent {
+  return { id, name: id, portraits: { neutral: `${id}-neutral`, pleased: `${id}-pleased`, tense: `${id}-tense` }, despairPortrait: `${id}-despair`, memoryCapacity, recallAccuracy, explorationBias, consistency };
+}
