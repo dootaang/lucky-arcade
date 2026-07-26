@@ -5,6 +5,9 @@
 > [좌석 대사집](./TEMEROSA-OLD-MAID-DIALOGUE.md)의 자매 문서다. 톤 원칙·상황 8종·발화 규칙·판정 불가침은
 > 그 문서를 그대로 따르며 여기서 반복하지 않는다. 이 문서는 **신규 26명의 문안**만 담는다.
 >
+> **개막·순위·패배 5상황은 여기 없다.** 35명 전원의 의례 문안은
+> [의례 대사집](./TEMEROSA-OLD-MAID-CEREMONY-DIALOGUE.md)에 있다.
+>
 > 근거: [신규 NPC 명부](./TEMEROSA-CASINO-NPC-ROSTER.md)와
 > `C:\freetalk\테메로세`의 네 시리즈 원본 CHARX. 원문 추출물은 `reports/`(gitignore)에 있다.
 
