@@ -37,7 +37,7 @@ const venues: readonly VenueManifest[] = [
     },
     entryLabel: "카지노 입장",
     order: 10,
-    cabinetIds: ["temerosa-old-maid", "temerosa-match-pairs"],
+    cabinetIds: ["temerosa-old-maid", "temerosa-match-pairs", "temerosa-slot"],
   },
 ] as const;
 

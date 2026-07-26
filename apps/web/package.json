@@ -25,6 +25,7 @@
     "@lucky-arcade/persistence": "workspace:*",
     "@lucky-arcade/restoration-crew": "workspace:*",
     "@lucky-arcade/sprite-memory": "workspace:*",
+    "@lucky-arcade/slot-machine": "workspace:*",
     "@lucky-arcade/temerosa-margin": "workspace:*",
     "@lucky-arcade/ui": "workspace:*",
     "@tabler/icons-react": "3.45.0",

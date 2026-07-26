@@ -17,6 +17,16 @@ type CabinetView = LazyExoticComponent<ComponentType<CabinetViewContext>>;
 
 const registrations: readonly WebCabinetRegistration[] = [
   {
+    manifest: {
+      id: "temerosa-slot", version: "slot-machine/0.1", title: "슬롯 777",
+      description: "테메로세의 유물과 괴물 심볼로 다섯 당첨선을 맞추는 결정론 슬롯머신.", requiredCapabilities: [],
+      sessionKind: "instant", launchKind: "built-in", resumeLabel: "슬롯으로 돌아가기", estimatedMinutes: { min: 1, max: 1 },
+      entry: "wager", wagerTiers: [10, 50, 200],
+    },
+    openingRank: null, badge: "기계 구역",
+    load: async () => { const module = await import("../features/slot-machine/temerosa-slot-view.tsx"); return { default: ({ onExit }) => <module.default onExit={onExit} /> }; },
+  },
+  {
     manifest: { id: "indian-poker", version: "indian-poker/0.1", title: "테메로세 인디언 포커", description: "상대의 표정을 읽고 계속할지 기권할지 고르는 5라운드 카드 게임.", requiredCapabilities: [], sessionKind: "repeat", launchKind: "built-in", resumeLabel: "인디언 포커 이어하기", estimatedMinutes: { min: 1, max: 2 } },
     openingRank: null, badge: "비공개 실험",
     load: async () => { const module = await import("../features/indian-poker/indian-poker-view.tsx"); return { default: ({ onExit }) => <module.default onExit={onExit} /> }; },

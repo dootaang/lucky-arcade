@@ -11,6 +11,8 @@ export interface CabinetManifest {
   launchKind: "built-in" | "card" | "both";
   resumeLabel: string;
   estimatedMinutes: { min: number; max: number };
+  entry?: "free" | "wager" | "both";
+  wagerTiers?: readonly number[];
 }
 
 export type SeatTellStyle = "open" | "guarded" | "bluffer";

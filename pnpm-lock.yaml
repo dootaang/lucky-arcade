@@ -106,6 +106,9 @@ importers:
       '@lucky-arcade/restoration-crew':
         specifier: workspace:*
         version: link:../../cabinets/restoration-crew
+      '@lucky-arcade/slot-machine':
+        specifier: workspace:*
+        version: link:../../cabinets/slot-machine
       '@lucky-arcade/sprite-memory':
         specifier: workspace:*
         version: link:../../cabinets/sprite-memory
@@ -348,6 +351,25 @@ importers:
       '@types/react':
         specifier: 19.2.17
         version: 19.2.17
+
+  cabinets/slot-machine:
+    dependencies:
+      '@lucky-arcade/engine':
+        specifier: workspace:*
+        version: link:../../packages/engine
+      react:
+        specifier: 19.2.8
+        version: 19.2.8
+    devDependencies:
+      '@types/react':
+        specifier: 19.2.17
+        version: 19.2.17
+      '@types/react-dom':
+        specifier: 19.2.3
+        version: 19.2.3(@types/react@19.2.17)
+      react-dom:
+        specifier: 19.2.8
+        version: 19.2.8(react@19.2.8)
 
   cabinets/sprite-memory:
     dependencies:

@@ -109,7 +109,7 @@ const plannedTables = [
 ] as const;
 
 /** A suit stamped on each table, so a bare card still reads as a casino table. */
-const TABLE_SUITS: Record<string, string> = { "temerosa-old-maid": "♠", "temerosa-match-pairs": "♥", "인디언 포커": "♦", "다음 심리전": "♣", "관전석": "♠", "알제의 교환소": "♦" };
+const TABLE_SUITS: Record<string, string> = { "temerosa-old-maid": "♠", "temerosa-match-pairs": "♥", "temerosa-slot": "♦", "인디언 포커": "♦", "다음 심리전": "♣", "관전석": "♠", "알제의 교환소": "♦" };
 
 function VenueFloor({ venue, onPlay }: { venue: VenueManifest; onPlay(id: string): void }) {
   const playable = venue.cabinetIds.map((id) => getCabinetRegistration(id)).filter((entry): entry is WebCabinetRegistration => Boolean(entry));
@@ -120,10 +120,10 @@ function VenueFloor({ venue, onPlay }: { venue: VenueManifest; onPlay(id: string
     <div className="table-grid">
       {playable.map((entry) => <article className="table-card playable ca-shine ca-glare" key={entry.manifest.id}>
         <span className="table-suit" aria-hidden="true">{TABLE_SUITS[entry.manifest.id] ?? "♠"}</span>
-        <span className="table-group"><i className="ca-live" aria-hidden="true" /><span className="ca-label">Live · 무료</span></span>
+        <span className="table-group"><i className="ca-live" aria-hidden="true" /><span className="ca-label">Live · {entry.manifest.entry === "wager" ? "판돈" : "무료"}</span></span>
         <h3 className="ca-serif">{entry.manifest.title.replace("테메로세 ", "")}</h3>
         <p>{entry.manifest.description}</p>
-        <small className="ca-num">{entry.manifest.estimatedMinutes.min}~{entry.manifest.estimatedMinutes.max}분 · 포인트 없이 시작</small>
+        <small className="ca-num">{entry.manifest.estimatedMinutes.min}~{entry.manifest.estimatedMinutes.max}분 · {entry.manifest.entry === "wager" ? `${entry.manifest.wagerTiers?.[0] ?? 0} P부터` : "포인트 없이 시작"}</small>
         <button className="ca-gold-btn ca-press ca-floorlight" onClick={() => onPlay(entry.manifest.id)}>시작<IconPlayerPlay size={17} /></button>
         <span className="ca-brackets" aria-hidden="true" />
       </article>)}

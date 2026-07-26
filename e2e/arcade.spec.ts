@@ -45,15 +45,16 @@ test("mobile navigation and Venue floor remain reachable", async ({ page }, test
   await expect(page.locator(".table-card.playable").filter({ hasText: "도둑잡기" }).getByRole("button", { name: "시작", exact: true })).toBeInViewport();
 });
 
-test("opens the sole public Venue and exposes its two playable tables", async ({ page }) => {
+test("opens the sole public Venue and exposes its three playable tables", async ({ page }) => {
   await page.goto("/");
   await expect(page.locator(".venue-card")).toHaveCount(1);
   await expect(page.getByRole("heading", { name: "테메로세 카지노" })).toBeVisible();
   await expect(page.getByText("내 카드로 놀기")).toHaveCount(0);
   await page.getByRole("button", { name: "카지노 입장" }).click();
-  await expect(page.locator(".table-card.playable")).toHaveCount(2);
+  await expect(page.locator(".table-card.playable")).toHaveCount(3);
   await expect(page.locator(".table-card.playable").filter({ hasText: "도둑잡기" }).getByRole("button", { name: "시작", exact: true })).toBeVisible();
   await expect(page.locator(".table-card.playable").filter({ hasText: "짝맞추기" }).getByRole("button", { name: "시작", exact: true })).toBeVisible();
+  await expect(page.locator(".table-card.playable").filter({ hasText: "슬롯 777" })).toContainText("10 P부터");
   await expect(page.locator(".table-card.coming-soon")).toHaveCount(4);
   await expect(page.locator(".table-card.coming-soon button")).toHaveCount(0);
   await page.locator(".table-card.playable").filter({ hasText: "도둑잡기" }).getByRole("button", { name: "시작", exact: true }).click();
@@ -76,6 +77,36 @@ test("keeps the Venue title and entry action when its hero image fails", async (
   await expect(page.getByRole("heading", { name: "테메로세 카지노" })).toBeVisible();
   await page.getByRole("button", { name: "카지노 입장" }).click();
   await expect(page.getByRole("heading", { name: "테이블을 골라주세요" })).toBeVisible();
+});
+
+test("reserves and settles one deterministic Temerosa slot spin", async ({ page }, testInfo) => {
+  test.skip(testInfo.project.metadata.mobile === true);
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/");
+  await page.evaluate(() => new Promise<void>((resolve, reject) => {
+    const opening = indexedDB.open("lucky-arcade", 7);
+    opening.onerror = () => reject(opening.error);
+    opening.onsuccess = () => {
+      const db = opening.result;
+      const transaction = db.transaction("wallet", "readwrite");
+      transaction.objectStore("wallet").put({ contract: "wallet/0.1", id: "wallet", balance: 1_000, updatedAt: new Date().toISOString() });
+      transaction.onerror = () => reject(transaction.error);
+      transaction.oncomplete = () => { db.close(); resolve(); };
+    };
+  }));
+  await page.goto("/play/temerosa-slot");
+  await expect(page.getByRole("heading", { name: "슬롯 777", exact: true })).toBeVisible();
+  await expect(page.locator(".slot-machine-symbol img")).toHaveCount(9);
+  await page.getByRole("button", { name: "10 P로 돌리기", exact: true }).click();
+  await expect(page.locator(".slot-machine-result")).toContainText(/당첨 없음|줄 적중/);
+  const economy = await page.evaluate(async () => {
+    const database = await new Function("return import('/src/lib/database.ts')")();
+    const wagers = await database.listGameWagers("temerosa-slot:machine-1");
+    const wallet = await database.readWallet();
+    return { wager: wagers[0], balance: wallet.balance };
+  });
+  expect(economy.wager).toMatchObject({ cabinetId: "temerosa-slot", stake: 10, reservedAmount: 10, status: "settled" });
+  expect(economy.balance).toBe(1_000 - 10 + economy.wager.settlementCredit);
 });
 
 test("plays, records, and restores the public image-only match-pairs table without changing points", async ({ page }, testInfo) => {
