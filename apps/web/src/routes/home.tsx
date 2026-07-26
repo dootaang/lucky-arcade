@@ -107,9 +107,35 @@ const plannedTables = [
   { group: "교환소", title: "알제의 교환소", description: "포인트 교환 품목을 정리하고 있습니다." },
 ] as const;
 
+/** A suit stamped on each table, so a bare card still reads as a casino table. */
+const TABLE_SUITS: Record<string, string> = { "temerosa-old-maid": "♠", "temerosa-match-pairs": "♥", "인디언 포커": "♦", "다음 심리전": "♣", "관전석": "♠", "알제의 교환소": "♦" };
+
 function VenueFloor({ venue, onPlay }: { venue: VenueManifest; onPlay(id: string): void }) {
   const playable = venue.cabinetIds.map((id) => getCabinetRegistration(id)).filter((entry): entry is WebCabinetRegistration => Boolean(entry));
-  return <section className="casino-floor" aria-labelledby="floor-heading"><header><span className="eyebrow">여백의 카지노 플로어</span><h2 id="floor-heading">테이블을 골라주세요</h2><p>현재 실제로 운영 중인 테이블만 입장할 수 있습니다.</p></header><div className="table-grid">{playable.map((entry) => <article className="table-card playable" key={entry.manifest.id}><span className="table-group">무료</span><h3>{entry.manifest.title.replace("테메로세 ", "")}</h3><p>{entry.manifest.description}</p><small>{entry.manifest.estimatedMinutes.min}~{entry.manifest.estimatedMinutes.max}분 · 포인트 없이 시작</small><button onClick={() => onPlay(entry.manifest.id)}>시작<IconPlayerPlay size={17} /></button></article>)}{plannedTables.map((table) => <article className="table-card coming-soon" key={table.group}><span className="table-group">{table.group}</span><h3>{table.title}</h3><p>{table.description}</p><strong>준비 중</strong></article>)}</div></section>;
+  return <section className="casino-floor" aria-labelledby="floor-heading">
+    <span className="floor-backdrop ca-tableau" aria-hidden="true" />
+    <span className="ca-spotlight" aria-hidden="true" />
+    <header><span className="eyebrow">여백의 카지노 플로어</span><h2 id="floor-heading" className="ca-serif">테이블을 골라주세요</h2><p>현재 실제로 운영 중인 테이블만 입장할 수 있습니다.</p></header>
+    <div className="table-grid">
+      {playable.map((entry) => <article className="table-card playable ca-shine ca-glare" key={entry.manifest.id}>
+        <span className="table-suit" aria-hidden="true">{TABLE_SUITS[entry.manifest.id] ?? "♠"}</span>
+        <span className="table-group"><i className="ca-live" aria-hidden="true" /><span className="ca-label">Live · 무료</span></span>
+        <h3 className="ca-serif">{entry.manifest.title.replace("테메로세 ", "")}</h3>
+        <p>{entry.manifest.description}</p>
+        <small className="ca-num">{entry.manifest.estimatedMinutes.min}~{entry.manifest.estimatedMinutes.max}분 · 포인트 없이 시작</small>
+        <button className="ca-gold-btn ca-press ca-floorlight" onClick={() => onPlay(entry.manifest.id)}>시작<IconPlayerPlay size={17} /></button>
+        <span className="ca-brackets" aria-hidden="true" />
+      </article>)}
+      <p className="table-locked-divider ca-label" aria-hidden="true">개장 준비 중</p>
+      {plannedTables.map((table) => <article className="table-card coming-soon" key={table.group}>
+        <span className="table-suit" aria-hidden="true">{TABLE_SUITS[table.title] ?? "♣"}</span>
+        <span className="table-group ca-label">{table.group}</span>
+        <h3 className="ca-serif">{table.title}</h3>
+        <p>{table.description}</p>
+        <strong>준비 중</strong>
+      </article>)}
+    </div>
+  </section>;
 }
 
 function DeveloperLobby({ cards, selected, onImported, onSelect, onPlay }: { cards: StoredCard[]; selected: StoredCard | null; onImported(card: StoredCard): void; onSelect(card: StoredCard): void; onPlay(id: string): void }) {

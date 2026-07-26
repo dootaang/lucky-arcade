@@ -1,0 +1,162 @@
+/* Temerosa casino presentation kit.
+ *
+ * Opt-in `.ca-*` classes only. Nothing here applies unless a class is used, so
+ * the neutral Lucky Arcade lobby cannot be styled by accident.
+ *
+ * Budget rules — the reason this file stays small:
+ *   1. At most 3 blur-producing layers per screen (blur/backdrop-filter/drop-shadow).
+ *   2. Animate `transform` and `opacity` only. Never `width`, `top`, or `filter`.
+ *   3. One real foil card on screen at a time; grids get `.ca-glare` instead.
+ *   4. Every animation is disabled under `prefers-reduced-motion`.
+ *
+ * Pseudo-element ownership, so parts never collide:
+ *   ::before -> .ca-shine, .ca-gold-rim      ::after -> .ca-glare
+ *   Overlays that need their own span: .ca-brackets, .ca-spotlight, .ca-scan
+ */
+
+@property --ca-angle { syntax: "<angle>"; initial-value: 0deg; inherits: false; }
+
+:root {
+  --ca-void: #0c0f14;
+  --ca-surface: #161a21;
+  --ca-raised: #1c2128;
+  --ca-gold: #f3bd55;
+  --ca-gold-bright: #ffdda4;
+  --ca-gold-deep: #77530a;
+  --ca-crimson: #8b0000;
+  --ca-felt: #244c42;
+  --ca-rising: #58d8ad;
+  --ca-falling: #b91c1c;
+  --ca-ink: #17120b;
+  --ca-display: Georgia, "Noto Serif KR", "Times New Roman", serif;
+  --ca-data: ui-monospace, "Cascadia Mono", Menlo, monospace;
+}
+
+/* Typography ------------------------------------------------------------- */
+.ca-serif { font-family: var(--ca-display); font-weight: 700; letter-spacing: -.02em; }
+.ca-num { font-family: var(--ca-data); font-variant-numeric: tabular-nums; letter-spacing: -.01em; }
+.ca-label { font-family: var(--ca-data); font-size: .62rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; }
+
+/* Press — the tactile answer. Brightness burst instead of a background swap so
+   it works on gold fills, outlines, and image tiles alike. */
+.ca-press { transition: transform 90ms cubic-bezier(.2, .9, .3, 1.25), filter 90ms ease; }
+.ca-press:active { transform: scale(.94) rotate(1.4deg); filter: brightness(1.28) saturate(1.15); }
+
+/* Filled gold button with a sheen that sweeps on hover. */
+.ca-gold-btn {
+  border: 0; color: var(--ca-ink); font-weight: 900; cursor: pointer;
+  background-image: linear-gradient(100deg, var(--ca-gold-deep) 0%, var(--ca-gold) 22%, var(--ca-gold-bright) 40%, var(--ca-gold) 58%, var(--ca-gold-deep) 100%);
+  background-size: 260% 100%; background-position: 88% 50%;
+  transition: background-position .85s ease, box-shadow .25s ease;
+}
+.ca-gold-btn:hover, .ca-gold-btn:focus-visible { background-position: 4% 50%; }
+
+/* Outline variant: the gradient lives on the border, the middle stays dark. */
+.ca-gold-rim { position: relative; border: 0; color: var(--ca-gold-bright); background: transparent; cursor: pointer; }
+.ca-gold-rim::before {
+  content: ""; position: absolute; inset: 0; border-radius: inherit; padding: 1px; pointer-events: none;
+  background: linear-gradient(100deg, var(--ca-gold-deep), var(--ca-gold-bright) 40%, var(--ca-gold) 60%, var(--ca-gold-deep));
+  background-size: 260% 100%; background-position: 88% 50%;
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor; mask-composite: exclude;
+  transition: background-position .85s ease;
+}
+.ca-gold-rim:hover::before, .ca-gold-rim:focus-visible::before { background-position: 4% 50%; }
+
+/* Light pooling underneath. drop-shadow keeps it behind the element without
+   fighting stacking contexts, unlike a negative z-index pseudo. */
+.ca-floorlight { filter: drop-shadow(0 7px 11px color-mix(in srgb, var(--ca-gold) 34%, transparent)); }
+
+/* Reflection on the polished table surface. Firefox ignores it and loses nothing. */
+.ca-reflect { -webkit-box-reflect: below 6px linear-gradient(to bottom, rgba(0, 0, 0, 0), rgba(0, 0, 0, .3)); }
+
+/* A light travelling around the border. Marks a table as open. */
+.ca-shine { position: relative; }
+.ca-shine::before {
+  content: ""; position: absolute; inset: 0; border-radius: inherit; padding: 1px; pointer-events: none; z-index: 1;
+  background: conic-gradient(from var(--ca-angle), transparent 0deg, color-mix(in srgb, var(--ca-gold) 35%, transparent) 26deg, var(--ca-gold-bright) 48deg, color-mix(in srgb, var(--ca-gold) 35%, transparent) 70deg, transparent 116deg, transparent 360deg);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor; mask-composite: exclude;
+  animation: ca-spin 5.5s linear infinite;
+}
+@keyframes ca-spin { to { --ca-angle: 360deg; } }
+
+/* Cheap sheen for grids. Use this, never a real foil, when many cards show at once. */
+.ca-glare { position: relative; overflow: hidden; }
+.ca-glare::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none; opacity: 0; transition: opacity .28s ease;
+  background: linear-gradient(125deg, transparent 0%, rgba(255, 255, 255, .04) 45%, rgba(255, 255, 255, .12) 50%, rgba(255, 255, 255, .04) 55%, transparent 100%);
+}
+.ca-glare:hover::after, .ca-glare:focus-within::after { opacity: 1; }
+
+/* Felt with card suits pressed into it, plus two drifting gold dust layers. */
+.ca-tableau {
+  background-color: var(--ca-void);
+  background-image:
+    radial-gradient(color-mix(in srgb, var(--ca-gold) 55%, transparent) .8px, transparent 1.2px),
+    radial-gradient(color-mix(in srgb, var(--ca-gold) 34%, transparent) .6px, transparent 1.2px),
+    radial-gradient(circle at 50% 0%, color-mix(in srgb, var(--ca-gold) 7%, transparent), transparent 46%);
+  background-size: 87px 91px, 53px 61px, 100% 100%;
+  background-position: 0 0, 17px 23px, 50% 0;
+  animation: ca-drift 90s linear infinite;
+}
+@keyframes ca-drift {
+  to { background-position: 87px 273px, -53px 183px, 50% 0; }
+}
+
+/* Two beams falling from above. Needs its own span inside a positioned parent. */
+.ca-spotlight {
+  position: absolute; inset: 0; pointer-events: none; overflow: hidden; border-radius: inherit;
+  background:
+    radial-gradient(58% 52% at 20% -10%, color-mix(in srgb, var(--ca-gold) 26%, transparent), transparent 66%),
+    radial-gradient(50% 46% at 86% -14%, color-mix(in srgb, var(--ca-crimson) 34%, transparent), transparent 62%);
+}
+
+/* Four corner brackets. Own span so the host keeps its background. */
+.ca-brackets {
+  --ca-bk: 13px; --ca-bw: 2px;
+  position: absolute; inset: 9px; pointer-events: none;
+  background-repeat: no-repeat;
+  background-image:
+    linear-gradient(var(--ca-gold) 0 0), linear-gradient(var(--ca-gold) 0 0),
+    linear-gradient(var(--ca-gold) 0 0), linear-gradient(var(--ca-gold) 0 0),
+    linear-gradient(var(--ca-gold) 0 0), linear-gradient(var(--ca-gold) 0 0),
+    linear-gradient(var(--ca-gold) 0 0), linear-gradient(var(--ca-gold) 0 0);
+  background-size:
+    var(--ca-bk) var(--ca-bw), var(--ca-bw) var(--ca-bk),
+    var(--ca-bk) var(--ca-bw), var(--ca-bw) var(--ca-bk),
+    var(--ca-bk) var(--ca-bw), var(--ca-bw) var(--ca-bk),
+    var(--ca-bk) var(--ca-bw), var(--ca-bw) var(--ca-bk);
+  background-position:
+    left top, left top, right top, right top,
+    left bottom, left bottom, right bottom, right bottom;
+}
+
+/* A light sweeping down a card as it is revealed. */
+.ca-scan {
+  position: absolute; inset: 0; pointer-events: none; overflow: hidden; border-radius: inherit;
+}
+.ca-scan::after {
+  content: ""; position: absolute; inset: 0;
+  background: linear-gradient(to bottom, transparent, color-mix(in srgb, var(--ca-gold) 22%, transparent), transparent);
+  transform: translateY(-100%); animation: ca-scan 1.6s linear infinite;
+}
+@keyframes ca-scan { to { transform: translateY(100%); } }
+
+/* A call to action with a pulse. Ring only — no layout shift. */
+.ca-pulse { animation: ca-pulse 2.4s ease-out infinite; }
+@keyframes ca-pulse {
+  0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--ca-gold) 52%, transparent); }
+  70% { box-shadow: 0 0 0 12px transparent; }
+  100% { box-shadow: 0 0 0 0 transparent; }
+}
+
+/* Live status dot. */
+.ca-live { display: inline-grid; place-items: center; width: 7px; height: 7px; border-radius: 50%; background: var(--ca-crimson); box-shadow: 0 0 6px 1px color-mix(in srgb, var(--ca-crimson) 75%, transparent); animation: ca-blink 2s ease-in-out infinite; }
+@keyframes ca-blink { 50% { opacity: .35; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .ca-shine::before, .ca-tableau, .ca-scan::after, .ca-pulse, .ca-live { animation: none; }
+  .ca-press { transition: none; }
+  .ca-press:active { transform: none; }
+}

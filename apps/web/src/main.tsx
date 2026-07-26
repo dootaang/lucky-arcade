@@ -4,6 +4,7 @@ import { createBrowserRouter, RouterProvider } from "react-router";
 import { Home } from "./routes/home.tsx";
 import { CabinetRoute } from "./routes/cabinet-route.tsx";
 import "@lucky-arcade/ui/tokens.css";
+import "@lucky-arcade/ui/casino.css";
 import "./styles.css";
 
 const router = createBrowserRouter([
