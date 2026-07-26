@@ -8,14 +8,14 @@ import { loadTemerosaCasinoAssets } from "../../lib/temerosa-content.ts";
 import { loadMatchSummary, recordOldMaidCompletion, type MatchSummary } from "../../lib/match-history.ts";
 import { readCollection, unlockCollectionItem } from "../../lib/collection.ts";
 import { grantOldMaidCompletion, readWallet } from "../../lib/wallet.ts";
-import { invalidatePrediction, listPredictions, PREDICTION_STAKES, reservePrediction, settlePrediction } from "../../lib/wager.ts";
-import type { CollectionSnapshot, SpectatorPrediction, WalletSnapshot } from "@lucky-arcade/persistence";
+import { invalidatePrediction, listPredictions, PREDICTION_MULTIPLIERS, PREDICTION_STAKES, reservePrediction, settlePrediction } from "../../lib/wager.ts";
+import type { CollectionSnapshot, PredictionMultiplier, PredictionStake, SpectatorPrediction, WalletSnapshot } from "@lucky-arcade/persistence";
 
 const SESSION = "temerosa-old-maid:table-1";
 const COLLECTION = "temerosa-old-maid";
 
 export default function TemerosaOldMaidView({ onExit }: { onExit(): void }) {
-  const [ready, setReady] = useState<{ assets: Readonly<Record<string, string>>; detailAssets: Readonly<Record<string, string>>; cartridge: OldMaidCartridge; state: OldMaidState | null } | null>(null);
+  const [ready, setReady] = useState<{ thumbAssets: Readonly<Record<string, string>>; assets: Readonly<Record<string, string>>; detailAssets: Readonly<Record<string, string>>; cartridge: OldMaidCartridge; state: OldMaidState | null } | null>(null);
   const [error, setError] = useState(false);
   const [matchSummary, setMatchSummary] = useState<MatchSummary | null>(null);
   const [wallet, setWallet] = useState<WalletSnapshot | null>(null);
@@ -45,7 +45,7 @@ export default function TemerosaOldMaidView({ onExit }: { onExit(): void }) {
         if (alive) setWallet(refunded.wallet);
       }
       if (!alive) return;
-      setReady({ assets: bundle.assets, detailAssets: bundle.detailAssets, cartridge, state: recovered.state });
+      setReady({ thumbAssets: bundle.thumbAssets, assets: bundle.assets, detailAssets: bundle.detailAssets, cartridge, state: recovered.state });
       setActivePrediction(predictions.find((prediction) => prediction.outcomeKey === currentOutcomeKey) ?? null);
       if (recovered.state.status === "complete") void loadMatchSummary(SESSION).then(setMatchSummary).catch(() => undefined);
     }).catch(() => { if (alive) setError(true); });
@@ -68,17 +68,17 @@ export default function TemerosaOldMaidView({ onExit }: { onExit(): void }) {
     if (previous.status !== "complete" && next.status === "complete") {
       void recordOldMaidCompletion(cartridge, previous, next, {
         cabinetId: "temerosa-old-maid", sessionId: SESSION, cabinetVersion: next.version, packVersion: TEMEROSA_OLD_MAID_PACK_VERSION,
-      }, psychology).then((summary) => { if (summary) setMatchSummary(summary); }).catch(() => undefined);
+      }, psychology, activePrediction).then((summary) => { if (summary) setMatchSummary(summary); }).catch(() => undefined);
       if (next.mode === "spectate") void settleCurrentPrediction(next);
       else void grantOldMaidCompletion(previous, next, "temerosa-old-maid").then((result) => { if (result) { setWallet(result.wallet); setAward({ amount: result.amount, rank: result.rank }); } }).catch(() => undefined);
     }
   }
 
-  async function startPrediction(input: { seed: string; characterIds: readonly string[]; predictedCharacterId: string; stake: number }): Promise<"reserved" | "replay"> {
+  async function startPrediction(input: { seed: string; characterIds: readonly string[]; predictedCharacterId: string; stake: number; multiplier: number }): Promise<"reserved" | "replay"> {
     const outcomeKey = spectatorOutcomeKey({ seed: input.seed, mode: "spectate", characters: { "cpu-1": input.characterIds[0] as string, "cpu-2": input.characterIds[1] as string, "cpu-3": input.characterIds[2] as string }, spectatorCharacterId: input.characterIds[3] as string });
     const existing = (await listPredictions()).find((prediction) => prediction.outcomeKey === outcomeKey);
     if (existing) { setActivePrediction(existing); return existing.status === "reserved" ? "reserved" : "replay"; }
-    const result = await reservePrediction({ outcomeKey, predictedCharacterId: input.predictedCharacterId, stake: input.stake as 10 | 50 | 200 });
+    const result = await reservePrediction({ outcomeKey, predictedCharacterId: input.predictedCharacterId, stake: input.stake as PredictionStake, multiplier: input.multiplier as PredictionMultiplier });
     setWallet(result.wallet);
     setActivePrediction(result.prediction);
     return "reserved";
@@ -97,8 +97,8 @@ export default function TemerosaOldMaidView({ onExit }: { onExit(): void }) {
 
   if (error) return <main className="game-shell"><div className="game-loading">도둑잡기 카드를 불러오지 못했습니다.<button onClick={() => window.location.reload()}>다시 불러오기</button><button onClick={onExit}>오락실로 돌아가기</button></div></main>;
   if (!ready) return <main className="game-shell"><div className="game-loading">도둑잡기 카드와 캐릭터 표정을 불러오고 있습니다…</div></main>;
-  const economy = wallet && collection ? { balance: wallet.balance, award, unlockedFaceIds: collection.unlockedFaceIds, onUnlock: async () => { const result = await unlockCollectionItem(COLLECTION, ready.cartridge.faces.map((face) => face.id)); setWallet(result.wallet); setCollection(result.collection); }, prediction: { stakes: PREDICTION_STAKES, active: activePrediction, onStart: startPrediction } } : undefined;
-  return <OldMaidScreen cartridge={ready.cartridge} assets={ready.assets} detailAssets={ready.detailAssets} initialState={ready.state} matchSummary={matchSummary} {...(economy ? { economy } : {})} onPersist={persist} onExit={onExit} />;
+  const economy = wallet && collection ? { balance: wallet.balance, award, unlockedFaceIds: collection.unlockedFaceIds, onUnlock: async () => { const result = await unlockCollectionItem(COLLECTION, ready.cartridge.faces.map((face) => face.id)); setWallet(result.wallet); setCollection(result.collection); }, prediction: { stakes: PREDICTION_STAKES, multipliers: PREDICTION_MULTIPLIERS, active: activePrediction, onStart: startPrediction } } : undefined;
+  return <OldMaidScreen cartridge={ready.cartridge} thumbAssets={ready.thumbAssets} assets={ready.assets} detailAssets={ready.detailAssets} initialState={ready.state} matchSummary={matchSummary} {...(economy ? { economy } : {})} onPersist={persist} onExit={onExit} />;
 }
 
 function spectatorOutcomeKey(state: Pick<OldMaidState, "seed" | "mode" | "characters" | "spectatorCharacterId">): string {

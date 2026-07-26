@@ -1,6 +1,7 @@
 import type { OldMaidLine, OldMaidLineEvent } from "./contracts.ts";
 
-type LineText = Readonly<Record<OldMaidLineEvent, readonly string[]>>;
+type LegacyLineEvent = Exclude<OldMaidLineEvent, "table-open" | "finish-1st" | "finish-2nd" | "finish-3rd" | "defeat">;
+type LineText = Readonly<Record<LegacyLineEvent, readonly string[]>>;
 
 const text = {
   pale: {

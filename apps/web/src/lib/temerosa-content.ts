@@ -55,6 +55,7 @@ let assetPromise: Promise<Readonly<Record<string, string>>> | null = null;
 let casinoAssetPromise: Promise<TemerosaCasinoAssetBundle> | null = null;
 
 export interface TemerosaCasinoAssetBundle {
+  thumbAssets: Readonly<Record<string, string>>;
   assets: Readonly<Record<string, string>>;
   detailAssets: Readonly<Record<string, string>>;
   contentAssets: readonly TemerosaManifestAsset[];
@@ -81,18 +82,22 @@ export function loadTemerosaPilotAssets(): Promise<Readonly<Record<string, strin
 
 export function loadTemerosaCasinoAssets(): Promise<TemerosaCasinoAssetBundle> {
   casinoAssetPromise ??= Promise.all(PACKS.map(fetchManifest)).then((manifests) => {
+    const thumbAssets: Record<string, string> = {};
     const assets: Record<string, string> = {};
     const detailAssets: Record<string, string> = {};
     for (const manifest of manifests) for (const asset of manifest.assets) {
       const small = asset.variants.find((candidate) => candidate.size === "sm") ?? asset.variants[0];
-      const detail = asset.variants.find((candidate) => candidate.size === "md") ?? small;
-      if (small) assets[asset.id] = contentUrl(manifest.version, small.path);
+      const medium = asset.variants.find((candidate) => candidate.size === "md") ?? small;
+      const detail = asset.variants.find((candidate) => candidate.size === "lg") ?? medium;
+      if (small) thumbAssets[asset.id] = contentUrl(manifest.version, small.path);
+      if (medium) assets[asset.id] = contentUrl(manifest.version, medium.path);
       if (detail) detailAssets[asset.id] = contentUrl(manifest.version, detail.path);
     }
     for (const required of REQUIRED_ASSETS) if (!assets[required]) throw new Error(`temerosa_pilot_asset_missing:${required}`);
     const casinoManifest = manifests.find((manifest) => manifest.version === "0.8.0");
     if (!casinoManifest) throw new Error("temerosa_casino_manifest_missing");
     return Object.freeze({
+      thumbAssets: Object.freeze(thumbAssets),
       assets: Object.freeze(assets),
       detailAssets: Object.freeze(detailAssets),
       contentAssets: Object.freeze(casinoManifest.assets),

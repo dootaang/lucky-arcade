@@ -41,7 +41,10 @@ async function main(): Promise<void> {
   let totalBytes = 0, files = 0;
   for (const asset of manifest.assets) {
     const sizes = new Set(asset.variants.map((variant) => variant.size));
-    if (sizes.size !== 2 || !sizes.has("sm") || !sizes.has("md")) throw new Error(`casino_variant_sizes_invalid:${asset.id}`);
+    if (sizes.size < 2 || sizes.size > 3 || !sizes.has("sm") || !sizes.has("md")) throw new Error(`casino_variant_sizes_invalid:${asset.id}`);
+    const medium = asset.variants.find((variant) => variant.size === "md");
+    const large = asset.variants.find((variant) => variant.size === "lg");
+    if (large && medium && (large.width < medium.width || large.height < medium.height || large.width > 1200 || large.height > 1200)) throw new Error(`casino_large_variant_dimensions_invalid:${asset.id}`);
     for (const variant of asset.variants) {
       if (variant.mime !== "image/webp" || !variant.path.endsWith(`/${variant.size}.webp`)) throw new Error(`casino_variant_contract_invalid:${variant.path}`);
       const path = resolve(manifestRoot, variant.path); if (!path.startsWith(`${manifestRoot}${sep}`)) throw new Error(`casino_path_escape:${variant.path}`);

@@ -105,13 +105,13 @@ async function createVariants(output: string, id: string, chunk: string, role: T
     if (result.info.width < 1 || result.info.height < 1) throw new Error(`derived_image_dimensions_invalid:${id}:${plan.size}`);
     await writeFile(target, result.data);
     variants.push({ size: plan.size, path: relative.replace(/\\/g, "/"), mime: "image/webp", width: result.info.width, height: result.info.height, bytes: result.data.byteLength });
-    if (metadata.width && metadata.height && metadata.width <= plan.maxWidth && metadata.height <= plan.maxHeight) break;
+    if (plan.size !== "sm" && metadata.width && metadata.height && metadata.width <= plan.maxWidth && metadata.height <= plan.maxHeight) break;
   }
   return variants;
 }
 
 function variantPlans(role: TemerosaAssetRole): readonly VariantPlan[] {
-  if (role === "portrait") return [{ size: "sm", maxWidth: 192, maxHeight: 192 }, { size: "md", maxWidth: 768, maxHeight: 768 }];
+  if (role === "portrait") return [{ size: "sm", maxWidth: 192, maxHeight: 192 }, { size: "md", maxWidth: 768, maxHeight: 768 }, { size: "lg", maxWidth: 1200, maxHeight: 1200 }];
   if (role === "background") return [{ size: "md", maxWidth: 960, maxHeight: 540 }, { size: "lg", maxWidth: 1600, maxHeight: 900 }];
   return [{ size: "md", maxWidth: 384, maxHeight: 384 }, { size: "lg", maxWidth: 768, maxHeight: 768 }];
 }

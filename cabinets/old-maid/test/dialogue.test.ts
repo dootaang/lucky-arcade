@@ -9,6 +9,7 @@ import {
   oldMaidSpeechSnapshot,
   reduceOldMaid,
   selectOldMaidSpeech,
+  selectOldMaidSpeeches,
   temerosaOldMaidCartridge,
   temerosaOldMaidLines,
   validateOldMaidLines,
@@ -37,17 +38,17 @@ describe("old maid seat dialogue", () => {
     }
   });
 
-  it("returns at most one CPU speech per transition across 1,000 games", () => {
+  it("keeps ordinary direct-play transitions to one NPC speech", () => {
     const events = new Set<OldMaidLineEvent>();
     for (let seed = 0; seed < 1_000; seed += 1) autoplay(temerosaOldMaidCartridge, `dialogue-budget-${seed}`, (transition) => {
       for (const event of speechEvents(temerosaOldMaidCartridge, transition)) events.add(event.event);
       const speech = selectSpeech(temerosaOldMaidCartridge, transition);
       expect(speech === null || /^cpu-[123]$/.test(speech.seatId)).toBe(true);
     });
-    expect([...events].sort()).toEqual(["emptied", "idle-draw", "joker-drawn", "joker-left", "pair-discard", "pair-made", "taken-from", "watching"]);
+    expect([...events].sort()).toEqual(["defeat", "emptied", "finish-1st", "finish-2nd", "finish-3rd", "idle-draw", "joker-drawn", "joker-left", "pair-discard", "pair-made", "table-open", "taken-from", "watching"]);
   });
 
-  it("stays silent before play, in the final two-seat phase, and after completion", () => {
+  it("stays silent before play and in the final two-seat phase, then speaks on completion", () => {
     const ready = createOldMaidState(temerosaOldMaidCartridge, "dialogue-silence", "test-session");
     const dealing = reduceOldMaid(temerosaOldMaidCartridge, ready, { type: "start" });
     expect(speechEvents(temerosaOldMaidCartridge, { previous: ready, next: ready })).toEqual([]);
@@ -56,12 +57,21 @@ describe("old maid seat dialogue", () => {
     const run = autoplay(temerosaOldMaidCartridge, "dialogue-silence-complete");
     const last = run.transitions.at(-1) as Transition;
     expect(last.next.status).toBe("complete");
-    expect(speechEvents(temerosaOldMaidCartridge, last)).toEqual([]);
+    expect(speechEvents(temerosaOldMaidCartridge, last).some((event) => event.event === "defeat")).toBe(true);
 
     const twoSeats = { ...last.previous, status: "playing" as const, hands: { ...last.previous.hands, player: [], "cpu-3": [] } };
     expect(Object.values(twoSeats.hands).filter((hand) => hand.length > 0).length).toBeLessThanOrEqual(2);
     expect(speechEvents(temerosaOldMaidCartridge, { previous: last.previous, next: twoSeats })).toEqual([]);
   });
+
+  it("lets the bottom spectator seat speak while direct play never lets the player speak", () => {
+    let bottomSpeeches = 0;
+    for (let seed = 0; seed < 1_000; seed += 1) autoplay(temerosaOldMaidCartridge, `dialogue-spectator-${seed}`, (transition) => {
+      const speeches = selectOldMaidSpeeches(temerosaOldMaidCartridge, oldMaidSpeechSnapshot(transition.previous), oldMaidSpeechSnapshot(transition.next), []);
+      bottomSpeeches += speeches.filter((speech) => speech.seatId === "player").length;
+    }, "spectate");
+    expect(bottomSpeeches).toBeGreaterThan(0);
+  }, 30_000);
 
   it("never selects the player seat", () => {
     for (let seed = 0; seed < 1_000; seed += 1) autoplay(temerosaOldMaidCartridge, `dialogue-player-${seed}`, (transition) => {
@@ -137,7 +147,7 @@ function dialogueBookLines(): Map<string, readonly string[]> {
   return output;
 }
 
-function autoplay(cartridge: OldMaidCartridge, seed: string, visit?: (transition: Transition) => void): { state: OldMaidState; transitions: Transition[] } {
+function autoplay(cartridge: OldMaidCartridge, seed: string, visit?: (transition: Transition) => void, mode: "play" | "spectate" = "play"): { state: OldMaidState; transitions: Transition[] } {
   let state = createOldMaidState(cartridge, seed, "test-session");
   const transitions: Transition[] = [];
   const dispatch = (action: OldMaidAction) => {
@@ -147,15 +157,15 @@ function autoplay(cartridge: OldMaidCartridge, seed: string, visit?: (transition
     transitions.push(transition);
     visit?.(transition);
   };
-  dispatch({ type: "start" });
+  dispatch({ type: "start", mode });
   dispatch({ type: "finish_deal" });
   for (let step = 0; state.status !== "complete" && step < 2_000; step += 1) {
     dispatch(state.status === "revealing" ? { type: "collect_draw" }
       : state.status === "discarding" ? { type: "discard_pair", cardIds: availablePairs(cartridge, state)[0] as [string, string] }
-      : state.status === "offering" && state.offer?.phase === "arranging" && state.offer.targetId === "player" ? { type: "finish_offer" }
+      : state.status === "offering" && state.offer?.phase === "arranging" && state.offer.targetId === "player" && state.mode === "play" ? { type: "finish_offer" }
       : state.status === "offering" && state.offer?.phase === "arranging" ? { type: "prepare_cpu_offer" }
       : state.status === "offering" ? { type: "finish_offer" }
-      : state.currentPlayerId === "player" ? { type: "draw", index: 0 } : { type: "cpu_draw" });
+      : state.currentPlayerId === "player" && state.mode === "play" ? { type: "draw", index: 0 } : { type: "cpu_draw" });
   }
   expect(state.status).toBe("complete");
   return { state, transitions };

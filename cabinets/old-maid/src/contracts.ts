@@ -11,7 +11,8 @@ export type OldMaidTellStyle = "standard" | "open" | "guarded" | "bluffer";
 export type OldMaidMode = "play" | "spectate";
 export type OldMaidLineEvent =
   | "watching" | "idle-draw" | "pair-discard" | "taken-from"
-  | "pair-made" | "joker-drawn" | "joker-left" | "emptied";
+  | "pair-made" | "joker-drawn" | "joker-left" | "emptied"
+  | "table-open" | "finish-1st" | "finish-2nd" | "finish-3rd" | "defeat";
 
 export interface OldMaidLine {
   id: string;

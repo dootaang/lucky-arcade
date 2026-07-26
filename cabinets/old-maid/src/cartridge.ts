@@ -3,6 +3,7 @@ import { temerosaGalleryFaces } from "./temerosa-gallery.ts";
 import { temerosaCasinoOldMaidLines } from "./temerosa-casino-lines.ts";
 import { TEMEROSA_CASINO_TELL_STYLES } from "./temerosa-casino-personas.ts";
 import { temerosaOldMaidLines } from "./temerosa-lines.ts";
+import { temerosaOutcomeOldMaidLines } from "./temerosa-outcome-lines.ts";
 
 const faces: OldMaidFace[] = [
   ...temerosaGalleryFaces,
@@ -64,7 +65,7 @@ export function createTemerosaCasinoOldMaidCartridge(contentAssets: readonly Tem
   const characters = uniqueCharacters([...contentCharacters, ...baseCharacters]);
   const characterIds = new Set(characters.map((character) => character.id));
   const selectableCharacterIds = characters.filter((character) => character.id !== "bacikal").map((character) => character.id);
-  const lines = [...temerosaOldMaidLines, ...temerosaCasinoOldMaidLines]
+  const lines = [...temerosaOldMaidLines, ...temerosaCasinoOldMaidLines, ...temerosaOutcomeOldMaidLines]
     .filter((line) => characterIds.has(line.characterId));
   const expandedCards = allFaces.flatMap<OldMaidCard>((face) => face.id === "joker"
     ? [{ id: "joker-odd", faceId: face.id, pairId: null }]

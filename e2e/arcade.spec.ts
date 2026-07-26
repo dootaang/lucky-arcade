@@ -235,9 +235,19 @@ test("plays and restores a complete Temerosa old maid table", async ({ page }, t
   await expect(page.getByText(/침착한 듯|만족한 듯|긴장한 듯/).first()).toBeVisible();
   while (await page.locator(".old-maid-opponent-picker button.selected").count()) await page.locator(".old-maid-opponent-picker button.selected").first().click();
   for (const name of ["에코", "아데샤", "땡칠이"]) await page.getByRole("button", { name, exact: true }).click();
+  await expect(page.locator(".seat-cpu-1 strong")).toHaveText("에코");
+  await expect(page.locator(".seat-cpu-2 strong")).toHaveText("아데샤");
+  await expect(page.locator(".seat-cpu-3 strong")).toHaveText("땡칠이");
   await page.getByRole("button", { name: "카드 배분 시작" }).click();
   await expect(page.getByText("카드를 나누는 중…")).toBeVisible();
+  await page.getByRole("button", { name: "일시정지", exact: true }).click();
+  await page.waitForTimeout(400);
+  await expect(page.getByText("카드를 나누는 중…")).toBeVisible();
+  await page.getByRole("button", { name: "계속", exact: true }).click();
   await expect(page.locator(".old-maid-player-hand")).toBeVisible();
+  await page.getByRole("button", { name: "수동", exact: true }).click();
+  await expect(page.getByRole("button", { name: "수동", exact: true })).toHaveClass(/selected/);
+  await page.getByRole("button", { name: "자동", exact: true }).click();
   let checkedDetail = false;
   let checkedDiscardPile = false;
   let checkedDiscardSpread = false;
@@ -347,6 +357,7 @@ test("plays and restores a complete Temerosa old maid table", async ({ page }, t
   await page.getByRole("button", { name: "도둑잡기 이어하기", exact: true }).click();
   await expect(page.getByText(/에게 조커가 남았습니다/)).toBeVisible();
   await expect(page.getByRole("button", { name: "같은 판 다시 하기" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "도둑잡기 로비로 나가기" })).toBeVisible();
 });
 
 test("starts an open-hand four-NPC Temerosa spectator table", async ({ page }, testInfo) => {
@@ -359,7 +370,7 @@ test("starts an open-hand four-NPC Temerosa spectator table", async ({ page }, t
     opening.onsuccess = () => {
       const db = opening.result;
       const transaction = db.transaction("wallet", "readwrite");
-      transaction.objectStore("wallet").put({ contract: "wallet/0.1", id: "wallet", balance: 10, updatedAt: new Date().toISOString() });
+      transaction.objectStore("wallet").put({ contract: "wallet/0.1", id: "wallet", balance: 20, updatedAt: new Date().toISOString() });
       transaction.onerror = () => reject(transaction.error);
       transaction.oncomplete = () => { db.close(); resolve(); };
     };
@@ -368,7 +379,8 @@ test("starts an open-hand four-NPC Temerosa spectator table", async ({ page }, t
   await page.locator(".arcade-entry").filter({ hasText: "테메로세 도둑잡기" }).getByRole("button", { name: "바로 시작" }).click();
   await page.getByRole("button", { name: "NPC 4명 관전" }).click();
   await expect(page.locator(".old-maid-opponent-picker button.selected")).toHaveCount(4);
-  await expect(page.getByText("순이익 30 P", { exact: false })).toBeVisible();
+  await expect(page.getByText("최대 손익 20 P", { exact: false })).toBeVisible();
+  await expect(page.getByRole("button", { name: "2배", exact: true })).toHaveClass(/selected/);
   await page.getByRole("button", { name: "예측하고 NPC 대국 관전" }).click();
   await expect(page.getByText("카드를 나누는 중…")).toBeVisible();
   await expect(page.locator(".old-maid-spectator-seat")).toBeVisible({ timeout: 20_000 });

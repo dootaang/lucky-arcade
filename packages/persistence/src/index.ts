@@ -81,6 +81,13 @@ export interface MatchRecord {
   standings: MatchStanding[];
   outcome: "win" | "loss" | "spectated";
   resultHash: string;
+  wager?: {
+    predictedCharacterId: string;
+    stake: PredictionStake;
+    multiplier: PredictionMultiplier;
+    reservedAmount: number;
+    won: boolean;
+  };
   psychology?: {
     inspectedCards: number;
     reorderActions: number;
@@ -155,21 +162,25 @@ export interface WalletStore {
 }
 
 export type PredictionStake = 10 | 50 | 200;
+export type PredictionMultiplier = 2 | 3 | 4 | 5;
 export type SpectatorPredictionStatus = "reserved" | "won" | "lost" | "refunded";
 export type PredictionInvalidationReason = "outcome-unavailable" | "pack-version-mismatch" | "corrupt-state";
 
 export interface SpectatorPrediction {
-  contract: "spectator-prediction/0.1";
+  contract: "spectator-prediction/0.2";
   predictionId: string;
   outcomeKey: string;
   predictedCharacterId: string;
   stake: PredictionStake;
+  multiplier: PredictionMultiplier;
+  /** Amount actually debited when the prediction was reserved. */
+  reservedAmount: number;
   status: SpectatorPredictionStatus;
   createdAt: string;
   settledAt?: string;
   winningCharacterId?: string;
   invalidationReason?: PredictionInvalidationReason;
-  /** Points credited at settlement. Reservation debits stake immediately. */
+  /** Points credited at settlement. Reservation debits reservedAmount immediately. */
   settlementCredit: number;
 }
 
@@ -178,6 +189,7 @@ export interface ReserveSpectatorPredictionInput {
   outcomeKey: string;
   predictedCharacterId: string;
   stake: PredictionStake;
+  multiplier: PredictionMultiplier;
 }
 
 export interface SettleSpectatorPredictionInput {

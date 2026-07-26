@@ -26,6 +26,14 @@
           "width": 530,
           "height": 768,
           "bytes": 51054
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/card-adesha-blush/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 93388
         }
       ]
     },
@@ -52,6 +60,14 @@
           "width": 530,
           "height": 768,
           "bytes": 47740
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/card-adesha-surprised/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 86484
         }
       ]
     },
@@ -78,6 +94,14 @@
           "width": 525,
           "height": 768,
           "bytes": 69726
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/card-alger-blush/lg.webp",
+          "mime": "image/webp",
+          "width": 821,
+          "height": 1200,
+          "bytes": 117100
         }
       ]
     },
@@ -104,6 +128,14 @@
           "width": 525,
           "height": 768,
           "bytes": 65498
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/card-alger-surprised/lg.webp",
+          "mime": "image/webp",
+          "width": 821,
+          "height": 1200,
+          "bytes": 106486
         }
       ]
     },
@@ -130,6 +162,14 @@
           "width": 530,
           "height": 768,
           "bytes": 92110
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/card-anna-blush/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 168010
         }
       ]
     },
@@ -156,6 +196,14 @@
           "width": 530,
           "height": 768,
           "bytes": 78404
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/card-anna-surprised/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 147376
         }
       ]
     },
@@ -182,6 +230,14 @@
           "width": 530,
           "height": 768,
           "bytes": 65464
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/card-apollyon-blush/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 117372
         }
       ]
     },
@@ -208,6 +264,14 @@
           "width": 530,
           "height": 768,
           "bytes": 71550
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/card-apollyon-surprised/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 131766
         }
       ]
     },
@@ -234,6 +298,14 @@
           "width": 530,
           "height": 768,
           "bytes": 77802
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/card-bche-blush/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 146850
         }
       ]
     },
@@ -260,6 +332,14 @@
           "width": 530,
           "height": 768,
           "bytes": 72322
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/card-bche-surprised/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 132928
         }
       ]
     },
@@ -286,6 +366,14 @@
           "width": 530,
           "height": 768,
           "bytes": 78524
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/card-cicero-blush/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 141176
         }
       ]
     },
@@ -312,6 +400,14 @@
           "width": 530,
           "height": 768,
           "bytes": 71790
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/card-cicero-surprised/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 131898
         }
       ]
     },
@@ -338,6 +434,14 @@
           "width": 525,
           "height": 768,
           "bytes": 88280
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/card-cradle-blush/lg.webp",
+          "mime": "image/webp",
+          "width": 821,
+          "height": 1200,
+          "bytes": 154930
         }
       ]
     },
@@ -364,6 +468,14 @@
           "width": 525,
           "height": 768,
           "bytes": 82618
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/card-cradle-surprised/lg.webp",
+          "mime": "image/webp",
+          "width": 821,
+          "height": 1200,
+          "bytes": 144830
         }
       ]
     },
@@ -390,6 +502,14 @@
           "width": 530,
           "height": 768,
           "bytes": 69466
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/card-deokbae-blush/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 125030
         }
       ]
     },
@@ -416,6 +536,14 @@
           "width": 530,
           "height": 768,
           "bytes": 68864
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/card-deokbae-surprised/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 126000
         }
       ]
     },
@@ -442,6 +570,14 @@
           "width": 530,
           "height": 768,
           "bytes": 75714
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/card-diamo-blush/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 139352
         }
       ]
     },
@@ -468,6 +604,14 @@
           "width": 530,
           "height": 768,
           "bytes": 82460
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/card-diamo-surprised/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 153784
         }
       ]
     },
@@ -494,6 +638,14 @@
           "width": 530,
           "height": 768,
           "bytes": 54658
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/card-echo-blush/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 99420
         }
       ]
     },
@@ -520,6 +672,14 @@
           "width": 530,
           "height": 768,
           "bytes": 58112
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/card-echo-surprised/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 103692
         }
       ]
     },
@@ -546,6 +706,14 @@
           "width": 530,
           "height": 768,
           "bytes": 53452
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/card-esther-blush/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 98022
         }
       ]
     },
@@ -572,6 +740,14 @@
           "width": 530,
           "height": 768,
           "bytes": 70954
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/card-esther-surprised/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 125966
         }
       ]
     },
@@ -598,6 +774,14 @@
           "width": 525,
           "height": 768,
           "bytes": 57782
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/card-flask-blush/lg.webp",
+          "mime": "image/webp",
+          "width": 821,
+          "height": 1200,
+          "bytes": 98456
         }
       ]
     },
@@ -624,6 +808,14 @@
           "width": 525,
           "height": 768,
           "bytes": 46944
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/card-flask-despair/lg.webp",
+          "mime": "image/webp",
+          "width": 821,
+          "height": 1200,
+          "bytes": 83096
         }
       ]
     },
@@ -650,6 +842,14 @@
           "width": 530,
           "height": 768,
           "bytes": 58464
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/card-flask-neutral/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 109880
         }
       ]
     },
@@ -676,6 +876,14 @@
           "width": 530,
           "height": 768,
           "bytes": 64094
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/card-flask-pleased/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 115474
         }
       ]
     },
@@ -702,6 +910,14 @@
           "width": 530,
           "height": 768,
           "bytes": 58120
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/card-flask-surprised/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 106262
         }
       ]
     },
@@ -728,6 +944,14 @@
           "width": 525,
           "height": 768,
           "bytes": 55836
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/card-flask-tense/lg.webp",
+          "mime": "image/webp",
+          "width": 821,
+          "height": 1200,
+          "bytes": 94138
         }
       ]
     },
@@ -754,6 +978,14 @@
           "width": 530,
           "height": 768,
           "bytes": 59432
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/card-hiro-blush/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 106664
         }
       ]
     },
@@ -780,6 +1012,14 @@
           "width": 530,
           "height": 768,
           "bytes": 58810
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/card-hiro-surprised/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 103034
         }
       ]
     },
@@ -806,6 +1046,14 @@
           "width": 530,
           "height": 768,
           "bytes": 56876
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/card-kreva-blush/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 103770
         }
       ]
     },
@@ -832,6 +1080,14 @@
           "width": 530,
           "height": 768,
           "bytes": 76796
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/card-kreva-surprised/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 143338
         }
       ]
     },
@@ -858,6 +1114,14 @@
           "width": 530,
           "height": 768,
           "bytes": 47062
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/card-levillotte-blush/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 88514
         }
       ]
     },
@@ -884,6 +1148,14 @@
           "width": 530,
           "height": 768,
           "bytes": 45366
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/card-levillotte-surprised/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 83734
         }
       ]
     },
@@ -910,6 +1182,14 @@
           "width": 530,
           "height": 768,
           "bytes": 67866
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/card-lilim-blush/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 122988
         }
       ]
     },
@@ -936,6 +1216,14 @@
           "width": 530,
           "height": 768,
           "bytes": 66870
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/card-lilim-surprised/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 118274
         }
       ]
     },
@@ -962,6 +1250,14 @@
           "width": 525,
           "height": 768,
           "bytes": 67944
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/card-lyla-blush/lg.webp",
+          "mime": "image/webp",
+          "width": 821,
+          "height": 1200,
+          "bytes": 112698
         }
       ]
     },
@@ -988,6 +1284,14 @@
           "width": 525,
           "height": 768,
           "bytes": 77538
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/card-lyla-surprised/lg.webp",
+          "mime": "image/webp",
+          "width": 821,
+          "height": 1200,
+          "bytes": 129320
         }
       ]
     },
@@ -1014,6 +1318,14 @@
           "width": 530,
           "height": 768,
           "bytes": 89572
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/card-machina-blush/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 164624
         }
       ]
     },
@@ -1040,6 +1352,14 @@
           "width": 530,
           "height": 768,
           "bytes": 73066
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/card-machina-surprised/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 135472
         }
       ]
     },
@@ -1066,6 +1386,14 @@
           "width": 530,
           "height": 768,
           "bytes": 74218
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/card-morsisa-blush/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 135702
         }
       ]
     },
@@ -1092,6 +1420,14 @@
           "width": 530,
           "height": 768,
           "bytes": 69842
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/card-morsisa-surprised/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 130232
         }
       ]
     },
@@ -1118,6 +1454,14 @@
           "width": 530,
           "height": 768,
           "bytes": 69556
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/card-nostalgia-blush/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 129540
         }
       ]
     },
@@ -1144,6 +1488,14 @@
           "width": 530,
           "height": 768,
           "bytes": 64194
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/card-nostalgia-surprised/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 114756
         }
       ]
     },
@@ -1170,6 +1522,14 @@
           "width": 530,
           "height": 768,
           "bytes": 63566
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/card-phaeo-blush/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 115224
         }
       ]
     },
@@ -1196,6 +1556,14 @@
           "width": 530,
           "height": 768,
           "bytes": 70774
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/card-phaeo-surprised/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 132808
         }
       ]
     },
@@ -1222,6 +1590,14 @@
           "width": 530,
           "height": 768,
           "bytes": 33812
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/card-raven-blush/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 62358
         }
       ]
     },
@@ -1248,6 +1624,14 @@
           "width": 530,
           "height": 768,
           "bytes": 41216
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/card-raven-surprised/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 75284
         }
       ]
     },
@@ -1274,6 +1658,14 @@
           "width": 530,
           "height": 768,
           "bytes": 70292
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/card-sakabus-blush/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 130254
         }
       ]
     },
@@ -1300,6 +1692,14 @@
           "width": 530,
           "height": 768,
           "bytes": 78820
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/card-sakabus-despair/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 142880
         }
       ]
     },
@@ -1326,6 +1726,14 @@
           "width": 530,
           "height": 768,
           "bytes": 79318
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/card-sakabus-neutral/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 143230
         }
       ]
     },
@@ -1352,6 +1760,14 @@
           "width": 530,
           "height": 768,
           "bytes": 79572
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/card-sakabus-pleased/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 142828
         }
       ]
     },
@@ -1378,6 +1794,14 @@
           "width": 530,
           "height": 768,
           "bytes": 71248
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/card-sakabus-surprised/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 129562
         }
       ]
     },
@@ -1404,6 +1828,14 @@
           "width": 530,
           "height": 768,
           "bytes": 76300
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/card-sakabus-tense/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 140106
         }
       ]
     },
@@ -1430,6 +1862,14 @@
           "width": 530,
           "height": 768,
           "bytes": 68124
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/card-snow-rim-blush/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 122312
         }
       ]
     },
@@ -1456,6 +1896,14 @@
           "width": 530,
           "height": 768,
           "bytes": 72392
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/card-snow-rim-despair/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 133654
         }
       ]
     },
@@ -1482,6 +1930,14 @@
           "width": 530,
           "height": 768,
           "bytes": 71364
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/card-snow-rim-neutral/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 128264
         }
       ]
     },
@@ -1508,6 +1964,14 @@
           "width": 530,
           "height": 768,
           "bytes": 66482
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/card-snow-rim-pleased/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 120188
         }
       ]
     },
@@ -1534,6 +1998,14 @@
           "width": 530,
           "height": 768,
           "bytes": 68472
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/card-snow-rim-surprised/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 122866
         }
       ]
     },
@@ -1560,6 +2032,14 @@
           "width": 530,
           "height": 768,
           "bytes": 63932
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/card-snow-rim-tense/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 114120
         }
       ]
     },
@@ -1586,6 +2066,14 @@
           "width": 530,
           "height": 768,
           "bytes": 68046
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/card-spiril-blush/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 124606
         }
       ]
     },
@@ -1612,6 +2100,14 @@
           "width": 530,
           "height": 768,
           "bytes": 59898
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/card-spiril-despair/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 105964
         }
       ]
     },
@@ -1638,6 +2134,14 @@
           "width": 530,
           "height": 768,
           "bytes": 62054
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/card-spiril-neutral/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 116264
         }
       ]
     },
@@ -1664,6 +2168,14 @@
           "width": 530,
           "height": 768,
           "bytes": 59902
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/card-spiril-pleased/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 106194
         }
       ]
     },
@@ -1690,6 +2202,14 @@
           "width": 530,
           "height": 768,
           "bytes": 63010
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/card-spiril-surprised/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 112600
         }
       ]
     },
@@ -1716,6 +2236,14 @@
           "width": 530,
           "height": 768,
           "bytes": 68178
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/card-spiril-tense/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 124728
         }
       ]
     },
@@ -1742,6 +2270,14 @@
           "width": 530,
           "height": 768,
           "bytes": 46224
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/card-strelka-blush/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 83906
         }
       ]
     },
@@ -1768,6 +2304,14 @@
           "width": 530,
           "height": 768,
           "bytes": 62552
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/card-strelka-despair/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 113596
         }
       ]
     },
@@ -1794,6 +2338,14 @@
           "width": 525,
           "height": 768,
           "bytes": 48602
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/card-strelka-neutral/lg.webp",
+          "mime": "image/webp",
+          "width": 821,
+          "height": 1200,
+          "bytes": 80642
         }
       ]
     },
@@ -1820,6 +2372,14 @@
           "width": 530,
           "height": 768,
           "bytes": 56636
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/card-strelka-surprised/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 101142
         }
       ]
     },
@@ -1846,6 +2406,14 @@
           "width": 530,
           "height": 768,
           "bytes": 60052
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/card-strelka-tense/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 107410
         }
       ]
     },
@@ -1872,6 +2440,14 @@
           "width": 530,
           "height": 768,
           "bytes": 57972
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/card-temute-blush/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 103016
         }
       ]
     },
@@ -1898,6 +2474,14 @@
           "width": 530,
           "height": 768,
           "bytes": 61958
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/card-temute-surprised/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 110570
         }
       ]
     },
@@ -1924,6 +2508,14 @@
           "width": 530,
           "height": 768,
           "bytes": 59010
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/card-traver-blush/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 107690
         }
       ]
     },
@@ -1950,6 +2542,14 @@
           "width": 530,
           "height": 768,
           "bytes": 67422
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/card-traver-surprised/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 124244
         }
       ]
     },
@@ -1976,6 +2576,14 @@
           "width": 530,
           "height": 768,
           "bytes": 68118
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/card-ttaengchil-blush/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 126852
         }
       ]
     },
@@ -2002,6 +2610,14 @@
           "width": 530,
           "height": 768,
           "bytes": 63532
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/card-ttaengchil-surprised/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 114780
         }
       ]
     },
@@ -2028,6 +2644,14 @@
           "width": 530,
           "height": 768,
           "bytes": 52014
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/card-tumit-tu-blush/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 93020
         }
       ]
     },
@@ -2054,6 +2678,14 @@
           "width": 530,
           "height": 768,
           "bytes": 52790
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/card-tumit-tu-surprised/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 97466
         }
       ]
     },
@@ -2080,6 +2712,14 @@
           "width": 530,
           "height": 768,
           "bytes": 65682
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/card-yul-blush/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 119372
         }
       ]
     },
@@ -2106,6 +2746,14 @@
           "width": 530,
           "height": 768,
           "bytes": 66698
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/card-yul-surprised/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 119558
         }
       ]
     },
@@ -2132,6 +2780,14 @@
           "width": 530,
           "height": 768,
           "bytes": 38028
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/npc-adesha-despair/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 68272
         }
       ]
     },
@@ -2158,6 +2814,14 @@
           "width": 530,
           "height": 768,
           "bytes": 44960
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/npc-adesha-neutral/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 80686
         }
       ]
     },
@@ -2184,6 +2848,14 @@
           "width": 530,
           "height": 768,
           "bytes": 43242
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/npc-adesha-pleased/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 79206
         }
       ]
     },
@@ -2210,6 +2882,14 @@
           "width": 530,
           "height": 768,
           "bytes": 39618
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/npc-adesha-tense/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 70746
         }
       ]
     },
@@ -2236,6 +2916,14 @@
           "width": 525,
           "height": 768,
           "bytes": 77712
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/npc-alger-despair/lg.webp",
+          "mime": "image/webp",
+          "width": 821,
+          "height": 1200,
+          "bytes": 129830
         }
       ]
     },
@@ -2262,6 +2950,14 @@
           "width": 525,
           "height": 768,
           "bytes": 66724
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/npc-alger-neutral/lg.webp",
+          "mime": "image/webp",
+          "width": 821,
+          "height": 1200,
+          "bytes": 111042
         }
       ]
     },
@@ -2288,6 +2984,14 @@
           "width": 525,
           "height": 768,
           "bytes": 63980
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/npc-alger-pleased/lg.webp",
+          "mime": "image/webp",
+          "width": 821,
+          "height": 1200,
+          "bytes": 103718
         }
       ]
     },
@@ -2314,6 +3018,14 @@
           "width": 525,
           "height": 768,
           "bytes": 64574
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/npc-alger-tense/lg.webp",
+          "mime": "image/webp",
+          "width": 821,
+          "height": 1200,
+          "bytes": 104910
         }
       ]
     },
@@ -2340,6 +3052,14 @@
           "width": 530,
           "height": 768,
           "bytes": 72676
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/npc-anna-despair/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 135484
         }
       ]
     },
@@ -2366,6 +3086,14 @@
           "width": 525,
           "height": 768,
           "bytes": 79284
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/npc-anna-neutral/lg.webp",
+          "mime": "image/webp",
+          "width": 821,
+          "height": 1200,
+          "bytes": 136694
         }
       ]
     },
@@ -2392,6 +3120,14 @@
           "width": 530,
           "height": 768,
           "bytes": 77180
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/npc-anna-pleased/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 144388
         }
       ]
     },
@@ -2418,6 +3154,14 @@
           "width": 530,
           "height": 768,
           "bytes": 96636
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/npc-anna-tense/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 175958
         }
       ]
     },
@@ -2444,6 +3188,14 @@
           "width": 530,
           "height": 768,
           "bytes": 67020
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/npc-apollyon-despair/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 123452
         }
       ]
     },
@@ -2470,6 +3222,14 @@
           "width": 530,
           "height": 768,
           "bytes": 53254
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/npc-apollyon-neutral/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 98436
         }
       ]
     },
@@ -2496,6 +3256,14 @@
           "width": 530,
           "height": 768,
           "bytes": 59220
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/npc-apollyon-pleased/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 107630
         }
       ]
     },
@@ -2522,6 +3290,14 @@
           "width": 530,
           "height": 768,
           "bytes": 89728
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/npc-apollyon-tense/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 161672
         }
       ]
     },
@@ -2548,6 +3324,14 @@
           "width": 530,
           "height": 768,
           "bytes": 76144
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/npc-bche-despair/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 145090
         }
       ]
     },
@@ -2574,6 +3358,14 @@
           "width": 530,
           "height": 768,
           "bytes": 78508
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/npc-bche-neutral/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 148488
         }
       ]
     },
@@ -2600,6 +3392,14 @@
           "width": 530,
           "height": 768,
           "bytes": 91338
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/npc-bche-pleased/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 167004
         }
       ]
     },
@@ -2626,6 +3426,14 @@
           "width": 530,
           "height": 768,
           "bytes": 91704
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/npc-bche-tense/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 169620
         }
       ]
     },
@@ -2652,6 +3460,14 @@
           "width": 530,
           "height": 768,
           "bytes": 57974
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/npc-camille-despair/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 106306
         }
       ]
     },
@@ -2678,6 +3494,14 @@
           "width": 530,
           "height": 768,
           "bytes": 66988
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/npc-camille-neutral/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 125200
         }
       ]
     },
@@ -2704,6 +3528,14 @@
           "width": 530,
           "height": 768,
           "bytes": 64632
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/npc-camille-pleased/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 117560
         }
       ]
     },
@@ -2730,6 +3562,14 @@
           "width": 530,
           "height": 768,
           "bytes": 77934
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/npc-camille-tense/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 142184
         }
       ]
     },
@@ -2756,6 +3596,14 @@
           "width": 530,
           "height": 768,
           "bytes": 40444
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/npc-cicero-despair/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 75070
         }
       ]
     },
@@ -2782,6 +3630,14 @@
           "width": 530,
           "height": 768,
           "bytes": 67842
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/npc-cicero-neutral/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 121434
         }
       ]
     },
@@ -2808,6 +3664,14 @@
           "width": 530,
           "height": 768,
           "bytes": 52796
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/npc-cicero-pleased/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 97926
         }
       ]
     },
@@ -2834,6 +3698,14 @@
           "width": 530,
           "height": 768,
           "bytes": 68732
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/npc-cicero-tense/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 122294
         }
       ]
     },
@@ -2860,6 +3732,14 @@
           "width": 525,
           "height": 768,
           "bytes": 70508
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/npc-cradle-despair/lg.webp",
+          "mime": "image/webp",
+          "width": 821,
+          "height": 1200,
+          "bytes": 121202
         }
       ]
     },
@@ -2886,6 +3766,14 @@
           "width": 525,
           "height": 768,
           "bytes": 97288
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/npc-cradle-neutral/lg.webp",
+          "mime": "image/webp",
+          "width": 821,
+          "height": 1200,
+          "bytes": 184526
         }
       ]
     },
@@ -2912,6 +3800,14 @@
           "width": 525,
           "height": 768,
           "bytes": 73810
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/npc-cradle-pleased/lg.webp",
+          "mime": "image/webp",
+          "width": 821,
+          "height": 1200,
+          "bytes": 130624
         }
       ]
     },
@@ -2938,6 +3834,14 @@
           "width": 525,
           "height": 768,
           "bytes": 83832
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/npc-cradle-tense/lg.webp",
+          "mime": "image/webp",
+          "width": 821,
+          "height": 1200,
+          "bytes": 144614
         }
       ]
     },
@@ -2964,6 +3868,14 @@
           "width": 530,
           "height": 768,
           "bytes": 64918
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/npc-deokbae-despair/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 120370
         }
       ]
     },
@@ -2990,6 +3902,14 @@
           "width": 768,
           "height": 768,
           "bytes": 63364
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/npc-deokbae-neutral/lg.webp",
+          "mime": "image/webp",
+          "width": 1200,
+          "height": 1200,
+          "bytes": 103652
         }
       ]
     },
@@ -3016,6 +3936,14 @@
           "width": 530,
           "height": 768,
           "bytes": 67628
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/npc-deokbae-pleased/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 123366
         }
       ]
     },
@@ -3042,6 +3970,14 @@
           "width": 530,
           "height": 768,
           "bytes": 67754
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/npc-deokbae-tense/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 123616
         }
       ]
     },
@@ -3068,6 +4004,14 @@
           "width": 530,
           "height": 768,
           "bytes": 77972
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/npc-diamo-despair/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 145276
         }
       ]
     },
@@ -3094,6 +4038,14 @@
           "width": 530,
           "height": 768,
           "bytes": 87722
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/npc-diamo-neutral/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 161836
         }
       ]
     },
@@ -3120,6 +4072,14 @@
           "width": 530,
           "height": 768,
           "bytes": 79086
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/npc-diamo-pleased/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 144776
         }
       ]
     },
@@ -3146,6 +4106,14 @@
           "width": 530,
           "height": 768,
           "bytes": 77836
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/npc-diamo-tense/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 142070
         }
       ]
     },
@@ -3172,6 +4140,14 @@
           "width": 530,
           "height": 768,
           "bytes": 53398
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/npc-echo-despair/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 98668
         }
       ]
     },
@@ -3198,6 +4174,14 @@
           "width": 530,
           "height": 768,
           "bytes": 45596
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/npc-echo-neutral/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 84250
         }
       ]
     },
@@ -3224,6 +4208,14 @@
           "width": 530,
           "height": 768,
           "bytes": 63798
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/npc-echo-pleased/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 112710
         }
       ]
     },
@@ -3250,6 +4242,14 @@
           "width": 530,
           "height": 768,
           "bytes": 50848
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/npc-echo-tense/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 92198
         }
       ]
     },
@@ -3276,6 +4276,14 @@
           "width": 530,
           "height": 768,
           "bytes": 67804
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/npc-esther-despair/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 122012
         }
       ]
     },
@@ -3302,6 +4310,14 @@
           "width": 530,
           "height": 768,
           "bytes": 62604
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/npc-esther-neutral/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 113686
         }
       ]
     },
@@ -3328,6 +4344,14 @@
           "width": 530,
           "height": 768,
           "bytes": 74224
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/npc-esther-pleased/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 135726
         }
       ]
     },
@@ -3354,6 +4378,14 @@
           "width": 530,
           "height": 768,
           "bytes": 57828
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/npc-esther-tense/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 104508
         }
       ]
     },
@@ -3380,6 +4412,14 @@
           "width": 530,
           "height": 768,
           "bytes": 59380
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/npc-hiro-despair/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 103700
         }
       ]
     },
@@ -3406,6 +4446,14 @@
           "width": 530,
           "height": 768,
           "bytes": 62762
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/npc-hiro-neutral/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 113204
         }
       ]
     },
@@ -3432,6 +4480,14 @@
           "width": 530,
           "height": 768,
           "bytes": 58704
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/npc-hiro-pleased/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 102978
         }
       ]
     },
@@ -3458,6 +4514,14 @@
           "width": 530,
           "height": 768,
           "bytes": 58650
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/npc-hiro-tense/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 102682
         }
       ]
     },
@@ -3484,6 +4548,14 @@
           "width": 768,
           "height": 768,
           "bytes": 40474
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/npc-katrinka-despair/lg.webp",
+          "mime": "image/webp",
+          "width": 1200,
+          "height": 1200,
+          "bytes": 63258
         }
       ]
     },
@@ -3510,6 +4582,14 @@
           "width": 768,
           "height": 768,
           "bytes": 98076
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/npc-katrinka-neutral/lg.webp",
+          "mime": "image/webp",
+          "width": 1200,
+          "height": 1200,
+          "bytes": 155102
         }
       ]
     },
@@ -3536,6 +4616,14 @@
           "width": 768,
           "height": 768,
           "bytes": 52542
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/npc-katrinka-pleased/lg.webp",
+          "mime": "image/webp",
+          "width": 1200,
+          "height": 1200,
+          "bytes": 84210
         }
       ]
     },
@@ -3562,6 +4650,14 @@
           "width": 768,
           "height": 768,
           "bytes": 55918
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/npc-katrinka-tense/lg.webp",
+          "mime": "image/webp",
+          "width": 1200,
+          "height": 1200,
+          "bytes": 87300
         }
       ]
     },
@@ -3588,6 +4684,14 @@
           "width": 530,
           "height": 768,
           "bytes": 82218
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/npc-kreva-despair/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 155024
         }
       ]
     },
@@ -3614,6 +4718,14 @@
           "width": 530,
           "height": 768,
           "bytes": 85772
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/npc-kreva-neutral/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 167158
         }
       ]
     },
@@ -3640,6 +4752,14 @@
           "width": 530,
           "height": 768,
           "bytes": 77878
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/npc-kreva-pleased/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 144706
         }
       ]
     },
@@ -3666,6 +4786,14 @@
           "width": 530,
           "height": 768,
           "bytes": 83570
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/npc-kreva-tense/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 154568
         }
       ]
     },
@@ -3692,6 +4820,14 @@
           "width": 530,
           "height": 768,
           "bytes": 46988
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/npc-levillotte-despair/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 89380
         }
       ]
     },
@@ -3718,6 +4854,14 @@
           "width": 530,
           "height": 768,
           "bytes": 41780
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/npc-levillotte-neutral/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 77430
         }
       ]
     },
@@ -3744,6 +4888,14 @@
           "width": 530,
           "height": 768,
           "bytes": 44326
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/npc-levillotte-pleased/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 82222
         }
       ]
     },
@@ -3770,6 +4922,14 @@
           "width": 530,
           "height": 768,
           "bytes": 51698
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/npc-levillotte-tense/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 90474
         }
       ]
     },
@@ -3796,6 +4956,14 @@
           "width": 530,
           "height": 768,
           "bytes": 61512
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/npc-lilim-despair/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 111854
         }
       ]
     },
@@ -3822,6 +4990,14 @@
           "width": 530,
           "height": 768,
           "bytes": 71982
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/npc-lilim-neutral/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 137154
         }
       ]
     },
@@ -3848,6 +5024,14 @@
           "width": 530,
           "height": 768,
           "bytes": 61926
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/npc-lilim-pleased/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 114936
         }
       ]
     },
@@ -3874,6 +5058,14 @@
           "width": 530,
           "height": 768,
           "bytes": 71144
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/npc-lilim-tense/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 134114
         }
       ]
     },
@@ -3900,6 +5092,14 @@
           "width": 525,
           "height": 768,
           "bytes": 80540
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/npc-lyla-despair/lg.webp",
+          "mime": "image/webp",
+          "width": 821,
+          "height": 1200,
+          "bytes": 139562
         }
       ]
     },
@@ -3926,6 +5126,14 @@
           "width": 768,
           "height": 525,
           "bytes": 70382
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/npc-lyla-neutral/lg.webp",
+          "mime": "image/webp",
+          "width": 1200,
+          "height": 821,
+          "bytes": 117924
         }
       ]
     },
@@ -3952,6 +5160,14 @@
           "width": 525,
           "height": 768,
           "bytes": 71940
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/npc-lyla-pleased/lg.webp",
+          "mime": "image/webp",
+          "width": 821,
+          "height": 1200,
+          "bytes": 118918
         }
       ]
     },
@@ -3978,6 +5194,14 @@
           "width": 525,
           "height": 768,
           "bytes": 78744
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/npc-lyla-tense/lg.webp",
+          "mime": "image/webp",
+          "width": 821,
+          "height": 1200,
+          "bytes": 131980
         }
       ]
     },
@@ -4004,6 +5228,14 @@
           "width": 530,
           "height": 768,
           "bytes": 71934
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/npc-machina-despair/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 132498
         }
       ]
     },
@@ -4030,6 +5262,14 @@
           "width": 530,
           "height": 768,
           "bytes": 82086
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/npc-machina-neutral/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 151386
         }
       ]
     },
@@ -4056,6 +5296,14 @@
           "width": 530,
           "height": 768,
           "bytes": 88654
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/npc-machina-pleased/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 163740
         }
       ]
     },
@@ -4082,6 +5330,14 @@
           "width": 530,
           "height": 768,
           "bytes": 88462
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/npc-machina-tense/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 163706
         }
       ]
     },
@@ -4108,6 +5364,14 @@
           "width": 530,
           "height": 768,
           "bytes": 64758
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/npc-morsisa-despair/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 120644
         }
       ]
     },
@@ -4134,6 +5398,14 @@
           "width": 530,
           "height": 768,
           "bytes": 78810
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/npc-morsisa-neutral/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 142430
         }
       ]
     },
@@ -4160,6 +5432,14 @@
           "width": 530,
           "height": 768,
           "bytes": 70724
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/npc-morsisa-pleased/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 128706
         }
       ]
     },
@@ -4186,6 +5466,14 @@
           "width": 530,
           "height": 768,
           "bytes": 75604
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/npc-morsisa-tense/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 135586
         }
       ]
     },
@@ -4212,6 +5500,14 @@
           "width": 768,
           "height": 512,
           "bytes": 43838
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/npc-nemo-despair/lg.webp",
+          "mime": "image/webp",
+          "width": 1200,
+          "height": 800,
+          "bytes": 78468
         }
       ]
     },
@@ -4238,6 +5534,14 @@
           "width": 525,
           "height": 768,
           "bytes": 51304
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/npc-nemo-neutral/lg.webp",
+          "mime": "image/webp",
+          "width": 821,
+          "height": 1200,
+          "bytes": 82774
         }
       ]
     },
@@ -4264,6 +5568,14 @@
           "width": 525,
           "height": 768,
           "bytes": 63848
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/npc-nemo-pleased/lg.webp",
+          "mime": "image/webp",
+          "width": 821,
+          "height": 1200,
+          "bytes": 102920
         }
       ]
     },
@@ -4290,6 +5602,14 @@
           "width": 768,
           "height": 768,
           "bytes": 64770
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/npc-nemo-tense/lg.webp",
+          "mime": "image/webp",
+          "width": 1024,
+          "height": 1024,
+          "bytes": 85948
         }
       ]
     },
@@ -4316,6 +5636,14 @@
           "width": 768,
           "height": 768,
           "bytes": 61396
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/npc-nieun-despair/lg.webp",
+          "mime": "image/webp",
+          "width": 1024,
+          "height": 1024,
+          "bytes": 96618
         }
       ]
     },
@@ -4342,6 +5670,14 @@
           "width": 768,
           "height": 768,
           "bytes": 54486
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/npc-nieun-neutral/lg.webp",
+          "mime": "image/webp",
+          "width": 1024,
+          "height": 1024,
+          "bytes": 74282
         }
       ]
     },
@@ -4368,6 +5704,14 @@
           "width": 768,
           "height": 768,
           "bytes": 76388
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/npc-nieun-pleased/lg.webp",
+          "mime": "image/webp",
+          "width": 1024,
+          "height": 1024,
+          "bytes": 112092
         }
       ]
     },
@@ -4394,6 +5738,14 @@
           "width": 768,
           "height": 768,
           "bytes": 78514
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/npc-nieun-tense/lg.webp",
+          "mime": "image/webp",
+          "width": 1024,
+          "height": 1024,
+          "bytes": 113266
         }
       ]
     },
@@ -4420,6 +5772,14 @@
           "width": 530,
           "height": 768,
           "bytes": 67942
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/npc-nostalgia-despair/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 125032
         }
       ]
     },
@@ -4446,6 +5806,14 @@
           "width": 530,
           "height": 768,
           "bytes": 74004
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/npc-nostalgia-neutral/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 134914
         }
       ]
     },
@@ -4472,6 +5840,14 @@
           "width": 530,
           "height": 768,
           "bytes": 64892
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/npc-nostalgia-pleased/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 114866
         }
       ]
     },
@@ -4498,6 +5874,14 @@
           "width": 530,
           "height": 768,
           "bytes": 68372
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/npc-nostalgia-tense/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 127648
         }
       ]
     },
@@ -4524,6 +5908,14 @@
           "width": 530,
           "height": 768,
           "bytes": 67036
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/npc-phaeo-despair/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 126362
         }
       ]
     },
@@ -4550,6 +5942,14 @@
           "width": 530,
           "height": 768,
           "bytes": 60276
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/npc-phaeo-neutral/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 114916
         }
       ]
     },
@@ -4576,6 +5976,14 @@
           "width": 530,
           "height": 768,
           "bytes": 71006
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/npc-phaeo-pleased/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 130390
         }
       ]
     },
@@ -4602,6 +6010,14 @@
           "width": 530,
           "height": 768,
           "bytes": 74000
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/npc-phaeo-tense/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 139084
         }
       ]
     },
@@ -4628,6 +6044,14 @@
           "width": 530,
           "height": 768,
           "bytes": 32258
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/npc-raven-despair/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 58874
         }
       ]
     },
@@ -4654,6 +6078,14 @@
           "width": 525,
           "height": 768,
           "bytes": 30746
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/npc-raven-neutral/lg.webp",
+          "mime": "image/webp",
+          "width": 821,
+          "height": 1200,
+          "bytes": 50764
         }
       ]
     },
@@ -4680,6 +6112,14 @@
           "width": 530,
           "height": 768,
           "bytes": 38140
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/npc-raven-pleased/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 70180
         }
       ]
     },
@@ -4706,6 +6146,14 @@
           "width": 530,
           "height": 768,
           "bytes": 54988
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/npc-raven-tense/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 97804
         }
       ]
     },
@@ -4732,6 +6180,14 @@
           "width": 530,
           "height": 768,
           "bytes": 68348
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/npc-temute-despair/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 126872
         }
       ]
     },
@@ -4758,6 +6214,14 @@
           "width": 530,
           "height": 768,
           "bytes": 61506
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/npc-temute-neutral/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 109382
         }
       ]
     },
@@ -4784,6 +6248,14 @@
           "width": 530,
           "height": 768,
           "bytes": 59186
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/npc-temute-pleased/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 106046
         }
       ]
     },
@@ -4810,6 +6282,14 @@
           "width": 530,
           "height": 768,
           "bytes": 57746
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/npc-temute-tense/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 102072
         }
       ]
     },
@@ -4836,6 +6316,14 @@
           "width": 530,
           "height": 768,
           "bytes": 52216
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/npc-traver-despair/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 97940
         }
       ]
     },
@@ -4862,6 +6350,14 @@
           "width": 530,
           "height": 768,
           "bytes": 65346
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/npc-traver-neutral/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 119038
         }
       ]
     },
@@ -4888,6 +6384,14 @@
           "width": 530,
           "height": 768,
           "bytes": 72296
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/npc-traver-pleased/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 132934
         }
       ]
     },
@@ -4914,6 +6418,14 @@
           "width": 530,
           "height": 768,
           "bytes": 66420
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/npc-traver-tense/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 118512
         }
       ]
     },
@@ -4940,6 +6452,14 @@
           "width": 530,
           "height": 768,
           "bytes": 64044
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/npc-ttaengchil-despair/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 115792
         }
       ]
     },
@@ -4966,6 +6486,14 @@
           "width": 530,
           "height": 768,
           "bytes": 71294
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/npc-ttaengchil-neutral/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 133088
         }
       ]
     },
@@ -4992,6 +6520,14 @@
           "width": 530,
           "height": 768,
           "bytes": 65410
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/npc-ttaengchil-pleased/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 123546
         }
       ]
     },
@@ -5018,6 +6554,14 @@
           "width": 530,
           "height": 768,
           "bytes": 74876
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/npc-ttaengchil-tense/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 136146
         }
       ]
     },
@@ -5044,6 +6588,14 @@
           "width": 530,
           "height": 768,
           "bytes": 61896
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/npc-tumit-tu-despair/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 109426
         }
       ]
     },
@@ -5070,6 +6622,14 @@
           "width": 530,
           "height": 768,
           "bytes": 72858
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/npc-tumit-tu-neutral/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 135786
         }
       ]
     },
@@ -5096,6 +6656,14 @@
           "width": 530,
           "height": 768,
           "bytes": 55440
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/npc-tumit-tu-pleased/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 101426
         }
       ]
     },
@@ -5122,6 +6690,14 @@
           "width": 530,
           "height": 768,
           "bytes": 75724
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/npc-tumit-tu-tense/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 138456
         }
       ]
     },
@@ -5148,6 +6724,14 @@
           "width": 530,
           "height": 768,
           "bytes": 69750
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/npc-yul-despair/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 125616
         }
       ]
     },
@@ -5174,6 +6758,14 @@
           "width": 530,
           "height": 768,
           "bytes": 55256
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/npc-yul-neutral/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 102118
         }
       ]
     },
@@ -5200,6 +6792,14 @@
           "width": 530,
           "height": 768,
           "bytes": 64836
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/npc-yul-pleased/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 116924
         }
       ]
     },
@@ -5226,11 +6826,19 @@
           "width": 530,
           "height": 768,
           "bytes": 66546
+        },
+        {
+          "size": "lg",
+          "path": "assets/margin/npc-yul-tense/lg.webp",
+          "mime": "image/webp",
+          "width": 828,
+          "height": 1200,
+          "bytes": 120116
         }
       ]
     }
   ],
-  "totalBytes": 14805646,
+  "totalBytes": 38583988,
   "safety": {
     "policy": "explicit-sfw-allowlist/0.1",
     "selectedAssetCount": 201,

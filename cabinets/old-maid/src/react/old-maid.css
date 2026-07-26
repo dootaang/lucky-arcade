@@ -61,8 +61,11 @@
 .old-maid-speech p{margin:0;white-space:normal;word-break:keep-all;font-size:.76rem;line-height:1.5;text-align:left}
 .old-maid-seat.seat-cpu-2 .old-maid-speech{left:0;transform:none;animation:none}
 .old-maid-seat.seat-cpu-3 .old-maid-speech{right:0;left:auto;transform:none;animation:none}
+.old-maid-spectator-seat.seat-player{position:relative}
+.old-maid-spectator-seat.seat-player .old-maid-speech{top:auto;bottom:calc(100% + 8px)}
+.old-maid-pause{display:inline-flex!important;align-items:center;gap:4px;width:auto!important;height:28px!important;margin:2px 0 2px auto!important;padding:3px 8px!important;border-radius:999px!important;font-size:.68rem}.old-maid-pause:disabled{opacity:.4}.old-maid-progress-controls{display:flex;flex-wrap:wrap;justify-content:center}
 @keyframes old-maid-speech-in{from{opacity:0;transform:translateX(-50%) translateY(5px) scale(.97)}to{opacity:1;transform:translateX(-50%) translateY(0) scale(1)}}
-@media(max-width:680px){.old-maid-speech{top:8px;bottom:auto;max-width:min(72vw,22rem);padding:7px 9px}.old-maid-speech p{font-size:.68rem}.old-maid-seat.seat-cpu-1 .old-maid-speech{left:0;transform:none;animation:none}.old-maid-seat.seat-cpu-2 .old-maid-speech{left:50%;transform:translateX(-50%)}.old-maid-seat.seat-cpu-3 .old-maid-speech{right:0;left:auto;transform:none}}
+@media(max-width:680px){.old-maid-speech{top:8px;bottom:auto;max-width:min(72vw,22rem);padding:7px 9px}.old-maid-speech p{font-size:.68rem}.old-maid-seat.seat-cpu-1 .old-maid-speech{left:0;transform:none;animation:none}.old-maid-seat.seat-cpu-2 .old-maid-speech{left:50%;transform:translateX(-50%)}.old-maid-seat.seat-cpu-3 .old-maid-speech{right:0;left:auto;transform:none}.old-maid-spectator-seat.seat-player .old-maid-speech{top:auto;bottom:calc(100% + 8px)}}
 @media(prefers-reduced-motion:reduce){.old-maid-speech{animation:none}}
 
 /* 0.8 hand offering: the target settles the fan before the actor may draw. */
@@ -79,3 +82,4 @@
 /* A drawn card keeps one visual identity from the offered slot to its destination. */
 .old-maid-flight-layer{position:fixed;inset:0;z-index:90;pointer-events:none;overflow:visible}.old-maid-flight-card{position:absolute;left:0;top:0;width:112px;height:166px;transform-origin:center}.old-maid-flight-card>.old-maid-card{width:112px;height:166px;margin:0}.old-maid-reveal-card-space{width:112px;height:166px}
 @media(max-width:680px){.old-maid-flight-card,.old-maid-flight-card>.old-maid-card,.old-maid-reveal-card-space{width:96px;height:142px}}
+.old-maid-result li span small{display:block;max-width:170px;margin-top:3px;color:#b9c7d8;font-weight:400;line-height:1.35;white-space:normal}.old-maid-defeat-line{font-style:italic}

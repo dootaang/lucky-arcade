@@ -101,37 +101,37 @@ describe.sequential("point wallet and spectator predictions", () => {
     await seedWallet(page, 100);
     const result = await page.evaluate(async () => {
       const database = await new Function("return import('/src/lib/database.ts')")();
-      const first = await database.reserveSpectatorPrediction({ predictionId: "p-1", outcomeKey: "outcome-1", predictedCharacterId: "alice", stake: 10 });
-      const second = await database.reserveSpectatorPrediction({ predictionId: "p-2", outcomeKey: "outcome-2", predictedCharacterId: "bob", stake: 50 });
+      const first = await database.reserveSpectatorPrediction({ predictionId: "p-1", outcomeKey: "outcome-1", predictedCharacterId: "alice", stake: 10, multiplier: 2 });
+      const second = await database.reserveSpectatorPrediction({ predictionId: "p-2", outcomeKey: "outcome-2", predictedCharacterId: "bob", stake: 10, multiplier: 5 });
       let error = "";
-      try { await database.reserveSpectatorPrediction({ predictionId: "p-3", outcomeKey: "outcome-3", predictedCharacterId: "carol", stake: 200 }); }
+      try { await database.reserveSpectatorPrediction({ predictionId: "p-3", outcomeKey: "outcome-3", predictedCharacterId: "carol", stake: 50, multiplier: 2 }); }
       catch (caught) { error = caught instanceof Error ? caught.message : String(caught); }
       return { first, second, error, wallet: await database.readWallet() };
     });
 
-    expect(result.first).toMatchObject({ wallet: { balance: 90 }, prediction: { status: "reserved", stake: 10 } });
-    expect(result.second).toMatchObject({ wallet: { balance: 40 }, prediction: { status: "reserved", stake: 50 } });
+    expect(result.first).toMatchObject({ wallet: { balance: 80 }, prediction: { status: "reserved", stake: 10, multiplier: 2, reservedAmount: 20 } });
+    expect(result.second).toMatchObject({ wallet: { balance: 30 }, prediction: { status: "reserved", stake: 10, multiplier: 5, reservedAmount: 50 } });
     expect(result.error).toBe("insufficient_points");
-    expect(result.wallet.balance).toBe(40);
+    expect(result.wallet.balance).toBe(30);
   });
 
   it("settles wins and losses idempotently and blocks paid replay by outcomeKey", async () => {
     await seedWallet(page, 100);
     const result = await page.evaluate(async () => {
       const database = await new Function("return import('/src/lib/database.ts')")();
-      await database.reserveSpectatorPrediction({ predictionId: "win", outcomeKey: "same-seed", predictedCharacterId: "alice", stake: 10 });
+      await database.reserveSpectatorPrediction({ predictionId: "win", outcomeKey: "same-seed", predictedCharacterId: "alice", stake: 10, multiplier: 3 });
       const won = await database.settleSpectatorPrediction({ predictionId: "win", winningCharacterId: "alice" });
       const wonAgain = await database.settleSpectatorPrediction({ predictionId: "win", winningCharacterId: "someone-else" });
       let replayError = "";
-      try { await database.reserveSpectatorPrediction({ predictionId: "replay", outcomeKey: "same-seed", predictedCharacterId: "bob", stake: 10 }); }
+      try { await database.reserveSpectatorPrediction({ predictionId: "replay", outcomeKey: "same-seed", predictedCharacterId: "bob", stake: 10, multiplier: 2 }); }
       catch (caught) { replayError = caught instanceof Error ? caught.message : String(caught); }
-      await database.reserveSpectatorPrediction({ predictionId: "loss", outcomeKey: "other-seed", predictedCharacterId: "bob", stake: 50 });
+      await database.reserveSpectatorPrediction({ predictionId: "loss", outcomeKey: "other-seed", predictedCharacterId: "bob", stake: 10, multiplier: 5 });
       const lost = await database.settleSpectatorPrediction({ predictionId: "loss", winningCharacterId: "alice" });
       const lostAgain = await database.settleSpectatorPrediction({ predictionId: "loss", winningCharacterId: "bob" });
       return { won, wonAgain, replayError, lost, lostAgain, wallet: await database.readWallet() };
     });
 
-    expect(result.won).toMatchObject({ wallet: { balance: 130 }, prediction: { status: "won", settlementCredit: 40 } });
+    expect(result.won).toMatchObject({ wallet: { balance: 130 }, prediction: { status: "won", settlementCredit: 60, multiplier: 3 } });
     expect(result.wonAgain).toEqual(result.won);
     expect(result.replayError).toBe("outcome_already_wagered");
     expect(result.lost).toMatchObject({ wallet: { balance: 80 }, prediction: { status: "lost", settlementCredit: 0 } });
@@ -143,7 +143,7 @@ describe.sequential("point wallet and spectator predictions", () => {
     await seedWallet(page, 50);
     await page.evaluate(async () => {
       const database = await new Function("return import('/src/lib/database.ts')")();
-      await database.reserveSpectatorPrediction({ predictionId: "pending", outcomeKey: "pending-outcome", predictedCharacterId: "alice", stake: 50 });
+      await database.reserveSpectatorPrediction({ predictionId: "pending", outcomeKey: "pending-outcome", predictedCharacterId: "alice", stake: 10, multiplier: 5 });
     });
     const reloaded = await context.newPage();
     await reloaded.goto(`${origin}${TEST_PATH}`);
@@ -163,14 +163,38 @@ describe.sequential("point wallet and spectator predictions", () => {
     expect(result.wallet.balance).toBe(50);
   });
 
+  it("reads legacy 0.1 predictions as 3x without changing their historical debit", async () => {
+    await seedWallet(page, 90);
+    const result = await page.evaluate(async () => {
+      const database = await new Function("return import('/src/lib/database.ts')")();
+      await database.readWallet();
+      await new Promise<void>((resolve, reject) => {
+        const opening = indexedDB.open("lucky-arcade", 6);
+        opening.onerror = () => reject(opening.error);
+        opening.onsuccess = () => {
+          const db = opening.result;
+          const transaction = db.transaction("wagers", "readwrite");
+          transaction.objectStore("wagers").add({ contract: "spectator-prediction/0.1", predictionId: "legacy", outcomeKey: "legacy-outcome", predictedCharacterId: "alice", stake: 10, status: "reserved", createdAt: new Date(0).toISOString(), settlementCredit: 0 });
+          transaction.oncomplete = () => { db.close(); resolve(); };
+          transaction.onerror = () => reject(transaction.error);
+        };
+      });
+      const listed = await database.listSpectatorPredictions();
+      const settled = await database.settleSpectatorPrediction({ predictionId: "legacy", winningCharacterId: "alice" });
+      return { listed, settled };
+    });
+    expect(result.listed[0]).toMatchObject({ contract: "spectator-prediction/0.2", multiplier: 3, reservedAmount: 10 });
+    expect(result.settled).toMatchObject({ wallet: { balance: 130 }, prediction: { multiplier: 3, settlementCredit: 40 } });
+  });
+
   it("serializes simultaneous tabs so reservations cannot exceed the wallet", async () => {
-    await seedWallet(page, 200);
+    await seedWallet(page, 400);
     const other = await context.newPage();
     await other.goto(`${origin}${TEST_PATH}`);
     const reserve = (target: Page, predictionId: string, outcomeKey: string) => target.evaluate(async ({ predictionId, outcomeKey }) => {
       const database = await new Function("return import('/src/lib/database.ts')")();
       try {
-        const result = await database.reserveSpectatorPrediction({ predictionId, outcomeKey, predictedCharacterId: "alice", stake: 200 });
+        const result = await database.reserveSpectatorPrediction({ predictionId, outcomeKey, predictedCharacterId: "alice", stake: 200, multiplier: 2 });
         return { ok: true, balance: result.wallet.balance };
       } catch (caught) {
         return { ok: false, error: caught instanceof Error ? caught.message : String(caught) };

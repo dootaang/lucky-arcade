@@ -8,6 +8,7 @@ import type {
   MedalGrantInput,
   PointGrant,
   PointWalletSnapshot,
+  PredictionMultiplier,
   PredictionTransactionResult,
   RecentPlay,
   ReserveSpectatorPredictionInput,
@@ -26,6 +27,7 @@ const INITIAL_POINT_BALANCE = 0;
 const COLLECTION_COST = 12;
 const COMPLETION_REWARD = 5;
 const VALID_STAKES = new Set([10, 50, 200]);
+const VALID_MULTIPLIERS = new Set<PredictionMultiplier>([2, 3, 4, 5]);
 const INVALIDATION_REASONS = new Set(["outcome-unavailable", "pack-version-mismatch", "corrupt-state"]);
 
 export interface StoredCard { fingerprint: string; importedAt: string; analyzed: AnyAnalyzedCard; }
@@ -169,15 +171,18 @@ export async function reserveSpectatorPrediction(input: ReserveSpectatorPredicti
     const existingId = await request<IDBValidKey | undefined>(wagers.index("by-outcome-key").getKey(input.outcomeKey));
     if (existingId !== undefined) throw new Error("outcome_already_wagered");
     const wallet = await request<PointWalletSnapshot | undefined>(wallets.get("wallet")) ?? newWallet();
-    if (wallet.balance < input.stake) throw new Error("insufficient_points");
+    const reservedAmount = input.stake * input.multiplier;
+    if (wallet.balance < reservedAmount) throw new Error("insufficient_points");
     const now = new Date().toISOString();
-    const nextWallet: PointWalletSnapshot = { ...wallet, balance: wallet.balance - input.stake, updatedAt: now };
+    const nextWallet: PointWalletSnapshot = { ...wallet, balance: wallet.balance - reservedAmount, updatedAt: now };
     const prediction: SpectatorPrediction = {
-      contract: "spectator-prediction/0.1",
+      contract: "spectator-prediction/0.2",
       predictionId: input.predictionId,
       outcomeKey: input.outcomeKey,
       predictedCharacterId: input.predictedCharacterId,
       stake: input.stake,
+      multiplier: input.multiplier,
+      reservedAmount,
       status: "reserved",
       createdAt: now,
       settlementCredit: 0,
@@ -203,8 +208,9 @@ export async function settleSpectatorPrediction(input: SettleSpectatorPrediction
   try {
     const wallets = transaction.objectStore(STORES.wallet);
     const wagers = transaction.objectStore(STORES.wagers);
-    const prediction = await request<SpectatorPrediction | undefined>(wagers.get(input.predictionId));
-    if (!prediction) throw new Error("prediction_not_found");
+    const stored = await request<StoredSpectatorPrediction | undefined>(wagers.get(input.predictionId));
+    if (!stored) throw new Error("prediction_not_found");
+    const prediction = normalizePrediction(stored);
     const wallet = await request<PointWalletSnapshot | undefined>(wallets.get("wallet")) ?? newWallet();
     if (prediction.status === "won" || prediction.status === "lost") {
       await completion;
@@ -213,7 +219,7 @@ export async function settleSpectatorPrediction(input: SettleSpectatorPrediction
     }
     if (prediction.status !== "reserved") throw new Error("prediction_not_settleable");
     const won = prediction.predictedCharacterId === input.winningCharacterId;
-    const settlementCredit = won ? prediction.stake * 4 : 0;
+    const settlementCredit = won ? prediction.reservedAmount + prediction.stake * prediction.multiplier : 0;
     const now = new Date().toISOString();
     const nextWallet: PointWalletSnapshot = settlementCredit === 0 ? wallet : { ...wallet, balance: wallet.balance + settlementCredit, updatedAt: now };
     const settled: SpectatorPrediction = { ...prediction, status: won ? "won" : "lost", settledAt: now, winningCharacterId: input.winningCharacterId, settlementCredit };
@@ -237,8 +243,9 @@ export async function systemInvalidateSpectatorPrediction(input: InvalidateSpect
   try {
     const wallets = transaction.objectStore(STORES.wallet);
     const wagers = transaction.objectStore(STORES.wagers);
-    const prediction = await request<SpectatorPrediction | undefined>(wagers.get(input.predictionId));
-    if (!prediction) throw new Error("prediction_not_found");
+    const stored = await request<StoredSpectatorPrediction | undefined>(wagers.get(input.predictionId));
+    if (!stored) throw new Error("prediction_not_found");
+    const prediction = normalizePrediction(stored);
     const wallet = await request<PointWalletSnapshot | undefined>(wallets.get("wallet")) ?? newWallet();
     if (prediction.status === "refunded") {
       await completion;
@@ -247,8 +254,8 @@ export async function systemInvalidateSpectatorPrediction(input: InvalidateSpect
     }
     if (prediction.status !== "reserved") throw new Error("prediction_not_refundable");
     const now = new Date().toISOString();
-    const nextWallet: PointWalletSnapshot = { ...wallet, balance: wallet.balance + prediction.stake, updatedAt: now };
-    const refunded: SpectatorPrediction = { ...prediction, status: "refunded", settledAt: now, invalidationReason: input.reason, settlementCredit: prediction.stake };
+    const nextWallet: PointWalletSnapshot = { ...wallet, balance: wallet.balance + prediction.reservedAmount, updatedAt: now };
+    const refunded: SpectatorPrediction = { ...prediction, status: "refunded", settledAt: now, invalidationReason: input.reason, settlementCredit: prediction.reservedAmount };
     wallets.put(nextWallet);
     wagers.put(refunded);
     await completion;
@@ -263,9 +270,9 @@ export async function systemInvalidateSpectatorPrediction(input: InvalidateSpect
 
 export async function listSpectatorPredictions(): Promise<SpectatorPrediction[]> {
   const db = await openDatabase(), transaction = db.transaction(STORES.wagers, "readonly");
-  const predictions = await request<SpectatorPrediction[]>(transaction.objectStore(STORES.wagers).getAll());
+  const predictions = await request<StoredSpectatorPrediction[]>(transaction.objectStore(STORES.wagers).getAll());
   await complete(transaction); db.close();
-  return predictions.filter((prediction) => prediction?.contract === "spectator-prediction/0.1").sort((left, right) => right.createdAt.localeCompare(left.createdAt));
+  return predictions.filter((prediction) => prediction?.contract === "spectator-prediction/0.1" || prediction?.contract === "spectator-prediction/0.2").map(normalizePrediction).sort((left, right) => right.createdAt.localeCompare(left.createdAt));
 }
 
 export async function readCollection(id: string): Promise<CollectionSnapshot> {
@@ -331,7 +338,12 @@ function collectCursor<T>(cursorRequest: IDBRequest<IDBCursorWithValue | null>, 
 function complete(transaction: IDBTransaction): Promise<void> { return new Promise((resolve, reject) => { transaction.oncomplete = () => resolve(); transaction.onerror = () => reject(transaction.error ?? new Error("indexeddb_transaction_failed")); transaction.onabort = () => reject(transaction.error ?? new Error("indexeddb_transaction_aborted")); }); }
 function newWallet(): PointWalletSnapshot { return { contract: "wallet/0.1", id: "wallet", balance: INITIAL_POINT_BALANCE, updatedAt: new Date().toISOString() }; }
 function assertPredictionInput(input: ReserveSpectatorPredictionInput): void {
-  if (!input.predictionId || !input.outcomeKey || !input.predictedCharacterId || !VALID_STAKES.has(input.stake)) throw new Error("invalid_prediction");
+  if (!input.predictionId || !input.outcomeKey || !input.predictedCharacterId || !VALID_STAKES.has(input.stake) || !VALID_MULTIPLIERS.has(input.multiplier)) throw new Error("invalid_prediction");
+}
+type StoredSpectatorPrediction = SpectatorPrediction | (Omit<SpectatorPrediction, "contract" | "multiplier" | "reservedAmount"> & { contract: "spectator-prediction/0.1" });
+function normalizePrediction(prediction: StoredSpectatorPrediction): SpectatorPrediction {
+  if (prediction.contract === "spectator-prediction/0.2") return prediction;
+  return { ...prediction, contract: "spectator-prediction/0.2", multiplier: 3, reservedAmount: prediction.stake };
 }
 function isConstraintError(error: unknown): boolean { return error instanceof DOMException && error.name === "ConstraintError"; }
 async function abort(transaction: IDBTransaction, completion: Promise<void>): Promise<void> {
