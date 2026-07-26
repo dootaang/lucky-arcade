@@ -3,6 +3,10 @@ import type {
   CollectionSnapshot,
   CompletionPointGrant,
   CompletionPointGrantInput,
+  ForfeitGameWagerInput,
+  GameWagerReceipt,
+  GameWagerTransactionResult,
+  InvalidateGameWagerInput,
   InvalidateSpectatorPredictionInput,
   MatchRecord,
   MedalGrantInput,
@@ -11,7 +15,9 @@ import type {
   PredictionMultiplier,
   PredictionTransactionResult,
   RecentPlay,
+  ReserveGameWagerInput,
   ReserveSpectatorPredictionInput,
+  SettleGameWagerInput,
   SettleSpectatorPredictionInput,
   SnapshotRecord,
   SpectatorPrediction,
@@ -21,8 +27,8 @@ import type {
 import { selectCollectionFace } from "./collection-rules.ts";
 
 const DATABASE = "lucky-arcade";
-const VERSION = 6;
-const STORES = { cards: "cards", sources: "sources", sessions: "sessions", actions: "actions", recent: "recent", matches: "matches", wallet: "wallet", grants: "grants", collection: "collection", wagers: "wagers" } as const;
+const VERSION = 7;
+const STORES = { cards: "cards", sources: "sources", sessions: "sessions", actions: "actions", recent: "recent", matches: "matches", wallet: "wallet", grants: "grants", collection: "collection", wagers: "wagers", gameWagers: "game-wagers" } as const;
 const INITIAL_POINT_BALANCE = 0;
 const COLLECTION_COST = 12;
 const DEFAULT_COMPLETION_REWARD = 5;
@@ -30,6 +36,7 @@ const VALID_STAKES = new Set([10, 50, 200]);
 const VALID_MULTIPLIERS = new Set<PredictionMultiplier>([2, 3, 4, 5]);
 const VALID_MARKETS = new Set(["joker-holder", "first-place"]);
 const INVALIDATION_REASONS = new Set(["outcome-unavailable", "pack-version-mismatch", "corrupt-state"]);
+const GAME_WAGER_INVALIDATION_REASONS = new Set(["outcome-unavailable", "version-mismatch", "corrupt-state"]);
 
 export interface StoredCard { fingerprint: string; importedAt: string; analyzed: AnyAnalyzedCard; }
 
@@ -279,6 +286,86 @@ export async function listSpectatorPredictions(): Promise<SpectatorPrediction[]>
   return predictions.filter((prediction) => prediction?.contract === "spectator-prediction/0.1" || prediction?.contract === "spectator-prediction/0.2" || prediction?.contract === "spectator-prediction/0.3").map(normalizePrediction).sort((left, right) => right.createdAt.localeCompare(left.createdAt));
 }
 
+export async function reserveGameWager(input: ReserveGameWagerInput): Promise<GameWagerTransactionResult> {
+  assertGameWagerReservation(input);
+  const db = await openDatabase();
+  const transaction = db.transaction([STORES.wallet, STORES.gameWagers], "readwrite");
+  const completion = complete(transaction);
+  try {
+    const wallets = transaction.objectStore(STORES.wallet);
+    const wagers = transaction.objectStore(STORES.gameWagers);
+    if (await request<GameWagerReceipt | undefined>(wagers.get(input.wagerId))) throw new Error("game_wager_already_exists");
+    const existingId = await request<IDBValidKey | undefined>(wagers.index("by-outcome-key").getKey(input.outcomeKey));
+    if (existingId !== undefined) throw new Error("game_outcome_already_wagered");
+    const wallet = await request<PointWalletSnapshot | undefined>(wallets.get("wallet")) ?? newWallet();
+    if (wallet.balance < input.reservedAmount) throw new Error("insufficient_points");
+    const now = new Date().toISOString();
+    const nextWallet: PointWalletSnapshot = { ...wallet, balance: wallet.balance - input.reservedAmount, updatedAt: now };
+    const wager: GameWagerReceipt = {
+      contract: "game-wager/0.1",
+      wagerId: input.wagerId,
+      outcomeKey: input.outcomeKey,
+      cabinetId: input.cabinetId,
+      sessionId: input.sessionId,
+      termsVersion: input.termsVersion,
+      ...(input.choiceKey === undefined ? {} : { choiceKey: input.choiceKey }),
+      stake: input.stake,
+      reservedAmount: input.reservedAmount,
+      status: "reserved",
+      createdAt: now,
+      settlementCredit: 0,
+    };
+    wallets.put(nextWallet);
+    wagers.add(wager);
+    await completion;
+    db.close();
+    return { wallet: nextWallet, wager };
+  } catch (error) {
+    await abort(transaction, completion);
+    db.close();
+    if (isConstraintError(error)) throw new Error("game_outcome_already_wagered");
+    throw error;
+  }
+}
+
+export async function settleGameWager(input: SettleGameWagerInput): Promise<GameWagerTransactionResult> {
+  if (!input.wagerId || !input.resultKey || !isNonNegativeInteger(input.settlementSequence) || !isNonNegativeInteger(input.creditAmount)) throw new Error("invalid_game_wager_settlement");
+  return finishGameWager(input.wagerId, (wager, wallet, now) => {
+    if (wager.status === "settled" || wager.status === "forfeited") return { wallet, wager };
+    if (wager.status !== "reserved") throw new Error("game_wager_not_settleable");
+    const nextWallet = input.creditAmount === 0 ? wallet : { ...wallet, balance: wallet.balance + input.creditAmount, updatedAt: now };
+    return { wallet: nextWallet, wager: { ...wager, status: "settled", settledAt: now, settlementSequence: input.settlementSequence, resultKey: input.resultKey, settlementCredit: input.creditAmount } };
+  });
+}
+
+export async function forfeitGameWager(input: ForfeitGameWagerInput): Promise<GameWagerTransactionResult> {
+  if (!input.wagerId || !isNonNegativeInteger(input.settlementSequence) || input.resultKey !== undefined && !input.resultKey) throw new Error("invalid_game_wager_forfeit");
+  return finishGameWager(input.wagerId, (wager, wallet, now) => {
+    if (wager.status === "settled" || wager.status === "forfeited") return { wallet, wager };
+    if (wager.status !== "reserved") throw new Error("game_wager_not_forfeitable");
+    return { wallet, wager: { ...wager, status: "forfeited", settledAt: now, settlementSequence: input.settlementSequence, ...(input.resultKey === undefined ? {} : { resultKey: input.resultKey }), settlementCredit: 0 } };
+  });
+}
+
+export async function systemInvalidateGameWager(input: InvalidateGameWagerInput): Promise<GameWagerTransactionResult> {
+  if (!input.wagerId || !GAME_WAGER_INVALIDATION_REASONS.has(input.reason)) throw new Error("invalid_game_wager_invalidation");
+  return finishGameWager(input.wagerId, (wager, wallet, now) => {
+    if (wager.status === "refunded") return { wallet, wager };
+    if (wager.status !== "reserved") throw new Error("game_wager_not_refundable");
+    const nextWallet: PointWalletSnapshot = { ...wallet, balance: wallet.balance + wager.reservedAmount, updatedAt: now };
+    return { wallet: nextWallet, wager: { ...wager, status: "refunded", settledAt: now, invalidationReason: input.reason, settlementCredit: wager.reservedAmount } };
+  });
+}
+
+export async function listGameWagers(sessionId?: string): Promise<GameWagerReceipt[]> {
+  const db = await openDatabase(), transaction = db.transaction(STORES.gameWagers, "readonly"), wagers = transaction.objectStore(STORES.gameWagers);
+  const records = sessionId === undefined
+    ? await request<GameWagerReceipt[]>(wagers.getAll())
+    : await request<GameWagerReceipt[]>(wagers.index("by-session-id").getAll(sessionId));
+  await complete(transaction); db.close();
+  return records.filter((wager) => wager?.contract === "game-wager/0.1").sort((left, right) => right.createdAt.localeCompare(left.createdAt));
+}
+
 export async function readCollection(id: string): Promise<CollectionSnapshot> {
   const db = await openDatabase(), transaction = db.transaction(STORES.collection, "readonly");
   const stored = await request<CollectionSnapshot | undefined>(transaction.objectStore(STORES.collection).get(id));
@@ -316,6 +403,10 @@ function openDatabase(): Promise<IDBDatabase> {
       const wagers = db.objectStoreNames.contains(STORES.wagers) ? opening.transaction!.objectStore(STORES.wagers) : db.createObjectStore(STORES.wagers, { keyPath: "predictionId" });
       if (!wagers.indexNames.contains("by-outcome-key")) wagers.createIndex("by-outcome-key", "outcomeKey", { unique: true });
       if (!wagers.indexNames.contains("by-created-at")) wagers.createIndex("by-created-at", "createdAt");
+      const gameWagers = db.objectStoreNames.contains(STORES.gameWagers) ? opening.transaction!.objectStore(STORES.gameWagers) : db.createObjectStore(STORES.gameWagers, { keyPath: "wagerId" });
+      if (!gameWagers.indexNames.contains("by-outcome-key")) gameWagers.createIndex("by-outcome-key", "outcomeKey", { unique: true });
+      if (!gameWagers.indexNames.contains("by-session-id")) gameWagers.createIndex("by-session-id", "sessionId");
+      if (!gameWagers.indexNames.contains("by-created-at")) gameWagers.createIndex("by-created-at", "createdAt");
       const matches = db.objectStoreNames.contains(STORES.matches) ? opening.transaction!.objectStore(STORES.matches) : db.createObjectStore(STORES.matches, { keyPath: "recordId" });
       if (!matches.indexNames.contains("by-completed-at")) matches.createIndex("by-completed-at", "completedAt");
       if (!matches.indexNames.contains("by-session-completed-at")) matches.createIndex("by-session-completed-at", ["sessionId", "completedAt"]);
@@ -343,6 +434,37 @@ function complete(transaction: IDBTransaction): Promise<void> { return new Promi
 function newWallet(): PointWalletSnapshot { return { contract: "wallet/0.1", id: "wallet", balance: INITIAL_POINT_BALANCE, updatedAt: new Date().toISOString() }; }
 function assertPredictionInput(input: ReserveSpectatorPredictionInput): void {
   if (!input.predictionId || !input.outcomeKey || !input.predictedCharacterId || !VALID_STAKES.has(input.stake) || !VALID_MULTIPLIERS.has(input.multiplier) || input.market !== undefined && !VALID_MARKETS.has(input.market)) throw new Error("invalid_prediction");
+}
+function assertGameWagerReservation(input: ReserveGameWagerInput): void {
+  if (!input.wagerId || !input.outcomeKey || !input.cabinetId || !input.sessionId || !input.termsVersion
+    || input.choiceKey !== undefined && !input.choiceKey
+    || !isPositiveInteger(input.stake) || !isPositiveInteger(input.reservedAmount) || input.reservedAmount < input.stake) throw new Error("invalid_game_wager");
+}
+function isPositiveInteger(value: number): boolean { return Number.isSafeInteger(value) && value > 0; }
+function isNonNegativeInteger(value: number): boolean { return Number.isSafeInteger(value) && value >= 0; }
+async function finishGameWager(
+  wagerId: string,
+  finish: (wager: GameWagerReceipt, wallet: PointWalletSnapshot, now: string) => GameWagerTransactionResult,
+): Promise<GameWagerTransactionResult> {
+  const db = await openDatabase();
+  const transaction = db.transaction([STORES.wallet, STORES.gameWagers], "readwrite");
+  const completion = complete(transaction);
+  try {
+    const wallets = transaction.objectStore(STORES.wallet), wagers = transaction.objectStore(STORES.gameWagers);
+    const wager = await request<GameWagerReceipt | undefined>(wagers.get(wagerId));
+    if (!wager || wager.contract !== "game-wager/0.1") throw new Error("game_wager_not_found");
+    const wallet = await request<PointWalletSnapshot | undefined>(wallets.get("wallet")) ?? newWallet();
+    const result = finish(wager, wallet, new Date().toISOString());
+    wallets.put(result.wallet);
+    wagers.put(result.wager);
+    await completion;
+    db.close();
+    return result;
+  } catch (error) {
+    await abort(transaction, completion);
+    db.close();
+    throw error;
+  }
 }
 type StoredSpectatorPrediction = SpectatorPrediction
   | (Omit<SpectatorPrediction, "contract" | "market"> & { contract: "spectator-prediction/0.2" })

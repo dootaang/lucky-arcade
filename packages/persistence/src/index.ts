@@ -219,6 +219,75 @@ export interface SpectatorPredictionStore {
   list(): Promise<SpectatorPrediction[]>;
 }
 
+export type GameWagerStatus = "reserved" | "settled" | "forfeited" | "refunded";
+export type GameWagerInvalidationReason = "outcome-unavailable" | "version-mismatch" | "corrupt-state";
+
+/**
+ * Game-agnostic point reservation. The cabinet owns its odds and rules; this
+ * receipt only guarantees that maximum loss is reserved and credited once.
+ */
+export interface GameWagerReceipt {
+  contract: "game-wager/0.1";
+  wagerId: string;
+  outcomeKey: string;
+  cabinetId: string;
+  sessionId: string;
+  termsVersion: string;
+  choiceKey?: string;
+  stake: number;
+  reservedAmount: number;
+  status: GameWagerStatus;
+  createdAt: string;
+  settledAt?: string;
+  settlementSequence?: number;
+  resultKey?: string;
+  invalidationReason?: GameWagerInvalidationReason;
+  /** Points credited after the initial reservation debit. */
+  settlementCredit: number;
+}
+
+export interface ReserveGameWagerInput {
+  wagerId: string;
+  outcomeKey: string;
+  cabinetId: string;
+  sessionId: string;
+  termsVersion: string;
+  choiceKey?: string;
+  stake: number;
+  reservedAmount: number;
+}
+
+export interface SettleGameWagerInput {
+  wagerId: string;
+  settlementSequence: number;
+  resultKey: string;
+  creditAmount: number;
+}
+
+export interface ForfeitGameWagerInput {
+  wagerId: string;
+  settlementSequence: number;
+  resultKey?: string;
+}
+
+export interface InvalidateGameWagerInput {
+  wagerId: string;
+  reason: GameWagerInvalidationReason;
+}
+
+export interface GameWagerTransactionResult {
+  wallet: PointWalletSnapshot;
+  wager: GameWagerReceipt;
+}
+
+export interface GameWagerStore {
+  reserve(input: ReserveGameWagerInput): Promise<GameWagerTransactionResult>;
+  settle(input: SettleGameWagerInput): Promise<GameWagerTransactionResult>;
+  forfeit(input: ForfeitGameWagerInput): Promise<GameWagerTransactionResult>;
+  systemInvalidate(input: InvalidateGameWagerInput): Promise<GameWagerTransactionResult>;
+  list(sessionId?: string): Promise<GameWagerReceipt[]>;
+}
+
 export interface CollectionSnapshot {
   contract: "collection/0.1";
   id: string;

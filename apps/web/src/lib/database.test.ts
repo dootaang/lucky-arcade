@@ -64,7 +64,7 @@ describe.sequential("point wallet and spectator predictions", () => {
       const wallet = await database.readWallet();
       const duplicate = await database.grantCompletionPoints({ sessionId: "legacy-session", sequence: 7, cabinetId: "old-maid", spectated: false });
       const contract = await new Promise<string>((resolve, reject) => {
-        const opening = indexedDB.open("lucky-arcade", 6);
+        const opening = indexedDB.open("lucky-arcade", 7);
         opening.onerror = () => reject(opening.error);
         opening.onsuccess = () => {
           const db = opening.result;
@@ -187,7 +187,7 @@ describe.sequential("point wallet and spectator predictions", () => {
       const database = await new Function("return import('/src/lib/database.ts')")();
       await database.readWallet();
       await new Promise<void>((resolve, reject) => {
-        const opening = indexedDB.open("lucky-arcade", 6);
+        const opening = indexedDB.open("lucky-arcade", 7);
         opening.onerror = () => reject(opening.error);
         opening.onsuccess = () => {
           const db = opening.result;
@@ -229,6 +229,63 @@ describe.sequential("point wallet and spectator predictions", () => {
     expect(results.filter((result) => !result.ok)).toEqual([{ ok: false, error: "insufficient_points" }]);
     expect(balance).toBe(0);
   });
+
+  it("reserves, settles, forfeits, and system-refunds generic game wagers exactly once", async () => {
+    await seedWallet(page, 200);
+    const result = await page.evaluate(async () => {
+      const database = await new Function("return import('/src/lib/database.ts')")();
+      const base = { cabinetId: "slot", termsVersion: "slot-wager/0.1", stake: 10 };
+      const reserved = await database.reserveGameWager({ ...base, wagerId: "generic-win", outcomeKey: "slot:seed-1", sessionId: "slot-session-1", choiceKey: "line-1", reservedAmount: 40 });
+      let duplicateIdError = "";
+      try { await database.reserveGameWager({ ...base, wagerId: "generic-win", outcomeKey: "slot:other-seed", sessionId: "slot-session-2", reservedAmount: 10 }); }
+      catch (caught) { duplicateIdError = caught instanceof Error ? caught.message : String(caught); }
+      let replayError = "";
+      try { await database.reserveGameWager({ ...base, wagerId: "generic-replay", outcomeKey: "slot:seed-1", sessionId: "slot-session-2", reservedAmount: 10 }); }
+      catch (caught) { replayError = caught instanceof Error ? caught.message : String(caught); }
+      const settled = await database.settleGameWager({ wagerId: "generic-win", settlementSequence: 9, resultKey: "triple-symbol", creditAmount: 100 });
+      const settledAgain = await database.settleGameWager({ wagerId: "generic-win", settlementSequence: 10, resultKey: "changed", creditAmount: 999 });
+      await database.reserveGameWager({ ...base, wagerId: "generic-loss", outcomeKey: "slot:seed-2", sessionId: "slot-session-2", reservedAmount: 20 });
+      const forfeited = await database.forfeitGameWager({ wagerId: "generic-loss", settlementSequence: 3, resultKey: "abandoned" });
+      const forfeitedAgain = await database.forfeitGameWager({ wagerId: "generic-loss", settlementSequence: 4 });
+      await database.reserveGameWager({ ...base, wagerId: "generic-refund", outcomeKey: "slot:seed-3", sessionId: "slot-session-2", reservedAmount: 30 });
+      const refunded = await database.systemInvalidateGameWager({ wagerId: "generic-refund", reason: "version-mismatch" });
+      const refundedAgain = await database.systemInvalidateGameWager({ wagerId: "generic-refund", reason: "version-mismatch" });
+      return { reserved, duplicateIdError, replayError, settled, settledAgain, forfeited, forfeitedAgain, refunded, refundedAgain, session: await database.listGameWagers("slot-session-2"), wallet: await database.readWallet() };
+    });
+
+    expect(result.reserved).toMatchObject({ wallet: { balance: 160 }, wager: { status: "reserved", reservedAmount: 40 } });
+    expect(result.duplicateIdError).toBe("game_wager_already_exists");
+    expect(result.replayError).toBe("game_outcome_already_wagered");
+    expect(result.settled).toMatchObject({ wallet: { balance: 260 }, wager: { status: "settled", settlementSequence: 9, settlementCredit: 100 } });
+    expect(result.settledAgain).toEqual(result.settled);
+    expect(result.forfeited).toMatchObject({ wallet: { balance: 240 }, wager: { status: "forfeited", settlementCredit: 0 } });
+    expect(result.forfeitedAgain).toEqual(result.forfeited);
+    expect(result.refunded).toMatchObject({ wallet: { balance: 240 }, wager: { status: "refunded", settlementCredit: 30 } });
+    expect(result.refundedAgain).toEqual(result.refunded);
+    expect(result.session).toHaveLength(2);
+    expect(result.wallet.balance).toBe(240);
+  });
+
+  it("serializes generic reservations across tabs", async () => {
+    await seedWallet(page, 100);
+    const other = await context.newPage();
+    await other.goto(`${origin}${TEST_PATH}`);
+    const reserve = (target: Page, wagerId: string) => target.evaluate(async (id) => {
+      const database = await new Function("return import('/src/lib/database.ts')")();
+      try {
+        const result = await database.reserveGameWager({ wagerId: id, outcomeKey: `race:${id}`, cabinetId: "derby", sessionId: id, termsVersion: "derby-wager/0.1", stake: 50, reservedAmount: 100 });
+        return { ok: true, balance: result.wallet.balance };
+      } catch (caught) {
+        return { ok: false, error: caught instanceof Error ? caught.message : String(caught) };
+      }
+    }, wagerId);
+    const results = await Promise.all([reserve(page, "generic-tab-a"), reserve(other, "generic-tab-b")]);
+    await other.close();
+
+    expect(results.filter((entry) => entry.ok)).toHaveLength(1);
+    expect(results.filter((entry) => !entry.ok)).toEqual([{ ok: false, error: "insufficient_points" }]);
+    expect((await page.evaluate(async () => (await (await new Function("return import('/src/lib/database.ts')")()).readWallet()).balance))).toBe(0);
+  });
 });
 
 async function deleteEconomyDatabase(target: Page): Promise<void> {
@@ -245,7 +302,7 @@ async function seedWallet(target: Page, balance: number): Promise<void> {
     const database = await new Function("return import('/src/lib/database.ts')")();
     await database.readWallet();
     await new Promise<void>((resolve, reject) => {
-      const opening = indexedDB.open("lucky-arcade", 6);
+      const opening = indexedDB.open("lucky-arcade", 7);
       opening.onerror = () => reject(opening.error);
       opening.onsuccess = () => {
         const db = opening.result;

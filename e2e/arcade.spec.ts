@@ -400,7 +400,7 @@ test("keeps direct play free and offers an optional self prediction", async ({ p
   test.skip(testInfo.project.metadata.mobile === true);
   await page.goto("/");
   await page.evaluate(() => new Promise<void>((resolve, reject) => {
-    const opening = indexedDB.open("lucky-arcade", 6);
+    const opening = indexedDB.open("lucky-arcade", 7);
     opening.onerror = () => reject(opening.error);
     opening.onsuccess = () => {
       const db = opening.result;
@@ -430,7 +430,7 @@ test("starts an open-hand four-NPC Temerosa spectator table", async ({ page }, t
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/");
   await page.evaluate(() => new Promise<void>((resolve, reject) => {
-    const opening = indexedDB.open("lucky-arcade", 6);
+    const opening = indexedDB.open("lucky-arcade", 7);
     opening.onerror = () => reject(opening.error);
     opening.onsuccess = () => {
       const db = opening.result;
