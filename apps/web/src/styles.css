@@ -3,7 +3,8 @@
 
 * { box-sizing: border-box; }
 html { background: var(--canvas); }
-.lobby-wallet{margin-left:auto;padding:7px 11px;border:1px solid color-mix(in srgb,#d9b85d 40%,transparent);border-radius:999px;color:#d9b85d}
+/* tabular-nums keeps the pill from twitching while the balance counts up. */
+.lobby-wallet{margin-left:auto;padding:7px 11px;border:1px solid color-mix(in srgb,#d9b85d 40%,transparent);border-radius:999px;color:#d9b85d;font-variant-numeric:tabular-nums}
 body { margin: 0; min-width: 320px; color: var(--text); font-family: Inter, Pretendard, "Noto Sans KR", system-ui, sans-serif; background: var(--canvas); }
 button { color: inherit; font: inherit; }
 button, [role="button"] { -webkit-tap-highlight-color: transparent; }

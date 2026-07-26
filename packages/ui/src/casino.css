@@ -151,12 +151,49 @@
   100% { box-shadow: 0 0 0 0 transparent; }
 }
 
+/* Holographic foil. The one genuinely expensive part of this kit: layered
+   gradients under color-dodge. One per screen — grids get .ca-glare.
+   Owns both pseudo-elements, so never combine with .ca-shine or .ca-glare. */
+.ca-holo {
+  --holo-x: 50%; --holo-y: 42%; --holo-rx: 0deg; --holo-ry: 0deg;
+  position: relative; isolation: isolate; border-radius: inherit;
+  transform: perspective(760px) rotateX(var(--holo-rx)) rotateY(var(--holo-ry));
+  transition: transform .18s ease-out;
+}
+.ca-holo-body { position: relative; z-index: 1; border-radius: inherit; overflow: hidden; }
+.ca-holo::before, .ca-holo::after { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; }
+/* hard-light, not color-dodge: the bands lighten where they are bright and
+   darken where they are dark, so the foil reads on pale portraits too.
+   color-dodge leaves a white coat completely untouched. */
+.ca-holo::before {
+  z-index: 2; mix-blend-mode: hard-light; opacity: .17; transition: opacity .2s ease;
+  background:
+    repeating-linear-gradient(112deg, rgba(28, 30, 46, .38) 0 2.4%, rgba(255, 255, 255, .5) 4%, rgba(28, 30, 46, .38) 5.6% 9%),
+    repeating-linear-gradient(-108deg, rgba(243, 189, 85, .5) 0 2.4%, rgba(139, 0, 0, .38) 4.2%, rgba(88, 216, 173, .38) 6%, rgba(60, 40, 90, .34) 7.8% 13%);
+  background-position: calc(var(--holo-x) * -.5) calc(var(--holo-y) * -.5);
+  background-size: 220% 220%, 260% 260%;
+}
+/* The specular spot stays unblended so it survives on any artwork. */
+.ca-holo::after {
+  z-index: 3; opacity: 0; transition: opacity .2s ease;
+  background: radial-gradient(circle at var(--holo-x) var(--holo-y), rgba(255, 250, 235, .3), rgba(255, 250, 235, .06) 26%, transparent 46%);
+}
+.ca-holo[data-holo-live]::before { opacity: .36; }
+.ca-holo[data-holo-live]::after { opacity: 1; }
+/* Touch devices get a slow drift instead of a pointer, so the foil still lives. */
+.ca-holo[data-holo-drift]::before { animation: ca-holo-drift 9s ease-in-out infinite alternate; opacity: .26; }
+@keyframes ca-holo-drift {
+  from { background-position: 12% 8%, 84% 90%; }
+  to { background-position: 88% 92%, 16% 12%; }
+}
+
 /* Live status dot. */
 .ca-live { display: inline-grid; place-items: center; width: 7px; height: 7px; border-radius: 50%; background: var(--ca-crimson); box-shadow: 0 0 6px 1px color-mix(in srgb, var(--ca-crimson) 75%, transparent); animation: ca-blink 2s ease-in-out infinite; }
 @keyframes ca-blink { 50% { opacity: .35; } }
 
 @media (prefers-reduced-motion: reduce) {
-  .ca-shine::before, .ca-tableau, .ca-scan::after, .ca-pulse, .ca-live { animation: none; }
-  .ca-press { transition: none; }
+  .ca-shine::before, .ca-tableau, .ca-scan::after, .ca-pulse, .ca-live, .ca-holo[data-holo-drift]::before { animation: none; }
+  .ca-press, .ca-holo { transition: none; }
   .ca-press:active { transform: none; }
+  .ca-holo { transform: none; }
 }

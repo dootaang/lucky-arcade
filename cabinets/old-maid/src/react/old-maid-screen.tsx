@@ -1,4 +1,7 @@
 import { IconArrowLeft, IconCards, IconCheck, IconPlayerPause, IconPlayerPlay, IconRefresh, IconX } from "@tabler/icons-react";
+import { celebrate } from "@lucky-arcade/ui/celebrate";
+import { HoloFoil } from "@lucky-arcade/ui/holo-card";
+import { NumberTicker } from "@lucky-arcade/ui/number-ticker";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { isOldMaidSpeechSilent, oldMaidSpeechSnapshot, selectOldMaidSpeeches, validateOldMaidLines, type OldMaidSpeech } from "../dialogue.ts";
@@ -79,6 +82,7 @@ export function OldMaidScreen({ cartridge, assets, thumbAssets = assets, detailA
   const speechTimersRef = useRef<number[]>([]);
   const speechRevisionRef = useRef(0);
   const autoPausedRef = useRef(false);
+  const pausedRef = useRef(false);
   const manualSeatRef = useRef<OldMaidSeatId | null>(null);
   const longPressRef = useRef<number | null>(null);
   const randomSelectionRef = useRef(0);
@@ -97,8 +101,16 @@ export function OldMaidScreen({ cartridge, assets, thumbAssets = assets, detailA
     return cartridge.characters.filter((character) => selectable.has(character.id));
   }, [cartridge]);
 
+  function updatePaused(next: boolean) {
+    // Timers can fire before React commits the paused render. Keep an
+    // immediate guard so no presentation callback advances the game after the
+    // user has already pressed pause.
+    pausedRef.current = next;
+    setPaused(next);
+  }
+
   function dispatch(action: OldMaidAction) {
-    if ((paused || speechHolding) && action.type !== "restart") return;
+    if ((pausedRef.current || speechHolding) && action.type !== "restart") return;
     const previous = stateRef.current;
     const next = reduceOldMaid(cartridge, previous, action);
     if (next.status === "revealing" && next.pendingDraw && previous.status === "playing") {
@@ -220,10 +232,10 @@ export function OldMaidScreen({ cartridge, assets, thumbAssets = assets, detailA
     const onVisibility = () => {
       if (document.hidden) {
         if (!paused) autoPausedRef.current = true;
-        setPaused(true);
+        updatePaused(true);
       } else if (autoPausedRef.current) {
         autoPausedRef.current = false;
-        setPaused(false);
+        updatePaused(false);
       }
     };
     document.addEventListener("visibilitychange", onVisibility);
@@ -231,6 +243,18 @@ export function OldMaidScreen({ cartridge, assets, thumbAssets = assets, detailA
   }, [paused]);
 
   useEffect(() => () => cancelSpeechTimers(false), []);
+
+  // Confetti belongs to the moment the result lands, never to a re-render of it.
+  const celebratedRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (state.status !== "complete") { celebratedRef.current = null; return; }
+    if (celebratedRef.current === state.sessionId) return;
+    celebratedRef.current = state.sessionId;
+    if (state.mode !== "play") return;
+    const place = state.safeOrder.indexOf("player");
+    if (place === 0) void celebrate("full");
+    else if (place > 0) void celebrate("modest");
+  }, [state.status, state.sessionId, state.mode, state.safeOrder]);
 
   useEffect(() => {
     if (state.status === "ready") {
@@ -379,7 +403,7 @@ export function OldMaidScreen({ cartridge, assets, thumbAssets = assets, detailA
     <header className="old-maid-header">
       <button onClick={onExit} aria-label="오락실로 돌아가기"><IconArrowLeft /></button>
       <div><span>BOT CARD · TABLE GAME</span><h1>{cartridge.title}</h1></div>
-      <div className="old-maid-meters">{economy && <button className="old-maid-wallet" onClick={() => setCollectionOpen(true)}>{economy.balance.toLocaleString("ko-KR")} P</button>}<button className="old-maid-pause" onClick={() => { autoPausedRef.current = false; setPaused((value) => !value); }} disabled={state.status === "ready" || state.status === "complete"}>{paused ? <IconPlayerPlay size={15} /> : <IconPlayerPause size={15} />}{paused ? "계속" : "일시정지"}</button><span>{state.turn}턴</span><small aria-live="polite">{paused ? "일시정지됨" : saveState === "saving" ? "저장 중…" : saveState === "error" ? "저장 재시도 필요" : "자동 저장됨"}</small></div>
+      <div className="old-maid-meters">{economy && <button className="old-maid-wallet" onClick={() => setCollectionOpen(true)}>{economy.balance.toLocaleString("ko-KR")} P</button>}<button className="old-maid-pause" onClick={() => { autoPausedRef.current = false; updatePaused(!pausedRef.current); }} disabled={state.status === "ready" || state.status === "complete"}>{paused ? <IconPlayerPlay size={15} /> : <IconPlayerPause size={15} />}{paused ? "계속" : "일시정지"}</button><span>{state.turn}턴</span><small aria-live="polite">{paused ? "일시정지됨" : saveState === "saving" ? "저장 중…" : saveState === "error" ? "저장 재시도 필요" : "자동 저장됨"}</small></div>
     </header>
 
     <section className="old-maid-table" aria-label={`${cartridge.title} 테이블`}>
@@ -478,6 +502,7 @@ export function OldMaidScreen({ cartridge, assets, thumbAssets = assets, detailA
         {state.status === "complete" && state.loserId && <div className="old-maid-result">
           <span className="old-maid-result-mark">!</span>
           <p className="eyebrow">GAME COMPLETE · {state.turn} TURNS</p>
+          {state.mode === "play" && <strong className={`old-maid-verdict ca-serif ${state.loserId === "player" ? "lost" : ""}`}>{state.loserId === "player" ? "패배" : state.safeOrder.indexOf("player") === 0 ? "승리" : `${state.safeOrder.indexOf("player") + 1}등`}</strong>}
           <h2>{nameOf(state.loserId)}에게 조커가 남았습니다</h2>
           {characterIdForSeat(state, state.loserId) && <img className="old-maid-loser-portrait" src={assets[characters.get(characterIdForSeat(state, state.loserId) ?? "")?.despairPortrait ?? ""]} alt={`${nameOf(state.loserId)}의 절망한 표정`} />}
           <p>{state.mode === "spectate" ? `${nameOf(state.loserId)}${subjectParticle(nameOf(state.loserId))} 마지막 조커를 피하지 못했습니다.` : state.loserId === "player" ? "이번 판은 플레이어가 졌습니다." : `플레이어는 ${state.safeOrder.indexOf("player") + 1}번째로 손을 비웠습니다.`}</p>
@@ -487,7 +512,7 @@ export function OldMaidScreen({ cartridge, assets, thumbAssets = assets, detailA
             <strong>{matchSummary.played}판 · 1등 {matchSummary.firstPlaces}회 · 조커 {matchSummary.jokerHolds}회 · {streakLabel(matchSummary.currentStreak)}</strong>
             {matchSummary.opponents.slice(0, 3).map((opponent) => <span key={opponent.participantId}>{opponent.displayName} {opponent.played}판 {opponent.beaten}승</span>)}
           </section>}
-          {economy?.award && <p className="old-maid-award">+{economy.award.amount} P · {economy.award.rank}등 순위 보상</p>}
+          {economy?.award && <p className="old-maid-award">+<NumberTicker className="ca-num" value={economy.award.amount} /> P · {economy.award.rank}등 순위 보상</p>}
           {economy?.prediction?.active && <p className={`old-maid-prediction-result ${economy.prediction.active.status}`}>
             {economy.prediction.active.status === "won" ? `예측 적중 · ${economy.prediction.active.multiplier}배 · +${economy.prediction.active.stake * economy.prediction.active.multiplier} P` : economy.prediction.active.status === "lost" ? `예측 실패 · ${economy.prediction.active.multiplier}배 · -${economy.prediction.active.reservedAmount} P` : economy.prediction.active.status === "refunded" ? `대국 무효 · ${economy.prediction.active.reservedAmount} P 반환` : `${economy.prediction.active.multiplier}배 정산 중…`}
           </p>}
@@ -659,7 +684,7 @@ function CardFace({ face, assets, odd, large = false }: { face: OldMaidFace; ass
 
 function CardDetail({ face, assets, odd, onClose }: { face: OldMaidFace; assets: Readonly<Record<string, string>>; odd: boolean; onClose(): void }) {
   return <div className="old-maid-modal" role="dialog" aria-modal="true" aria-labelledby="old-maid-card-name" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}>
-    <div className="old-maid-modal-panel"><button className="old-maid-modal-close" onClick={onClose} aria-label="카드 상세 닫기"><IconX /></button><CardFace face={face} assets={assets} odd={odd} large /><h2 id="old-maid-card-name">{face.name}</h2><p>{odd ? "짝이 없는 조커입니다. 마지막까지 들고 있으면 집니다." : "같은 그림의 카드 두 장을 모으면 자동으로 버립니다."}</p></div>
+    <div className="old-maid-modal-panel"><button className="old-maid-modal-close" onClick={onClose} aria-label="카드 상세 닫기"><IconX /></button><HoloFoil className="old-maid-modal-foil"><CardFace face={face} assets={assets} odd={odd} large /></HoloFoil><h2 id="old-maid-card-name">{face.name}</h2><p>{odd ? "짝이 없는 조커입니다. 마지막까지 들고 있으면 집니다." : "같은 그림의 카드 두 장을 모으면 자동으로 버립니다."}</p></div>
   </div>;
 }
 
@@ -762,7 +787,7 @@ function DrawReveal({ event, face, assets, actorName, targetName, origin, center
     } catch { /* 이동 연출이 불가능해도 판정 단계는 위 타이머로 계속 진행한다. */ }
   }
 
-  const flight = typeof document === "undefined" ? null : createPortal(<div className="old-maid-flight-layer" data-draw-path={centerReveal ? "center" : "direct"} data-card-id={event.cardId} data-reveal-phase={revealPhase} data-source-x={origin ? Math.round(origin.rect.left + origin.rect.width / 2) : undefined} data-source-y={origin ? Math.round(origin.rect.top + origin.rect.height / 2) : undefined} aria-label={`${actorName}이 ${targetName}에게서 카드 한 장을 가져갑니다`}><div className="old-maid-flight-card" ref={cardRef}><div className="old-maid-flight-card-inner" data-reveal-phase={revealPhase}><div className="old-maid-flight-side old-maid-flight-back"><CardBack /></div><div className="old-maid-flight-side old-maid-flight-front"><CardFace face={face} assets={assets} odd={face.id === "joker"} /></div></div></div></div>, document.body);
+  const flight = typeof document === "undefined" ? null : createPortal(<div className="old-maid-flight-layer" data-draw-path={centerReveal ? "center" : "direct"} data-card-id={event.cardId} data-reveal-phase={revealPhase} data-source-x={origin ? Math.round(origin.rect.left + origin.rect.width / 2) : undefined} data-source-y={origin ? Math.round(origin.rect.top + origin.rect.height / 2) : undefined} aria-label={`${actorName}${subjectParticle(actorName)} ${targetName}에게서 카드 한 장을 가져갑니다`}><div className="old-maid-flight-card" ref={cardRef}><div className="old-maid-flight-card-inner" data-reveal-phase={revealPhase}><div className="old-maid-flight-side old-maid-flight-back"><CardBack /></div><div className="old-maid-flight-side old-maid-flight-front"><CardFace face={face} assets={assets} odd={face.id === "joker"} /></div></div></div></div>, document.body);
 
   if (!centerReveal) return flight;
 

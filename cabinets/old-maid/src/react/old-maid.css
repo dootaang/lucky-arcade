@@ -108,3 +108,7 @@
 .old-maid-opponent-picker button.selected{position:relative;border-color:color-mix(in srgb,var(--ca-gold,#f3bd55) 30%,transparent)}
 .old-maid-opponent-picker button.selected::after{content:"";position:absolute;inset:3px;pointer-events:none;background-repeat:no-repeat;background-image:linear-gradient(#f3bd55 0 0),linear-gradient(#f3bd55 0 0),linear-gradient(#f3bd55 0 0),linear-gradient(#f3bd55 0 0),linear-gradient(#f3bd55 0 0),linear-gradient(#f3bd55 0 0),linear-gradient(#f3bd55 0 0),linear-gradient(#f3bd55 0 0);background-size:9px 2px,2px 9px,9px 2px,2px 9px,9px 2px,2px 9px,9px 2px,2px 9px;background-position:left top,left top,right top,right top,left bottom,left bottom,right bottom,right bottom}
 @media(prefers-reduced-motion:reduce){.old-maid-shell button{transition:none}.old-maid-shell button:active:not(:disabled){transform:none}}
+.old-maid-verdict{display:block;margin:4px 0 2px;color:var(--ca-gold,#f3bd55);font-size:clamp(2.3rem,7vw,4rem);line-height:1;letter-spacing:-.045em;text-shadow:0 0 36px color-mix(in srgb,var(--ca-gold,#f3bd55) 32%,transparent)}
+.old-maid-verdict.lost{color:#ff9a8a;text-shadow:0 0 36px color-mix(in srgb,var(--ca-crimson,#8b0000) 46%,transparent)}
+.old-maid-modal-foil{width:min(62vw,240px);border-radius:14px}
+.old-maid-modal-foil .old-maid-card.large{width:100%;height:auto;aspect-ratio:3/4}

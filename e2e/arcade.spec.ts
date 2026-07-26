@@ -373,9 +373,23 @@ test("plays and restores a complete Temerosa old maid table", async ({ page }, t
   await expect(page.locator(".seat-cpu-1 strong")).toHaveText("에코");
   await expect(page.locator(".seat-cpu-2 strong")).toHaveText("아데샤");
   await expect(page.locator(".seat-cpu-3 strong")).toHaveText("땡칠이");
+  // The reduced-motion deal lasts only 190 ms. Arm the pause before starting
+  // so the browser clicks on the exact render where the ready-only disabled
+  // state clears, without a Playwright round trip racing the deal timer.
+  await page.evaluate(() => {
+    const pause = document.querySelector<HTMLButtonElement>(".old-maid-pause");
+    if (!pause) throw new Error("pause button missing");
+    const clickWhenEnabled = () => {
+      if (pause.disabled) return;
+      observer.disconnect();
+      pause.click();
+    };
+    const observer = new MutationObserver(clickWhenEnabled);
+    observer.observe(pause, { attributes: true, attributeFilter: ["disabled"] });
+    clickWhenEnabled();
+  });
   await page.getByRole("button", { name: "시작", exact: true }).click();
-  await expect(page.getByText("카드를 나누는 중…")).toBeVisible();
-  await page.getByRole("button", { name: "일시정지", exact: true }).click();
+  await expect(page.getByText("일시정지됨")).toBeVisible();
   await page.waitForTimeout(400);
   await expect(page.getByText("카드를 나누는 중…")).toBeVisible();
   await page.getByRole("button", { name: "계속", exact: true }).click();
@@ -391,8 +405,41 @@ test("plays and restores a complete Temerosa old maid table", async ({ page }, t
   let checkedSpeech = false;
   let checkedOfferReaction = false;
 
+  // Reduced motion leaves the arriving-card marker up for only 90 ms. Capture
+  // the computed stacking order in the browser instead of racing two
+  // Playwright round trips against that presentation window.
+  await page.evaluate(() => {
+    delete document.body.dataset.arrivalProbe;
+    const observer = new MutationObserver(() => {
+      if (document.body.dataset.arrivalProbe) return;
+      const slots = [...document.querySelectorAll<HTMLElement>(".old-maid-pile-slot")];
+      const arriving = slots.filter((slot) => slot.dataset.arriving === "true");
+      if (arriving.length !== 1) return;
+      const resting = slots
+        .filter((slot) => slot.dataset.arriving !== "true")
+        .map((slot) => Number(getComputedStyle(slot).zIndex));
+      if (resting.some((value) => !Number.isFinite(value))) return;
+      document.body.dataset.arrivalProbe = JSON.stringify({
+        z: Number(getComputedStyle(arriving[0]!).zIndex),
+        restingZ: resting.length ? Math.max(...resting) : 0,
+      });
+      observer.disconnect();
+    });
+    observer.observe(document.body, { attributes: true, subtree: true, attributeFilter: ["data-arriving"] });
+  });
+
   for (let turn = 0; turn < 800; turn += 1) {
     if (await page.getByText(/에게 조커가 남았습니다/).count()) break;
+    if (!checkedArrival) {
+      const probe = await page.evaluate(() => document.body.dataset.arrivalProbe ?? "");
+      if (probe) {
+        const arriving = JSON.parse(probe) as { z: number; restingZ: number };
+        // 쌓인 더미 위에 얹히되, 뽑기 열과 진행 UI(z-index 3) 아래에 머물러야 한다.
+        expect(arriving.z).toBeGreaterThan(arriving.restingZ);
+        expect(arriving.z).toBeLessThan(3);
+        checkedArrival = true;
+      }
+    }
     const presentationHold = page.locator('.old-maid-shell[data-presentation-hold="true"]');
     if (await presentationHold.count()) {
       await expect(presentationHold).toHaveCount(0, { timeout: 12_000 });
@@ -427,20 +474,6 @@ test("plays and restores a complete Temerosa old maid table", async ({ page }, t
         checkedThrowingChrome = true;
       }
       await expect(page.locator(".old-maid-pile-pair")).not.toHaveCount(0);
-      if (!checkedArrival) {
-        await expect(page.locator('.old-maid-pile-slot[data-arriving="true"]')).toHaveCount(1);
-        const arriving = await page.locator('.old-maid-pile-slot[data-arriving="true"]').evaluate((slot) => {
-          const resting = [...document.querySelectorAll<HTMLElement>('.old-maid-pile-slot:not([data-arriving="true"])')];
-          return {
-            z: Number(getComputedStyle(slot).zIndex),
-            restingZ: resting.length ? Math.max(...resting.map((other) => Number(getComputedStyle(other).zIndex))) : 0,
-          };
-        });
-        // 쌓인 더미 위에 얹히되, 뽑기 열과 진행 UI(z-index 3) 아래에 머물러야 한다.
-        expect(arriving.z).toBeGreaterThan(arriving.restingZ);
-        expect(arriving.z).toBeLessThan(3);
-        checkedArrival = true;
-      }
       checkedDiscardSpread ||= await page.locator(".old-maid-pile-slot").evaluateAll((slots) => {
         const byOwner = new Map<string, DOMRect>();
         for (const slot of slots) { const owner = slot.getAttribute("data-owner"); if (owner && !byOwner.has(owner)) byOwner.set(owner, slot.getBoundingClientRect()); }
@@ -470,10 +503,20 @@ test("plays and restores a complete Temerosa old maid table", async ({ page }, t
           expect(offeredCardBox).not.toBeNull();
           await offeredCard.dispatchEvent("pointerdown", { pointerType: "touch", pointerId: 1, isPrimary: true });
           await expect(offeredCard).toHaveAttribute("aria-label", /한 번 더 누르면 뽑기/);
+          await page.evaluate((cardId) => {
+            delete document.body.dataset.drawRevealProbe;
+            const observer = new MutationObserver(() => {
+              const flight = document.querySelector<HTMLElement>(`.old-maid-flight-layer[data-draw-path="center"][data-card-id="${CSS.escape(cardId)}"]`);
+              if (!flight) return;
+              document.body.dataset.drawRevealProbe = flight.dataset.revealPhase ?? "missing";
+              observer.disconnect();
+            });
+            observer.observe(document.body, { childList: true, subtree: true });
+          }, offeredCardId);
           await offeredCard.dispatchEvent("pointerdown", { pointerType: "touch", pointerId: 1, isPrimary: true });
           const flight = page.locator(`.old-maid-flight-layer[data-draw-path="center"][data-card-id="${offeredCardId}"]`);
           await expect(flight).toBeVisible();
-          await expect(flight).toHaveAttribute("data-reveal-phase", "back");
+          await expect.poll(() => page.evaluate(() => document.body.dataset.drawRevealProbe ?? "")).toBe("back");
           await expect(flight.locator(".old-maid-flight-back .old-maid-card.back")).toHaveCount(1);
           await expect(flight.locator(".old-maid-flight-front .old-maid-card.face")).toHaveCount(1);
           await expect(flight).toHaveAttribute("data-source-x", String(Math.round((offeredCardBox?.x ?? 0) + (offeredCardBox?.width ?? 0) / 2)));
