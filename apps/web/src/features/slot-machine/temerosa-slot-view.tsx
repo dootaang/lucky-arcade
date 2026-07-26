@@ -1,21 +1,20 @@
-import { SLOT_MACHINE_PACK_VERSION, SLOT_MACHINE_STAKES, SLOT_MACHINE_TERMS_VERSION, SLOT_MACHINE_VERSION, createSlotMachineState, isSlotMachineState, reduceSlotMachine, slotMachineCredit, slotMachineResultHash, type SlotMachineAction, type SlotMachineStake, type SlotMachineState, type SlotMachineSymbol } from "@lucky-arcade/slot-machine";
+import { SLOT_MACHINE_PACK_VERSION, SLOT_MACHINE_STAKES, SLOT_MACHINE_TERMS_VERSION, SLOT_MACHINE_VERSION, createSlotMachineOutcome, createSlotMachineState, isSlotMachineState, reduceSlotMachine, selectSlotMachineVisualVariant, slotMachineCredit, slotMachineResultHash, type SlotMachineAction, type SlotMachineSeries, type SlotMachineStake, type SlotMachineState, type SlotMachineSymbol, type SlotMachineVisualVariant } from "@lucky-arcade/slot-machine";
 import { SlotMachineScreen } from "@lucky-arcade/slot-machine/react";
 import { makeReceipt, resultHash, ENGINE_VERSION } from "@lucky-arcade/engine";
 import type { GameWagerReceipt } from "@lucky-arcade/persistence";
 import { useEffect, useRef, useState } from "react";
 import { appendAction, saveSnapshot } from "../../lib/database.ts";
-import { listWagers, reserveWager, settleWager } from "../../lib/game-wager.ts";
+import { invalidateWager, listWagers, reserveWager, settleWager } from "../../lib/game-wager.ts";
 import { recoverSession } from "../../lib/session-recovery.ts";
+import { loadTemerosaCasinoAssets, type TemerosaCasinoAssetBundle } from "../../lib/temerosa-content.ts";
 import { readWallet } from "../../lib/wallet.ts";
 
 const CABINET_ID = "temerosa-slot";
-const SESSION_ID = "temerosa-slot:machine-1";
-const CONTENT_ROOT = `/content/temerosa-casino-slots/${SLOT_MACHINE_PACK_VERSION}`;
+const SESSION_ID = "temerosa-slot:machine-2";
+const SLOT_SERIES = new Set<SlotMachineSeries>(["overture", "root2", "bestiaization", "finale"]);
+const SLOT_EXCLUDED_CHARACTERS = new Set(["bacikal"]);
 
-interface SlotPackVariant { scale: "1x" | "2x"; path: string; mime: "image/webp"; width: number; height: number; bytes: number; }
-interface SlotPackAsset { id: string; use: "slot-symbol"; displayName: string; frequency: { tier: string; weight: number; evidence: string }; variants: SlotPackVariant[]; }
-interface SlotPackManifest { contract: "temerosa-casino-asset-pack/1.0"; packId: "temerosa-casino-slots"; version: string; assets: SlotPackAsset[]; }
-interface LoadedSlotPack { symbols: readonly SlotMachineSymbol[]; assets: Readonly<Record<string, string>>; }
+interface LoadedSlotPack { symbols: readonly SlotMachineSymbol[]; variants: readonly SlotMachineVisualVariant[]; }
 
 export default function TemerosaSlotView({ onExit }: { onExit(): void }) {
   const [ready, setReady] = useState<{ pack: LoadedSlotPack; state: SlotMachineState } | null>(null);
@@ -28,6 +27,12 @@ export default function TemerosaSlotView({ onExit }: { onExit(): void }) {
   useEffect(() => {
     let alive = true;
     void loadSlotPack().then(async (pack) => {
+      const allWagers = await listWagers();
+      for (const wager of allWagers) {
+        if (wager.cabinetId === CABINET_ID && wager.status === "reserved" && (wager.sessionId !== SESSION_ID || wager.termsVersion !== SLOT_MACHINE_TERMS_VERSION)) {
+          await invalidateWager({ wagerId: wager.wagerId, reason: "version-mismatch" });
+        }
+      }
       const wallet = await readWallet();
       const recovered = await recoverSession<SlotMachineState, SlotMachineAction>({
         sessionId: SESSION_ID,
@@ -39,7 +44,7 @@ export default function TemerosaSlotView({ onExit }: { onExit(): void }) {
       });
       let state = recovered.state;
       let nextBalance = wallet.balance;
-      const pending = (await listWagers(SESSION_ID)).find((wager) => wager.status === "reserved");
+      const pending = (await listWagers(SESSION_ID)).find((wager) => wager.status === "reserved" && wager.termsVersion === SLOT_MACHINE_TERMS_VERSION);
       if (pending && state.wagerId !== pending.wagerId) {
         const seed = spinSeedFromReceipt(pending);
         if (seed && isStake(pending.stake)) {
@@ -88,6 +93,9 @@ export default function TemerosaSlotView({ onExit }: { onExit(): void }) {
         reservedAmount: stake,
       });
       setBalance(reserved.wallet.balance);
+      const outcome = createSlotMachineOutcome(ready.pack.symbols, SLOT_MACHINE_PACK_VERSION, spinSeed);
+      const sources = outcome.activeSymbolIds.map((symbolId) => selectSlotMachineVisualVariant(ready.pack.variants, symbolId, spinSeed).src);
+      await Promise.allSettled([...new Set(sources)].map(preloadImage));
       await apply({ type: "spin", spinSeed, stake, wagerId: reserved.wager.wagerId });
     } catch (cause) {
       setError(cause instanceof Error && cause.message === "insufficient_points" ? "포인트가 부족합니다." : "회전을 시작하지 못했습니다.");
@@ -115,7 +123,7 @@ export default function TemerosaSlotView({ onExit }: { onExit(): void }) {
   }
 
   if (!ready) return <main className="game-shell"><div className="game-loading" role={error ? "alert" : undefined}>{error || "슬롯 심볼을 준비하고 있어요…"}{error && <button onClick={onExit}>카지노로 돌아가기</button>}</div></main>;
-  return <SlotMachineScreen state={ready.state} symbols={ready.pack.symbols} assets={ready.pack.assets} balance={balance} busy={busy} error={error} onSpin={spin} onFinish={finish} onExit={onExit} />;
+  return <SlotMachineScreen state={ready.state} symbols={ready.pack.symbols} variants={ready.pack.variants} balance={balance} busy={busy} error={error} onSpin={spin} onFinish={finish} onExit={onExit} />;
 }
 
 async function persistSlotTransition(previous: SlotMachineState, next: SlotMachineState, action: SlotMachineAction): Promise<void> {
@@ -132,21 +140,33 @@ async function persistSlotTransition(previous: SlotMachineState, next: SlotMachi
 }
 
 async function loadSlotPack(): Promise<LoadedSlotPack> {
-  const response = await fetch(`${CONTENT_ROOT}/manifest.json`);
-  if (!response.ok) throw new Error("slot_pack_missing");
-  const manifest = await response.json() as SlotPackManifest;
-  if (manifest.contract !== "temerosa-casino-asset-pack/1.0" || manifest.packId !== "temerosa-casino-slots" || manifest.version !== SLOT_MACHINE_PACK_VERSION || manifest.assets.length !== 16) throw new Error("slot_pack_invalid");
+  return buildSlotPack(await loadTemerosaCasinoAssets());
+}
+
+export function buildSlotPack(bundle: TemerosaCasinoAssetBundle): LoadedSlotPack {
   const ids = new Set<string>();
-  const assets: Record<string, string> = {};
-  const symbols = manifest.assets.map((asset): SlotMachineSymbol => {
-    const variant = asset.variants.find((candidate) => candidate.scale === "2x") ?? asset.variants[0];
-    if (!variant || asset.use !== "slot-symbol" || !asset.id || !asset.displayName || asset.frequency.weight !== 1 || ids.has(asset.id)) throw new Error("slot_symbol_invalid");
+  const variants: SlotMachineVisualVariant[] = [];
+  for (const asset of bundle.allContentAssets) {
+    if (!asset.characterId || !asset.expression || !asset.appearanceSet || ids.has(asset.id) || SLOT_EXCLUDED_CHARACTERS.has(asset.characterId)) continue;
+    const series = asset.appearanceSet.split("/")[1] as SlotMachineSeries | undefined;
+    const src = bundle.assets[asset.id];
+    const previewSrc = bundle.thumbAssets[asset.id] ?? src;
+    if (!series || !SLOT_SERIES.has(series) || !src || !previewSrc) continue;
     ids.add(asset.id);
-    assets[asset.id] = `${CONTENT_ROOT}/${variant.path}`;
-    return { id: asset.id, label: asset.displayName, weight: 1 };
-  });
-  await Promise.all(Object.values(assets).map(preloadImage));
-  return { symbols: Object.freeze(symbols), assets: Object.freeze(assets) };
+    variants.push({
+      id: asset.id,
+      symbolId: asset.characterId,
+      label: `${characterName(asset.characterId)} · ${expressionName(asset.expression)}`,
+      expression: asset.expression,
+      appearanceSet: asset.appearanceSet,
+      series,
+      src,
+      previewSrc,
+    });
+  }
+  const symbols = [...new Set(variants.map((variant) => variant.symbolId))].sort().map((id): SlotMachineSymbol => ({ id, label: characterName(id), weight: 1 }));
+  if (symbols.length < 12 || symbols.length > 64 || variants.length < symbols.length * 2) throw new Error("slot_portrait_pack_invalid");
+  return { symbols: Object.freeze(symbols), variants: Object.freeze(variants.sort((left, right) => left.id.localeCompare(right.id))) };
 }
 
 function preloadImage(src: string): Promise<void> {
@@ -154,6 +174,21 @@ function preloadImage(src: string): Promise<void> {
   image.decoding = "async";
   image.src = src;
   return image.decode();
+}
+
+function characterName(characterId: string): string {
+  const names: Readonly<Record<string, string>> = {
+    adesha: "아데샤", alger: "알제", anna: "안나 나자레아", apollyon: "아폴리온", bche: "브체", camille: "카미유", cicero: "키케로",
+    cradle: "크레이들", deokbae: "김덕배", diamo: "디아모", echo: "에코", esther: "에스더", flask: "플라스크", hiro: "히로", kano: "카노",
+    katrinka: "카트린카", kreva: "크레바", levillotte: "레빌로트", lilim: "릴림", lyla: "라일라", machina: "마키나", morsisa: "모르시사",
+    nieun: "박니은", nostalgia: "노스탤지아", pale: "페일", phaeo: "폐어", raven: "레이븐", riel: "리엘", sakabus: "사카부스",
+    "snow-rim": "스노우 림", spiril: "스피릴", strelka: "스트렐카", temute: "테뮤테", traver: "트레버", ttaengchil: "땡칠이",
+    "tumit-tu": "튜밋튜", wares: "워어즈", yul: "율",
+  };
+  return names[characterId] ?? characterId;
+}
+function expressionName(expression: string): string {
+  return ({ neutral: "무표정", pleased: "미소", tense: "긴장", despair: "절망", blush: "홍조", surprised: "놀람", standing: "기본", smile: "미소", sad: "슬픔", angry: "분노", smirk: "미소", disappointed: "실망" } as Readonly<Record<string, string>>)[expression] ?? expression;
 }
 
 function spinSeedFromReceipt(receipt: GameWagerReceipt): string | null { return receipt.choiceKey?.startsWith("spin:") ? receipt.choiceKey.slice(5) || null : null; }

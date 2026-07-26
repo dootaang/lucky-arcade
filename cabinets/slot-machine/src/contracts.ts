@@ -1,7 +1,7 @@
-export const SLOT_MACHINE_VERSION = "slot-machine/0.1" as const;
-export const SLOT_MACHINE_STATE_CONTRACT = "slot-machine-state/0.1" as const;
-export const SLOT_MACHINE_TERMS_VERSION = "temerosa-slot-paytable/0.1" as const;
-export const SLOT_MACHINE_PACK_VERSION = "0.1.0" as const;
+export const SLOT_MACHINE_VERSION = "slot-machine/0.2" as const;
+export const SLOT_MACHINE_STATE_CONTRACT = "slot-machine-state/0.2" as const;
+export const SLOT_MACHINE_TERMS_VERSION = "temerosa-slot-paytable/0.2" as const;
+export const SLOT_MACHINE_PACK_VERSION = "0.2.0" as const;
 export const SLOT_MACHINE_STAKES = [10, 50, 200] as const;
 export const SLOT_MACHINE_LINE_MULTIPLIER = 6;
 
@@ -12,6 +12,20 @@ export interface SlotMachineSymbol {
   id: string;
   label: string;
   weight: 1;
+}
+
+export type SlotMachineSeries = "overture" | "root2" | "bestiaization" | "finale";
+
+/** A character is the payout symbol; these are deterministic visual variants only. */
+export interface SlotMachineVisualVariant {
+  id: string;
+  symbolId: string;
+  label: string;
+  expression: string;
+  appearanceSet: string;
+  series: SlotMachineSeries;
+  src: string;
+  previewSrc: string;
 }
 
 export interface SlotMachineOutcome {

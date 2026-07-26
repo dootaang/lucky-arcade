@@ -84,7 +84,7 @@ export function slotMachineCredit(state: SlotMachineState): number {
 export function slotMachineResultHash(state: SlotMachineState): string { return resultHash(state); }
 
 function validateSymbols(symbols: readonly SlotMachineSymbol[]): void {
-  assert(symbols.length >= 12 && symbols.length <= 20, SLOT_MACHINE_ERRORS.symbolsInvalid);
+  assert(symbols.length >= 12 && symbols.length <= 64, SLOT_MACHINE_ERRORS.symbolsInvalid);
   const ids = new Set<string>();
   for (const symbol of symbols) {
     assert(symbol.id.length > 0 && symbol.label.length > 0 && symbol.weight === 1 && !ids.has(symbol.id), SLOT_MACHINE_ERRORS.symbolsInvalid);

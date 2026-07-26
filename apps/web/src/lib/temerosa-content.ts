@@ -1,6 +1,7 @@
 interface ManifestVariant { size: "sm" | "md" | "lg"; path: string; }
 export interface TemerosaManifestAsset { id: string; characterId?: string; expression?: string; appearanceSet?: string; variants: ManifestVariant[]; }
 interface TemerosaManifest { version: string; assets: TemerosaManifestAsset[]; }
+export interface ResolvedTemerosaManifestAsset extends TemerosaManifestAsset { packVersion: string; }
 
 const PACKS = ["0.1.0", "0.2.0", "0.3.0", "0.4.0", "0.5.0", "0.6.0", "0.7.0", "0.8.0"] as const;
 const REQUIRED_ASSETS = [
@@ -59,6 +60,7 @@ export interface TemerosaCasinoAssetBundle {
   assets: Readonly<Record<string, string>>;
   detailAssets: Readonly<Record<string, string>>;
   contentAssets: readonly TemerosaManifestAsset[];
+  allContentAssets: readonly ResolvedTemerosaManifestAsset[];
 }
 
 export function loadTemerosaPilotAssets(): Promise<Readonly<Record<string, string>>> {
@@ -85,7 +87,9 @@ export function loadTemerosaCasinoAssets(): Promise<TemerosaCasinoAssetBundle> {
     const thumbAssets: Record<string, string> = {};
     const assets: Record<string, string> = {};
     const detailAssets: Record<string, string> = {};
+    const allContentAssets: ResolvedTemerosaManifestAsset[] = [];
     for (const manifest of manifests) for (const asset of manifest.assets) {
+      allContentAssets.push({ ...asset, packVersion: manifest.version });
       const small = asset.variants.find((candidate) => candidate.size === "sm") ?? asset.variants[0];
       const medium = asset.variants.find((candidate) => candidate.size === "md") ?? small;
       const detail = asset.variants.find((candidate) => candidate.size === "lg") ?? medium;
@@ -101,6 +105,7 @@ export function loadTemerosaCasinoAssets(): Promise<TemerosaCasinoAssetBundle> {
       assets: Object.freeze(assets),
       detailAssets: Object.freeze(detailAssets),
       contentAssets: Object.freeze(casinoManifest.assets),
+      allContentAssets: Object.freeze(allContentAssets),
     });
   });
   return casinoAssetPromise;

@@ -82,7 +82,6 @@ test("keeps the Venue title and entry action when its hero image fails", async (
 
 test("reserves and settles one deterministic Temerosa slot spin", async ({ page }, testInfo) => {
   test.skip(testInfo.project.metadata.mobile === true);
-  await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/");
   await page.evaluate(() => new Promise<void>((resolve, reject) => {
     const opening = indexedDB.open("lucky-arcade", 7);
@@ -95,18 +94,43 @@ test("reserves and settles one deterministic Temerosa slot spin", async ({ page 
       transaction.oncomplete = () => { db.close(); resolve(); };
     };
   }));
+  await page.evaluate(async () => {
+    const database = await new Function("return import('/src/lib/database.ts')")();
+    await database.reserveGameWager({
+      wagerId: "legacy-slot-wager", outcomeKey: "legacy-slot:seed", cabinetId: "temerosa-slot",
+      sessionId: "temerosa-slot:machine-1", termsVersion: "temerosa-slot-paytable/0.1", choiceKey: "spin:legacy-seed", stake: 10, reservedAmount: 10,
+    });
+  });
   await page.goto("/play/temerosa-slot");
   await expect(page.getByRole("heading", { name: "슬롯 777", exact: true })).toBeVisible();
+  await expect(page.locator(".slot-machine-cabinet")).toHaveAttribute("data-symbol-count", "38");
+  await expect(page.locator(".slot-machine-cabinet")).toHaveAttribute("data-variant-count", "268");
+  await expect(page.locator(".slot-machine-cabinet")).toHaveAttribute("data-series-count", "4");
   await expect(page.locator(".slot-machine-symbol img")).toHaveCount(9);
   await page.getByRole("button", { name: "10 P로 돌리기", exact: true }).click();
+  await expect(page.locator(".slot-machine-track[data-track-count]")).toHaveCount(3);
+  await expect(page.locator(".slot-machine-track[data-track-count]").first()).not.toHaveAttribute("data-track-count", "3");
+  await page.waitForTimeout(180);
+  const movingTransforms = await page.locator(".slot-machine-track[data-track-count]").evaluateAll((tracks) => tracks.map((track) => getComputedStyle(track).transform));
+  expect(movingTransforms.every((transform) => transform !== "none")).toBe(true);
+  await page.getByRole("button", { name: "일시정지", exact: true }).click();
+  await expect(page.getByRole("button", { name: "계속", exact: true })).toBeVisible();
+  const pausedTransforms = await page.locator(".slot-machine-track[data-track-count]").evaluateAll((tracks) => tracks.map((track) => getComputedStyle(track).transform));
+  await page.waitForTimeout(220);
+  expect(await page.locator(".slot-machine-track[data-track-count]").evaluateAll((tracks) => tracks.map((track) => getComputedStyle(track).transform))).toEqual(pausedTransforms);
+  await page.getByRole("button", { name: "계속", exact: true }).click();
   await expect(page.locator(".slot-machine-result")).toContainText(/당첨 없음|줄 적중/);
+  const portraitRequests = await page.evaluate(() => performance.getEntriesByType("resource").map((entry) => entry.name).filter((name) => name.includes("/content/temerosa-margin/") && name.includes("/assets/") && name.endsWith("/md.webp")));
+  expect(new Set(portraitRequests).size).toBeLessThanOrEqual(18);
   const economy = await page.evaluate(async () => {
     const database = await new Function("return import('/src/lib/database.ts')")();
-    const wagers = await database.listGameWagers("temerosa-slot:machine-1");
+    const wagers = await database.listGameWagers("temerosa-slot:machine-2");
+    const legacy = (await database.listGameWagers("temerosa-slot:machine-1"))[0];
     const wallet = await database.readWallet();
-    return { wager: wagers[0], balance: wallet.balance };
+    return { wager: wagers[0], legacy, balance: wallet.balance };
   });
   expect(economy.wager).toMatchObject({ cabinetId: "temerosa-slot", stake: 10, reservedAmount: 10, status: "settled" });
+  expect(economy.legacy).toMatchObject({ wagerId: "legacy-slot-wager", status: "refunded", settlementCredit: 10 });
   expect(economy.balance).toBe(1_000 - 10 + economy.wager.settlementCredit);
 });
 

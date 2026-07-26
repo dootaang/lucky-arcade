@@ -38,8 +38,8 @@ const registrations: readonly WebCabinetRegistration[] = [
   },
   {
     manifest: {
-      id: "temerosa-slot", version: "slot-machine/0.1", title: "슬롯 777",
-      description: "테메로세의 유물과 괴물 심볼로 다섯 당첨선을 맞추는 결정론 슬롯머신.", requiredCapabilities: [],
+      id: "temerosa-slot", version: "slot-machine/0.2", title: "슬롯 777",
+      description: "테메로세 네 시리즈의 인물과 감정 스프라이트로 다섯 당첨선을 맞추는 슬롯머신.", requiredCapabilities: [],
       sessionKind: "instant", launchKind: "built-in", resumeLabel: "슬롯으로 돌아가기", estimatedMinutes: { min: 1, max: 1 },
       entry: "wager", wagerTiers: [10, 50, 200],
     },
