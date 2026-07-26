@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent } from "react";
 import { createMatchPairsState, reduceMatchPairs } from "../engine.ts";
-import type { MatchPairsAction, MatchPairsDifficulty, MatchPairsFace, MatchPairsOpponent, MatchPairsState } from "../contracts.ts";
+import { MATCH_PAIRS_STAKES, type MatchPairsAction, type MatchPairsDifficulty, type MatchPairsFace, type MatchPairsOpponent, type MatchPairsStake, type MatchPairsState } from "../contracts.ts";
 import "./match-pairs.css";
 
 export const MATCH_PAIRS_MISMATCH_HOLD_MS = 800;
@@ -19,6 +19,10 @@ export interface MatchPairsScreenProps {
   initialState?: MatchPairsState | null;
   initialDifficulty?: MatchPairsDifficulty;
   initialOpponentId?: string;
+  walletBalance?: number;
+  busy?: boolean;
+  wagerError?: string;
+  onStart?(stake: MatchPairsStake): MatchPairsState | Promise<MatchPairsState>;
   onTransition?(previous: MatchPairsState, next: MatchPairsState, action: MatchPairsAction): void | Promise<void>;
   createRestartSeed?(state: MatchPairsState): string;
   onExit?(): void;
@@ -46,6 +50,10 @@ export function MatchPairsScreen({
   initialState = null,
   initialDifficulty = "easy",
   initialOpponentId = opponents[0]?.id ?? "",
+  walletBalance = 0,
+  busy = false,
+  wagerError = "",
+  onStart,
   onTransition,
   createRestartSeed,
   onExit,
@@ -57,6 +65,7 @@ export function MatchPairsScreen({
   const [hiddenPaused, setHiddenPaused] = useState(() => typeof document !== "undefined" && document.hidden);
   const [announcement, setAnnouncement] = useState("");
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
+  const [selectedStake, setSelectedStake] = useState<MatchPairsStake>(10);
   const reducedMotion = useReducedMotion();
   const paused = manualPaused || hiddenPaused;
   const stateRef = useRef(state);
@@ -186,6 +195,13 @@ export function MatchPairsScreen({
     if (state.status === "ready" && difficulty !== state.difficulty) dispatch({ type: "restart", seed: state.seed, difficulty, opponentId: state.opponentId });
   };
   const restart = () => dispatch({ type: "restart", seed: createRestartSeed?.(state) ?? `${state.seed}:restart:${state.sequence + 1}`, difficulty: state.difficulty, opponentId: state.opponentId });
+  const startGame = () => {
+    if (onStart) {
+      void Promise.resolve(onStart(selectedStake)).then((next) => { stateRef.current = next; setState(next); }).catch(() => undefined);
+      return;
+    }
+    dispatch({ type: "start", seed: `${state.seed}:local-preview`, stake: selectedStake, wagerId: `local-preview:${state.sequence}` });
+  };
   const columns = state.difficulty === "easy" ? 3 : 4;
   const matchedPairIds = new Set(state.matchedPairIds);
   const openIndexes = new Set(state.openIndexes);
@@ -246,15 +262,25 @@ export function MatchPairsScreen({
           <button type="button" aria-pressed={state.difficulty === "easy"} onClick={() => chooseDifficulty("easy")}>쉬움 · 6짝</button>
           <button type="button" aria-pressed={state.difficulty === "normal"} onClick={() => chooseDifficulty("normal")}>보통 · 8짝</button>
         </div>
+        <div className="match-pairs-wager" aria-label="판돈 선택">
+          <div><span>보유 포인트</span><strong>{walletBalance} P</strong></div>
+          <div className="match-pairs-stakes">
+            {MATCH_PAIRS_STAKES.map((stake) => <button type="button" key={stake} aria-pressed={selectedStake === stake}
+              disabled={busy || Boolean(onStart) && walletBalance < stake} onClick={() => setSelectedStake(stake)}>{stake} P</button>)}
+          </div>
+          <small>승리 시 {Math.round(selectedStake * opponent.winCreditMultiplier)} P 반환 · 무승부는 판돈 환불</small>
+        </div>
+        {wagerError && <p className="match-pairs-wager-error" role="alert">{wagerError}</p>}
         {loadStatus === "loading" && <p role="status">카드 준비 중…</p>}
         {loadStatus === "error" && <div role="alert"><p>이미지를 준비하지 못했습니다.</p><button type="button" onClick={() => setLoadAttempt((value) => value + 1)}>다시 불러오기</button></div>}
-        <button type="button" className="match-pairs-primary" disabled={loadStatus !== "ready"} onClick={() => dispatch({ type: "start" })}>시작</button>
+        <button type="button" className="match-pairs-primary" disabled={loadStatus !== "ready" || busy || Boolean(onStart) && walletBalance < selectedStake} onClick={startGame}>{busy ? "예약 중…" : `${selectedStake} P로 시작`}</button>
       </section>}
 
       {state.status !== "ready" && loadStatus === "error" && <section className="match-pairs-panel" role="alert"><p>이미지를 준비하지 못했습니다. 현재 판은 그대로 유지됩니다.</p><button type="button" onClick={() => setLoadAttempt((value) => value + 1)}>다시 불러오기</button></section>}
       {paused && canPause && <div className="match-pairs-pause-shield" role="status">일시정지됨</div>}
       {state.status === "complete" && <section className="match-pairs-panel match-pairs-result" aria-live="polite">
         <h2>{resultTitle}</h2><p>나 {state.claims.player.length}짝 · {opponent.name} {state.claims.npc.length}짝</p>
+        <strong className="match-pairs-credit">{state.outcome === "player" ? `${state.creditAmount} P 반환` : state.outcome === "draw" ? `${state.creditAmount} P 환불` : `${state.stake ?? 0} P 손실`}</strong>
         <button type="button" className="match-pairs-primary" onClick={restart}>다시하기</button>
       </section>}
       <p className="match-pairs-announcement" aria-live="polite">{announcement}</p>

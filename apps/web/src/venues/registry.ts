@@ -18,7 +18,14 @@ export interface VenueManifest {
   heroImage: ResponsiveImageRef;
   entryLabel: string;
   order: number;
-  cabinetIds: readonly string[];
+  tables: readonly VenueTableManifest[];
+}
+
+export type VenueTableStatus = "open" | "preparing";
+
+export interface VenueTableManifest {
+  cabinetId: string;
+  status: VenueTableStatus;
 }
 
 export const PUBLIC_VENUE_IDS = new Set(["temerosa-casino"]);
@@ -37,12 +44,22 @@ const venues: readonly VenueManifest[] = [
     },
     entryLabel: "카지노 입장",
     order: 10,
-    cabinetIds: ["temerosa-old-maid", "temerosa-match-pairs", "temerosa-slot", "indian-poker", "temerosa-high-low", "temerosa-blackjack", "temerosa-doubt", "temerosa-one-card", "temerosa-texas-holdem"],
+    tables: [
+      { cabinetId: "temerosa-old-maid", status: "open" },
+      { cabinetId: "temerosa-match-pairs", status: "open" },
+      { cabinetId: "temerosa-slot", status: "open" },
+      { cabinetId: "indian-poker", status: "open" },
+      { cabinetId: "temerosa-high-low", status: "preparing" },
+      { cabinetId: "temerosa-blackjack", status: "preparing" },
+      { cabinetId: "temerosa-doubt", status: "preparing" },
+      { cabinetId: "temerosa-one-card", status: "preparing" },
+      { cabinetId: "temerosa-texas-holdem", status: "preparing" },
+    ],
   },
 ] as const;
 
 export const PUBLIC_CABINET_IDS: ReadonlySet<string> = new Set(
-  venues.filter((venue) => PUBLIC_VENUE_IDS.has(venue.id)).flatMap((venue) => venue.cabinetIds),
+  venues.filter((venue) => PUBLIC_VENUE_IDS.has(venue.id)).flatMap((venue) => venue.tables.filter((table) => table.status === "open").map((table) => table.cabinetId)),
 );
 
 export function listPublicVenues(): readonly VenueManifest[] {
@@ -54,5 +71,9 @@ export function getPublicVenue(id: string): VenueManifest | undefined {
 }
 
 export function getVenueForCabinet(cabinetId: string): VenueManifest | undefined {
-  return venues.find((venue) => venue.cabinetIds.includes(cabinetId));
+  return venues.find((venue) => venue.tables.some((table) => table.cabinetId === cabinetId));
+}
+
+export function getVenueTableForCabinet(cabinetId: string): VenueTableManifest | undefined {
+  return venues.flatMap((venue) => venue.tables).find((table) => table.cabinetId === cabinetId);
 }

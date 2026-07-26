@@ -50,6 +50,9 @@ export function createMatchPairsState(
     currentTurn: "player",
     revealActor: null,
     opponentId,
+    wagerId: null,
+    stake: null,
+    creditAmount: 0,
     npcMemory: [],
     npcReaction: "neutral",
     turnNumber: 0,
@@ -92,7 +95,11 @@ export function reduceMatchPairs(
   }
   if (action.type === "start") {
     assert(state.status === "ready", MATCH_PAIRS_ERRORS.startInvalid);
-    return recordAction({ ...state, status: "playing", currentTurn: "player", npcReaction: "neutral" }, action);
+    assertNonEmpty(action.seed, MATCH_PAIRS_ERRORS.invalidSeed);
+    assertNonEmpty(action.wagerId, MATCH_PAIRS_ERRORS.startInvalid);
+    assert(action.stake === 10 || action.stake === 50 || action.stake === 200, MATCH_PAIRS_ERRORS.startInvalid);
+    const started = createMatchPairsState(faces, opponents, state.packVersion, action.seed, state.difficulty, state.opponentId, state.sessionId);
+    return recordAction({ ...started, sequence: state.sequence, status: "playing", currentTurn: "player", wagerId: action.wagerId, stake: action.stake }, action, state.history);
   }
   if (action.type === "player-reveal") {
     assert(state.currentTurn === "player", MATCH_PAIRS_ERRORS.revealInvalid);
@@ -129,7 +136,9 @@ export function chooseMatchPairsNpcIndex(read: MatchPairsNpcRead, opponent: Matc
 
   const knownIndexes = new Set(read.memory.map((entry) => entry.index));
   const unknown = available.filter((index) => !knownIndexes.has(index));
-  if (unknown.length > 0 && (remembered.length === 0 || rng.next() < opponent.explorationBias)) return unknown[rng.nextUint32() % unknown.length]!;
+  // A remembered singleton has no information value while an unseen card remains.
+  // Personality changes what the NPC remembers, never whether it knowingly wastes a reveal.
+  if (unknown.length > 0) return unknown[rng.nextUint32() % unknown.length]!;
   if (remembered.length > 0) return weightedRememberedIndex(remembered, opponent, rng);
   return available[rng.nextUint32() % available.length]!;
 }
@@ -182,7 +191,11 @@ function resolveOpenCards(state: MatchPairsState, opponent: MatchPairsOpponent, 
   const complete = matchedPairIds.length === MATCH_PAIRS_PAIR_COUNTS[state.difficulty];
   const outcome = complete ? compareClaims(claims) : null;
   const currentTurn = matched ? actor : otherActor(actor);
-  const npcMemory = matched ? state.npcMemory.filter((entry) => entry.pairId !== first.pairId) : decayMemory(state.npcMemory, opponent);
+  const agedMemory = decayMemory(state.npcMemory, opponent);
+  const npcMemory = matched ? agedMemory.filter((entry) => entry.pairId !== first.pairId) : agedMemory;
+  const creditAmount = outcome === "player" && state.stake !== null
+    ? Math.round(state.stake * opponent.winCreditMultiplier)
+    : outcome === "draw" && state.stake !== null ? state.stake : 0;
   return recordAction({
     ...state,
     matchedPairIds,
@@ -195,6 +208,7 @@ function resolveOpenCards(state: MatchPairsState, opponent: MatchPairsOpponent, 
     turnNumber: state.turnNumber + 1,
     lastResolution: { actor, matched, pairId: matched ? first.pairId : null },
     outcome,
+    creditAmount,
     status: complete ? "complete" : "playing",
   }, action);
 }
@@ -213,14 +227,12 @@ function createNpcRead(state: MatchPairsState): MatchPairsNpcRead {
 }
 
 function rememberCard(memory: readonly MatchPairsMemoryEntry[], index: number, pairId: string, turnNumber: number, opponent: MatchPairsOpponent): MatchPairsMemoryEntry[] {
-  const decayed = decayMemory(memory.filter((entry) => entry.index !== index), opponent);
-  const next = [...decayed, { index, pairId, seenAtTurn: turnNumber, confidence: 1 }].sort(compareMemory);
+  const next = [...memory.filter((entry) => entry.index !== index), { index, pairId, seenAtTurn: turnNumber, confidence: 1 }].sort(compareMemory);
   return next.slice(0, opponent.memoryCapacity);
 }
 
 function decayMemory(memory: readonly MatchPairsMemoryEntry[], opponent: MatchPairsOpponent): MatchPairsMemoryEntry[] {
-  const retention = 0.78 + opponent.consistency * 0.2;
-  return memory.map((entry) => ({ ...entry, confidence: Math.max(0.08, entry.confidence * retention) }));
+  return memory.map((entry) => ({ ...entry, confidence: Math.max(0.08, entry.confidence * opponent.memoryRetention) }));
 }
 
 function recalls(entry: MatchPairsMemoryEntry, opponent: MatchPairsOpponent, rng: XorShift32): boolean {
@@ -271,7 +283,7 @@ function cloneAction(action: MatchPairsAction): MatchPairsAction {
   if (action.type === "player-reveal") return { type: "player-reveal", index: action.index };
   if (action.type === "restart") return { type: "restart", seed: action.seed, difficulty: action.difficulty, ...(action.opponentId ? { opponentId: action.opponentId } : {}) };
   if (action.type === "select-opponent") return { type: "select-opponent", opponentId: action.opponentId };
-  if (action.type === "start") return { type: "start" };
+  if (action.type === "start") return { type: "start", seed: action.seed, stake: action.stake, wagerId: action.wagerId };
   if (action.type === "npc-reveal") return { type: "npc-reveal" };
   if (action.type === "resolve") return { type: "resolve" };
   return { type: "random-opponent" };
@@ -288,7 +300,8 @@ function validateOpponents(opponents: readonly MatchPairsOpponent[]): void {
     assertNonEmpty(opponent.id, MATCH_PAIRS_ERRORS.invalidOpponent); assertNonEmpty(opponent.name, MATCH_PAIRS_ERRORS.invalidOpponent);
     for (const portrait of [...Object.values(opponent.portraits), opponent.despairPortrait]) assertNonEmpty(portrait, MATCH_PAIRS_ERRORS.invalidOpponent);
     assert(Number.isInteger(opponent.memoryCapacity) && opponent.memoryCapacity > 0, MATCH_PAIRS_ERRORS.invalidOpponent);
-    for (const value of [opponent.recallAccuracy, opponent.explorationBias, opponent.consistency]) assert(Number.isFinite(value) && value >= 0 && value <= 1, MATCH_PAIRS_ERRORS.invalidOpponent);
+    for (const value of [opponent.recallAccuracy, opponent.memoryRetention, opponent.consistency]) assert(Number.isFinite(value) && value >= 0 && value <= 1, MATCH_PAIRS_ERRORS.invalidOpponent);
+    assert(opponent.winCreditMultiplier === 1.5 || opponent.winCreditMultiplier === 2 || opponent.winCreditMultiplier === 2.5, MATCH_PAIRS_ERRORS.invalidOpponent);
     assert(!ids.has(opponent.id), `${MATCH_PAIRS_ERRORS.duplicateOpponentId}:${opponent.id}`); ids.add(opponent.id);
   }
 }

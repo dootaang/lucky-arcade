@@ -24,8 +24,9 @@ function toOpponent(character: OldMaidCharacter): MatchPairsOpponent {
     despairPortrait: character.despairPortrait,
     memoryCapacity: clampInteger(attention + consistencyOffset, 4, 10),
     recallAccuracy: clamp(accuracy, 0.55, 0.97),
-    explorationBias: level(profile.reorderActivity, 0.38, 0.55, 0.72),
+    memoryRetention: profile.consistency === "steady" ? 0.97 : profile.consistency === "adaptive" ? 0.91 : 0.84,
     consistency: profile.consistency === "steady" ? 0.9 : profile.consistency === "adaptive" ? 0.72 : 0.55,
+    winCreditMultiplier: strengthTier(attention + consistencyOffset, accuracy),
   };
 }
 
@@ -42,3 +43,7 @@ function profile(reorderActivity: OldMaidBehaviorProfile["reorderActivity"], jok
 function level<T>(value: "low" | "medium" | "high", low: T, medium: T, high: T): T { return value === "low" ? low : value === "high" ? high : medium; }
 function clamp(value: number, min: number, max: number): number { return Math.max(min, Math.min(max, value)); }
 function clampInteger(value: number, min: number, max: number): number { return Math.round(clamp(value, min, max)); }
+function strengthTier(memoryCapacity: number, recallAccuracy: number): 1.5 | 2 | 2.5 {
+  const score = memoryCapacity + recallAccuracy * 4;
+  return score >= 12 ? 2.5 : score >= 10 ? 2 : 1.5;
+}

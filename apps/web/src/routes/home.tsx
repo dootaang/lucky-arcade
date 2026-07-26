@@ -110,13 +110,18 @@ const plannedTables = [
 const TABLE_SUITS: Record<string, string> = { "temerosa-old-maid": "♠", "temerosa-match-pairs": "♥", "temerosa-slot": "♦", "indian-poker": "♦", "temerosa-high-low": "♠", "temerosa-blackjack": "♣", "temerosa-doubt": "♦", "temerosa-one-card": "♥", "temerosa-texas-holdem": "♠", "관전석": "♠", "알제의 교환소": "♦" };
 
 function VenueFloor({ venue, onPlay }: { venue: VenueManifest; onPlay(id: string): void }) {
-  const playable = venue.cabinetIds.map((id) => getCabinetRegistration(id)).filter((entry): entry is WebCabinetRegistration => Boolean(entry));
+  const tables = venue.tables.flatMap((table) => {
+    const entry = getCabinetRegistration(table.cabinetId, true);
+    return entry ? [{ entry, status: table.status }] : [];
+  });
+  const playable = tables.filter((table) => table.status === "open");
+  const preparing = tables.filter((table) => table.status === "preparing");
   return <section className="casino-floor" aria-labelledby="floor-heading">
     <span className="floor-backdrop ca-tableau" aria-hidden="true" />
     <span className="ca-spotlight" aria-hidden="true" />
     <header><span className="eyebrow">여백의 카지노 플로어</span><h2 id="floor-heading" className="ca-serif">테이블을 골라주세요</h2><p>현재 실제로 운영 중인 테이블만 입장할 수 있습니다.</p></header>
     <div className="table-grid">
-      {playable.map((entry) => <article className="table-card playable ca-shine ca-glare" key={entry.manifest.id}>
+      {playable.map(({ entry }) => <article className="table-card playable ca-shine ca-glare" key={entry.manifest.id}>
         <span className="table-suit" aria-hidden="true">{TABLE_SUITS[entry.manifest.id] ?? "♠"}</span>
         <span className="table-group"><i className="ca-live" aria-hidden="true" /><span className="ca-label">Live · {entry.manifest.entry === "wager" ? "판돈" : "무료"}</span></span>
         <h3 className="ca-serif">{entry.manifest.title.replace("테메로세 ", "")}</h3>
@@ -126,6 +131,13 @@ function VenueFloor({ venue, onPlay }: { venue: VenueManifest; onPlay(id: string
         <span className="ca-brackets" aria-hidden="true" />
       </article>)}
       <p className="table-locked-divider ca-label" aria-hidden="true">개장 준비 중</p>
+      {preparing.map(({ entry }) => <article className="table-card coming-soon" key={entry.manifest.id}>
+        <span className="table-suit" aria-hidden="true">{TABLE_SUITS[entry.manifest.id] ?? "♠"}</span>
+        <span className="table-group ca-label">게임 테이블</span>
+        <h3 className="ca-serif">{entry.manifest.title.replace("테메로세 ", "")}</h3>
+        <p>{entry.manifest.description}</p>
+        <strong>개장 준비 중</strong>
+      </article>)}
       {plannedTables.map((table) => <article className="table-card coming-soon" key={table.group}>
         <span className="table-suit" aria-hidden="true">{TABLE_SUITS[table.title] ?? "♣"}</span>
         <span className="table-group ca-label">{table.group}</span>

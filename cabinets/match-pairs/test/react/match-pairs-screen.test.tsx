@@ -18,7 +18,7 @@ const faces: MatchPairsFace[] = Array.from({ length: 10 }, (_, index) => ({
 const assets = Object.fromEntries(faces.map((face, index) => [face.assetId, `/images/neutral-${index}.webp`]));
 const opponent: MatchPairsOpponent = {
   id: "npc", name: "NPC", portraits: { neutral: "npc-neutral", pleased: "npc-pleased", tense: "npc-tense" },
-  despairPortrait: "npc-despair", memoryCapacity: 6, recallAccuracy: 0.8, explorationBias: 0.55, consistency: 0.72,
+  despairPortrait: "npc-despair", memoryCapacity: 6, recallAccuracy: 0.8, memoryRetention: 0.91, consistency: 0.72, winCreditMultiplier: 2,
 };
 const opponents = [opponent];
 const allAssets = { ...assets, "npc-neutral": "/images/npc-neutral.webp", "npc-pleased": "/images/npc-pleased.webp", "npc-tense": "/images/npc-tense.webp", "npc-despair": "/images/npc-despair.webp" };
@@ -42,6 +42,8 @@ describe("match pairs screen markup", () => {
     expect(markup).toContain('alt=""');
     expect(markup).toContain('aria-label="A1 카드 뒤집기"');
     expect(markup).toContain(`aria-label="${lastCoordinate} 카드 뒤집기"`);
+    expect(markup).toContain("10 P로 시작");
+    expect(markup).toContain("승리 시 20 P 반환");
     expect(markup).not.toContain("화면에 나오면 안 되는 인물");
     expect(markup).not.toContain("title=");
   });
@@ -138,7 +140,7 @@ describe("match pairs checking timer", () => {
 });
 
 function autoplay(seed: string): MatchPairsState {
-  let state = reduceMatchPairs(faces, opponents, createMatchPairsState(faces, opponents, "pack", seed, "easy", opponent.id, "session"), { type: "start" });
+  let state = reduceMatchPairs(faces, opponents, createMatchPairsState(faces, opponents, "pack", seed, "easy", opponent.id, "session"), { type: "start", seed: `${seed}:deal`, stake: 10, wagerId: `wager:${seed}` });
   for (const pairId of new Set(state.cards.map((card) => card.pairId))) {
     const indexes = state.cards.flatMap((card, index) => card.pairId === pairId ? [index] : []);
     state = reduceMatchPairs(faces, opponents, state, { type: "player-reveal", index: indexes[0]! });
