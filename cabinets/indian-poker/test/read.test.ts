@@ -1,10 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { INDIAN_POKER_DECK, createIndianPokerState, decisionRead, reduceIndianPoker, temerosaIndianPokerCartridge } from "../src/index.ts";
+import { createIndianPokerState, npcRead, reduceIndianPoker, temerosaIndianPokerCartridge } from "../src/index.ts";
 
-describe("indian poker reads", () => {
-  it("gives a decision only visible strengths, never a self-card field", () => {
+describe("indian poker legal NPC read", () => {
+  it("contains the visible player card but never the NPC's own current card", () => {
     const state = reduceIndianPoker(temerosaIndianPokerCartridge, createIndianPokerState(temerosaIndianPokerCartridge, "read"), { type: "start", seed: "read", stake: 10, wagerId: "wager" });
-    const read = decisionRead(state, "cpu-1", new Map(INDIAN_POKER_DECK.map((card) => [card.id, card])));
-    expect(read.visibleStrengths).toHaveLength(3); expect(read).not.toHaveProperty("myVisibleToOthers"); expect(read).not.toHaveProperty("ownCard");
+    const read = npcRead(state);
+    expect(read.visiblePlayerCardId).toBe(state.playerCardId);
+    expect(read).not.toHaveProperty("npcCardId");
+    expect(read).not.toHaveProperty("ownCard");
+    expect(read.previouslyRevealedCardIds).toEqual([]);
   });
 });

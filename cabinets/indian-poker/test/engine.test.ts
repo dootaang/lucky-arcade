@@ -2,23 +2,55 @@ import { resultHash } from "@lucky-arcade/engine";
 import { describe, expect, it } from "vitest";
 import { INDIAN_POKER_DECK, cardStrength, createIndianPokerState, indianPokerRanking, reduceIndianPoker, temerosaIndianPokerCartridge, type IndianPokerState } from "../src/index.ts";
 
-describe("indian poker engine", () => {
-  it("orders all 52 cards uniquely", () => { const strengths = INDIAN_POKER_DECK.map(cardStrength); expect(new Set(strengths).size).toBe(52); expect(Math.min(...strengths)).toBe(0); expect(Math.max(...strengths)).toBe(51); });
-  it("deals four unique cards and scores call/fold", () => {
-    let state = reduceIndianPoker(temerosaIndianPokerCartridge, createIndianPokerState(temerosaIndianPokerCartridge, "deal"), { type: "start", seed: "deal", stake: 10, wagerId: "wager" });
-    expect(new Set(Object.values(state.hands)).size).toBe(4);
-    state = reduceIndianPoker(temerosaIndianPokerCartridge, state, { type: "choose", choice: "fold" });
-    expect(state.lastRound?.scoreDelta.player).toBe(0); expect(state.status).toBe("revealing");
+describe("indian poker heads-up engine", () => {
+  it("uses the shared 52-card deck with rank-only strength", () => {
+    expect(INDIAN_POKER_DECK).toHaveLength(52);
+    expect(new Set(INDIAN_POKER_DECK.map((card) => card.id)).size).toBe(52);
+    expect(new Set(INDIAN_POKER_DECK.map(cardStrength)).size).toBe(13);
   });
-  it("finishes five rounds deterministically", () => {
+
+  it("deals without replacement and conserves twenty chips", () => {
+    const complete = play("persistent-deck");
+    expect(complete.history).toHaveLength(5);
+    expect(new Set(complete.history.flatMap((round) => [round.playerCardId, round.npcCardId])).size).toBe(10);
+    expect(complete.playerChips + complete.npcChips).toBe(20);
+  });
+
+  it("supports check/showdown and raise/NPC response", () => {
+    let state = start("actions");
+    if (state.npcOpening === "raise") state = reduceIndianPoker(temerosaIndianPokerCartridge, state, { type: "player-act", action: "call" });
+    else {
+      state = reduceIndianPoker(temerosaIndianPokerCartridge, state, { type: "player-act", action: "raise" });
+      expect(state.status).toBe("npc-response");
+      state = reduceIndianPoker(temerosaIndianPokerCartridge, state, { type: "npc-respond" });
+    }
+    expect(state.status).toBe("showdown");
+    expect(state.history).toHaveLength(1);
+    expect(state.playerChips + state.npcChips).toBe(20);
+  });
+
+  it("finishes deterministically and returns the remaining chip share", () => {
     const left = play("same"), right = play("same");
-    expect(left.status).toBe("complete"); expect(left.history).toHaveLength(5); expect(indianPokerRanking(left)).toHaveLength(4); expect(resultHash(left)).toBe(resultHash(right));
+    expect(left.status).toBe("complete");
+    expect(indianPokerRanking(left)).toHaveLength(2);
+    expect(left.creditAmount).toBe(Math.floor(10 * left.playerChips / 10));
+    expect(resultHash(left)).toBe(resultHash(right));
   });
-  it("finishes 1000 seeds", () => { for (let seed = 0; seed < 1000; seed += 1) expect(play(String(seed)).status).toBe("complete"); });
+
+  it("finishes 1,000 seeds without deadlocking", () => {
+    for (let seed = 0; seed < 1_000; seed += 1) expect(play(String(seed)).status).toBe("complete");
+  });
 });
 
+function start(seed: string): IndianPokerState {
+  return reduceIndianPoker(temerosaIndianPokerCartridge, createIndianPokerState(temerosaIndianPokerCartridge, seed), { type: "start", seed, stake: 10, wagerId: `wager-${seed}` });
+}
 function play(seed: string): IndianPokerState {
-  let state = reduceIndianPoker(temerosaIndianPokerCartridge, createIndianPokerState(temerosaIndianPokerCartridge, seed), { type: "start", seed, stake: 10, wagerId: `wager-${seed}` });
-  while (state.status !== "complete") state = state.status === "choosing" ? reduceIndianPoker(temerosaIndianPokerCartridge, state, { type: "choose", choice: "call" }) : reduceIndianPoker(temerosaIndianPokerCartridge, state, { type: "next_round" });
+  let state = start(seed);
+  while (state.status !== "complete") {
+    if (state.status === "player-action") state = reduceIndianPoker(temerosaIndianPokerCartridge, state, { type: "player-act", action: state.npcOpening === "raise" ? "call" : "check" });
+    else if (state.status === "npc-response") state = reduceIndianPoker(temerosaIndianPokerCartridge, state, { type: "npc-respond" });
+    else state = reduceIndianPoker(temerosaIndianPokerCartridge, state, { type: "next-round" });
+  }
   return state;
 }

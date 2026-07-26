@@ -47,7 +47,7 @@ const registrations: readonly WebCabinetRegistration[] = [
     load: async () => { const module = await import("../features/slot-machine/temerosa-slot-view.tsx"); return { default: ({ onExit }) => <module.default onExit={onExit} /> }; },
   },
   {
-    manifest: { id: "indian-poker", version: "indian-poker/0.2", title: "테메로세 인디언 포커", description: "내 카드를 본 상대의 표정을 읽고 콜·레이즈·폴드를 고르는 5라운드 승부.", requiredCapabilities: [], sessionKind: "repeat", launchKind: "built-in", resumeLabel: "인디언 포커 이어하기", estimatedMinutes: { min: 1, max: 2 }, entry: "wager", wagerTiers: [10, 50, 200] },
+    manifest: { id: "indian-poker", version: "indian-poker/0.3", title: "테메로세 인디언 포커", description: "보이지 않는 내 카드와 상대의 표정·베팅을 함께 읽는 1대1 5라운드 승부.", requiredCapabilities: [], sessionKind: "repeat", launchKind: "built-in", resumeLabel: "인디언 포커 이어하기", estimatedMinutes: { min: 2, max: 4 }, entry: "wager", wagerTiers: [10, 50, 200] },
     openingRank: null, badge: "심리 테이블",
     load: async () => { const module = await import("../features/indian-poker/indian-poker-view.tsx"); return { default: ({ onExit }) => <module.default onExit={onExit} /> }; },
   },

@@ -1,21 +1,26 @@
-import { XorShift32 } from "@lucky-arcade/engine";
+import {
+  STANDARD_CARD_DECK,
+  STANDARD_CARD_RANKS,
+  STANDARD_CARD_SUITS,
+  shuffledStandardDeck,
+  standardCardById,
+  standardRankValue,
+  type StandardCard,
+  type StandardCardRank,
+  type StandardCardSuit,
+} from "@lucky-arcade/card-table";
 import type { PokerHandValue } from "./contracts.ts";
 
-export const SUITS = ["clubs", "diamonds", "hearts", "spades"] as const;
-export const RANKS = ["2", "3", "4", "5", "6", "7", "8", "9", "10", "j", "q", "k", "a"] as const;
-export type CardSuit = (typeof SUITS)[number];
-export type CardRank = (typeof RANKS)[number];
-export interface StandardCard { id: string; suit: CardSuit; rank: CardRank; }
-export const STANDARD_DECK: readonly StandardCard[] = RANKS.flatMap((rank) => SUITS.map((suit) => ({ id: `${suit}-${rank}`, suit, rank })));
-const BY_ID = new Map(STANDARD_DECK.map((card) => [card.id, card]));
+export const SUITS = STANDARD_CARD_SUITS;
+export const RANKS = STANDARD_CARD_RANKS;
+export type CardSuit = StandardCardSuit;
+export type CardRank = StandardCardRank;
+export type { StandardCard };
+export const STANDARD_DECK = STANDARD_CARD_DECK;
+export const cardById = standardCardById;
+export const rankValue = standardRankValue;
+export const shuffledDeck = shuffledStandardDeck;
 
-export function cardById(id: string): StandardCard { const card = BY_ID.get(id); if (!card) throw new Error(`casino_card_missing:${id}`); return card; }
-export function rankValue(id: string): number { return RANKS.indexOf(cardById(id).rank) + 2; }
-export function shuffledDeck(seed: string): string[] {
-  const values = STANDARD_DECK.map((card) => card.id), rng = new XorShift32(seed);
-  for (let index = values.length - 1; index > 0; index -= 1) { const target = rng.nextUint32() % (index + 1); [values[index], values[target]] = [values[target] as string, values[index] as string]; }
-  return values;
-}
 export function blackjackValue(cards: readonly string[]): number {
   let total = 0, aces = 0;
   for (const id of cards) { const rank = cardById(id).rank; if (rank === "a") { total += 11; aces += 1; } else total += rank === "j" || rank === "q" || rank === "k" ? 10 : Number(rank); }

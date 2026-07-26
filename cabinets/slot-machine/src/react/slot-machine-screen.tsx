@@ -25,7 +25,7 @@ export function SlotMachineScreen({ state, symbols, assets, balance, busy, error
   finishRef.current = onFinish;
   const paused = manualPaused || hiddenPaused;
   const symbolById = useMemo(() => new Map(symbols.map((symbol) => [symbol.id, symbol])), [symbols]);
-  const winningCells = useMemo(() => new Set(
+  const winningCells = useMemo(() => new Set<number>(
     state.status === "complete" && state.outcome
       ? state.outcome.winningLineIndexes.flatMap((lineIndex) => [...(SLOT_MACHINE_PAYLINES[lineIndex] ?? [])])
       : [],
@@ -40,10 +40,10 @@ export function SlotMachineScreen({ state, symbols, assets, balance, busy, error
   }, []);
 
   useEffect(() => {
-    if (state.status !== "spinning" || paused) return;
+    if (state.status !== "spinning" || paused || busy) return;
     const timer = window.setTimeout(() => { void finishRef.current(); }, reducedMotion ? 0 : SPIN_DURATION_MS);
     return () => window.clearTimeout(timer);
-  }, [paused, reducedMotion, state.spinSeed, state.status]);
+  }, [busy, paused, reducedMotion, state.spinSeed, state.status]);
 
   const outcome = state.outcome;
   const credit = slotMachineCredit(state);

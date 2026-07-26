@@ -1,4 +1,4 @@
-import { CourtCard, PlayingCard, PlayingCardBack, type CourtAtlas, type CourtCardId, type PlayingCardPipRank } from "@lucky-arcade/ui/playing-card";
+import { PlayingCardBack, StandardPlayingCard, type CourtAtlas, type StandardPlayingCardId } from "@lucky-arcade/ui/playing-card";
 import { useState } from "react";
 import { CASINO_CARD_STAKES, CASINO_GAME_INFO, blackjackValue, bestPokerHand, cardById, type CasinoCardAction, type CasinoCardStake, type CasinoCardState, type CasinoSeatId } from "../index.ts";
 import "./casino-card-screen.css";
@@ -64,7 +64,7 @@ function Holdem({ state, atlas, busy, onAction }: GameProps) {
 function Complete({ state, onAction }: { state: CasinoCardState; onAction(action: CasinoCardAction): void | Promise<void> }) { return <section className={`casino-card-result result-${state.outcome}`}><h2>{state.outcome === "win" ? "승리" : state.outcome === "push" ? "무승부" : "패배"}</h2><p>{state.message}</p><strong>{state.creditAmount.toLocaleString("ko-KR")} P 반환</strong><button onClick={() => onAction({ type: "restart" })}>다시하기</button></section>; }
 interface GameProps { state: CasinoCardState; atlas: CourtAtlas; busy: boolean; onAction(action: CasinoCardAction): void | Promise<void>; }
 function Seat({ label, cards, atlas, hideAfter = 99 }: { label?: string; cards: readonly string[]; atlas: CourtAtlas; hideAfter?: number }) { return <div className="casino-card-seat">{label && <strong>{label}</strong>}<div>{cards.map((id, index) => index >= hideAfter ? <CardBack key={`${id}:${index}`} /> : <Card key={`${id}:${index}`} id={id} atlas={atlas} />)}</div></div>; }
-function Card({ id, atlas }: { id: string | null; atlas: CourtAtlas }) { if (!id) return null; const card = cardById(id); return <div className="casino-standard-card">{card.rank === "j" || card.rank === "q" || card.rank === "k" ? <CourtCard atlas={atlas} id={`${card.suit}-${card.rank}` as CourtCardId} scale={0.4} /> : <PlayingCard suit={card.suit} rank={card.rank as PlayingCardPipRank} />}</div>; }
+function Card({ id, atlas }: { id: string | null; atlas: CourtAtlas }) { if (!id) return null; cardById(id); return <div className="casino-standard-card"><StandardPlayingCard id={id as StandardPlayingCardId} atlas={atlas} /></div>; }
 function CardBack() { return <div className="casino-standard-card"><PlayingCardBack decorative /></div>; }
 function canPlay(id: string, topId: string): boolean { const card = cardById(id), top = cardById(topId); return card.suit === top.suit || card.rank === top.rank; }
 function rankLabel(rank: string | null): string { return rank === "a" ? "에이스" : rank === "j" ? "잭" : rank === "q" ? "퀸" : rank === "k" ? "킹" : rank ?? "?"; }

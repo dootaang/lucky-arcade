@@ -1,5 +1,6 @@
 import type { MatchPairsOpponent } from "@lucky-arcade/match-pairs";
-import { createTemerosaCasinoOldMaidCartridge, type OldMaidBehaviorProfile, type OldMaidCharacter, type TemerosaCasinoPortraitAsset } from "@lucky-arcade/old-maid";
+import { type OldMaidBehaviorProfile, type OldMaidCharacter, type TemerosaCasinoPortraitAsset } from "@lucky-arcade/old-maid";
+import { createTemerosaCasinoRoster } from "../../lib/temerosa-casino-roster.ts";
 
 /**
  * Converts the audited 30-person casino roster into game-specific memory styles.
@@ -7,11 +8,7 @@ import { createTemerosaCasinoOldMaidCartridge, type OldMaidBehaviorProfile, type
  * never claims about literal character facts.
  */
 export function createTemerosaMatchPairsOpponents(contentAssets: readonly TemerosaCasinoPortraitAsset[]): readonly MatchPairsOpponent[] {
-  const cartridge = createTemerosaCasinoOldMaidCartridge(contentAssets);
-  const selectable = new Set(cartridge.selectableCharacterIds ?? cartridge.characters.map((character) => character.id));
-  return cartridge.characters
-    .filter((character) => selectable.has(character.id) && character.id !== "bacikal" && character.portraits.neutral.startsWith("npc-"))
-    .map(toOpponent);
+  return createTemerosaCasinoRoster(contentAssets).map(toOpponent);
 }
 
 function toOpponent(character: OldMaidCharacter): MatchPairsOpponent {

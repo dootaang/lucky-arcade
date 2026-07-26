@@ -1,87 +1,183 @@
-import { PERSONA_PRESETS, XorShift32, expressSignal, weightedChoice, type Persona } from "@lucky-arcade/engine";
-import { INDIAN_POKER_DECK, cardStrength } from "./deck.ts";
-import { decisionRead, expressionRead, type IndianPokerDecisionRead } from "./read.ts";
-import { INDIAN_POKER_VERSION, type IndianPokerAction, type IndianPokerCard, type IndianPokerCartridge, type IndianPokerChoice, type IndianPokerRoundResult, type IndianPokerSeatId, type IndianPokerState } from "./contracts.ts";
+import { STANDARD_CARD_DECK, shuffledStandardDeck, standardRankValue, type StandardCardId } from "@lucky-arcade/card-table";
+import { XorShift32, expressSignal, weightedChoice } from "@lucky-arcade/engine";
+import { expressionRead, npcRead, type IndianPokerNpcRead } from "./read.ts";
+import {
+  INDIAN_POKER_ROUNDS,
+  INDIAN_POKER_STARTING_CHIPS,
+  INDIAN_POKER_STATE_CONTRACT,
+  INDIAN_POKER_STAKES,
+  INDIAN_POKER_VERSION,
+  type IndianPokerAction,
+  type IndianPokerCartridge,
+  type IndianPokerCharacter,
+  type IndianPokerOutcome,
+  type IndianPokerPersona,
+  type IndianPokerPlayerAction,
+  type IndianPokerRoundResult,
+  type IndianPokerState,
+} from "./contracts.ts";
 
-export const INDIAN_POKER_SEATS: readonly IndianPokerSeatId[] = ["player", "cpu-1", "cpu-2", "cpu-3"];
-
-export function createIndianPokerState(cartridge: IndianPokerCartridge, seed: string, sessionId = "indian-poker:table-1"): IndianPokerState {
-  if (cartridge.characters.length < 3) throw new Error("indian_poker_characters_too_few");
+export function createIndianPokerState(cartridge: IndianPokerCartridge, seed: string, opponentId = cartridge.characters[0]?.id ?? "", sessionId = "indian-poker:heads-up-1"): IndianPokerState {
+  validateCartridge(cartridge);
+  findCharacter(cartridge, opponentId);
+  assert(seed.length > 0, "indian_poker_seed_invalid");
   return {
-    contract: "indian-poker-state/0.1", version: INDIAN_POKER_VERSION, packVersion: cartridge.version, sessionId, seed, sequence: 0, round: 0, status: "ready",
-    seats: { player: { characterId: null, score: 0 }, "cpu-1": { characterId: cartridge.characters[0]!.id, score: 0 }, "cpu-2": { characterId: cartridge.characters[1]!.id, score: 0 }, "cpu-3": { characterId: cartridge.characters[2]!.id, score: 0 } },
-    hands: emptyHands(), choices: emptyChoices(), reactions: { player: "neutral", "cpu-1": "neutral", "cpu-2": "neutral", "cpu-3": "neutral" }, lastRound: null, history: [], stake: null, wagerId: null, creditAmount: 0,
+    contract: INDIAN_POKER_STATE_CONTRACT, version: INDIAN_POKER_VERSION, packVersion: cartridge.version, sessionId, seed, sequence: 0,
+    status: "ready", opponentId, round: 0, deck: [], cursor: 0, playerCardId: null, npcCardId: null, npcOpening: null,
+    playerAction: null, npcResponse: null, npcReaction: "neutral", playerChips: INDIAN_POKER_STARTING_CHIPS,
+    npcChips: INDIAN_POKER_STARTING_CHIPS, roundStartPlayerChips: INDIAN_POKER_STARTING_CHIPS,
+    roundStartNpcChips: INDIAN_POKER_STARTING_CHIPS, pot: 0, history: [], stake: null, wagerId: null, creditAmount: 0, outcome: null,
   };
 }
 
 export function reduceIndianPoker(cartridge: IndianPokerCartridge, state: IndianPokerState, action: IndianPokerAction): IndianPokerState {
-  if (action.type === "restart") return { ...createIndianPokerState(cartridge, action.seed, state.sessionId), sequence: state.sequence + 1 };
-  if (action.type === "start") { assert(state.status === "ready" && action.seed.length > 0 && action.wagerId.length > 0, "indian_poker_start_invalid"); return dealRound(cartridge, { ...state, sequence: state.sequence + 1, seed: action.seed, stake: action.stake, wagerId: action.wagerId }, 1); }
-  if (action.type === "next_round") {
-    assert(state.status === "revealing", "indian_poker_next_round_invalid");
-    if (state.round >= 5) { const playerRank = indianPokerRanking(state).find((standing) => standing.seatId === "player")?.rank ?? 4, multiplier = [0, 4, 2, 1, 0][playerRank] ?? 0; return { ...state, sequence: state.sequence + 1, status: "complete", hands: emptyHands(), choices: emptyChoices(), reactions: neutralReactions(), creditAmount: (state.stake ?? 0) * multiplier }; }
-    return dealRound(cartridge, { ...state, sequence: state.sequence + 1 }, state.round + 1);
+  validateCartridge(cartridge);
+  const opponent = findCharacter(cartridge, state.opponentId);
+  if (action.type === "select-opponent") {
+    assert(state.status === "ready", "indian_poker_opponent_selection_invalid");
+    findCharacter(cartridge, action.opponentId);
+    return { ...state, sequence: state.sequence + 1, opponentId: action.opponentId };
   }
-  assert(action.type === "choose" && state.status === "choosing", "indian_poker_choice_invalid");
-  const cards = new Map(INDIAN_POKER_DECK.map((card) => [card.id, card]));
-  const choices = { ...state.choices, player: action.choice } as Record<IndianPokerSeatId, IndianPokerChoice>;
-  for (const seatId of INDIAN_POKER_SEATS.slice(1) as IndianPokerSeatId[]) {
-    const character = cartridge.characters.find((candidate) => candidate.id === state.seats[seatId].characterId);
-    assert(character, `indian_poker_character_missing:${seatId}`);
-    choices[seatId] = decideIndianPoker(PERSONA_PRESETS[character.tellStyle], decisionRead(state, seatId, cards), `${state.seed}:round:${state.round}:choice:${seatId}`);
+  if (action.type === "random-opponent") {
+    assert(state.status === "ready", "indian_poker_opponent_selection_invalid");
+    const candidates = cartridge.characters.filter((character) => cartridge.characters.length === 1 || character.id !== state.opponentId).sort((left, right) => left.id.localeCompare(right.id));
+    const selected = candidates[new XorShift32(`${state.seed}:opponent:${state.sequence}`).nextUint32() % candidates.length];
+    assert(selected, "indian_poker_character_missing");
+    return { ...state, sequence: state.sequence + 1, opponentId: selected.id };
   }
-  const active = INDIAN_POKER_SEATS.filter((seatId) => choices[seatId] !== "fold");
-  const winnerId = active.length ? [...active].sort((left, right) => cardStrength(requireCard(cards, state.hands[right])) - cardStrength(requireCard(cards, state.hands[left])))[0]! : null;
-  const scoreDelta = Object.fromEntries(INDIAN_POKER_SEATS.map((seatId) => [seatId, choices[seatId] === "fold" ? 0 : seatId === winnerId ? choices[seatId] === "raise" ? 4 : 2 : choices[seatId] === "raise" ? -2 : -1])) as Record<IndianPokerSeatId, number>;
-  const result: IndianPokerRoundResult = { round: state.round, choices, cards: requireHands(state.hands), winnerId, scoreDelta };
-  return { ...state, sequence: state.sequence + 1, status: "revealing", choices, lastRound: result, history: [...state.history, result], seats: mapSeats(state, (seatId) => state.seats[seatId].score + scoreDelta[seatId]) };
+  if (action.type === "restart") return { ...createIndianPokerState(cartridge, action.seed, state.opponentId, state.sessionId), sequence: state.sequence + 1 };
+  if (action.type === "start") {
+    assert(state.status === "ready" && action.seed.length > 0 && action.wagerId.length > 0 && INDIAN_POKER_STAKES.includes(action.stake), "indian_poker_start_invalid");
+    const started = { ...state, sequence: state.sequence + 1, seed: action.seed, deck: shuffledStandardDeck(`${action.seed}:deck`), cursor: 0, round: 0, history: [], playerChips: INDIAN_POKER_STARTING_CHIPS, npcChips: INDIAN_POKER_STARTING_CHIPS, stake: action.stake, wagerId: action.wagerId, outcome: null, creditAmount: 0 };
+    return dealRound(started, opponent, 1);
+  }
+  if (action.type === "player-act") return playerAct(state, opponent, action.action);
+  if (action.type === "npc-respond") return npcRespond(state, opponent);
+  if (action.type === "next-round") {
+    assert(state.status === "showdown", "indian_poker_next_round_invalid");
+    const sequenced = { ...state, sequence: state.sequence + 1 };
+    return shouldComplete(sequenced) ? completeMatch(sequenced) : dealRound(sequenced, opponent, state.round + 1);
+  }
+  throw new Error("indian_poker_action_invalid");
 }
 
-export function decideIndianPoker(persona: Persona, read: IndianPokerDecisionRead, seed: string): IndianPokerChoice {
-  const visible = new Set(read.visibleStrengths);
-  const unseen = Array.from({ length: 52 }, (_, strength) => strength).filter((strength) => !visible.has(strength));
-  const strongestVisible = Math.max(-1, ...read.visibleStrengths);
-  const winningChance = unseen.filter((strength) => strength > strongestVisible).length / Math.max(1, unseen.length);
-  const threshold = 1 / 3 + (0.5 - persona.riskAppetite) * 0.24;
-  const noise = ((new XorShift32(`${seed}:read`).nextUint32() % 2_001) / 1_000 - 1) * (1 - persona.readAccuracy) * 0.18;
-  const edge = winningChance + noise - threshold;
+export function decideNpcOpening(persona: IndianPokerPersona, read: IndianPokerNpcRead, seed: string): "check" | "raise" {
+  const edge = estimatedNpcEdge(persona, read, seed);
+  const confidence = 0.52 + persona.consistency * 0.4;
+  return weightedChoice(edge > 0.08 ? [confidence, 1 - confidence] : [1 - confidence, confidence], `${seed}:opening`) === 0 ? "raise" : "check";
+}
+
+export function decideNpcResponse(persona: IndianPokerPersona, read: IndianPokerNpcRead, seed: string): "call" | "fold" {
+  const bluffPressure = Math.min(0.12, read.playerRaises * 0.025) - Math.min(0.08, read.playerFolds * 0.02);
+  const edge = estimatedNpcEdge(persona, read, seed) - bluffPressure;
   const confidence = 0.55 + persona.consistency * 0.35;
-  const participates = weightedChoice(edge >= 0 ? [confidence, 1 - confidence] : [1 - confidence, confidence], `${seed}:choice`) === 0;
-  if (!participates) return "fold";
-  return edge > 0.18 && persona.riskAppetite > 0.45 ? "raise" : "call";
+  return weightedChoice(edge >= -0.06 ? [confidence, 1 - confidence] : [1 - confidence, confidence], `${seed}:response`) === 0 ? "call" : "fold";
 }
 
-export function indianPokerRanking(state: IndianPokerState): Array<{ seatId: IndianPokerSeatId; rank: number; score: number }> {
-  const lastWin = new Map<IndianPokerSeatId, number>();
-  for (const round of state.history) if (round.winnerId) lastWin.set(round.winnerId, round.round);
-  const ordered = [...INDIAN_POKER_SEATS].sort((left, right) => state.seats[right].score - state.seats[left].score || (lastWin.get(right) ?? -1) - (lastWin.get(left) ?? -1) || INDIAN_POKER_SEATS.indexOf(left) - INDIAN_POKER_SEATS.indexOf(right));
-  return ordered.map((seatId, index) => ({ seatId, rank: index + 1, score: state.seats[seatId].score }));
+export function indianPokerOutcome(state: IndianPokerState): Exclude<IndianPokerOutcome, null> {
+  return state.playerChips > state.npcChips ? "player" : state.npcChips > state.playerChips ? "npc" : "draw";
 }
 
-function dealRound(cartridge: IndianPokerCartridge, state: IndianPokerState, round: number): IndianPokerState {
-  const shuffled = shuffle(INDIAN_POKER_DECK, new XorShift32(`${state.seed}:round:${round}`));
-  const hands = Object.fromEntries(INDIAN_POKER_SEATS.map((seatId, index) => [seatId, shuffled[index]!.id])) as Record<IndianPokerSeatId, string>;
-  const next = { ...state, round, status: "choosing" as const, hands, choices: emptyChoices(), lastRound: null };
-  const cards = new Map(INDIAN_POKER_DECK.map((card) => [card.id, card]));
-  const read = expressionRead(next, cards);
-  const reactions = neutralReactions();
-  for (const seatId of INDIAN_POKER_SEATS.slice(1) as IndianPokerSeatId[]) {
-    const character = cartridge.characters.find((candidate) => candidate.id === next.seats[seatId].characterId)!;
-    const persona = PERSONA_PRESETS[character.tellStyle];
-    const truth = read.playerCardStrength >= 26 ? "tense" : "pleased", deceptive = truth === "tense" ? "pleased" : "tense";
-    const deceptiveWeight = persona.deceptionBias * 55, truthWeight = (1 - persona.deceptionBias) * 75, neutralWeight = Math.max(0, 100 - deceptiveWeight - truthWeight);
-    reactions[seatId] = expressSignal(truth, "neutral", deceptive, { truth: truthWeight, neutral: neutralWeight, deceptive: deceptiveWeight }, `${state.seed}:round:${round}:expression:${seatId}`);
+export function indianPokerRanking(state: IndianPokerState): Array<{ seatId: "player" | "npc"; rank: number; chips: number }> {
+  if (state.playerChips === state.npcChips) return [{ seatId: "player", rank: 1, chips: state.playerChips }, { seatId: "npc", rank: 1, chips: state.npcChips }];
+  return state.playerChips > state.npcChips
+    ? [{ seatId: "player", rank: 1, chips: state.playerChips }, { seatId: "npc", rank: 2, chips: state.npcChips }]
+    : [{ seatId: "npc", rank: 1, chips: state.npcChips }, { seatId: "player", rank: 2, chips: state.playerChips }];
+}
+
+function dealRound(state: IndianPokerState, opponent: IndianPokerCharacter, round: number): IndianPokerState {
+  assert(state.playerChips > 0 && state.npcChips > 0 && state.cursor + 1 < state.deck.length, "indian_poker_deal_invalid");
+  const playerCardId = state.deck[state.cursor], npcCardId = state.deck[state.cursor + 1];
+  assert(playerCardId && npcCardId, "indian_poker_deal_invalid");
+  const base: IndianPokerState = {
+    ...state, round, status: "player-action", cursor: state.cursor + 2, playerCardId, npcCardId,
+    playerChips: state.playerChips - 1, npcChips: state.npcChips - 1,
+    roundStartPlayerChips: state.playerChips, roundStartNpcChips: state.npcChips, pot: 2,
+    npcOpening: null, playerAction: null, npcResponse: null, npcReaction: "neutral",
+  };
+  const opening = opponent.persona && base.npcChips > 0 ? decideNpcOpening(opponent.persona, npcRead(base), `${state.seed}:round:${round}`) : "check";
+  const afterOpening = opening === "raise" ? { ...base, npcChips: base.npcChips - 1, pot: base.pot + 1 } : base;
+  return { ...afterOpening, npcOpening: opening, npcReaction: reactionForPlayerCard(afterOpening, opponent) };
+}
+
+function playerAct(state: IndianPokerState, opponent: IndianPokerCharacter, action: IndianPokerPlayerAction): IndianPokerState {
+  assert(state.status === "player-action" && state.playerCardId && state.npcCardId && state.npcOpening, "indian_poker_player_action_invalid");
+  if (state.npcOpening === "raise") {
+    assert(action === "call" || action === "fold", "indian_poker_player_action_invalid");
+    if (action === "fold") return awardPot({ ...state, sequence: state.sequence + 1, playerAction: action }, "npc");
+    assert(state.playerChips > 0, "indian_poker_chips_insufficient");
+    return showdown({ ...state, sequence: state.sequence + 1, playerAction: action, playerChips: state.playerChips - 1, pot: state.pot + 1 });
   }
-  return { ...next, reactions };
+  assert(action === "check" || action === "raise", "indian_poker_player_action_invalid");
+  if (action === "check") return showdown({ ...state, sequence: state.sequence + 1, playerAction: action });
+  assert(state.playerChips > 0, "indian_poker_chips_insufficient");
+  return { ...state, sequence: state.sequence + 1, status: "npc-response", playerAction: action, playerChips: state.playerChips - 1, pot: state.pot + 1 };
 }
 
-function requireCard(cards: ReadonlyMap<string, IndianPokerCard>, id: string | null): IndianPokerCard { const card = id ? cards.get(id) : undefined; if (!card) throw new Error(`indian_poker_card_missing:${id ?? "null"}`); return card; }
-function emptyHands(): Record<IndianPokerSeatId, null> { return { player: null, "cpu-1": null, "cpu-2": null, "cpu-3": null }; }
-function emptyChoices(): Record<IndianPokerSeatId, null> { return { player: null, "cpu-1": null, "cpu-2": null, "cpu-3": null }; }
-function neutralReactions(): IndianPokerState["reactions"] { return { player: "neutral", "cpu-1": "neutral", "cpu-2": "neutral", "cpu-3": "neutral" }; }
-function requireHands(hands: IndianPokerState["hands"]): Record<IndianPokerSeatId, string> { return Object.fromEntries(INDIAN_POKER_SEATS.map((seatId) => { const id = hands[seatId]; if (!id) throw new Error(`indian_poker_hand_missing:${seatId}`); return [seatId, id]; })) as Record<IndianPokerSeatId, string>; }
-function mapSeats(state: IndianPokerState, score: (seatId: IndianPokerSeatId) => number): IndianPokerState["seats"] { return Object.fromEntries(INDIAN_POKER_SEATS.map((seatId) => [seatId, { ...state.seats[seatId], score: score(seatId) }])) as IndianPokerState["seats"]; }
-function shuffle<T>(input: readonly T[], rng: XorShift32): T[] { const output = [...input]; for (let index = output.length - 1; index > 0; index -= 1) { const target = rng.nextUint32() % (index + 1); [output[index], output[target]] = [output[target] as T, output[index] as T]; } return output; }
-function assert(condition: unknown, code: string): asserts condition { if (!condition) throw new Error(code); }
+function npcRespond(state: IndianPokerState, opponent: IndianPokerCharacter): IndianPokerState {
+  assert(state.status === "npc-response" && state.playerAction === "raise", "indian_poker_npc_response_invalid");
+  const response: "call" | "fold" = state.npcChips > 0 ? decideNpcResponse(opponent.persona, npcRead(state), `${state.seed}:round:${state.round}`) : "fold";
+  if (response === "fold") return awardPot({ ...state, sequence: state.sequence + 1, npcResponse: "fold" }, "player");
+  return showdown({ ...state, sequence: state.sequence + 1, npcResponse: "call", npcChips: state.npcChips - 1, pot: state.pot + 1 });
+}
 
-export { cardStrength } from "./deck.ts";
+function showdown(state: IndianPokerState): IndianPokerState {
+  assert(state.playerCardId && state.npcCardId, "indian_poker_showdown_invalid");
+  const playerStrength = standardRankValue(state.playerCardId), npcStrength = standardRankValue(state.npcCardId);
+  return awardPot(state, playerStrength > npcStrength ? "player" : npcStrength > playerStrength ? "npc" : "draw");
+}
+
+function awardPot(state: IndianPokerState, winner: "player" | "npc" | "draw"): IndianPokerState {
+  assert(state.playerCardId && state.npcCardId && state.npcOpening && state.playerAction, "indian_poker_round_invalid");
+  const playerShare = winner === "player" ? state.pot : winner === "draw" ? state.pot / 2 : 0;
+  const npcShare = winner === "npc" ? state.pot : winner === "draw" ? state.pot / 2 : 0;
+  assert(Number.isInteger(playerShare) && Number.isInteger(npcShare), "indian_poker_split_invalid");
+  const playerChips = state.playerChips + playerShare, npcChips = state.npcChips + npcShare;
+  const result: IndianPokerRoundResult = {
+    round: state.round, playerCardId: state.playerCardId, npcCardId: state.npcCardId, npcOpening: state.npcOpening,
+    playerAction: state.playerAction, npcResponse: state.npcResponse, pot: state.pot, winner,
+    playerChipDelta: playerChips - state.roundStartPlayerChips, npcChipDelta: npcChips - state.roundStartNpcChips,
+  };
+  return { ...state, status: "showdown", playerChips, npcChips, pot: 0, history: [...state.history, result] };
+}
+
+function completeMatch(state: IndianPokerState): IndianPokerState {
+  const outcome = indianPokerOutcome(state), stake = state.stake ?? 0;
+  return { ...state, status: "complete", playerCardId: null, npcCardId: null, npcOpening: null, playerAction: null, npcResponse: null, npcReaction: "neutral", creditAmount: Math.floor(stake * state.playerChips / INDIAN_POKER_STARTING_CHIPS), outcome };
+}
+
+function shouldComplete(state: IndianPokerState): boolean { return state.round >= INDIAN_POKER_ROUNDS || state.playerChips <= 0 || state.npcChips <= 0; }
+
+function estimatedNpcEdge(persona: IndianPokerPersona, read: IndianPokerNpcRead, seed: string): number {
+  const removed = new Set([...read.previouslyRevealedCardIds, read.visiblePlayerCardId]);
+  const unknown = STANDARD_CARD_DECK.filter((card) => !removed.has(card.id));
+  const playerStrength = standardRankValue(read.visiblePlayerCardId);
+  const wins = unknown.filter((card) => standardRankValue(card) > playerStrength).length;
+  const ties = unknown.filter((card) => standardRankValue(card) === playerStrength).length;
+  const chance = (wins + ties * 0.5) / Math.max(1, unknown.length);
+  const noise = (new XorShift32(`${seed}:read`).next() * 2 - 1) * (1 - persona.readAccuracy) * 0.22;
+  const threshold = 0.5 + (0.5 - persona.riskAppetite) * 0.22;
+  return chance + noise - threshold;
+}
+
+function reactionForPlayerCard(state: IndianPokerState, opponent: IndianPokerCharacter): IndianPokerState["npcReaction"] {
+  const read = expressionRead(state), strength = standardRankValue(read.playerCardId);
+  const truth = strength >= 10 ? "tense" : strength <= 6 ? "pleased" : "neutral";
+  if (truth === "neutral") return "neutral";
+  const deceptive = truth === "tense" ? "pleased" : "tense";
+  const deceptiveWeight = opponent.persona.deceptionBias * 65;
+  const truthWeight = (1 - opponent.persona.deceptionBias) * 78;
+  const neutralWeight = Math.max(0, 100 - deceptiveWeight - truthWeight);
+  return expressSignal(truth, "neutral", deceptive, { truth: truthWeight, neutral: neutralWeight, deceptive: deceptiveWeight }, `${state.seed}:round:${state.round}:expression:${opponent.id}`);
+}
+
+function validateCartridge(cartridge: IndianPokerCartridge): void {
+  assert(cartridge.contract === "indian-poker-cartridge/0.2" && cartridge.version.length > 0 && cartridge.characters.length > 0, "indian_poker_cartridge_invalid");
+  const ids = new Set<string>();
+  for (const character of cartridge.characters) {
+    assert(character.id.length > 0 && character.name.length > 0 && !ids.has(character.id), "indian_poker_character_invalid"); ids.add(character.id);
+    for (const value of Object.values(character.persona)) assert(Number.isFinite(value) && value >= 0 && value <= 1, "indian_poker_persona_invalid");
+  }
+}
+function findCharacter(cartridge: IndianPokerCartridge, id: string): IndianPokerCharacter { const character = cartridge.characters.find((candidate) => candidate.id === id); assert(character, `indian_poker_character_missing:${id}`); return character; }
+function assert(condition: unknown, code: string): asserts condition { if (!condition) throw new Error(code); }

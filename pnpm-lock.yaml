@@ -155,6 +155,9 @@ importers:
 
   cabinets/casino-cards:
     dependencies:
+      '@lucky-arcade/card-table':
+        specifier: workspace:*
+        version: link:../../packages/card-table
       '@lucky-arcade/engine':
         specifier: workspace:*
         version: link:../../packages/engine
@@ -239,6 +242,9 @@ importers:
       '@lucky-arcade/cabinet-sdk':
         specifier: workspace:*
         version: link:../../packages/cabinet-sdk
+      '@lucky-arcade/card-table':
+        specifier: workspace:*
+        version: link:../../packages/card-table
       '@lucky-arcade/engine':
         specifier: workspace:*
         version: link:../../packages/engine
@@ -463,6 +469,12 @@ importers:
       fflate:
         specifier: 0.8.3
         version: 0.8.3
+
+  packages/card-table:
+    dependencies:
+      '@lucky-arcade/engine':
+        specifier: workspace:*
+        version: link:../engine
 
   packages/contracts:
     dependencies:

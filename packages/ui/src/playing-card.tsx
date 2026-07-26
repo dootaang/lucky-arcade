@@ -1,4 +1,5 @@
 import { memo, useId, type CSSProperties, type ReactElement } from "react";
+import { CourtCardImage, type CourtAtlas, type CourtCardId } from "./court-card.tsx";
 import {
   CORNER_INDEX,
   PLAYING_CARD_HEIGHT,
@@ -132,6 +133,24 @@ export const PlayingCardBack = /*#__PURE__*/ memo(function PlayingCardBack({ cla
       <rect x={16} y={16} width={PLAYING_CARD_WIDTH - 32} height={PLAYING_CARD_HEIGHT - 32} rx={10} fill="none" stroke={PAPER} strokeWidth={6} />
     </svg>
   );
+});
+
+export type StandardPlayingCardId = `${PlayingCardSuit}-${PlayingCardPipRank | "j" | "q" | "k"}`;
+export interface StandardPlayingCardProps {
+  id: StandardPlayingCardId;
+  atlas: CourtAtlas;
+  className?: string;
+  decorative?: boolean;
+}
+
+/** One responsive renderer for the vector pip cards and the audited J/Q/K atlas. */
+export const StandardPlayingCard = /*#__PURE__*/ memo(function StandardPlayingCard({ id, atlas, className, decorative = false }: StandardPlayingCardProps) {
+  const separator = id.lastIndexOf("-");
+  const suit = id.slice(0, separator) as PlayingCardSuit;
+  const rank = id.slice(separator + 1) as PlayingCardPipRank | "j" | "q" | "k";
+  const optionalClassName = className === undefined ? {} : { className };
+  if (rank === "j" || rank === "q" || rank === "k") return <CourtCardImage atlas={atlas} id={id as CourtCardId} decorative={decorative} {...optionalClassName} />;
+  return <PlayingCard suit={suit} rank={rank} decorative={decorative} {...optionalClassName} />;
 });
 
 function round(value: number, digits = 2): number {

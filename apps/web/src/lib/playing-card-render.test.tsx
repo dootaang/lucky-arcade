@@ -3,7 +3,7 @@
  * 기하 계약은 `packages/ui/test/playing-card-layout.test.ts`가 담당하고,
  * 이 파일은 렌더 자체만 본다. `react-dom`을 가진 곳이 여기라서 여기에 둔다.
  */
-import { PLAYING_CARD_PIP_RANKS, PLAYING_CARD_SUITS, PlayingCard, PlayingCardBack, playingCardLabel } from "@lucky-arcade/ui/playing-card";
+import { PLAYING_CARD_PIP_RANKS, PLAYING_CARD_SUITS, PlayingCard, PlayingCardBack, StandardPlayingCard, playingCardLabel, type CourtAtlas } from "@lucky-arcade/ui/playing-card";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 
@@ -43,5 +43,21 @@ describe("playing card rendering", () => {
     const ids = [...markup.matchAll(/id="([^"]+)"/g)].map((match) => match[1]);
     expect(ids).toHaveLength(2);
     expect(new Set(ids).size).toBe(2);
+  });
+
+  it("renders pip and court cards through one responsive standard-card component", () => {
+    const atlas: CourtAtlas = {
+      url: "/content/playing-cards/1.0.0/md.webp",
+      cols: 4,
+      cell: { w: 337, h: 518 },
+      gutter: 8,
+      sheet: { width: 1372, height: 1570 },
+      frames: { "spades-k": { col: 0, row: 0 } },
+    };
+    const pip = renderToStaticMarkup(<StandardPlayingCard id="hearts-7" atlas={atlas} />);
+    const court = renderToStaticMarkup(<StandardPlayingCard id="spades-k" atlas={atlas} />);
+    expect(pip).not.toContain("<image");
+    expect(court).toContain('<image href="/content/playing-cards/1.0.0/md.webp"');
+    expect(court).toContain('viewBox="0 0 337 518"');
   });
 });

@@ -9,6 +9,7 @@ const rules = new Map([
   ["packages/card-io", ["@lucky-arcade/contracts"]],
   ["packages/extract", ["@lucky-arcade/contracts", "@lucky-arcade/card-io", "@lucky-arcade/engine"]],
   ["packages/engine", ["@lucky-arcade/contracts"]],
+  ["packages/card-table", ["@lucky-arcade/engine"]],
   ["packages/persistence", ["@lucky-arcade/contracts"]],
   ["packages/cabinet-sdk", ["@lucky-arcade/contracts", "@lucky-arcade/engine"]],
   ["cabinets/match-pairs", ["@lucky-arcade/engine"]],

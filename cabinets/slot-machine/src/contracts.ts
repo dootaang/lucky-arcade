@@ -66,7 +66,7 @@ export function isSlotMachineState(value: unknown): value is SlotMachineState {
   if (!state.status || !["ready", "spinning", "complete"].includes(state.status)) return false;
   if (state.spinSeed !== null && typeof state.spinSeed !== "string") return false;
   if (state.wagerId !== null && typeof state.wagerId !== "string") return false;
-  if (state.stake !== null && !(SLOT_MACHINE_STAKES as readonly number[]).includes(state.stake)) return false;
+  if (state.stake !== null && (typeof state.stake !== "number" || !(SLOT_MACHINE_STAKES as readonly number[]).includes(state.stake))) return false;
   if (state.outcome !== null && !isOutcome(state.outcome)) return false;
   if (state.status === "ready") return state.spinSeed === null && state.stake === null && state.wagerId === null && state.outcome === null;
   return Boolean(state.spinSeed && state.stake && state.wagerId && state.outcome);

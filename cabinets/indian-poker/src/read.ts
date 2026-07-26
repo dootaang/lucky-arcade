@@ -1,19 +1,33 @@
-import type { IndianPokerCard, IndianPokerSeatId, IndianPokerState } from "./contracts.ts";
-import { cardStrength } from "./deck.ts";
+import type { StandardCardId } from "@lucky-arcade/card-table";
+import type { IndianPokerState } from "./contracts.ts";
 
-export interface IndianPokerDecisionRead { visibleStrengths: number[]; round: number; scoreGap: number; foldsSoFar: number; }
-export interface IndianPokerExpressionRead { playerCardStrength: number; round: number; }
-
-export function decisionRead(state: IndianPokerState, seatId: IndianPokerSeatId, cards: ReadonlyMap<string, IndianPokerCard>): IndianPokerDecisionRead {
-  const visibleStrengths = Object.entries(state.hands).filter(([otherId, cardId]) => otherId !== seatId && cardId !== null).map(([, cardId]) => cardStrength(requireCard(cards, cardId as string)));
-  const lead = Math.max(...Object.values(state.seats).map((seat) => seat.score));
-  return { visibleStrengths, round: state.round, scoreGap: lead - state.seats[seatId].score, foldsSoFar: state.history.filter((round) => round.choices[seatId] === "fold").length };
+/** Legal NPC information: its own current card is deliberately absent. */
+export interface IndianPokerNpcRead {
+  visiblePlayerCardId: StandardCardId;
+  previouslyRevealedCardIds: readonly StandardCardId[];
+  round: number;
+  playerChips: number;
+  npcChips: number;
+  playerRaises: number;
+  playerFolds: number;
 }
 
-export function expressionRead(state: IndianPokerState, cards: ReadonlyMap<string, IndianPokerCard>): IndianPokerExpressionRead {
-  const cardId = state.hands.player;
-  if (!cardId) throw new Error("indian_poker_player_card_missing");
-  return { playerCardStrength: cardStrength(requireCard(cards, cardId)), round: state.round };
+export interface IndianPokerExpressionRead { playerCardId: StandardCardId; round: number; }
+
+export function npcRead(state: IndianPokerState): IndianPokerNpcRead {
+  if (!state.playerCardId) throw new Error("indian_poker_player_card_missing");
+  return {
+    visiblePlayerCardId: state.playerCardId,
+    previouslyRevealedCardIds: state.history.flatMap((round) => [round.playerCardId, round.npcCardId]),
+    round: state.round,
+    playerChips: state.playerChips,
+    npcChips: state.npcChips,
+    playerRaises: state.history.filter((round) => round.playerAction === "raise").length,
+    playerFolds: state.history.filter((round) => round.playerAction === "fold").length,
+  };
 }
 
-function requireCard(cards: ReadonlyMap<string, IndianPokerCard>, id: string): IndianPokerCard { const card = cards.get(id); if (!card) throw new Error(`indian_poker_card_missing:${id}`); return card; }
+export function expressionRead(state: IndianPokerState): IndianPokerExpressionRead {
+  if (!state.playerCardId) throw new Error("indian_poker_player_card_missing");
+  return { playerCardId: state.playerCardId, round: state.round };
+}

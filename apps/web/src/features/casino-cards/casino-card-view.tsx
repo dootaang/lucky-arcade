@@ -1,12 +1,12 @@
 import { CASINO_CARD_PACK_VERSION, CASINO_CARDS_VERSION, CASINO_GAME_INFO, casinoCardCredit, casinoCardResultHash, createCasinoCardState, isCasinoCardState, reduceCasinoCard, type CasinoCardAction, type CasinoCardGameId, type CasinoCardStake, type CasinoCardState } from "@lucky-arcade/casino-cards";
 import { CasinoCardScreen } from "@lucky-arcade/casino-cards/react";
-import type { SpriteAtlasManifest } from "@lucky-arcade/contracts";
 import { ENGINE_VERSION, makeReceipt, resultHash } from "@lucky-arcade/engine";
 import type { GameWagerReceipt } from "@lucky-arcade/persistence";
 import type { CourtAtlas } from "@lucky-arcade/ui/playing-card";
 import { useEffect, useRef, useState } from "react";
 import { appendAction, saveSnapshot } from "../../lib/database.ts";
 import { listWagers, reserveWager, settleWager } from "../../lib/game-wager.ts";
+import { loadPlayingCardAtlas } from "../../lib/playing-card-atlas.ts";
 import { recoverSession } from "../../lib/session-recovery.ts";
 import { readWallet } from "../../lib/wallet.ts";
 
@@ -17,7 +17,7 @@ export default function CasinoCardView({ gameId, onExit }: { gameId: CasinoCardG
 
   useEffect(() => {
     let alive = true;
-    void Promise.all([loadAtlas(), readWallet(), recoverSession<CasinoCardState, CasinoCardAction>({ sessionId, fresh: createCasinoCardState(gameId, sessionId), cabinetVersion: CASINO_CARDS_VERSION, packVersion: CASINO_CARD_PACK_VERSION, isState: (value): value is CasinoCardState => isCasinoCardState(value) && value.gameId === gameId, reduce: reduceCasinoCard })]).then(async ([atlas, wallet, recovered]) => {
+    void Promise.all([loadPlayingCardAtlas(), readWallet(), recoverSession<CasinoCardState, CasinoCardAction>({ sessionId, fresh: createCasinoCardState(gameId, sessionId), cabinetVersion: CASINO_CARDS_VERSION, packVersion: CASINO_CARD_PACK_VERSION, isState: (value): value is CasinoCardState => isCasinoCardState(value) && value.gameId === gameId, reduce: reduceCasinoCard })]).then(async ([atlas, wallet, recovered]) => {
       let state = recovered.state, nextBalance = wallet.balance;
       const pending = (await listWagers(sessionId)).find((receipt) => receipt.status === "reserved");
       if (pending && state.wagerId !== pending.wagerId) {
@@ -61,6 +61,5 @@ async function persist(sessionId: string, cabinetId: string, title: string, prev
   const receipt = makeReceipt(next.sequence, action, next.cursor, resultHash(previous), next); await appendAction(sessionId, receipt);
   await saveSnapshot({ contract: "snapshot-record/0.1", sessionId, sequence: next.sequence, state: next, stateHash: receipt.resultHash, engineVersion: ENGINE_VERSION, cabinetVersion: CASINO_CARDS_VERSION, packVersion: CASINO_CARD_PACK_VERSION }, { contract: "recent-play/0.1", cabinetId, sessionId, title, progressLabel: next.status === "complete" ? `${next.outcome === "win" ? "승리" : next.outcome === "push" ? "무승부" : "패배"} · ${next.creditAmount} P 반환` : next.status === "ready" ? "새 대국 준비" : next.message, updatedAt: new Date().toISOString() });
 }
-async function loadAtlas(): Promise<CourtAtlas> { const response = await fetch("/content/playing-cards/1.0.0/manifest.json"); if (!response.ok) throw new Error("playing_card_manifest_failed"); const manifest = await response.json() as SpriteAtlasManifest, sheet = manifest.sheets.find((candidate) => candidate.size === "sm"); if (!sheet) throw new Error("playing_card_sheet_missing"); return { url: `/content/playing-cards/1.0.0/${sheet.path}`, cols: manifest.cols, cell: sheet.cell, gutter: sheet.gutter, sheet: { width: sheet.width, height: sheet.height }, frames: Object.fromEntries(manifest.frames.map((frame) => [frame.id, { col: frame.col, row: frame.row }])) }; }
 function seedFromReceipt(receipt: GameWagerReceipt): string | null { return receipt.choiceKey?.startsWith("deal:") ? receipt.choiceKey.slice(5) || null : null; }
 function isStake(value: number): value is CasinoCardStake { return value === 10 || value === 50 || value === 200; }
