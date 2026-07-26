@@ -153,12 +153,13 @@ describe("old maid deterministic engine", () => {
   });
 
   it("does not begin play until the visible deal has completed", () => {
-    let state = createOldMaidState(temerosaOldMaidCartridge, "deal-phase", "test-session");
+    const released07 = { ...temerosaOldMaidCartridge, version: "temerosa-old-maid/0.7" };
+    let state = createOldMaidState(released07, "deal-phase", "test-session");
     expect(state.dealOrder).toHaveLength(25);
     expect(new Set(Object.values(state.characters)).size).toBe(3);
-    state = reduceOldMaid(temerosaOldMaidCartridge, state, { type: "start" });
+    state = reduceOldMaid(released07, state, { type: "start" });
     expect(state.status).toBe("dealing");
-    state = reduceOldMaid(temerosaOldMaidCartridge, state, { type: "finish_deal" });
+    state = reduceOldMaid(released07, state, { type: "finish_deal" });
     expect(state.status).toBe("discarding");
   });
 
@@ -198,7 +199,7 @@ describe("old maid deterministic engine", () => {
       appearanceSet: "fixture/main",
     }));
     const cartridge = createTemerosaCasinoOldMaidCartridge(content);
-    expect(cartridge.version).toBe("temerosa-old-maid/0.7");
+    expect(cartridge.version).toBe("temerosa-old-maid/0.8");
     expect(cartridge.dealPairCount).toBe(18);
     expect(cartridge.selectableCharacterIds).toContain("fixture-main");
     expect(cartridge.selectableCharacterIds).not.toContain("bacikal");
@@ -339,8 +340,9 @@ describe("old maid deterministic engine", () => {
   });
 
   it("keeps the released 0.7 golden play and spectator results", () => {
-    const play = autoplayCartridge(temerosaOldMaidCartridge, "offer-golden", "play", true);
-    const spectate = autoplayCartridge(temerosaOldMaidCartridge, "offer-golden", "spectate", true);
+    const released07 = { ...temerosaOldMaidCartridge, version: "temerosa-old-maid/0.7" };
+    const play = autoplayCartridge(released07, "offer-golden", "play", true);
+    const spectate = autoplayCartridge(released07, "offer-golden", "spectate", true);
     expect(resultHash(play)).toBe("b222b7446e92e1b73a18dede32816db13bc99256c1b9a14edef797c497009e24");
     expect(resultHash(spectate)).toBe("d24508f938c64634e5aabd6fc382f58bf2a6262733b46c378a375e9afacc9741");
   });

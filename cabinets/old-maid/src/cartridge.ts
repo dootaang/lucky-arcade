@@ -1,5 +1,7 @@
 import { TEMEROSA_OLD_MAID_PACK_VERSION, type OldMaidCard, type OldMaidCartridge, type OldMaidCharacter, type OldMaidFace } from "./contracts.ts";
 import { temerosaGalleryFaces } from "./temerosa-gallery.ts";
+import { temerosaCasinoOldMaidLines } from "./temerosa-casino-lines.ts";
+import { TEMEROSA_CASINO_TELL_STYLES } from "./temerosa-casino-personas.ts";
 import { temerosaOldMaidLines } from "./temerosa-lines.ts";
 
 const faces: OldMaidFace[] = [
@@ -60,7 +62,10 @@ export function createTemerosaCasinoOldMaidCartridge(contentAssets: readonly Tem
   const allFaces = uniqueById([...faces, ...contentFaces]);
   const contentCharacters = buildContentCharacters(contentAssets);
   const characters = uniqueCharacters([...contentCharacters, ...baseCharacters]);
+  const characterIds = new Set(characters.map((character) => character.id));
   const selectableCharacterIds = characters.filter((character) => character.id !== "bacikal").map((character) => character.id);
+  const lines = [...temerosaOldMaidLines, ...temerosaCasinoOldMaidLines]
+    .filter((line) => characterIds.has(line.characterId));
   const expandedCards = allFaces.flatMap<OldMaidCard>((face) => face.id === "joker"
     ? [{ id: "joker-odd", faceId: face.id, pairId: null }]
     : [{ id: `${face.id}-a`, faceId: face.id, pairId: face.id }, { id: `${face.id}-b`, faceId: face.id, pairId: face.id }]);
@@ -70,6 +75,7 @@ export function createTemerosaCasinoOldMaidCartridge(contentAssets: readonly Tem
     cards: expandedCards,
     characters,
     selectableCharacterIds,
+    lines,
     dealPairCount: 18,
   };
 }
@@ -90,9 +96,7 @@ function buildContentCharacters(contentAssets: readonly TemerosaCasinoPortraitAs
       id: characterId,
       name: characterName(characterId),
       appearanceSet: neutral.appearanceSet ?? "temerosa-casino",
-      // No authored psychology evidence exists for newly audited characters.
-      // Keep them neutral instead of inventing a trait from their identifier.
-      tellStyle: "standard",
+      tellStyle: TEMEROSA_CASINO_TELL_STYLES[characterId] ?? "standard",
       portraits: { neutral: neutral.id, pleased: pleased.id, tense: tense.id },
       despairPortrait: despair.id,
     });

@@ -234,7 +234,7 @@ test("plays and restores a complete Temerosa old maid table", async ({ page }, t
   await expect(page.getByText("배분 전").first()).toBeVisible();
   await expect(page.getByText(/침착한 듯|만족한 듯|긴장한 듯/).first()).toBeVisible();
   while (await page.locator(".old-maid-opponent-picker button.selected").count()) await page.locator(".old-maid-opponent-picker button.selected").first().click();
-  for (const name of ["페일", "카노", "네모"]) await page.getByRole("button", { name, exact: true }).click();
+  for (const name of ["에코", "아데샤", "땡칠이"]) await page.getByRole("button", { name, exact: true }).click();
   await page.getByRole("button", { name: "카드 배분 시작" }).click();
   await expect(page.getByText("카드를 나누는 중…")).toBeVisible();
   await expect(page.locator(".old-maid-player-hand")).toBeVisible();
@@ -252,6 +252,7 @@ test("plays and restores a complete Temerosa old maid table", async ({ page }, t
     if (!checkedSpeech && await speech.count()) {
       await expect(speech).toBeVisible();
       await expect(speech).not.toHaveAttribute("aria-live");
+      await expect(speech).toHaveAttribute("data-line-id", /^(echo|adesha|ttaengchil)-/);
       checkedSpeech = true;
     }
     const ownCards = page.getByRole("button", { name: /크게 보기/ });

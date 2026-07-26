@@ -1,7 +1,7 @@
 export const OLD_MAID_LEGACY_VERSION = "old-maid/0.6" as const;
 export const OLD_MAID_PREVIOUS_VERSION = "old-maid/0.7" as const;
 export const OLD_MAID_VERSION = "old-maid/0.8" as const;
-export const TEMEROSA_OLD_MAID_PACK_VERSION = "temerosa-old-maid/0.7" as const;
+export const TEMEROSA_OLD_MAID_PACK_VERSION = "temerosa-old-maid/0.8" as const;
 
 export type OldMaidSeatId = "player" | "cpu-1" | "cpu-2" | "cpu-3";
 export type OldMaidCpuSeatId = Exclude<OldMaidSeatId, "player">;

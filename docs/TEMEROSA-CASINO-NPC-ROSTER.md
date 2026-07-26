@@ -27,10 +27,11 @@ Keep them neutral instead of inventing a trait from their identifier.
 카드 4종의 로어 500개 항목(총 56만 자)을 열어 확인했다.
 
 - **26명 전원이 전용 항목을 보유**한다. 가장 빈약한 인물도 2,054자다.
-- 전원이 정식 캐릭터 시트 구조를 갖는다 — `Name · Sex · Species · Age · Appearance · Personality · Occupation · Speaking style · Description`.
-- 그중 **`Speaking style` 필드가 66개 항목에 존재**한다. **화법이 카드에 이미 적혀 있다.**
+- 전원이 `Name · Sex · Species · Age · Appearance · Personality · Occupation · Description`을 갖춘 전용 시트를 보유한다.
+- 현재 채택한 베스티아 시점에서 **24명은 `Speaking style` 필드도 보유**한다. 에스더와 노스탤지아는
+  이 필드가 없어 `Personality`·`Description`에서 최소한으로 도출한다.
 
-즉 대사 집필은 **발명이 아니라 번역**이다. 기존 9인 대사집과 같은 방법이 그대로 통한다.
+즉 24명의 대사 집필은 화법을 번역하는 일이고, 나머지 2명은 근거를 표시한 제한적 해석이다.
 
 ### 추출 시 발견한 함정
 
@@ -100,7 +101,7 @@ open 10 · guarded 10 · bluffer 4 · standard 2   합계 26
 ### 관계 — 세 사람이 묶여 있다
 
 `카트린카 · 튜밋튜 · 테뮤테`가 서로를 로어 키로 공유한다. 매칭 오류가 아니라 **실제로 엮인 관계**다.
-튜밋튜와 카트린카는 테뮤테를 손위로 두는 구도로 보인다.
+튜밋튜와 테뮤테는 남매이고, 카트린카는 튜밋튜를 반복해서 살려 낸 유료 치료사이자 동행자다.
 
 → **셋이 같은 테이블에 앉으면 의미가 생긴다.** 대사집 6절의 `교차 장치`(전용 대사를 새로 만들지 않고
 기존 줄이 나란히 뜨는 것만으로 성립)와 같은 방식으로 다룬다.
