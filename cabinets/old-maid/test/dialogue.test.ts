@@ -88,7 +88,7 @@ describe("old maid seat dialogue", () => {
         "emptied", "idle-draw", "joker-drawn", "joker-left", "pair-discard", "pair-made", "taken-from", "watching",
       ]);
     }
-    expect(temerosaOldMaidLines.find((line) => line.id === "nemo-joker-drawn")?.text).toEqual(["무섭네.", "그래도 이번에는 도망치지 않을 거야."]);
+    expect(temerosaOldMaidLines.find((line) => line.id === "pale-watching")?.text).toHaveLength(2);
     expect(new Map(temerosaOldMaidLines.map((line) => [line.id, line.text]))).toEqual(dialogueBookLines());
     const first = temerosaOldMaidLines[0] as (typeof temerosaOldMaidLines)[number];
     expect(() => validateOldMaidLines({ ...temerosaOldMaidCartridge, lines: [first, first] })).toThrow(/old_maid_line_duplicate/);
@@ -144,7 +144,7 @@ function dialogueBookLines(): Map<string, readonly string[]> {
     const heading = /^### ([^—]+) —/.exec(sourceLine);
     if (heading) characterId = characterIds.get(heading[1]?.trim() ?? "") ?? null;
     const row = /^\| `([^`]+)` \| (.+) \|$/.exec(sourceLine);
-    if (characterId && row) output.set(`${characterId}-${row[1]}`, (row[2] ?? "").split("<br>"));
+    if (characterId && row) output.set(`${characterId}-${row[1]}`, (row[2] ?? "").split("<br>").map((beat) => beat.trim()));
   }
   return output;
 }

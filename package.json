@@ -24,6 +24,7 @@
     "content:cards": "pnpm --filter @lucky-arcade/content-cli cards --",
     "content:cards:audit": "pnpm --filter @lucky-arcade/content-cli cards:audit --",
     "content:validate": "pnpm --filter @lucky-arcade/content-cli validate --",
+    "dialogue:temerosa:generate": "node scripts/generate-temerosa-old-maid-dialogue.mjs",
     "test": "pnpm boundaries && pnpm -r test",
     "typecheck": "pnpm -r typecheck",
     "test:e2e": "playwright test"

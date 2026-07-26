@@ -89,7 +89,7 @@ function dialogueBookLines(): Map<string, readonly string[]> {
     const heading = /^### ([^—]+)(?: —.*)?$/.exec(sourceLine);
     if (heading) characterId = characterIds.get(heading[1]?.trim() ?? "") ?? null;
     const row = /^\| `([^`]+)` \| (.+) \|$/.exec(sourceLine);
-    if (characterId && row) output.set(`${characterId}-${row[1]}`, [row[2] ?? ""]);
+    if (characterId && row) output.set(`${characterId}-${row[1]}`, (row[2] ?? "").split("<br>").map((beat) => beat.trim()));
   }
   return output;
 }
@@ -108,7 +108,7 @@ function ceremonyBookLines(): Map<string, readonly string[]> {
     const heading = /^## (.+?) —/.exec(sourceLine);
     if (heading) characterId = characterIds.get(heading[1] ?? "") ?? null;
     const row = /^\| `(table-open|finish-1st|finish-2nd|finish-3rd|defeat)` \| (.+) \|$/.exec(sourceLine);
-    if (characterId && row) output.set(`${characterId}-${row[1]}`, (row[2] ?? "").split("<br>"));
+    if (characterId && row) output.set(`${characterId}-${row[1]}`, (row[2] ?? "").split("<br>").map((beat) => beat.trim()));
   }
   return output;
 }
