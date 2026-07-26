@@ -451,7 +451,7 @@ function selectedCharacters(cartridge: OldMaidCartridge, ids: string[], mode: Ol
 }
 function selectableCharacterIds(cartridge: OldMaidCartridge): readonly string[] { return cartridge.selectableCharacterIds ?? cartridge.characters.map((character) => character.id); }
 function dealPairCount(cartridge: OldMaidCartridge): number { return cartridge.dealPairCount ?? 12; }
-function automaticCharacterIds(cartridge: OldMaidCartridge, seed: string, mode: OldMaidState["mode"]): string[] {
+export function automaticCharacterIds(cartridge: OldMaidCartridge, seed: string, mode: OldMaidState["mode"]): string[] {
   const required = mode === "spectate" ? 4 : 3;
   return shuffle(selectableCharacterIds(cartridge), new XorShift32(`${cartridge.version}:${seed}:characters`)).slice(0, required);
 }

@@ -41,7 +41,7 @@ test("mobile navigation remains reachable", async ({ page }, testInfo) => {
 
 test("opens built-in quick cabinets without a card", async ({ page }) => {
   await page.goto("/");
-  await expect(page.getByRole("heading", { name: "기다리는 동안, 바로 한 판" })).toBeVisible();
+  await expect(page.getByText("기다리는 동안, 바로 한 판")).toHaveCount(0);
   await expect(page.locator(".arcade-entry")).toHaveCount(2);
   await page.locator(".arcade-entry").filter({ hasText: "소녀전선 최애 월드컵" }).getByRole("button", { name: "바로 시작" }).click();
   await expect(page.getByRole("heading", { name: "최애 월드컵" })).toBeVisible();
@@ -128,7 +128,7 @@ test("opens an expressive personal card as an old maid table", async ({ page }, 
   await page.locator('input[type="file"]').setInputFiles({ name: "old-maid.json", mimeType: "application/json", buffer: Buffer.from(oldMaidCard(4, "E2E 도둑잡기 카드")) });
   await expect(page.getByRole("heading", { name: "E2E 도둑잡기 카드 도둑잡기" })).toBeVisible();
   await expect(page.locator(".old-maid-opponent-picker button")).toHaveCount(4);
-  await page.getByRole("button", { name: "카드 배분 시작" }).click();
+  await page.getByRole("button", { name: "무료로 시작" }).click();
   await expect(page.locator(".old-maid-player-hand")).toBeVisible({ timeout: 20_000 });
   await expect(page.locator(".old-maid-card.face img").first()).toBeVisible();
 });
@@ -232,13 +232,30 @@ test("plays and restores a complete Temerosa old maid table", async ({ page }, t
   await expect(page.getByRole("heading", { name: "테메로세 도둑잡기" })).toBeVisible();
   await expect(page.getByText("마지막 조커를 피하세요")).toBeVisible();
   await expect(page.getByText("배분 전").first()).toBeVisible();
+  const desktopAngles = await page.locator(".old-maid-center").evaluate((center) => {
+    const read = (owner: string) => {
+      const slot = document.createElement("div");
+      slot.className = "old-maid-pile-slot";
+      slot.dataset.owner = owner;
+      center.append(slot);
+      const angle = getComputedStyle(slot).getPropertyValue("--pile-angle").trim();
+      slot.remove();
+      return angle;
+    };
+    return { top: read("cpu-1"), left: read("cpu-2"), right: read("cpu-3"), bottom: read("player") };
+  });
+  expect(desktopAngles).toEqual({ top: "180deg", left: "90deg", right: "-90deg", bottom: "0deg" });
   await expect(page.getByText(/침착한 듯|만족한 듯|긴장한 듯/).first()).toBeVisible();
+  const initialRoster = await page.locator(".old-maid-opponent-picker button.selected").allTextContents();
+  await page.getByRole("button", { name: "무작위 선택" }).click();
+  await expect(page.locator(".old-maid-opponent-picker button.selected")).toHaveCount(3);
+  await expect.poll(() => page.locator(".old-maid-opponent-picker button.selected").allTextContents()).not.toEqual(initialRoster);
   while (await page.locator(".old-maid-opponent-picker button.selected").count()) await page.locator(".old-maid-opponent-picker button.selected").first().click();
   for (const name of ["에코", "아데샤", "땡칠이"]) await page.getByRole("button", { name, exact: true }).click();
   await expect(page.locator(".seat-cpu-1 strong")).toHaveText("에코");
   await expect(page.locator(".seat-cpu-2 strong")).toHaveText("아데샤");
   await expect(page.locator(".seat-cpu-3 strong")).toHaveText("땡칠이");
-  await page.getByRole("button", { name: "카드 배분 시작" }).click();
+  await page.getByRole("button", { name: "무료로 시작" }).click();
   await expect(page.getByText("카드를 나누는 중…")).toBeVisible();
   await page.getByRole("button", { name: "일시정지", exact: true }).click();
   await page.waitForTimeout(400);
@@ -361,8 +378,41 @@ test("plays and restores a complete Temerosa old maid table", async ({ page }, t
   await expect(page.getByRole("region", { name: "이어하기" })).toContainText("대국 완료");
   await page.getByRole("button", { name: "도둑잡기 이어하기", exact: true }).click();
   await expect(page.getByText(/에게 조커가 남았습니다/)).toBeVisible();
-  await expect(page.getByRole("button", { name: "같은 판 다시 하기" })).toBeVisible();
-  await expect(page.getByRole("button", { name: "도둑잡기 로비로 나가기" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "다시하기" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "상대 다시 고르기" })).toBeVisible();
+  await page.getByRole("button", { name: "다시하기" }).click();
+  await expect(page.getByText("같은 상대와 새 패로 다시 시작합니다")).toBeVisible();
+  await expect(page.locator(".old-maid-opponent-picker")).toHaveCount(0);
+  await expect(page.locator(".old-maid-card.face")).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "무료로 시작" })).toBeEnabled();
+});
+
+test("keeps direct play free and offers an optional self prediction", async ({ page }, testInfo) => {
+  test.skip(testInfo.project.metadata.mobile === true);
+  await page.goto("/");
+  await page.evaluate(() => new Promise<void>((resolve, reject) => {
+    const opening = indexedDB.open("lucky-arcade", 6);
+    opening.onerror = () => reject(opening.error);
+    opening.onsuccess = () => {
+      const db = opening.result;
+      const transaction = db.transaction("wallet", "readwrite");
+      transaction.objectStore("wallet").put({ contract: "wallet/0.1", id: "wallet", balance: 20, updatedAt: new Date().toISOString() });
+      transaction.onerror = () => reject(transaction.error);
+      transaction.oncomplete = () => { db.close(); resolve(); };
+    };
+  }));
+  await page.reload();
+  await page.locator(".arcade-entry").filter({ hasText: "테메로세 도둑잡기" }).getByRole("button", { name: "바로 시작" }).click();
+  await expect(page.getByRole("button", { name: "무료로 시작" })).toBeEnabled();
+  await page.getByRole("button", { name: "선택 베팅 열기" }).click();
+  await expect(page.getByRole("button", { name: "나", exact: true })).toHaveClass(/selected/);
+  await page.getByRole("button", { name: "베팅하고 시작" }).click();
+  await expect(page.getByText("카드를 나누는 중…")).toBeVisible({ timeout: 20_000 });
+  const prediction = await page.evaluate(async () => {
+    const database = await new Function("return import('/src/lib/database.ts')")();
+    return (await database.listSpectatorPredictions())[0];
+  });
+  expect(prediction).toMatchObject({ market: "first-place", predictedCharacterId: "player", reservedAmount: 20, status: "reserved" });
 });
 
 test("starts an open-hand four-NPC Temerosa spectator table", async ({ page }, testInfo) => {
@@ -384,6 +434,7 @@ test("starts an open-hand four-NPC Temerosa spectator table", async ({ page }, t
   await page.locator(".arcade-entry").filter({ hasText: "테메로세 도둑잡기" }).getByRole("button", { name: "바로 시작" }).click();
   await page.getByRole("button", { name: "NPC 4명 관전" }).click();
   await expect(page.locator(".old-maid-opponent-picker button.selected")).toHaveCount(4);
+  await expect(page.locator(".old-maid-spectator-hand .old-maid-card.face")).toHaveCount(0);
   await expect(page.getByText("최대 손익 20 P", { exact: false })).toBeVisible();
   await expect(page.getByRole("button", { name: "2배", exact: true })).toHaveClass(/selected/);
   await page.getByRole("button", { name: "예측하고 NPC 대국 관전" }).click();
@@ -419,9 +470,22 @@ test("mobile Temerosa old maid keeps the draw cards reachable", async ({ page },
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/");
   await page.locator(".arcade-entry").filter({ hasText: "테메로세 도둑잡기" }).getByRole("button", { name: "바로 시작" }).click();
+  const mobileAngles = await page.locator(".old-maid-center").evaluate((center) => {
+    const read = (owner: string) => {
+      const slot = document.createElement("div");
+      slot.className = "old-maid-pile-slot";
+      slot.dataset.owner = owner;
+      center.append(slot);
+      const angle = getComputedStyle(slot).getPropertyValue("--pile-angle").trim();
+      slot.remove();
+      return angle;
+    };
+    return [read("cpu-1"), read("cpu-2"), read("cpu-3"), read("player")];
+  });
+  expect(mobileAngles).toEqual(["180deg", "180deg", "180deg", "0deg"]);
   while (await page.locator(".old-maid-opponent-picker button.selected").count()) await page.locator(".old-maid-opponent-picker button.selected").first().click();
   for (const name of ["페일", "카노", "네모"]) await page.getByRole("button", { name, exact: true }).click();
-  await page.getByRole("button", { name: "카드 배분 시작" }).click();
+  await page.getByRole("button", { name: "무료로 시작" }).click();
   const speech = page.locator(".old-maid-speech").first();
   for (let step = 0; step < 160 && !await speech.isVisible(); step += 1) {
     const discard = page.locator('button[aria-label$="두 장 버리기"]:not([disabled])').first();

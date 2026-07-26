@@ -82,6 +82,7 @@ export interface MatchRecord {
   outcome: "win" | "loss" | "spectated";
   resultHash: string;
   wager?: {
+    market?: PredictionMarket;
     predictedCharacterId: string;
     stake: PredictionStake;
     multiplier: PredictionMultiplier;
@@ -163,13 +164,15 @@ export interface WalletStore {
 
 export type PredictionStake = 10 | 50 | 200;
 export type PredictionMultiplier = 2 | 3 | 4 | 5;
+export type PredictionMarket = "joker-holder" | "first-place";
 export type SpectatorPredictionStatus = "reserved" | "won" | "lost" | "refunded";
 export type PredictionInvalidationReason = "outcome-unavailable" | "pack-version-mismatch" | "corrupt-state";
 
 export interface SpectatorPrediction {
-  contract: "spectator-prediction/0.2";
+  contract: "spectator-prediction/0.3";
   predictionId: string;
   outcomeKey: string;
+  market: PredictionMarket;
   predictedCharacterId: string;
   stake: PredictionStake;
   multiplier: PredictionMultiplier;
@@ -190,6 +193,7 @@ export interface ReserveSpectatorPredictionInput {
   predictedCharacterId: string;
   stake: PredictionStake;
   multiplier: PredictionMultiplier;
+  market?: PredictionMarket;
 }
 
 export interface SettleSpectatorPredictionInput {

@@ -28,6 +28,7 @@ const COLLECTION_COST = 12;
 const COMPLETION_REWARD = 5;
 const VALID_STAKES = new Set([10, 50, 200]);
 const VALID_MULTIPLIERS = new Set<PredictionMultiplier>([2, 3, 4, 5]);
+const VALID_MARKETS = new Set(["joker-holder", "first-place"]);
 const INVALIDATION_REASONS = new Set(["outcome-unavailable", "pack-version-mismatch", "corrupt-state"]);
 
 export interface StoredCard { fingerprint: string; importedAt: string; analyzed: AnyAnalyzedCard; }
@@ -176,9 +177,10 @@ export async function reserveSpectatorPrediction(input: ReserveSpectatorPredicti
     const now = new Date().toISOString();
     const nextWallet: PointWalletSnapshot = { ...wallet, balance: wallet.balance - reservedAmount, updatedAt: now };
     const prediction: SpectatorPrediction = {
-      contract: "spectator-prediction/0.2",
+      contract: "spectator-prediction/0.3",
       predictionId: input.predictionId,
       outcomeKey: input.outcomeKey,
+      market: input.market ?? "joker-holder",
       predictedCharacterId: input.predictedCharacterId,
       stake: input.stake,
       multiplier: input.multiplier,
@@ -272,7 +274,7 @@ export async function listSpectatorPredictions(): Promise<SpectatorPrediction[]>
   const db = await openDatabase(), transaction = db.transaction(STORES.wagers, "readonly");
   const predictions = await request<StoredSpectatorPrediction[]>(transaction.objectStore(STORES.wagers).getAll());
   await complete(transaction); db.close();
-  return predictions.filter((prediction) => prediction?.contract === "spectator-prediction/0.1" || prediction?.contract === "spectator-prediction/0.2").map(normalizePrediction).sort((left, right) => right.createdAt.localeCompare(left.createdAt));
+  return predictions.filter((prediction) => prediction?.contract === "spectator-prediction/0.1" || prediction?.contract === "spectator-prediction/0.2" || prediction?.contract === "spectator-prediction/0.3").map(normalizePrediction).sort((left, right) => right.createdAt.localeCompare(left.createdAt));
 }
 
 export async function readCollection(id: string): Promise<CollectionSnapshot> {
@@ -338,12 +340,15 @@ function collectCursor<T>(cursorRequest: IDBRequest<IDBCursorWithValue | null>, 
 function complete(transaction: IDBTransaction): Promise<void> { return new Promise((resolve, reject) => { transaction.oncomplete = () => resolve(); transaction.onerror = () => reject(transaction.error ?? new Error("indexeddb_transaction_failed")); transaction.onabort = () => reject(transaction.error ?? new Error("indexeddb_transaction_aborted")); }); }
 function newWallet(): PointWalletSnapshot { return { contract: "wallet/0.1", id: "wallet", balance: INITIAL_POINT_BALANCE, updatedAt: new Date().toISOString() }; }
 function assertPredictionInput(input: ReserveSpectatorPredictionInput): void {
-  if (!input.predictionId || !input.outcomeKey || !input.predictedCharacterId || !VALID_STAKES.has(input.stake) || !VALID_MULTIPLIERS.has(input.multiplier)) throw new Error("invalid_prediction");
+  if (!input.predictionId || !input.outcomeKey || !input.predictedCharacterId || !VALID_STAKES.has(input.stake) || !VALID_MULTIPLIERS.has(input.multiplier) || input.market !== undefined && !VALID_MARKETS.has(input.market)) throw new Error("invalid_prediction");
 }
-type StoredSpectatorPrediction = SpectatorPrediction | (Omit<SpectatorPrediction, "contract" | "multiplier" | "reservedAmount"> & { contract: "spectator-prediction/0.1" });
+type StoredSpectatorPrediction = SpectatorPrediction
+  | (Omit<SpectatorPrediction, "contract" | "market"> & { contract: "spectator-prediction/0.2" })
+  | (Omit<SpectatorPrediction, "contract" | "market" | "multiplier" | "reservedAmount"> & { contract: "spectator-prediction/0.1" });
 function normalizePrediction(prediction: StoredSpectatorPrediction): SpectatorPrediction {
-  if (prediction.contract === "spectator-prediction/0.2") return prediction;
-  return { ...prediction, contract: "spectator-prediction/0.2", multiplier: 3, reservedAmount: prediction.stake };
+  if (prediction.contract === "spectator-prediction/0.3") return prediction;
+  if (prediction.contract === "spectator-prediction/0.2") return { ...prediction, contract: "spectator-prediction/0.3", market: "joker-holder" };
+  return { ...prediction, contract: "spectator-prediction/0.3", market: "joker-holder", multiplier: 3, reservedAmount: prediction.stake };
 }
 function isConstraintError(error: unknown): boolean { return error instanceof DOMException && error.name === "ConstraintError"; }
 async function abort(transaction: IDBTransaction, completion: Promise<void>): Promise<void> {

@@ -25,6 +25,10 @@ export function createOldMaidMatchRecord(cartridge: OldMaidCartridge, state: Old
   const outcome = oldMaidOutcome(state);
   if (!outcome) return null;
   const names = new Map(cartridge.characters.map((character) => [character.id, character.name]));
+  const first = outcome.ranking.find((standing) => standing.rank === 1);
+  const winningPredictionId = prediction?.market === "first-place"
+    ? first?.seatId === "player" && state.mode === "play" ? "player" : first?.characterId
+    : outcome.oddCardHolderCharacterId;
   return {
     contract: "match-record/0.1",
     recordId: `${identity.sessionId}#${state.sequence}`,
@@ -46,12 +50,13 @@ export function createOldMaidMatchRecord(cartridge: OldMaidCartridge, state: Old
     })),
     outcome: state.mode === "spectate" ? "spectated" : outcome.loserId === "player" ? "loss" : "win",
     resultHash: resultHash(state),
-    ...(prediction && outcome.oddCardHolderCharacterId ? { wager: {
+    ...(prediction && winningPredictionId ? { wager: {
+      market: prediction.market,
       predictedCharacterId: prediction.predictedCharacterId,
       stake: prediction.stake,
       multiplier: prediction.multiplier,
       reservedAmount: prediction.reservedAmount,
-      won: prediction.predictedCharacterId === outcome.oddCardHolderCharacterId,
+      won: prediction.predictedCharacterId === winningPredictionId,
     } } : {}),
     ...(psychology ? { psychology } : {}),
   };

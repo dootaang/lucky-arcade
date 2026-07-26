@@ -36,7 +36,7 @@ export default function TemerosaOldMaidView({ onExit }: { onExit(): void }) {
         reduce: (state, action) => reduceOldMaid(cartridge, state, action),
       }), listPredictions()]);
       if (!alive) return;
-      const currentOutcomeKey = spectatorOutcomeKey(recovered.state);
+      const currentOutcomeKey = predictionOutcomeKey(recovered.state);
       for (const prediction of predictions) {
         if (prediction.status !== "reserved" || !prediction.outcomeKey.startsWith("temerosa-old-maid|")) continue;
         if (prediction.outcomeKey === currentOutcomeKey) continue;
@@ -69,16 +69,16 @@ export default function TemerosaOldMaidView({ onExit }: { onExit(): void }) {
       void recordOldMaidCompletion(cartridge, previous, next, {
         cabinetId: "temerosa-old-maid", sessionId: SESSION, cabinetVersion: next.version, packVersion: TEMEROSA_OLD_MAID_PACK_VERSION,
       }, psychology, activePrediction).then((summary) => { if (summary) setMatchSummary(summary); }).catch(() => undefined);
-      if (next.mode === "spectate") void settleCurrentPrediction(next);
-      else void grantOldMaidCompletion(previous, next, "temerosa-old-maid").then((result) => { if (result) { setWallet(result.wallet); setAward({ amount: result.amount, rank: result.rank }); } }).catch(() => undefined);
+      if (next.mode === "play") void settleCurrentPrediction(next).then(() => grantOldMaidCompletion(previous, next, "temerosa-old-maid")).then((result) => { if (result) { setWallet(result.wallet); setAward({ amount: result.amount, rank: result.rank }); } }).catch(() => undefined);
+      else void settleCurrentPrediction(next);
     }
   }
 
-  async function startPrediction(input: { seed: string; characterIds: readonly string[]; predictedCharacterId: string; stake: number; multiplier: number }): Promise<"reserved" | "replay"> {
-    const outcomeKey = spectatorOutcomeKey({ seed: input.seed, mode: "spectate", characters: { "cpu-1": input.characterIds[0] as string, "cpu-2": input.characterIds[1] as string, "cpu-3": input.characterIds[2] as string }, spectatorCharacterId: input.characterIds[3] as string });
+  async function startPrediction(input: { seed: string; mode: OldMaidState["mode"]; characterIds: readonly string[]; market: "joker-holder" | "first-place"; predictedCharacterId: string; stake: number; multiplier: number }): Promise<"reserved" | "replay"> {
+    const outcomeKey = predictionOutcomeKey({ seed: input.seed, mode: input.mode, characters: { "cpu-1": input.characterIds[0] as string, "cpu-2": input.characterIds[1] as string, "cpu-3": input.characterIds[2] as string }, spectatorCharacterId: input.mode === "spectate" ? input.characterIds[3] as string : null });
     const existing = (await listPredictions()).find((prediction) => prediction.outcomeKey === outcomeKey);
     if (existing) { setActivePrediction(existing); return existing.status === "reserved" ? "reserved" : "replay"; }
-    const result = await reservePrediction({ outcomeKey, predictedCharacterId: input.predictedCharacterId, stake: input.stake as PredictionStake, multiplier: input.multiplier as PredictionMultiplier });
+    const result = await reservePrediction({ outcomeKey, market: input.market, predictedCharacterId: input.predictedCharacterId, stake: input.stake as PredictionStake, multiplier: input.multiplier as PredictionMultiplier });
     setWallet(result.wallet);
     setActivePrediction(result.prediction);
     return "reserved";
@@ -86,24 +86,29 @@ export default function TemerosaOldMaidView({ onExit }: { onExit(): void }) {
 
   async function settleCurrentPrediction(state: OldMaidState): Promise<void> {
     const outcome = oldMaidOutcome(state);
-    if (!outcome?.oddCardHolderCharacterId) return;
-    const outcomeKey = spectatorOutcomeKey(state);
+    if (!outcome) return;
+    const outcomeKey = predictionOutcomeKey(state);
     const prediction = (await listPredictions()).find((candidate) => candidate.outcomeKey === outcomeKey && candidate.status === "reserved");
     if (!prediction) return;
-    const result = await settlePrediction({ predictionId: prediction.predictionId, winningCharacterId: outcome.oddCardHolderCharacterId });
+    const firstSeat = outcome.ranking.find((standing) => standing.rank === 1)?.seatId;
+    const winningCharacterId = prediction.market === "first-place"
+      ? firstSeat === "player" && state.mode === "play" ? "player" : outcome.ranking.find((standing) => standing.rank === 1)?.characterId
+      : outcome.oddCardHolderCharacterId;
+    if (!winningCharacterId) return;
+    const result = await settlePrediction({ predictionId: prediction.predictionId, winningCharacterId });
     setWallet(result.wallet);
     setActivePrediction(result.prediction);
   }
 
   if (error) return <main className="game-shell"><div className="game-loading">도둑잡기 카드를 불러오지 못했습니다.<button onClick={() => window.location.reload()}>다시 불러오기</button><button onClick={onExit}>오락실로 돌아가기</button></div></main>;
   if (!ready) return <main className="game-shell"><div className="game-loading">도둑잡기 카드와 캐릭터 표정을 불러오고 있습니다…</div></main>;
-  const economy = wallet && collection ? { balance: wallet.balance, award, unlockedFaceIds: collection.unlockedFaceIds, onUnlock: async () => { const result = await unlockCollectionItem(COLLECTION, ready.cartridge.faces.map((face) => face.id)); setWallet(result.wallet); setCollection(result.collection); }, prediction: { stakes: PREDICTION_STAKES, multipliers: PREDICTION_MULTIPLIERS, active: activePrediction, onStart: startPrediction } } : undefined;
+  const economy = wallet && collection ? { balance: wallet.balance, award, unlockedFaceIds: collection.unlockedFaceIds, onUnlock: async () => { const result = await unlockCollectionItem(COLLECTION, ready.cartridge.faces.map((face) => face.id)); setWallet(result.wallet); setCollection(result.collection); }, prediction: { stakes: PREDICTION_STAKES, multipliers: PREDICTION_MULTIPLIERS, active: activePrediction, onStart: startPrediction, onClear: () => setActivePrediction(null) } } : undefined;
   return <OldMaidScreen cartridge={ready.cartridge} thumbAssets={ready.thumbAssets} assets={ready.assets} detailAssets={ready.detailAssets} initialState={ready.state} matchSummary={matchSummary} {...(economy ? { economy } : {})} onPersist={persist} onExit={onExit} />;
 }
 
-function spectatorOutcomeKey(state: Pick<OldMaidState, "seed" | "mode" | "characters" | "spectatorCharacterId">): string {
-  if (state.mode !== "spectate" || !state.spectatorCharacterId) return "";
-  return ["temerosa-old-maid", TEMEROSA_OLD_MAID_PACK_VERSION, state.seed, "spectate", state.characters["cpu-1"], state.characters["cpu-2"], state.characters["cpu-3"], state.spectatorCharacterId].join("|");
+function predictionOutcomeKey(state: Pick<OldMaidState, "seed" | "mode" | "characters" | "spectatorCharacterId">): string {
+  if (state.mode === "spectate" && !state.spectatorCharacterId) return "";
+  return ["temerosa-old-maid", TEMEROSA_OLD_MAID_PACK_VERSION, state.seed, state.mode, state.characters["cpu-1"], state.characters["cpu-2"], state.characters["cpu-3"], ...(state.spectatorCharacterId ? [state.spectatorCharacterId] : [])].join("|");
 }
 
 function progressLabel(state: OldMaidState): string {

@@ -102,15 +102,15 @@ describe.sequential("point wallet and spectator predictions", () => {
     const result = await page.evaluate(async () => {
       const database = await new Function("return import('/src/lib/database.ts')")();
       const first = await database.reserveSpectatorPrediction({ predictionId: "p-1", outcomeKey: "outcome-1", predictedCharacterId: "alice", stake: 10, multiplier: 2 });
-      const second = await database.reserveSpectatorPrediction({ predictionId: "p-2", outcomeKey: "outcome-2", predictedCharacterId: "bob", stake: 10, multiplier: 5 });
+      const second = await database.reserveSpectatorPrediction({ predictionId: "p-2", outcomeKey: "outcome-2", market: "first-place", predictedCharacterId: "player", stake: 10, multiplier: 5 });
       let error = "";
       try { await database.reserveSpectatorPrediction({ predictionId: "p-3", outcomeKey: "outcome-3", predictedCharacterId: "carol", stake: 50, multiplier: 2 }); }
       catch (caught) { error = caught instanceof Error ? caught.message : String(caught); }
       return { first, second, error, wallet: await database.readWallet() };
     });
 
-    expect(result.first).toMatchObject({ wallet: { balance: 80 }, prediction: { status: "reserved", stake: 10, multiplier: 2, reservedAmount: 20 } });
-    expect(result.second).toMatchObject({ wallet: { balance: 30 }, prediction: { status: "reserved", stake: 10, multiplier: 5, reservedAmount: 50 } });
+    expect(result.first).toMatchObject({ wallet: { balance: 80 }, prediction: { market: "joker-holder", status: "reserved", stake: 10, multiplier: 2, reservedAmount: 20 } });
+    expect(result.second).toMatchObject({ wallet: { balance: 30 }, prediction: { market: "first-place", predictedCharacterId: "player", status: "reserved", stake: 10, multiplier: 5, reservedAmount: 50 } });
     expect(result.error).toBe("insufficient_points");
     expect(result.wallet.balance).toBe(30);
   });
@@ -183,7 +183,7 @@ describe.sequential("point wallet and spectator predictions", () => {
       const settled = await database.settleSpectatorPrediction({ predictionId: "legacy", winningCharacterId: "alice" });
       return { listed, settled };
     });
-    expect(result.listed[0]).toMatchObject({ contract: "spectator-prediction/0.2", multiplier: 3, reservedAmount: 10 });
+    expect(result.listed[0]).toMatchObject({ contract: "spectator-prediction/0.3", market: "joker-holder", multiplier: 3, reservedAmount: 10 });
     expect(result.settled).toMatchObject({ wallet: { balance: 130 }, prediction: { multiplier: 3, settlementCredit: 40 } });
   });
 
