@@ -78,6 +78,8 @@ NPC 35명이 24시간 카지노에서 도박하고 그 잔고를 모든 플레�
 - 손패를 읽지 않으므로 정보 누출이 구조적으로 불가능하다. 확률 모델도 없다.
 - A26의 `npcDaySessions`가 이미 `tableId`·`stake`·`minuteOfDay`를 들고 있어 **추가 계산이 0**이다.
 - **A26 재미 관문(3단계) 통과 후에 착수한다.** 원장이 재미없으면 이것도 만들지 않는다.
+- **구글 스티치 시안이 이미 있다.** `디자인/스티치/stitch_dark_fantasy_betting_terminal/`의
+  `live_betting_terminal/screen.png`과 `obsidian_vault/DESIGN.md`. 착수 전에 볼 것 — 명세 12절.
 
 비교 검토와 수정 근거는 [테메로세 카지노 제안 비교 검토](./TEMEROSA-CASINO-IDEA-REVIEW-2026-07-25.md)를 따른다.
 

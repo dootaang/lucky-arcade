@@ -4,6 +4,9 @@
 >
 > 선행: [SPEC-A26](./SPEC-A26-living-casino-npc-ledger.md) 1·2단계. 이 명세는 A26의 세션 데이터를
 > 소비하기만 하고 새 시뮬레이션을 만들지 않는다.
+>
+> **착수 전 시안을 볼 것.** `C:\freetalk\디자인\스티치\stitch_dark_fantasy_betting_terminal\`
+> — 화면 `live_betting_terminal/screen.png`, 디자인 시스템 `obsidian_vault/DESIGN.md`. 자세한 사용법은 12절.
 
 ## 0. 한 줄
 
@@ -210,3 +213,62 @@ font-variant-numeric: tabular-nums;
 - **조커 확률을 계산하지 않는다.** 그건 다른 기능이고, 하려면 `publicRead` 경계부터 다시 논해야 한다.
 - **유저 간 실시간 동기화를 하지 않는다.** 모든 값이 클라이언트에서 계산되며 서버가 없다.
 - **베팅 UI를 여기에 붙이지 않는다.** 이 패널은 읽는 것이다. 거는 것은 각 테이블 안에서 한다.
+
+## 12. 참고 시안 — 반드시 먼저 볼 것
+
+이 패널은 **구글 스티치로 시안을 뽑아 둔 상태에서 설계했다.** 만들기 전에 보고 시작해라.
+
+```
+C:\freetalk\디자인\스티치\stitch_dark_fantasy_betting_terminal\
+  live_betting_terminal/screen.png     행 구조·깊이 막대·등락 표시가 그려진 화면
+  live_betting_terminal/code.html      그 화면의 HTML
+  obsidian_vault/DESIGN.md             이 패널 전용으로 뽑은 디자인 시스템
+```
+
+`obsidian_vault/DESIGN.md`는 **이 명세의 색·형태 규칙이 어디서 왔는지 그 자체**다. 4절과 5절이
+그 문서와 어긋나면 그쪽이 맞다고 보고 먼저 물어라. 특히 직접 지시하는 것들:
+
+```
+Rising Green #58d8ad     상승 전용
+Falling Red  #b91c1c     하락 전용
+Depth Bars               둥근 모서리 없는 평평한 가로 막대. 텍스트 뒤에 깔린다
+                         매수 #58d8ad 15% · 매도 #b91c1c 15% 불투명도
+모서리                   구조 요소는 전부 0px. 금색 필(pill)만 예외
+데이터 글자              JetBrains Mono 계열 등폭. 급변 시 UI 흔들림 방지가 명시 목적
+```
+
+### 그대로 쓰면 안 되는 것
+
+시안은 참고이지 코드가 아니다. **아래는 이 리포에서 작동하지 않거나 결정에 어긋난다.**
+
+| 시안에 있는 것 | 왜 안 쓰나 |
+|---|---|
+| `cdn.tailwindcss.com` · Google Fonts CDN · 원격 이미지 | 오프라인 우선 원칙 위반. 이 앱은 자체 호스팅이다 |
+| `Hanken Grotesk` · `JetBrains Mono` | 웹폰트를 새로 넣지 않기로 했다. `--ca-data`(`ui-monospace`)를 쓴다 |
+| 데스크톱 좌측 사이드바(`ORACLE` 브랜딩) | 우리 구조는 로비 → 카지노 2단이다. 별도 브랜드를 만들지 않는다 |
+| `1,240,450 GC` 골드코인 | 우리 화폐는 `P`다 |
+| 행마다 인물 초상 + `LOSS PROB %` | **정체가 바뀌었다.** 행은 인물이 아니라 테이블이고 확률을 계산하지 않는다. 1절 |
+| 시안의 `VOL: HIGH` 줄바꿈 깨짐 | 시안 자체의 결함이다. 따라 하지 마라 |
+
+### 가져올 것
+
+```
+행 구조          이름 · 배경에 깔린 깊이 막대 · 우측 수치 · 등락 화살표
+등락 색          #58d8ad / #b91c1c 를 15% 불투명도 막대와 100% 텍스트로 나눠 쓰는 것
+평평한 막대      모서리를 둥글리지 않는 것.  둥글리면 진행바처럼 보이고 시장 느낌이 죽는다
+상단 상태 줄     `LIVE MARKET` 자리에 점등 표시.  `.ca-live` 를 쓴다
+밀도             여백보다 정보 밀도를 택한 판단.  이 패널만은 플로어의 다른 카드보다 빽빽해도 된다
+```
+
+### 플로어 시안도 같이 볼 것
+
+이 패널은 플로어 안에 들어간다. 주변과 따로 놀면 안 된다.
+
+```
+C:\freetalk\디자인\스티치\stitch_temerosa_casino_game_lobby\
+  temerosa_casino_lobby/screen.png        현재 플로어가 이미 이 시안대로 구현돼 있다
+  temerosa_casino_design_system/DESIGN.md 플로어 쪽 디자인 시스템
+```
+
+플로어는 `casino.css`의 `.ca-*` 부품으로 이미 이 시안을 따라 구현됐다. **새 색이나 새 부품을
+만들지 말고 그 파일에서 가져다 써라.**
