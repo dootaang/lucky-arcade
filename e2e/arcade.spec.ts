@@ -90,7 +90,7 @@ test("filters hidden RecentPlay records and ignores the retired query preview", 
   await expect(page.locator(".venue-card")).toHaveCount(1);
   await expect(page.locator("input[type=file]")).toHaveCount(0);
   await page.evaluate(() => new Promise<void>((resolve, reject) => {
-    const opening = indexedDB.open("lucky-arcade", 6);
+    const opening = indexedDB.open("lucky-arcade", 7);
     opening.onerror = () => reject(opening.error);
     opening.onsuccess = () => {
       const db = opening.result;
