@@ -88,7 +88,7 @@ describe("old maid seat dialogue", () => {
         "emptied", "idle-draw", "joker-drawn", "joker-left", "pair-discard", "pair-made", "taken-from", "watching",
       ]);
     }
-    expect(temerosaOldMaidLines.find((line) => line.id === "nemo-joker-drawn")?.text).toEqual(["…한 번만. 딱 한 번만 되돌리면 되는데.", "…안 해."]);
+    expect(temerosaOldMaidLines.find((line) => line.id === "nemo-joker-drawn")?.text).toEqual(["무섭네.", "그래도 이번에는 도망치지 않을 거야."]);
     expect(new Map(temerosaOldMaidLines.map((line) => [line.id, line.text]))).toEqual(dialogueBookLines());
     const first = temerosaOldMaidLines[0] as (typeof temerosaOldMaidLines)[number];
     expect(() => validateOldMaidLines({ ...temerosaOldMaidCartridge, lines: [first, first] })).toThrow(/old_maid_line_duplicate/);

@@ -7,7 +7,7 @@ export const temerosaOutcomeOldMaidLines = [
         "characterId":  "pale",
         "event":  "table-open",
         "text":  [
-                     "다 모였네. 이 자리에도 이름을 붙여야 하나."
+                     "넷이 둘러앉았네. 배는 없는데 출항하는 기분이야. 카드가 파도라서 그런가."
                  ]
     },
     {
@@ -15,7 +15,7 @@ export const temerosaOutcomeOldMaidLines = [
         "characterId":  "pale",
         "event":  "finish-1st",
         "text":  [
-                     "제일 먼저 다 짝지어 줬어. 뿌듯하네, 이런 것도."
+                     "제일 먼저 다 짝지었어. 흩어진 물고기가 한 그물에 모인 것 같네. 그물은 별로지만."
                  ]
     },
     {
@@ -23,7 +23,7 @@ export const temerosaOutcomeOldMaidLines = [
         "characterId":  "pale",
         "event":  "finish-2nd",
         "text":  [
-                     "나도 끝났어. 먼저 나간 쪽도 잘 지내겠지."
+                     "나도 끝났어. 두 번째 항구라고 두 번째로 좋은 바다는 아니잖아."
                  ]
     },
     {
@@ -31,7 +31,7 @@ export const temerosaOutcomeOldMaidLines = [
         "characterId":  "pale",
         "event":  "finish-3rd",
         "text":  [
-                     "겨우 다 붙였다. …마지막 하나가 제일 어렵더라."
+                     "겨우 다 붙였네. 마지막 한 쌍은 육지에서 헤엄치는 것만큼 어려웠어."
                  ]
     },
     {
@@ -39,7 +39,7 @@ export const temerosaOutcomeOldMaidLines = [
         "characterId":  "pale",
         "event":  "defeat",
         "text":  [
-                     "결국 나한테 남았네. 짝 없는 애랑 나랑. …어울리긴 해."
+                     "결국 나한테 남았네. 짝 없는 카드와 최초의 베스티아라. 전혀 다른 둘인데, 그래서 좀 닮았어."
                  ]
     },
     {
@@ -47,7 +47,7 @@ export const temerosaOutcomeOldMaidLines = [
         "characterId":  "kano",
         "event":  "table-open",
         "text":  [
-                     "시작이구나. …다들 무사히 끝났으면 좋겠어."
+                     "시작하죠. 모두 무사히 끝날 겁니다. …제가 그렇게 만들 거예요."
                  ]
     },
     {
@@ -55,7 +55,7 @@ export const temerosaOutcomeOldMaidLines = [
         "characterId":  "kano",
         "event":  "finish-1st",
         "text":  [
-                     "제일 먼저 끝났네. 아무도 못 구하고 나가는 건 좀."
+                     "제가 먼저 끝났군요. 신이라면 당연한 결과입니다. …그런데 먼저 나가도 되나."
                  ]
     },
     {
@@ -63,7 +63,7 @@ export const temerosaOutcomeOldMaidLines = [
         "characterId":  "kano",
         "event":  "finish-2nd",
         "text":  [
-                     "나도 나가. 남은 둘은… 미안해."
+                     "두 번째로 끝났습니다. 남은 분들은 제가 지켜보죠."
                  ]
     },
     {
@@ -71,7 +71,7 @@ export const temerosaOutcomeOldMaidLines = [
         "characterId":  "kano",
         "event":  "finish-3rd",
         "text":  [
-                     "마지막까지 남을 뻔했어. 익숙한 자리인데."
+                     "간신히 빠져나왔네요. 전부 계산 안이었습니다. …진짜 큰일 날 뻔했잖아."
                  ]
     },
     {
@@ -79,7 +79,7 @@ export const temerosaOutcomeOldMaidLines = [
         "characterId":  "kano",
         "event":  "defeat",
         "text":  [
-                     "내가 들고 있을게. 이번에도 아무도 안 다쳤어. …나 말고는."
+                     "제가 들고 있겠습니다. 응답해야 하는 존재가 마지막 책임도 지는 법이니까요. …무섭지 않아요."
                  ]
     },
     {
@@ -87,7 +87,7 @@ export const temerosaOutcomeOldMaidLines = [
         "characterId":  "nemo",
         "event":  "table-open",
         "text":  [
-                     "카드 스물다섯 장, 좌석 넷. 여기서부터는 처음 보는 판이야."
+                     "좋아, 시작하자. 멋진 어른은 카드 앞에서 안 떨거든. …보통은 그렇대."
                  ]
     },
     {
@@ -95,7 +95,7 @@ export const temerosaOutcomeOldMaidLines = [
         "characterId":  "nemo",
         "event":  "finish-1st",
         "text":  [
-                     "처음부터 다시 안 하고 이겼어. 이런 것도 되는구나."
+                     "내가 1등이네. 영웅은 퇴장도 빠르다… 이건 좀 이상한가."
                  ]
     },
     {
@@ -103,7 +103,7 @@ export const temerosaOutcomeOldMaidLines = [
         "characterId":  "nemo",
         "event":  "finish-2nd",
         "text":  [
-                     "끝. 1등은 못 했지만 이게 이번 항로야."
+                     "두 번째로 끝났어. 모두를 구한 건 아니지만, 아직 집에 갈 때는 아니지."
                  ]
     },
     {
@@ -111,7 +111,7 @@ export const temerosaOutcomeOldMaidLines = [
         "characterId":  "nemo",
         "event":  "finish-3rd",
         "text":  [
-                     "아슬아슬했네. …되돌리고 싶었던 순간이 세 번 있었어. 안 했어."
+                     "살았다… 아니, 멋지게 빠져나왔어. 자, 남은 사람도 데리고 가자."
                  ]
     },
     {
@@ -119,9 +119,8 @@ export const temerosaOutcomeOldMaidLines = [
         "characterId":  "nemo",
         "event":  "defeat",
         "text":  [
-                     "내 손에 남았어.",
-                     "…되돌리면 안 남아. 알아.",
-                     "…안 해."
+                     "내 손에 남았네. 무섭지만 도망치진 않을게.",
+                     "이 판도 끝내고, 다 같이 집에 가자."
                  ]
     },
     {
@@ -209,7 +208,7 @@ export const temerosaOutcomeOldMaidLines = [
         "characterId":  "nieun",
         "event":  "table-open",
         "text":  [
-                     "앉았어. 이 자리는 원래 내가 앉는 자리라."
+                     "앉았어. 카드판이 세상 끝보다 복잡하진 않겠지. …그랬으면 좋겠네."
                  ]
     },
     {
@@ -217,7 +216,7 @@ export const temerosaOutcomeOldMaidLines = [
         "characterId":  "nieun",
         "event":  "finish-1st",
         "text":  [
-                     "제일 먼저 비웠네. 그래도 안 일어날 거야. 알잖아."
+                     "제일 먼저 비웠네. 역시 전설의 정보상. …그래도 안 일어날 거야."
                  ]
     },
     {
@@ -225,7 +224,7 @@ export const temerosaOutcomeOldMaidLines = [
         "characterId":  "nieun",
         "event":  "finish-2nd",
         "text":  [
-                     "나도 끝. 자리는 그대로 지킬게."
+                     "나도 끝. 적당히 잘했네. 자리는 그대로 지킬 테니까 신경 꺼."
                  ]
     },
     {
@@ -233,7 +232,7 @@ export const temerosaOutcomeOldMaidLines = [
         "characterId":  "nieun",
         "event":  "finish-3rd",
         "text":  [
-                     "겨우 비웠어. …어차피 나가지도 않을 건데 뭘 그렇게 애썼지."
+                     "겨우 비웠다. 나가지도 못하면서 탈출 경쟁이라니, 팔자 한번 좋네."
                  ]
     },
     {
@@ -241,7 +240,7 @@ export const temerosaOutcomeOldMaidLines = [
         "characterId":  "nieun",
         "event":  "defeat",
         "text":  [
-                     "내가 가진 게 낫겠어. 어차피 나는 여기 계속 있으니까."
+                     "조커까지 내가 갖네. 수집품 취향 한번 끝내준다. …그래도 너희보단 내가 드는 게 나아."
                  ]
     },
     {
@@ -249,7 +248,7 @@ export const temerosaOutcomeOldMaidLines = [
         "characterId":  "lyla",
         "event":  "table-open",
         "text":  [
-                     "참가자 확인. 전원 관리 범위 안이야."
+                     "참가자를 확인했습니다. 전원 관리 범위 내입니다."
                  ]
     },
     {
@@ -257,7 +256,7 @@ export const temerosaOutcomeOldMaidLines = [
         "characterId":  "lyla",
         "event":  "finish-1st",
         "text":  [
-                     "가장 먼저 정리했어. 관리라는 건 이런 거야."
+                     "가장 먼저 정리했습니다. 통제가 제대로 작동했다는 뜻입니다."
                  ]
     },
     {
@@ -265,7 +264,7 @@ export const temerosaOutcomeOldMaidLines = [
         "characterId":  "lyla",
         "event":  "finish-2nd",
         "text":  [
-                     "내 구역은 끝났어. 나머지는 지켜볼게."
+                     "제 구역은 정리됐습니다. 나머지도 관찰하겠습니다."
                  ]
     },
     {
@@ -273,7 +272,7 @@ export const temerosaOutcomeOldMaidLines = [
         "characterId":  "lyla",
         "event":  "finish-3rd",
         "text":  [
-                     "늦었네. …관리가 안 된 판이었어. 내 탓은 아니고."
+                     "종료가 늦었군요. 관리 오차는 수정하면 됩니다."
                  ]
     },
     {
@@ -281,7 +280,7 @@ export const temerosaOutcomeOldMaidLines = [
         "characterId":  "lyla",
         "event":  "defeat",
         "text":  [
-                     "내가 맡는 게 맞아. 다른 사람 손에 있었으면 더 나빴어."
+                     "제가 맡는 편이 안전합니다. 다른 이에게 넘길 이유가 없습니다."
                  ]
     },
     {
@@ -329,7 +328,7 @@ export const temerosaOutcomeOldMaidLines = [
         "characterId":  "wares",
         "event":  "table-open",
         "text":  [
-                     "넷이 앉았네. 여기서부터가 아직 안 쓰인 부분이야."
+                     "넷이 앉았네. 의자는 네 개고 손은 여덟 개고, 아직 안 나온 카드는 더 많아. 시작은 보통 수가 많아."
                  ]
     },
     {
@@ -337,7 +336,7 @@ export const temerosaOutcomeOldMaidLines = [
         "characterId":  "wares",
         "event":  "finish-1st",
         "text":  [
-                     "나는 먼저 끝났어. 남은 이야기는 내 것이 아니고."
+                     "나는 먼저 끝났어. 손이 비니까 손금이 잘 보이네. 남은 이야기는 아직 카드 뒤에 있고."
                  ]
     },
     {
@@ -345,7 +344,7 @@ export const temerosaOutcomeOldMaidLines = [
         "characterId":  "wares",
         "event":  "finish-2nd",
         "text":  [
-                     "두 번째. 순서는 별로 안 중요해. 기록에는 다 같이 남거든."
+                     "두 번째네. 두 번째는 가운데 같기도 하고 아니기도 해. 기록에는 순서대로 적히겠지만."
                  ]
     },
     {
@@ -353,7 +352,7 @@ export const temerosaOutcomeOldMaidLines = [
         "characterId":  "wares",
         "event":  "finish-3rd",
         "text":  [
-                     "마지막 직전에 빠져나왔네. 이런 순간이 제일 오래 남아."
+                     "마지막 직전에 나왔어. 방금 숨을 멈춘 사람이 있었네. 나였나. 아마 아니었을 거야."
                  ]
     },
     {
@@ -361,7 +360,7 @@ export const temerosaOutcomeOldMaidLines = [
         "characterId":  "wares",
         "event":  "defeat",
         "text":  [
-                     "나한테 남았구나. 끝나지 않은 문장은 원래 관찰자 몫이야."
+                     "나한테 남았구나. 끝나지 않은 문장은 관찰자 몫이고, 조커는 모자가 예쁘네. 둘 다 여기 둘게."
                  ]
     },
     {
