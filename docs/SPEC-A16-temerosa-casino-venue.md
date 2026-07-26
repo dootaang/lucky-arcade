@@ -3,6 +3,12 @@
 > 상태: v1.0 구현 계약 (2026-07-25). 선행: [SPEC-A13](./SPEC-A13-point-economy.md).
 > [SPEC-A15](./SPEC-A15-lobby-hero-art.md)의 공개 로비 아트 범위를 흡수한다.
 
+> 구현 메모 (2026-07-26): `apps/web/src/venues/registry.ts`가 Venue와 공개 캐비닛 허용 집합의 정본이다.
+> 공개 경로는 `/`, `/venues/:venueId`, `/play/:cabinetId`이며, 보존 기능 점검 경로는 Vite 개발 빌드에서만
+> `/dev`, `/dev/cabinets/:cabinetId`로 등록된다. 카지노 전용 배경 파생본이 합류하기 전까지 히어로는 **임시
+> 기존 승인 파생본**인 `temerosa-margin/0.8.0` sm/md WebP를 16:9 CSS crop 폴백으로 사용한다. A17 히어로
+> 합류 시 `VenueManifest.heroImage`의 src와 규격만 교체한다.
+
 ## 1. 제품 구조
 
 럭키★오락실은 중립 플랫폼으로 남는다. 현재 공개 Venue는 하나지만 배열과 레지스트리는 여러 Venue를 전제로 한다.

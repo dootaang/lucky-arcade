@@ -2,10 +2,14 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { createBrowserRouter, RouterProvider } from "react-router";
 import { Home } from "./routes/home.tsx";
+import { CabinetRoute } from "./routes/cabinet-route.tsx";
 import "@lucky-arcade/ui/tokens.css";
 import "./styles.css";
 
 const router = createBrowserRouter([
+  { path: "/", Component: Home },
+  { path: "/venues/:venueId", Component: Home },
+  { path: "/play/:cabinetId", Component: CabinetRoute },
   {
     path: "/review/temerosa",
     lazy: async () => {
@@ -13,6 +17,10 @@ const router = createBrowserRouter([
       return { Component: module.TemerosaReviewPage };
     },
   },
+  ...(import.meta.env.DEV ? [
+    { path: "/dev", element: <Home privatePreview /> },
+    { path: "/dev/cabinets/:cabinetId", element: <CabinetRoute privatePreview /> },
+  ] : []),
   { path: "*", Component: Home },
 ]);
 const root = document.getElementById("root");

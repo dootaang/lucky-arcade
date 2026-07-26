@@ -14,7 +14,7 @@ test("imports a local card, plays a deterministic puzzle, and restores it", asyn
   const browserErrors: string[] = [];
   page.on("pageerror", (error) => browserErrors.push(error.message));
   page.on("console", (message) => { if (message.type() === "error") browserErrors.push(message.text()); });
-  await page.goto("/?privateCabinets=1");
+  await page.goto("/dev");
   await page.locator('input[type="file"]').setInputFiles({ name: "e2e-card.json", mimeType: "application/json", buffer: Buffer.from(card) });
   await expect(page.getByRole("heading", { name: "E2E 유적 카드" })).toBeVisible();
   await expect(page.getByText("4", { exact: true }).first()).toBeVisible();
@@ -31,34 +31,87 @@ test("imports a local card, plays a deterministic puzzle, and restores it", asyn
   expect(browserErrors).toEqual([]);
 });
 
-test("mobile navigation remains reachable", async ({ page }, testInfo) => {
+test("mobile navigation and Venue floor remain reachable", async ({ page }, testInfo) => {
   test.skip(testInfo.project.metadata.mobile !== true);
   await page.goto("/");
+  const mobileHero = await page.locator(".venue-art").boundingBox();
+  expect((mobileHero?.width ?? 0) / (mobileHero?.height ?? 1)).toBeCloseTo(16 / 9, 1);
   await page.getByRole("button", { name: "메뉴 열기" }).click();
   await expect(page.getByRole("navigation", { name: "주 메뉴" })).toBeVisible();
-  await expect(page.getByRole("button", { name: "내 카드" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "로비" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "카지노", exact: true })).toBeVisible();
+  await page.getByRole("button", { name: "카지노", exact: true }).click();
+  await expect(page.getByRole("heading", { name: "테이블을 골라주세요" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "시작", exact: true })).toBeInViewport();
 });
 
-test("opens built-in quick cabinets without a card", async ({ page }) => {
+test("opens the sole public Venue and exposes only the playable old maid table", async ({ page }) => {
   await page.goto("/");
-  await expect(page.getByText("기다리는 동안, 바로 한 판")).toHaveCount(0);
-  await expect(page.locator(".arcade-entry")).toHaveCount(2);
-  await page.locator(".arcade-entry").filter({ hasText: "소녀전선 최애 월드컵" }).getByRole("button", { name: "바로 시작" }).click();
-  await expect(page.getByRole("heading", { name: "최애 월드컵" })).toBeVisible();
-  for (let pick = 0; pick < 11; pick += 1) await page.locator(".favorite-choice").first().click();
-  await expect(page.getByText("오늘의 최애", { exact: true })).toBeVisible();
-  await page.getByRole("button", { name: "다른 놀이 보기" }).click();
-  await expect(page.locator(".arcade-entry").filter({ hasText: "테메로세 도둑잡기" })).toBeVisible();
-  for (const hiddenTitle of ["작전 암호 기억", "럭키★더비 엔진 실험장", "소녀전선: 잔불 작전", "테메로세: 여백 — 첫 항로"]) {
-    await expect(page.locator(".arcade-entry").filter({ hasText: hiddenTitle })).toHaveCount(0);
+  await expect(page.locator(".venue-card")).toHaveCount(1);
+  await expect(page.getByRole("heading", { name: "테메로세 카지노" })).toBeVisible();
+  await expect(page.getByText("내 카드로 놀기")).toHaveCount(0);
+  await page.getByRole("button", { name: "카지노 입장" }).click();
+  await expect(page.locator(".table-card.playable")).toHaveCount(1);
+  await expect(page.getByRole("button", { name: "시작", exact: true })).toBeVisible();
+  await expect(page.locator(".table-card.coming-soon")).toHaveCount(4);
+  await expect(page.locator(".table-card.coming-soon button")).toHaveCount(0);
+  await page.getByRole("button", { name: "시작", exact: true }).click();
+  await expect(page.getByRole("heading", { name: "테메로세 도둑잡기" })).toBeVisible();
+});
+
+test("keeps the Venue title and entry action when its hero image fails", async ({ page }) => {
+  await page.route("**/npc-raven-neutral/*.webp", (route) => route.abort());
+  await page.goto("/");
+  await expect(page.locator(".venue-art img")).toBeHidden();
+  const fallbackLayout = await page.locator(".venue-card").evaluate((card) => {
+    const frame = card.querySelector<HTMLElement>(".venue-art")!;
+    const image = frame.querySelector<HTMLImageElement>("img")!;
+    const bounds = frame.getBoundingClientRect();
+    return { ratio: bounds.width / bounds.height, aspectRatio: getComputedStyle(frame).aspectRatio, objectFit: getComputedStyle(image).objectFit };
+  });
+  expect(fallbackLayout.ratio).toBeCloseTo(16 / 9, 1);
+  expect(fallbackLayout.aspectRatio).toBe("16 / 9");
+  expect(fallbackLayout.objectFit).toBe("cover");
+  await expect(page.getByRole("heading", { name: "테메로세 카지노" })).toBeVisible();
+  await page.getByRole("button", { name: "카지노 입장" }).click();
+  await expect(page.getByRole("heading", { name: "테이블을 골라주세요" })).toBeVisible();
+});
+
+test("blocks hidden cabinets at direct public URLs", async ({ page }) => {
+  for (const cabinet of ["gfl-favorite-cup", "favorite-cup", "old-maid-card", "gfl-ember"]) {
+    await page.goto(`/play/${cabinet}`);
+    await expect(page.getByRole("heading", { name: "이 게임은 공개되어 있지 않습니다." })).toBeVisible();
+    await expect(page.locator("input[type=file]")).toHaveCount(0);
   }
+});
+
+test("filters hidden RecentPlay records and ignores the retired query preview", async ({ page }) => {
+  await page.goto("/?privateCabinets=1");
+  await expect(page.locator(".venue-card")).toHaveCount(1);
+  await expect(page.locator("input[type=file]")).toHaveCount(0);
+  await page.evaluate(() => new Promise<void>((resolve, reject) => {
+    const opening = indexedDB.open("lucky-arcade", 6);
+    opening.onerror = () => reject(opening.error);
+    opening.onsuccess = () => {
+      const db = opening.result;
+      const transaction = db.transaction("recent", "readwrite");
+      const store = transaction.objectStore("recent");
+      store.put({ contract: "recent-play/0.1", cabinetId: "gfl-ember", sessionId: "hidden", title: "소녀전선: 잔불 작전", progressLabel: "비공개 기록", updatedAt: "2026-07-26T12:00:00.000Z" });
+      store.put({ contract: "recent-play/0.1", cabinetId: "temerosa-old-maid", sessionId: "public", title: "테메로세 도둑잡기", progressLabel: "12턴 · 18장 남음", updatedAt: "2026-07-26T11:00:00.000Z" });
+      transaction.onerror = () => reject(transaction.error);
+      transaction.oncomplete = () => { db.close(); resolve(); };
+    };
+  }));
+  await page.reload();
+  await expect(page.getByRole("region", { name: "이어하기" })).toContainText("테메로세 카지노 · 도둑잡기");
+  await expect(page.getByText("소녀전선: 잔불 작전")).toHaveCount(0);
 });
 
 test("plays and restores the private five-round Indian poker table", async ({ page }, testInfo) => {
   test.skip(testInfo.project.metadata.mobile === true);
   const browserErrors: string[] = [];
   page.on("pageerror", (error) => browserErrors.push(error.message));
-  await page.goto("/?privateCabinets=1");
+  await page.goto("/dev");
   await page.locator(".arcade-entry").filter({ hasText: "테메로세 인디언 포커" }).getByRole("button", { name: "바로 시작" }).click();
   await expect(page.getByRole("heading", { name: "테메로세 인디언 포커" })).toBeVisible();
   await page.getByRole("button", { name: "5라운드 시작" }).click();
@@ -81,7 +134,7 @@ test("replays one deterministic derby through all four rendering engines", async
   test.setTimeout(75_000);
   const browserErrors: string[] = [];
   page.on("pageerror", (error) => browserErrors.push(error.message));
-  await page.goto("/?privateCabinets=1");
+  await page.goto("/dev");
   await page.locator(".arcade-entry").filter({ hasText: "럭키★더비 엔진 실험장" }).getByRole("button", { name: "바로 시작" }).click();
   await expect(page.getByRole("heading", { name: "럭키★더비 엔진 실험장" })).toBeVisible();
   for (const engine of ["Phaser 4", "melonJS", "Excalibur", "LittleJS"]) {
@@ -96,7 +149,7 @@ test("replays one deterministic derby through all four rendering engines", async
 
 test("mobile derby keeps the race and controls on screen", async ({ page }, testInfo) => {
   test.skip(testInfo.project.metadata.mobile !== true);
-  await page.goto("/?privateCabinets=1");
+  await page.goto("/dev");
   await page.locator(".arcade-entry").filter({ hasText: "럭키★더비 엔진 실험장" }).getByRole("button", { name: "바로 시작" }).click();
   await expect(page.getByRole("heading", { name: "럭키★더비 엔진 실험장" })).toBeVisible();
   await expect(page.locator(".derby-stage")).toBeInViewport();
@@ -105,7 +158,7 @@ test("mobile derby keeps the race and controls on screen", async ({ page }, test
 
 test("mobile favorite choice does not stay highlighted in the next round", async ({ page }, testInfo) => {
   test.skip(testInfo.project.metadata.mobile !== true);
-  await page.goto("/");
+  await page.goto("/dev");
   await page.locator('input[type="file"]').setInputFiles({ name: "favorite-mobile.json", mimeType: "application/json", buffer: Buffer.from(portraitCard(8, 3, "모바일 월드컵 카드")) });
   await expect(page.getByRole("heading", { name: "최애 월드컵" })).toBeVisible();
   await page.locator(".favorite-choice").first().click();
@@ -114,7 +167,7 @@ test("mobile favorite choice does not stay highlighted in the next round", async
 });
 
 test("opens a card into the favorite cup and completes every round", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/dev");
   await page.locator('input[type="file"]').setInputFiles({ name: "favorite.json", mimeType: "application/json", buffer: Buffer.from(portraitCard(8, 3, "E2E 월드컵 카드")) });
   await expect(page.getByRole("heading", { name: "최애 월드컵" })).toBeVisible();
   for (let pick = 0; pick < 7; pick += 1) await page.locator(".favorite-choice").first().click();
@@ -124,7 +177,7 @@ test("opens a card into the favorite cup and completes every round", async ({ pa
 
 test("opens an expressive personal card as an old maid table", async ({ page }, testInfo) => {
   test.skip(testInfo.project.metadata.mobile === true);
-  await page.goto("/");
+  await page.goto("/dev");
   await page.locator('input[type="file"]').setInputFiles({ name: "old-maid.json", mimeType: "application/json", buffer: Buffer.from(oldMaidCard(4, "E2E 도둑잡기 카드")) });
   await expect(page.getByRole("heading", { name: "E2E 도둑잡기 카드 도둑잡기" })).toBeVisible();
   await expect(page.locator(".old-maid-opponent-picker button")).toHaveCount(4);
@@ -135,7 +188,7 @@ test("opens an expressive personal card as an old maid table", async ({ page }, 
 
 test("keeps personal old maid closed with only three expressive characters", async ({ page }, testInfo) => {
   test.skip(testInfo.project.metadata.mobile === true);
-  await page.goto("/");
+  await page.goto("/dev");
   await page.locator('input[type="file"]').setInputFiles({ name: "old-maid-short.json", mimeType: "application/json", buffer: Buffer.from(oldMaidCard(3, "E2E 재료 부족 카드")) });
   await expect(page.getByRole("heading", { name: "E2E 재료 부족 카드" })).toBeVisible();
   const cabinet = page.locator(".cabinet-card").filter({ hasText: "내 카드 도둑잡기" });
@@ -144,7 +197,7 @@ test("keeps personal old maid closed with only three expressive characters", asy
 });
 
 test("falls back to restoration crew and finishes a run", async ({ page }) => {
-  await page.goto("/?privateCabinets=1");
+  await page.goto("/dev");
   await page.locator('input[type="file"]').setInputFiles({ name: "restoration.json", mimeType: "application/json", buffer: Buffer.from(portraitCard(4, 3, "E2E 복구 카드")) });
   await expect(page.getByRole("heading", { name: "카드 복구반" })).toBeVisible();
   for (let problem = 0; problem < 4; problem += 1) {
@@ -158,7 +211,7 @@ test("opens the built-in GFL operation, resolves combat, and restores the reward
   const browserErrors: string[] = [];
   page.on("pageerror", (error) => browserErrors.push(error.message));
   page.on("console", (message) => { if (message.type() === "error") browserErrors.push(message.text()); });
-  await page.goto("/?privateCabinets=1");
+  await page.goto("/dev");
   await page.locator(".arcade-entry").filter({ hasText: "소녀전선: 잔불" }).getByRole("button", { name: "작전 시작", exact: true }).click();
   await expect(page.getByRole("heading", { name: "첫 제대를 편성하세요" })).toBeVisible();
   await expect(page.locator(".doll-grid img")).toHaveCount(12);
@@ -185,7 +238,7 @@ test("opens the built-in GFL operation, resolves combat, and restores the reward
 });
 
 test("becomes a provisional navigator and restores the chosen Temerosa party", async ({ page }) => {
-  await page.goto("/?privateCabinets=1");
+  await page.goto("/dev");
   await page.locator(".arcade-entry").filter({ hasText: "테메로세: 여백" }).getByRole("button", { name: "작전 시작" }).click();
   await expect(page.getByRole("heading", { name: "테메로세: 여백" })).toBeVisible();
 
@@ -228,7 +281,8 @@ test("plays and restores a complete Temerosa old maid table", async ({ page }, t
   test.skip(testInfo.project.metadata.mobile === true);
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/");
-  await page.locator(".arcade-entry").filter({ hasText: "테메로세 도둑잡기" }).getByRole("button", { name: "바로 시작" }).click();
+  await page.getByRole("button", { name: "카지노 입장" }).click();
+  await page.getByRole("button", { name: "시작", exact: true }).click();
   await expect(page.getByRole("heading", { name: "테메로세 도둑잡기" })).toBeVisible();
   await expect(page.getByText("마지막 조커를 피하세요")).toBeVisible();
   await expect(page.getByText("배분 전").first()).toBeVisible();
@@ -383,9 +437,11 @@ test("plays and restores a complete Temerosa old maid table", async ({ page }, t
   const awardMatch = /\+(\d+) P · (\d)등/.exec(await award.innerText());
   expect(Number(awardMatch?.[1])).toBe(({ 1: 10, 2: 5, 3: 3, 4: 1 } as Record<number, number>)[Number(awardMatch?.[2])]);
   await expect(page.getByText("자동 저장됨")).toBeVisible();
-  await page.reload();
+  await page.goto("/");
   await expect(page.getByRole("region", { name: "이어하기" })).toContainText("대국 완료");
+  await expect(page.getByRole("region", { name: "이어하기" })).toContainText("테메로세 카지노 · 도둑잡기");
   await page.getByRole("button", { name: "도둑잡기 이어하기", exact: true }).click();
+  await expect(page).toHaveURL(/\/play\/temerosa-old-maid$/);
   await expect(page.getByText(/에게 조커가 남았습니다/)).toBeVisible();
   await expect(page.getByRole("button", { name: "다시하기" })).toBeVisible();
   await expect(page.getByRole("button", { name: "상대 다시 고르기" })).toBeVisible();
@@ -411,7 +467,7 @@ test("keeps direct play free and offers an optional self prediction", async ({ p
     };
   }));
   await page.reload();
-  await page.locator(".arcade-entry").filter({ hasText: "테메로세 도둑잡기" }).getByRole("button", { name: "바로 시작" }).click();
+  await page.goto("/play/temerosa-old-maid");
   await expect(page.getByRole("button", { name: "시작", exact: true })).toBeEnabled();
   await expect(page.getByText("순위 보상 · 1등 10 P · 2등 5 P · 3등 3 P · 패배 1 P")).toBeVisible();
   await page.getByRole("button", { name: "선택 베팅 열기" }).click();
@@ -441,7 +497,7 @@ test("starts an open-hand four-NPC Temerosa spectator table", async ({ page }, t
     };
   }));
   await page.reload();
-  await page.locator(".arcade-entry").filter({ hasText: "테메로세 도둑잡기" }).getByRole("button", { name: "바로 시작" }).click();
+  await page.goto("/play/temerosa-old-maid");
   await page.getByRole("button", { name: "NPC 4명 관전" }).click();
   await expect(page.locator(".old-maid-opponent-picker button.selected")).toHaveCount(4);
   await expect(page.locator(".old-maid-spectator-hand .old-maid-card.face")).toHaveCount(0);
@@ -478,8 +534,7 @@ test("starts an open-hand four-NPC Temerosa spectator table", async ({ page }, t
 test("mobile Temerosa old maid keeps the draw cards reachable", async ({ page }, testInfo) => {
   test.skip(testInfo.project.metadata.mobile !== true);
   await page.emulateMedia({ reducedMotion: "reduce" });
-  await page.goto("/");
-  await page.locator(".arcade-entry").filter({ hasText: "테메로세 도둑잡기" }).getByRole("button", { name: "바로 시작" }).click();
+  await page.goto("/play/temerosa-old-maid");
   const mobileAngles = await page.locator(".old-maid-center").evaluate((center) => {
     const read = (owner: string) => {
       const slot = document.createElement("div");
@@ -550,7 +605,7 @@ test("mobile Temerosa old maid keeps the draw cards reachable", async ({ page },
 
 test("mobile Temerosa pilot keeps the first choice and dialogue controls reachable", async ({ page }, testInfo) => {
   test.skip(testInfo.project.metadata.mobile !== true);
-  await page.goto("/?privateCabinets=1");
+  await page.goto("/dev");
   await page.locator(".arcade-entry").filter({ hasText: "테메로세: 여백" }).getByRole("button", { name: "작전 시작" }).click();
   await expect(page.getByRole("button", { name: /손을 뻗는다/ })).toBeInViewport();
   await page.getByRole("button", { name: /손을 뻗는다/ }).click();
