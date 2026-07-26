@@ -274,6 +274,12 @@ importers:
         specifier: 19.2.17
         version: 19.2.17
 
+  cabinets/match-pairs:
+    dependencies:
+      '@lucky-arcade/engine':
+        specifier: workspace:*
+        version: link:../../packages/engine
+
   cabinets/old-maid:
     dependencies:
       '@lucky-arcade/cabinet-sdk':

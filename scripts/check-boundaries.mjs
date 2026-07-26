@@ -11,6 +11,7 @@ const rules = new Map([
   ["packages/engine", ["@lucky-arcade/contracts"]],
   ["packages/persistence", ["@lucky-arcade/contracts"]],
   ["packages/cabinet-sdk", ["@lucky-arcade/contracts", "@lucky-arcade/engine"]],
+  ["cabinets/match-pairs", ["@lucky-arcade/engine"]],
 ]);
 const domAllowed = ["/packages/ui/", "/apps/web/"];
 const failures = [];
