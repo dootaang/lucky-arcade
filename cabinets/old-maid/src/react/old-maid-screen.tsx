@@ -328,7 +328,7 @@ export function OldMaidScreen({ cartridge, assets, thumbAssets = assets, detailA
     setManualRunning(true);
   }
 
-  return <main className="old-maid-shell" style={background ? { "--old-maid-bg": `url(${JSON.stringify(background)})` } as React.CSSProperties : undefined}>
+  return <main className="old-maid-shell" data-presentation-hold={speechHolding || undefined} aria-busy={speechHolding || undefined} style={background ? { "--old-maid-bg": `url(${JSON.stringify(background)})` } as React.CSSProperties : undefined}>
     <header className="old-maid-header">
       <button onClick={onExit} aria-label="오락실로 돌아가기"><IconArrowLeft /></button>
       <div><span>BOT CARD · TABLE GAME</span><h1>{cartridge.title}</h1></div>
@@ -371,9 +371,9 @@ export function OldMaidScreen({ cartridge, assets, thumbAssets = assets, detailA
 
         {state.status === "dealing" && <div className="old-maid-dealing-copy" aria-live="polite"><IconCards /><strong>카드를 나누는 중…</strong><span>배분이 끝나면 처음부터 맞은 짝을 정리합니다.</span></div>}
 
-        {state.status === "revealing" && state.pendingDraw && <DrawReveal key={`${state.turn}:${state.pendingDraw.cardId}`} event={state.pendingDraw} face={faces.get(state.pendingDraw.faceId) as OldMaidFace} assets={assets} actorName={nameOf(state.pendingDraw.actorId)} targetName={nameOf(state.pendingDraw.targetId)} origin={drawFlightRef.current?.cardId === state.pendingDraw.cardId ? drawFlightRef.current : null} centerReveal={state.mode === "play" && (state.pendingDraw.actorId === "player" || state.pendingDraw.targetId === "player")} sourceFaceVisible={state.mode === "spectate" || humanFinishedWatching || state.mode === "play" && state.pendingDraw.targetId === "player"} paused={paused} onCollect={() => dispatch({ type: "collect_draw" })} />}
+        {state.status === "revealing" && state.pendingDraw && <DrawReveal key={`${state.turn}:${state.pendingDraw.cardId}`} event={state.pendingDraw} face={faces.get(state.pendingDraw.faceId) as OldMaidFace} assets={assets} actorName={nameOf(state.pendingDraw.actorId)} targetName={nameOf(state.pendingDraw.targetId)} origin={drawFlightRef.current?.cardId === state.pendingDraw.cardId ? drawFlightRef.current : null} centerReveal={state.mode === "play" && (state.pendingDraw.actorId === "player" || state.pendingDraw.targetId === "player")} sourceFaceVisible={state.mode === "spectate" || humanFinishedWatching || state.mode === "play" && state.pendingDraw.targetId === "player"} paused={paused || speechHolding} onCollect={() => dispatch({ type: "collect_draw" })} />}
 
-        {state.status === "discarding" && discardOwner && discardPairs.length > 0 && <DiscardStage key={discardStageKey(state.discardMode, discardOwner, discardPairs)} ownerId={discardOwner} ownerName={nameOf(discardOwner)} pairs={discardPairs} cards={cards} faces={faces} assets={assets} playerControls={discardOwner === "player" && state.mode === "play"} paused={paused} onDiscard={(cardIds) => dispatch({ type: "discard_pair", cardIds })} />}
+        {state.status === "discarding" && discardOwner && discardPairs.length > 0 && <DiscardStage key={discardStageKey(state.discardMode, discardOwner, discardPairs)} ownerId={discardOwner} ownerName={nameOf(discardOwner)} pairs={discardPairs} cards={cards} faces={faces} assets={assets} playerControls={discardOwner === "player" && state.mode === "play"} paused={paused || speechHolding} onDiscard={(cardIds) => dispatch({ type: "discard_pair", cardIds })} />}
 
         {state.offer && (state.status === "offering" || state.status === "playing") && <OfferStage
           state={state}

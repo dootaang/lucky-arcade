@@ -258,6 +258,11 @@ test("plays and restores a complete Temerosa old maid table", async ({ page }, t
 
   for (let turn = 0; turn < 800; turn += 1) {
     if (await page.getByText(/에게 조커가 남았습니다/).count()) break;
+    const presentationHold = page.locator('.old-maid-shell[data-presentation-hold="true"]');
+    if (await presentationHold.count()) {
+      await expect(presentationHold).toHaveCount(0, { timeout: 12_000 });
+      continue;
+    }
     const speech = page.locator(".old-maid-speech").first();
     if (!checkedSpeech && await speech.count()) {
       await expect(speech).toBeVisible();
@@ -384,10 +389,21 @@ test("starts an open-hand four-NPC Temerosa spectator table", async ({ page }, t
   await page.getByRole("button", { name: "예측하고 NPC 대국 관전" }).click();
   await expect(page.getByText("카드를 나누는 중…")).toBeVisible();
   await expect(page.locator(".old-maid-spectator-seat")).toBeVisible({ timeout: 20_000 });
+  await page.evaluate(() => {
+    const selector = '.old-maid-flight-layer[data-draw-path="direct"] .old-maid-card.face';
+    document.body.dataset.directFaceSeen = document.querySelector(selector) ? "true" : "false";
+    const observer = new MutationObserver(() => {
+      if (!document.querySelector(selector)) return;
+      document.body.dataset.directFaceSeen = "true";
+      observer.disconnect();
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
+    window.setTimeout(() => observer.disconnect(), 30_000);
+  });
   await page.getByRole("button", { name: "빠르게", exact: true }).click();
   await expect(page.getByText("상대끼리 뽑은 카드는 비공개")).toHaveCount(0);
   await expect(page.locator(".old-maid-spectator-hand .old-maid-card.face").first()).toBeVisible();
-  await expect(page.locator('.old-maid-flight-layer[data-draw-path="direct"] .old-maid-card.face').first()).toBeVisible({ timeout: 30_000 });
+  await expect.poll(() => page.locator("body").getAttribute("data-direct-face-seen"), { timeout: 30_000 }).toBe("true");
   await expect(page.locator(".old-maid-reveal-stage")).toHaveCount(0);
   await expect(page.getByRole("button", { name: "이 카드를 내 손으로 가져오기" })).toHaveCount(0);
   const rightColumn = await page.locator(".old-maid-table").evaluate((table) => {
