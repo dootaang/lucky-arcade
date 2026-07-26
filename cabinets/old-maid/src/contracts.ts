@@ -1,13 +1,28 @@
 export const OLD_MAID_LEGACY_VERSION = "old-maid/0.6" as const;
 export const OLD_MAID_PREVIOUS_VERSION = "old-maid/0.7" as const;
-export const OLD_MAID_VERSION = "old-maid/0.8" as const;
-export const TEMEROSA_OLD_MAID_PACK_VERSION = "temerosa-old-maid/0.8" as const;
+export const OLD_MAID_OFFER_VERSION = "old-maid/0.8" as const;
+export const OLD_MAID_VERSION = "old-maid/0.9" as const;
+export const TEMEROSA_OLD_MAID_PACK_VERSION = "temerosa-old-maid/0.9" as const;
 
 export type OldMaidSeatId = "player" | "cpu-1" | "cpu-2" | "cpu-3";
 export type OldMaidCpuSeatId = Exclude<OldMaidSeatId, "player">;
 export type OldMaidStatus = "ready" | "dealing" | "offering" | "playing" | "revealing" | "discarding" | "complete";
 export type OldMaidReaction = "neutral" | "pleased" | "tense";
 export type OldMaidTellStyle = "standard" | "open" | "guarded" | "bluffer";
+export type OldMaidBehaviorLevel = "low" | "medium" | "high";
+export type OldMaidBehaviorConsistency = "steady" | "adaptive" | "erratic";
+export type OldMaidPositionHabit = "none" | "center" | "edge" | "left" | "right";
+export type OldMaidCounterRead = "literal" | "mixed" | "suspicious";
+
+export interface OldMaidBehaviorProfile {
+  reorderActivity: OldMaidBehaviorLevel;
+  jokerHonesty: OldMaidBehaviorLevel;
+  decoyBias: OldMaidBehaviorLevel;
+  consistency: OldMaidBehaviorConsistency;
+  positionHabit: OldMaidPositionHabit;
+  signalAttention: OldMaidBehaviorLevel;
+  counterRead: OldMaidCounterRead;
+}
 export type OldMaidMode = "play" | "spectate";
 export type OldMaidLineEvent =
   | "watching" | "idle-draw" | "pair-discard" | "taken-from"
@@ -38,6 +53,8 @@ export interface OldMaidCharacter {
   name: string;
   appearanceSet: string;
   tellStyle: OldMaidTellStyle;
+  /** Optional authored strategy. Omission deliberately falls back to tellStyle. */
+  behavior?: OldMaidBehaviorProfile;
   portraits: Record<OldMaidReaction, string>;
   despairPortrait: string;
 }
@@ -91,7 +108,7 @@ export interface OldMaidOffer {
 
 export interface OldMaidState {
   contract: "old-maid-state/0.6" | "old-maid-state/0.7";
-  version: typeof OLD_MAID_VERSION | typeof OLD_MAID_PREVIOUS_VERSION | typeof OLD_MAID_LEGACY_VERSION;
+  version: typeof OLD_MAID_VERSION | typeof OLD_MAID_OFFER_VERSION | typeof OLD_MAID_PREVIOUS_VERSION | typeof OLD_MAID_LEGACY_VERSION;
   packVersion: string;
   sessionId: string;
   seed: string;

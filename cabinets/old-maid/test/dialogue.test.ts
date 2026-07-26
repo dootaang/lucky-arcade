@@ -108,8 +108,10 @@ describe("old maid seat dialogue", () => {
   });
 
   it("does not fall back to another character when the chosen pool is empty", () => {
-    const { transition, speech } = findSpokenTransition();
-    const cartridge = { ...temerosaOldMaidCartridge, lines: temerosaOldMaidLines.filter((line) => line.characterId !== speech.line.characterId || line.event !== speech.line.event) };
+    const { transition } = findSpokenTransition();
+    const snapshot = oldMaidSpeechSnapshot(transition.next);
+    const candidateKeys = new Set(speechEvents(temerosaOldMaidCartridge, transition).map((event) => `${snapshot.characters[event.seatId]}:${event.event}`));
+    const cartridge = { ...temerosaOldMaidCartridge, lines: temerosaOldMaidLines.filter((line) => !candidateKeys.has(`${line.characterId}:${line.event}`)) };
     expect(selectSpeech(cartridge, transition)).toBeNull();
   });
 });

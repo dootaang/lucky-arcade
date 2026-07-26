@@ -1,6 +1,6 @@
 import { PERSONA_PRESETS, XorShift32, expressSignal, fnv1a32, weightedChoice, type Persona } from "@lucky-arcade/engine";
 import type { OldMaidAction, OldMaidCard, OldMaidCartridge, OldMaidCpuSeatId, OldMaidDiscard, OldMaidDrawEvent, OldMaidReaction, OldMaidSeatId, OldMaidState } from "./contracts.ts";
-import { OLD_MAID_LEGACY_VERSION, OLD_MAID_PREVIOUS_VERSION, OLD_MAID_VERSION } from "./contracts.ts";
+import { OLD_MAID_LEGACY_VERSION, OLD_MAID_OFFER_VERSION, OLD_MAID_PREVIOUS_VERSION, OLD_MAID_VERSION } from "./contracts.ts";
 import { publicRead, type OldMaidPublicRead } from "./read.ts";
 
 export const OLD_MAID_SEAT_ORDER: readonly OldMaidSeatId[] = ["player", "cpu-1", "cpu-2", "cpu-3"];
@@ -8,11 +8,12 @@ export const OLD_MAID_SEAT_ORDER: readonly OldMaidSeatId[] = ["player", "cpu-1",
 export function isOldMaidState(value: unknown): value is OldMaidState {
   if (!value || typeof value !== "object") return false;
   const state = value as Partial<OldMaidState>;
-  const compatible = state.version === OLD_MAID_VERSION
+  const supported = state.version === OLD_MAID_VERSION || state.version === OLD_MAID_OFFER_VERSION || state.version === OLD_MAID_PREVIOUS_VERSION || state.version === OLD_MAID_LEGACY_VERSION;
+  const compatible = supported && usesOfferFlow(state.version)
     ? state.contract === "old-maid-state/0.7"
     : state.contract === "old-maid-state/0.6";
   return compatible
-    && (state.version === OLD_MAID_VERSION || state.version === OLD_MAID_PREVIOUS_VERSION || state.version === OLD_MAID_LEGACY_VERSION)
+    && supported
     && typeof state.packVersion === "string"
     && typeof state.sessionId === "string"
     && Boolean(state.hands && state.characters);
@@ -82,7 +83,7 @@ export function reduceOldMaid(cartridge: OldMaidCartridge, state: OldMaidState, 
   const actorId = state.currentPlayerId;
   const isHuman = actorId === "player" && state.mode === "play";
   if (action.type === "reorder_hand") {
-    assert(state.version !== OLD_MAID_VERSION, "old_maid_legacy_reorder_only");
+    assert(!usesOfferFlow(state.version), "old_maid_legacy_reorder_only");
     assert(isHuman, "old_maid_player_turn_required");
     assert(Number.isInteger(action.from) && Number.isInteger(action.to) && action.from >= 0 && action.to >= 0 && action.from < state.hands.player.length && action.to < state.hands.player.length, "old_maid_reorder_index_invalid");
     const count = state.lastReorder?.turn === state.turn ? state.lastReorder.count : 0;
@@ -99,11 +100,11 @@ export function reduceOldMaid(cartridge: OldMaidCartridge, state: OldMaidState, 
   }
   if (action.type === "draw") assert(isHuman, "old_maid_player_turn_required");
   if (action.type === "cpu_draw") assert(!isHuman, "old_maid_cpu_turn_required");
-  const targetId = state.version === OLD_MAID_VERSION ? requireReadyOffer(state, actorId).targetId : nextActiveSeat(state.hands, actorId);
+  const targetId = usesOfferFlow(state.version) ? requireReadyOffer(state, actorId).targetId : nextActiveSeat(state.hands, actorId);
   const targetHand = state.hands[targetId];
   assert(targetHand.length > 0, "old_maid_target_empty");
   const actorCharacter = cartridge.characters.find((character) => character.id === characterIdForSeat(state, actorId));
-  const persona = actorCharacter ? PERSONA_PRESETS[tellStyleForState(actorCharacter, state)] : PERSONA_PRESETS.standard;
+  const persona = actorCharacter ? personaForCharacter(actorCharacter, state) : PERSONA_PRESETS.standard;
   const index = action.type === "draw" ? action.index : state.version === OLD_MAID_LEGACY_VERSION
     ? legacyCpuDrawIndex(persona, publicRead(state, targetId), state.seed, state.turn, actorId, targetId, targetHand.length)
     : cpuDrawIndex(persona, publicRead(state, targetId), state.seed, state.turn, actorId, targetId, targetHand.length);
@@ -116,7 +117,7 @@ export function reduceOldMaid(cartridge: OldMaidCartridge, state: OldMaidState, 
   const pendingDraw: OldMaidDrawEvent = { actorId, targetId, cardId, faceId: card.faceId, madePair: false };
   return {
     ...state, sequence: state.sequence + 1, status: "revealing", hands, pendingDraw,
-    ...(state.version === OLD_MAID_VERSION ? { offer: null } : {}),
+    ...(usesOfferFlow(state.version) ? { offer: null } : {}),
     reactions: reactionsAfterDraw(cartridge, state, actorId, targetId, card.faceId === cartridge.oddFaceId, willMakePair),
   };
 }
@@ -192,6 +193,16 @@ export function validateCartridge(cartridge: OldMaidCartridge): void {
   assert(new Set(selectableIds).size === selectableIds.length, "old_maid_selectable_character_duplicate");
   const characterIds = new Set(cartridge.characters.map((character) => character.id));
   assert(selectableIds.every((id) => characterIds.has(id)), "old_maid_selectable_character_missing");
+  const levels = new Set(["low", "medium", "high"]);
+  for (const character of cartridge.characters) if (character.behavior) {
+    assert(levels.has(character.behavior.reorderActivity), `old_maid_behavior_activity:${character.id}`);
+    assert(levels.has(character.behavior.jokerHonesty), `old_maid_behavior_honesty:${character.id}`);
+    assert(levels.has(character.behavior.decoyBias), `old_maid_behavior_decoy:${character.id}`);
+    assert(["steady", "adaptive", "erratic"].includes(character.behavior.consistency), `old_maid_behavior_consistency:${character.id}`);
+    assert(["none", "center", "edge", "left", "right"].includes(character.behavior.positionHabit), `old_maid_behavior_position:${character.id}`);
+    assert(levels.has(character.behavior.signalAttention), `old_maid_behavior_attention:${character.id}`);
+    assert(["literal", "mixed", "suspicious"].includes(character.behavior.counterRead), `old_maid_behavior_counter_read:${character.id}`);
+  }
   assert(new Set(cartridge.faces.map((face) => face.id)).size === cartridge.faces.length, "old_maid_face_duplicate");
   assert(new Set(cartridge.cards.map((card) => card.id)).size === cartridge.cards.length, "old_maid_card_duplicate");
   const faceIds = new Set(cartridge.faces.map((face) => face.id));
@@ -250,9 +261,9 @@ function finalizeInitialDiscard(state: OldMaidState): OldMaidState {
   const currentPlayerId = active[0] ?? "player";
   const complete = active.length <= 1;
   return {
-    ...state, status: complete ? "complete" : state.version === OLD_MAID_VERSION ? "offering" : "playing", currentPlayerId,
+    ...state, status: complete ? "complete" : usesOfferFlow(state.version) ? "offering" : "playing", currentPlayerId,
     safeOrder, loserId: complete ? active[0] ?? null : null, discardMode: null, discardSeatIndex: null,
-    ...(state.version === OLD_MAID_VERSION && !complete ? { offer: beginOffer(state, currentPlayerId) } : {}),
+    ...(usesOfferFlow(state.version) && !complete ? { offer: beginOffer(state, currentPlayerId) } : {}),
   };
 }
 
@@ -267,10 +278,10 @@ function finalizeDraw(cartridge: OldMaidCartridge, state: OldMaidState, madePair
   const drawAlreadyLogged = state.history.some((entry) => entry.type === "draw" && entry.turn === state.turn && entry.actorId === event.actorId && entry.targetId === event.targetId);
   const reordered = complete ? state : maybeReorderCpuHand(cartridge, state, event.actorId);
   return {
-    ...reordered, turn: state.turn + 1, status: complete ? "complete" : state.version === OLD_MAID_VERSION ? "offering" : "playing", currentPlayerId: nextId,
+    ...reordered, turn: state.turn + 1, status: complete ? "complete" : usesOfferFlow(state.version) ? "offering" : "playing", currentPlayerId: nextId,
     safeOrder, loserId: complete ? active[0] ?? null : null, pendingDraw: null, discardMode: null, discardSeatIndex: null,
     lastDraw: event, history: drawAlreadyLogged ? state.history : [...state.history, { type: "draw", turn: state.turn, actorId: event.actorId, targetId: event.targetId, faceId: event.faceId, madePair }],
-    ...(state.version === OLD_MAID_VERSION ? { offer: complete ? null : beginOffer(state, nextId, state.sequence + 1) } : {}),
+    ...(usesOfferFlow(state.version) ? { offer: complete ? null : beginOffer(state, nextId, state.sequence + 1) } : {}),
   };
 }
 
@@ -286,7 +297,7 @@ function beginOffer(state: OldMaidState, actorId: OldMaidSeatId, revision = stat
 }
 
 function requireOffer(state: OldMaidState): NonNullable<OldMaidState["offer"]> {
-  assert(state.version === OLD_MAID_VERSION && state.status === "offering" && state.offer, "old_maid_offer_required");
+  assert(usesOfferFlow(state.version) && state.status === "offering" && state.offer, "old_maid_offer_required");
   assert(state.offer.actorId === state.currentPlayerId && state.offer.targetId === nextActiveSeat(state.hands, state.currentPlayerId), "old_maid_offer_seat_invalid");
   return state.offer;
 }
@@ -352,12 +363,48 @@ function finishOffer(state: OldMaidState): OldMaidState {
   };
 }
 
+type ReorderIntent = "stay" | "joker-swap" | "decoy-swap" | "habit-swap";
+
+export function npcReorderIntent(character: OldMaidCartridge["characters"][number], hasJoker: boolean, seed: string): ReorderIntent {
+  const base = reorderWeights(character.tellStyle, hasJoker);
+  const profile = character.behavior;
+  if (!profile) return (["stay", "joker-swap", "decoy-swap", "habit-swap"] as const)[weightedChoice(base, seed)] as ReorderIntent;
+  const activity = levelValue(profile.reorderActivity, 0.65, 1, 1.35);
+  const honesty = levelValue(profile.jokerHonesty, 0.55, 1, 1.4);
+  const decoy = levelValue(profile.decoyBias, 0.6, 1, 1.45);
+  const habitShare = profile.positionHabit === "none" ? 0 : profile.consistency === "steady" ? 0.55 : profile.consistency === "adaptive" ? 0.35 : 0.2;
+  const decoyWeight = base[2] * activity * decoy;
+  const weights = [base[0], base[1] * activity * honesty, decoyWeight * (1 - habitShare), decoyWeight * habitShare] as const;
+  return (["stay", "joker-swap", "decoy-swap", "habit-swap"] as const)[weightedChoice(weights, seed)] as ReorderIntent;
+}
+
 function reorderOfferedHand(cartridge: OldMaidCartridge, state: OldMaidState, seatId: OldMaidSeatId): { state: OldMaidState; move: { fromIndex: number; toIndex: number } | null } {
   const hand = state.hands[seatId];
   if (hand.length < 2) return { state, move: null };
   const characterId = characterIdForSeat(state, seatId);
   const character = cartridge.characters.find((candidate) => candidate.id === characterId);
   if (!character) return { state, move: null };
+  if (state.version === OLD_MAID_OFFER_VERSION) return legacyReorderOfferedHand(cartridge, state, seatId, character);
+  const jokerIndex = hand.findIndex((cardId) => cardById(cartridge.cards, cardId).faceId === cartridge.oddFaceId);
+  const hasJoker = jokerIndex >= 0;
+  const seed = `${state.seed}:cpu-reorder:${state.turn}:${seatId}:${hand.length}`;
+  const intent = npcReorderIntent(character, hasJoker, `${seed}:intent`);
+  if (intent === "stay") return { state, move: null };
+  const normalIndices = hand.map((_, index) => index).filter((index) => index !== jokerIndex);
+  if (intent !== "joker-swap" && normalIndices.length < 2 || intent === "joker-swap" && !hasJoker) return { state, move: null };
+  const fromIndex = intent === "joker-swap" ? jokerIndex : pickIndex(normalIndices, `${seed}:from`);
+  const targets = intent === "joker-swap" ? normalIndices : normalIndices.filter((index) => index !== fromIndex);
+  const toIndex = intent === "habit-swap"
+    ? habitualIndex(targets, character.behavior?.positionHabit ?? "none", `${seed}:habit`)
+    : pickIndex(targets, `${seed}:to`);
+  const hands = cloneHands(state.hands);
+  [hands[seatId][fromIndex], hands[seatId][toIndex]] = [hands[seatId][toIndex] as string, hands[seatId][fromIndex] as string];
+  const record = { turn: state.turn, fromIndex, toIndex, count: 1 };
+  return { state: { ...state, hands, lastReorders: { ...state.lastReorders, [seatId]: record } }, move: { fromIndex, toIndex } };
+}
+
+function legacyReorderOfferedHand(cartridge: OldMaidCartridge, state: OldMaidState, seatId: OldMaidSeatId, character: OldMaidCartridge["characters"][number]): { state: OldMaidState; move: { fromIndex: number; toIndex: number } | null } {
+  const hand = state.hands[seatId];
   const jokerIndex = hand.findIndex((cardId) => cardById(cartridge.cards, cardId).faceId === cartridge.oddFaceId);
   const hasJoker = jokerIndex >= 0;
   const chance = character.tellStyle === "open" ? (hasJoker ? 0.75 : 0.05)
@@ -375,6 +422,22 @@ function reorderOfferedHand(cartridge: OldMaidCartridge, state: OldMaidState, se
   hands[seatId].splice(toIndex, 0, cardId as string);
   const record = { turn: state.turn, fromIndex, toIndex, count: 1 };
   return { state: { ...state, hands, lastReorders: { ...state.lastReorders, [seatId]: record } }, move: { fromIndex, toIndex } };
+}
+
+function reorderWeights(style: OldMaidCartridge["characters"][number]["tellStyle"], hasJoker: boolean): readonly [number, number, number, number] {
+  if (!hasJoker) return style === "open" ? [90, 0, 10, 0] : style === "guarded" ? [45, 0, 55, 0] : style === "bluffer" ? [30, 0, 70, 0] : [80, 0, 20, 0];
+  return style === "open" ? [25, 70, 5, 0] : style === "guarded" ? [45, 15, 40, 0] : style === "bluffer" ? [25, 20, 55, 0] : [40, 35, 25, 0];
+}
+
+function levelValue(level: "low" | "medium" | "high", low: number, medium: number, high: number): number { return level === "low" ? low : level === "high" ? high : medium; }
+function pickIndex(indices: readonly number[], seed: string): number { return indices[fnv1a32(seed) % indices.length] as number; }
+function habitualIndex(indices: readonly number[], habit: "none" | "center" | "edge" | "left" | "right", seed: string): number {
+  if (habit === "none") return pickIndex(indices, seed);
+  if (habit === "left") return Math.min(...indices);
+  if (habit === "right") return Math.max(...indices);
+  if (habit === "center") return [...indices].sort((a, b) => Math.abs(a - (Math.min(...indices) + Math.max(...indices)) / 2) - Math.abs(b - (Math.min(...indices) + Math.max(...indices)) / 2))[0] as number;
+  const edges = [Math.min(...indices), Math.max(...indices)];
+  return edges[fnv1a32(seed) % edges.length] as number;
 }
 
 function reactionsAfterDraw(cartridge: OldMaidCartridge, state: OldMaidState, actorId: OldMaidSeatId, targetId: OldMaidSeatId, drewJoker: boolean, madePair: boolean): Record<OldMaidSeatId, OldMaidReaction> {
@@ -424,6 +487,22 @@ function tellStyleForState(character: OldMaidCartridge["characters"][number], st
   const styles = ["open", "guarded", "bluffer"] as const;
   const score = [...character.id].reduce((sum, value) => sum + value.charCodeAt(0), 0);
   return styles[score % styles.length] ?? "open";
+}
+
+function personaForCharacter(character: OldMaidCartridge["characters"][number], state: OldMaidState): Persona {
+  const base = PERSONA_PRESETS[tellStyleForState(character, state)];
+  const behavior = character.behavior;
+  if (!behavior || state.version !== OLD_MAID_VERSION) return base;
+  const signalAttention = levelValue(behavior.signalAttention, 0.35, 0.6, 0.85);
+  const signalTrust = behavior.counterRead === "literal" ? Math.max(0.45, Math.abs(base.signalTrust))
+    : behavior.counterRead === "suspicious" ? -Math.max(0.45, Math.abs(base.signalTrust))
+      : base.signalTrust * 0.35;
+  const consistency = behavior.consistency === "steady" ? 0.88 : behavior.consistency === "erratic" ? 0.4 : 0.68;
+  return { ...base, signalAttention, signalTrust, consistency };
+}
+
+export function usesOfferFlow(version: OldMaidState["version"] | undefined): boolean {
+  return version === OLD_MAID_VERSION || version === OLD_MAID_OFFER_VERSION;
 }
 
 function pairsInHand(hand: string[], cards: OldMaidCard[]): [string, string][] {

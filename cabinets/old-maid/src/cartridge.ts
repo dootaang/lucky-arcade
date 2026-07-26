@@ -1,7 +1,7 @@
 import { TEMEROSA_OLD_MAID_PACK_VERSION, type OldMaidCard, type OldMaidCartridge, type OldMaidCharacter, type OldMaidFace } from "./contracts.ts";
 import { temerosaGalleryFaces } from "./temerosa-gallery.ts";
 import { temerosaCasinoOldMaidLines } from "./temerosa-casino-lines.ts";
-import { TEMEROSA_CASINO_TELL_STYLES } from "./temerosa-casino-personas.ts";
+import { TEMEROSA_CASINO_BEHAVIOR_PROFILES, TEMEROSA_CASINO_TELL_STYLES } from "./temerosa-casino-personas.ts";
 import { temerosaOldMaidLines } from "./temerosa-lines.ts";
 import { temerosaOutcomeOldMaidLines } from "./temerosa-outcome-lines.ts";
 
@@ -20,7 +20,7 @@ const cards: OldMaidCard[] = faces.flatMap<OldMaidCard>((face) => face.id === "j
       { id: `${face.id}-b`, faceId: face.id, pairId: face.id },
     ]);
 
-const baseCharacters: OldMaidCharacter[] = [
+const baseCharacterDefinitions = [
   { id: "pale", name: "페일", appearanceSet: "finale", tellStyle: "open", portraits: { neutral: "review-pale-standing", pleased: "review-pale-smirk", tense: "pale-angry" }, despairPortrait: "pale-sad" },
   { id: "kano", name: "카노", appearanceSet: "finale", tellStyle: "guarded", portraits: { neutral: "review-kano-standing", pleased: "kano-smile", tense: "review-kano-upset" }, despairPortrait: "kano-sad" },
   { id: "nemo", name: "네모", appearanceSet: "nemo-magical-girl", tellStyle: "bluffer", portraits: { neutral: "nemo-magical-neutral", pleased: "nemo-magical-smile", tense: "nemo-magical-tense" }, despairPortrait: "nemo-magical-despair" },
@@ -30,7 +30,12 @@ const baseCharacters: OldMaidCharacter[] = [
   { id: "lyla", name: "라일라", appearanceSet: "bestiaization", tellStyle: "bluffer", portraits: { neutral: "lyla-natural", pleased: "lyla-smile", tense: "lyla-angry" }, despairPortrait: "lyla-angry" },
   { id: "riel", name: "리엘", appearanceSet: "bestiaization", tellStyle: "open", portraits: { neutral: "riel-natural", pleased: "riel-smile", tense: "riel-sad" }, despairPortrait: "riel-sad" },
   { id: "wares", name: "워어즈", appearanceSet: "finale", tellStyle: "bluffer", portraits: { neutral: "wares-standing", pleased: "wares-smile", tense: "wares-surprised" }, despairPortrait: "wares-sad" },
-];
+] satisfies OldMaidCharacter[];
+
+const baseCharacters: OldMaidCharacter[] = baseCharacterDefinitions.map((character) => ({
+  ...character,
+  behavior: TEMEROSA_CASINO_BEHAVIOR_PROFILES[character.id] as NonNullable<OldMaidCharacter["behavior"]>,
+}));
 
 export interface TemerosaCasinoPortraitAsset {
   id: string;
@@ -93,11 +98,13 @@ function buildContentCharacters(contentAssets: readonly TemerosaCasinoPortraitAs
   for (const [characterId, expressions] of grouped) {
     const neutral = expressions.get("neutral"), pleased = expressions.get("pleased"), tense = expressions.get("tense"), despair = expressions.get("despair");
     if (!neutral || !pleased || !tense || !despair) continue;
+    const behavior = TEMEROSA_CASINO_BEHAVIOR_PROFILES[characterId];
     output.push({
       id: characterId,
       name: characterName(characterId),
       appearanceSet: neutral.appearanceSet ?? "temerosa-casino",
       tellStyle: TEMEROSA_CASINO_TELL_STYLES[characterId] ?? "standard",
+      ...(behavior ? { behavior } : {}),
       portraits: { neutral: neutral.id, pleased: pleased.id, tense: tense.id },
       despairPortrait: despair.id,
     });

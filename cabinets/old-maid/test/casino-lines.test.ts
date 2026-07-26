@@ -56,6 +56,7 @@ describe("Temerosa casino NPC dialogue", () => {
     expect(new Map(temerosaOutcomeOldMaidLines.map((line) => [line.id, line.text]))).toEqual(ceremonyBookLines());
     expect(complete.characters).toHaveLength(35);
     for (const character of complete.characters) {
+      expect(character.behavior, character.id).toBeDefined();
       expect(temerosaOutcomeOldMaidLines.filter((line) => line.characterId === character.id).map((line) => line.event).sort()).toEqual(OUTCOME_EVENTS);
     }
     expect(() => validateOldMaidLines(complete)).not.toThrow();

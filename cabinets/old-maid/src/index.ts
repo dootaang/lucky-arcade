@@ -10,7 +10,7 @@ export * from "./tells.ts";
 export { temerosaOldMaidLines } from "./temerosa-lines.ts";
 export { temerosaCasinoOldMaidLines } from "./temerosa-casino-lines.ts";
 export { temerosaOutcomeOldMaidLines } from "./temerosa-outcome-lines.ts";
-export { TEMEROSA_CASINO_TELL_STYLES } from "./temerosa-casino-personas.ts";
+export { TEMEROSA_CASINO_BEHAVIOR_PROFILES, TEMEROSA_CASINO_TELL_STYLES } from "./temerosa-casino-personas.ts";
 export { createTemerosaCasinoOldMaidCartridge, temerosaOldMaidCartridge, type TemerosaCasinoPortraitAsset } from "./cartridge.ts";
 
 export const temerosaOldMaidManifest: CabinetManifest = {

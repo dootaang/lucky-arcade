@@ -1,7 +1,7 @@
 import { resultHash } from "@lucky-arcade/engine";
 import { describe, expect, it } from "vitest";
 import { PERSONA_PRESETS } from "@lucky-arcade/engine";
-import { OLD_MAID_LEGACY_VERSION, OLD_MAID_PREVIOUS_VERSION, availablePairs, cpuDrawIndex, createOldMaidState, createTemerosaCasinoOldMaidCartridge, inspectCardReaction, isOldMaidState, legacyCpuDrawIndex, oldMaidOutcome, publicRead, reduceOldMaid, selectAmbientReaction, temerosaOldMaidCartridge, validateCartridge, type OldMaidAction, type OldMaidCartridge, type OldMaidCharacter, type OldMaidMode, type OldMaidState } from "../src/index.ts";
+import { OLD_MAID_LEGACY_VERSION, OLD_MAID_OFFER_VERSION, OLD_MAID_PREVIOUS_VERSION, TEMEROSA_CASINO_BEHAVIOR_PROFILES, availablePairs, cpuDrawIndex, createOldMaidState, createTemerosaCasinoOldMaidCartridge, inspectCardReaction, isOldMaidState, legacyCpuDrawIndex, npcReorderIntent, oldMaidOutcome, publicRead, reduceOldMaid, selectAmbientReaction, temerosaOldMaidCartridge, validateCartridge, type OldMaidAction, type OldMaidCartridge, type OldMaidCharacter, type OldMaidMode, type OldMaidState } from "../src/index.ts";
 
 const extraCharacters: OldMaidCharacter[] = Array.from({ length: 22 }, (_, index) => ({
   id: `fixture-${index + 1}`,
@@ -55,6 +55,14 @@ function autoplayCartridge(cartridge: OldMaidCartridge, seed: string, mode: OldM
   return state;
 }
 
+function autoplayOffer08(cartridge: OldMaidCartridge, seed: string, mode: OldMaidMode): OldMaidState {
+  let state = asVersion08(createOldMaidState(cartridge, seed, `${mode}-08-session`));
+  state = reduceOldMaid(cartridge, state, { type: "start", mode });
+  state = reduceOldMaid(cartridge, state, { type: "finish_deal" });
+  for (let step = 0; state.status !== "complete" && step < 2_000; step += 1) state = reduceOldMaid(cartridge, state, nextAutoAction(cartridge, state, mode));
+  return state;
+}
+
 function nextAutoAction(cartridge: OldMaidCartridge, state: OldMaidState, mode: OldMaidMode): OldMaidAction {
   if (state.status === "revealing") return { type: "collect_draw" };
   if (state.status === "discarding") return { type: "discard_pair", cardIds: availablePairs(cartridge, state)[0] as [string, string] };
@@ -71,6 +79,8 @@ function asVersion07(state: OldMaidState): OldMaidState {
   return { ...legacy, contract: "old-maid-state/0.6", version: OLD_MAID_PREVIOUS_VERSION };
 }
 
+function asVersion08(state: OldMaidState): OldMaidState { return { ...state, version: OLD_MAID_OFFER_VERSION }; }
+
 function advanceToFirstOffer(cartridge = temerosaOldMaidCartridge, seed = "offer-phase"): OldMaidState {
   let state = createOldMaidState(cartridge, seed, "offer-session");
   state = reduceOldMaid(cartridge, state, { type: "start" });
@@ -80,15 +90,16 @@ function advanceToFirstOffer(cartridge = temerosaOldMaidCartridge, seed = "offer
 }
 
 describe("old maid deterministic engine", () => {
-  it("accepts released 0.6 and 0.7 snapshots while pairing 0.8 with its new contract", () => {
+  it("accepts released 0.6, 0.7 and 0.8 snapshots while pairing offer rules with the new contract", () => {
     const current = createOldMaidState(temerosaOldMaidCartridge, "snapshot-contract");
     expect(isOldMaidState(current)).toBe(true);
     expect(isOldMaidState(asVersion07(current))).toBe(true);
+    expect(isOldMaidState(asVersion08(current))).toBe(true);
     expect(isOldMaidState({ ...asVersion07(current), version: OLD_MAID_LEGACY_VERSION })).toBe(true);
     expect(isOldMaidState({ ...current, contract: "old-maid-state/0.6" })).toBe(false);
   });
 
-  it("requires every 0.8 draw to pass through an explicit offering phase", () => {
+  it("requires every current draw to pass through an explicit offering phase", () => {
     let state = advanceToFirstOffer();
     expect(state.status).toBe("offering");
     expect(state.offer).toMatchObject({ phase: "arranging", actorId: state.currentPlayerId });
@@ -199,7 +210,7 @@ describe("old maid deterministic engine", () => {
       appearanceSet: "fixture/main",
     }));
     const cartridge = createTemerosaCasinoOldMaidCartridge(content);
-    expect(cartridge.version).toBe("temerosa-old-maid/0.8");
+    expect(cartridge.version).toBe("temerosa-old-maid/0.9");
     expect(cartridge.dealPairCount).toBe(18);
     expect(cartridge.selectableCharacterIds).toContain("fixture-main");
     expect(cartridge.selectableCharacterIds).not.toContain("bacikal");
@@ -317,6 +328,69 @@ describe("old maid deterministic engine", () => {
     expect(resultHash(left)).toBe(resultHash(right));
   });
 
+  it("assigns all 35 Temerosa characters a validated authored behavior profile", () => {
+    expect(Object.keys(TEMEROSA_CASINO_BEHAVIOR_PROFILES)).toHaveLength(35);
+    expect(temerosaOldMaidCartridge.characters.every((character) => character.behavior)).toBe(true);
+    expect(() => validateCartridge(temerosaOldMaidCartridge)).not.toThrow();
+  });
+
+  it("makes personality-specific reorder policies observably distinct", () => {
+    const character = (id: string) => ({
+      ...(temerosaOldMaidCartridge.characters.find((candidate) => candidate.id === "nemo") as OldMaidCharacter),
+      id,
+      behavior: TEMEROSA_CASINO_BEHAVIOR_PROFILES[id] as NonNullable<OldMaidCharacter["behavior"]>,
+    } satisfies OldMaidCharacter);
+    const counts = (id: string) => Array.from({ length: 2_000 }, (_, index) => npcReorderIntent(character(id), true, `intent-${index}`))
+      .reduce<Record<string, number>>((all, intent) => ({ ...all, [intent]: (all[intent] ?? 0) + 1 }), {});
+    const echo = counts("echo"), nieun = counts("nieun"), camille = counts("camille");
+    expect(echo["joker-swap"] ?? 0).toBeGreaterThan((nieun["joker-swap"] ?? 0) * 2);
+    expect(nieun["habit-swap"] ?? 0).toBeGreaterThan(echo["habit-swap"] ?? 0);
+    expect(camille["decoy-swap"] ?? 0).toBeGreaterThan(echo["decoy-swap"] ?? 0);
+  });
+
+  it("can swap two ordinary cards without moving the joker", () => {
+    const character = temerosaOldMaidCartridge.characters.find(({ id }) => id === "nemo") as OldMaidCharacter;
+    const hand = ["joker-odd", ...temerosaOldMaidCartridge.cards.filter((card) => card.pairId !== null).slice(0, 4).map((card) => card.id)];
+    const seed = Array.from({ length: 10_000 }, (_, index) => `decoy-${index}`).find((candidate) => {
+      const intent = npcReorderIntent(character, true, `${candidate}:cpu-reorder:0:cpu-1:${hand.length}:intent`);
+      return intent === "decoy-swap" || intent === "habit-swap";
+    }) as string;
+    const base = createOldMaidState(temerosaOldMaidCartridge, seed, "decoy-session");
+    const state: OldMaidState = {
+      ...base,
+      status: "offering",
+      currentPlayerId: "player",
+      hands: { ...base.hands, "cpu-1": hand },
+      characters: { ...base.characters, "cpu-1": "nemo" },
+      offer: { actorId: "player", targetId: "cpu-1", phase: "arranging", reorderCount: 0, lastMove: null, revision: base.sequence },
+    };
+    const next = reduceOldMaid(temerosaOldMaidCartridge, state, { type: "prepare_cpu_offer" });
+    expect(next.offer?.lastMove).not.toBeNull();
+    expect(next.hands["cpu-1"][0]).toBe("joker-odd");
+    expect([...next.hands["cpu-1"]].sort()).toEqual([...hand].sort());
+  });
+
+  it("can visibly rearrange an ordinary hand that has no joker", () => {
+    const character = temerosaOldMaidCartridge.characters.find(({ id }) => id === "nemo") as OldMaidCharacter;
+    const hand = temerosaOldMaidCartridge.cards.filter((card) => card.pairId !== null).slice(0, 5).map((card) => card.id);
+    const seed = Array.from({ length: 10_000 }, (_, index) => `no-joker-${index}`).find((candidate) =>
+      npcReorderIntent(character, false, `${candidate}:cpu-reorder:0:cpu-1:${hand.length}:intent`) !== "stay",
+    ) as string;
+    const base = createOldMaidState(temerosaOldMaidCartridge, seed, "no-joker-session");
+    const state: OldMaidState = {
+      ...base,
+      status: "offering",
+      currentPlayerId: "player",
+      hands: { ...base.hands, "cpu-1": hand },
+      characters: { ...base.characters, "cpu-1": "nemo" },
+      offer: { actorId: "player", targetId: "cpu-1", phase: "arranging", reorderCount: 0, lastMove: null, revision: base.sequence },
+    };
+    const next = reduceOldMaid(temerosaOldMaidCartridge, state, { type: "prepare_cpu_offer" });
+    expect(next.offer?.lastMove).not.toBeNull();
+    expect(next.hands["cpu-1"]).not.toEqual(hand);
+    expect([...next.hands["cpu-1"]].sort()).toEqual([...hand].sort());
+  });
+
   it("lets an open opponent visibly react to the hovered joker", () => {
     let state = createOldMaidState(temerosaOldMaidCartridge, "inspect-joker", "test-session");
     const jokerOwner = (Object.keys(state.hands) as (keyof typeof state.hands)[]).find((seatId) => state.hands[seatId].includes("joker-odd"));
@@ -345,6 +419,12 @@ describe("old maid deterministic engine", () => {
     const spectate = autoplayCartridge(released07, "offer-golden", "spectate", true);
     expect(resultHash(play)).toBe("b222b7446e92e1b73a18dede32816db13bc99256c1b9a14edef797c497009e24");
     expect(resultHash(spectate)).toBe("d24508f938c64634e5aabd6fc382f58bf2a6262733b46c378a375e9afacc9741");
+  });
+
+  it("keeps the released 0.8 offer and reorder results", () => {
+    const released08 = { ...temerosaOldMaidCartridge, version: "temerosa-old-maid/0.8" };
+    expect(resultHash(autoplayOffer08(released08, "offer-08-golden", "play"))).toBe("2db9fd700b7d8d84e5e82493973a6db11140344d3a5ccdbb15adc88fed2918a6");
+    expect(resultHash(autoplayOffer08(released08, "offer-08-golden", "spectate"))).toBe("f3ccc5c1e793ca391630fc927f491865cd00f4843516a057c3e87464a0839a1a");
   });
 
   it("replays the same 18-pair inputs to the same result hash", () => {
