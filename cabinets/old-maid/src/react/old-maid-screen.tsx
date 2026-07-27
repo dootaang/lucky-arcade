@@ -2,6 +2,7 @@ import { IconArrowLeft, IconCards, IconCheck, IconPlayerPause, IconPlayerPlay, I
 import { celebrate } from "@lucky-arcade/ui/celebrate";
 import { HoloFoil } from "@lucky-arcade/ui/holo-card";
 import { NumberTicker } from "@lucky-arcade/ui/number-ticker";
+import { useSlideHighlight } from "@lucky-arcade/ui/slide-highlight";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { isOldMaidSpeechSilent, oldMaidSpeechSnapshot, selectOldMaidSpeeches, validateOldMaidLines, type OldMaidSpeech } from "../dialogue.ts";
@@ -59,6 +60,7 @@ export function OldMaidScreen({ cartridge, assets, thumbAssets = assets, detailA
   const [detail, setDetail] = useState<OldMaidFace | null>(null);
   const [opponentIds, setOpponentIds] = useState<string[]>(() => Object.values(state.characters));
   const [lobbyMode, setLobbyMode] = useState<OldMaidMode>(() => state.mode);
+  const opponentPickerRef = useSlideHighlight<HTMLDivElement>();
   const [hoveredDrawCardId, setHoveredDrawCardId] = useState<string | null>(null);
   const [touchedDrawCardId, setTouchedDrawCardId] = useState<string | null>(null);
   const [inspectedDrawCardIds, setInspectedDrawCardIds] = useState<string[]>([]);
@@ -440,7 +442,7 @@ export function OldMaidScreen({ cartridge, assets, thumbAssets = assets, detailA
           <p>같은 그림 두 장을 맞춰 버리세요. 차례가 오면 지정된 상대에게서 한 장을 뽑고, 마지막까지 조커를 가진 사람이 집니다.</p>
           {!replaySetup && <div className="old-maid-mode-picker" aria-label="대국 방식"><button type="button" className={lobbyMode === "play" ? "selected" : ""} onClick={() => chooseMode("play")}>직접 플레이</button><button type="button" className={lobbyMode === "spectate" ? "selected" : ""} onClick={() => chooseMode("spectate")}>NPC 4명 관전</button></div>}
           <strong className="old-maid-opponent-title">{replaySetup ? "같은 상대와 새 패로 다시 시작합니다" : lobbyMode === "spectate" ? "관전할 NPC 4명을 고르기" : "함께할 상대 3명 고르기"}</strong>
-          {!replaySetup && <><button type="button" className="old-maid-random" disabled={availableCharacters.length < (lobbyMode === "spectate" ? 4 : 3)} onClick={chooseRandomOpponents}><IconRefresh size={15} /> 무작위 선택</button><div className="old-maid-opponent-picker">{selectableCharacters.map((character) => { const selected = opponentIds.includes(character.id); const availability = opponentAvailability[character.id]; const unavailable = !selected && availability?.available === false; const portrait = thumbAssets[character.portraits.neutral] ?? assets[character.portraits.neutral]; return <button type="button" className={`${selected ? "selected" : ""}${unavailable ? " unavailable" : ""}`} aria-pressed={selected} aria-disabled={unavailable || undefined} disabled={unavailable} key={character.id} onClick={() => toggleOpponent(character.id)}>{portrait && <img src={portrait} alt="" decoding="async" loading="lazy" />}<span>{character.name}<small>{selected && availability?.available !== false ? "초대 수락" : availability?.label}</small></span></button>; })}</div></>}
+          {!replaySetup && <><button type="button" className="old-maid-random" disabled={availableCharacters.length < (lobbyMode === "spectate" ? 4 : 3)} onClick={chooseRandomOpponents}><IconRefresh size={15} /> 무작위 선택</button><div className="old-maid-opponent-picker ca-slide" ref={opponentPickerRef}>{selectableCharacters.map((character) => { const selected = opponentIds.includes(character.id); const availability = opponentAvailability[character.id]; const unavailable = !selected && availability?.available === false; const portrait = thumbAssets[character.portraits.neutral] ?? assets[character.portraits.neutral]; return <button type="button" className={`${selected ? "selected" : ""}${unavailable ? " unavailable" : ""}`} aria-pressed={selected} aria-disabled={unavailable || undefined} disabled={unavailable} key={character.id} onClick={() => toggleOpponent(character.id)}>{portrait && <img src={portrait} alt="" decoding="async" loading="lazy" />}<span>{character.name}<small>{selected && availability?.available !== false ? "초대 수락" : availability?.label}</small></span></button>; })}</div></>}
           <div className="old-maid-roster" aria-label="선택한 좌석 순서">{lobbyMode === "play" && <span>하단 · 플레이어</span>}{opponentIds.map((id, index) => <span key={id}>{index < 3 ? `상단 ${index + 1}` : "하단"} · {characters.get(id)?.name}</span>)}</div>
           {economy?.prediction && (lobbyMode === "spectate" || directPrediction) && <section className="old-maid-prediction" aria-label={lobbyMode === "spectate" ? "최종 조커 보유자 예측" : "1등 예측 베팅"}>
             <strong>{lobbyMode === "spectate" ? "마지막 조커를 가질 인물에게 베팅" : "누가 가장 먼저 손을 비울지 베팅"}</strong>

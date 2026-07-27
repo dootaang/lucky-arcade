@@ -791,7 +791,6 @@ test("starts an open-hand four-NPC Temerosa spectator table", async ({ page }, t
 
 test("mobile Temerosa old maid keeps the draw cards reachable", async ({ page }, testInfo) => {
   test.skip(testInfo.project.metadata.mobile !== true);
-  await holdCasinoOpponents(page, ["pale", "kano", "nemo"]);
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/play/temerosa-old-maid");
   const mobileAngles = await page.locator(".old-maid-center").evaluate((center) => {
@@ -808,7 +807,11 @@ test("mobile Temerosa old maid keeps the draw cards reachable", async ({ page },
   });
   expect(mobileAngles).toEqual(["180deg", "180deg", "180deg", "0deg"]);
   while (await page.locator(".old-maid-opponent-picker button.selected").count()) await page.locator(".old-maid-opponent-picker button.selected").first().click();
-  for (const name of ["페일", "카노", "네모"]) await page.locator(".old-maid-opponent-picker button").filter({ hasText: name }).click();
+  for (let seat = 0; seat < 3; seat += 1) {
+    const candidate = page.locator(".old-maid-opponent-picker button:not([disabled]):not(.selected)").first();
+    await expect(candidate).toBeEnabled();
+    await candidate.click();
+  }
   await page.getByRole("button", { name: "시작", exact: true }).click();
   await expect(page.locator(".old-maid-progress-controls-mobile")).toBeVisible();
   await expect(page.locator(".old-maid-progress-controls-desktop")).toBeHidden();

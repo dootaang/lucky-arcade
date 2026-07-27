@@ -59,7 +59,7 @@ html[data-theme="light"] { color-scheme:light; --canvas:#f5f4ef; --surface:#fff;
 .venue-active .table-card{position:relative;display:flex;flex-direction:column;align-items:flex-start;overflow:hidden;border-color:#3b3427;background:linear-gradient(160deg,#191d24,#14161b)}
 .venue-active .table-card.playable{border-color:#7d6334;background:radial-gradient(circle at 108% -10%,#f3bd5522,transparent 46%),linear-gradient(160deg,#1c2028,#15181e)}
 .venue-active .table-suit{position:absolute;top:6px;right:16px;z-index:0;color:#f3bd55;opacity:.085;font-size:clamp(58px,9vw,92px);line-height:1;pointer-events:none;user-select:none}
-.venue-active .table-card>*:not(.table-suit):not(.ca-brackets){position:relative;z-index:1}
+.venue-active .table-card>*:not(.table-suit):not(.ca-brackets):not(.ca-scan):not(.live-table-progress){position:relative;z-index:1}
 .venue-active .table-group{display:inline-flex;align-items:center;gap:7px;color:#e6c36c}
 .venue-active .table-card small{color:#bda875;letter-spacing:.01em}
 .venue-active .table-card.playable button{align-self:flex-start;display:flex;min-height:48px;align-items:center;gap:9px;margin-top:auto;border:0;border-radius:999px;padding:0 24px;font-size:.95rem;cursor:pointer}

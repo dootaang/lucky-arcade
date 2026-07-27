@@ -10,6 +10,7 @@
     "./casino.css": "./src/casino.css",
     "./number-ticker": "./src/number-ticker.tsx",
     "./holo-card": "./src/holo-card.tsx",
+    "./slide-highlight": "./src/slide-highlight.tsx",
     "./celebrate": "./src/celebrate.ts"
   },
   "scripts": {

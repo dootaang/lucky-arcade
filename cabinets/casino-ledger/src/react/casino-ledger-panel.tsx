@@ -1,4 +1,5 @@
 import { NumberTicker } from "@lucky-arcade/ui/number-ticker";
+import { HoloFoil } from "@lucky-arcade/ui/holo-card";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { casinoLeaderboard } from "../presentation.ts";
 import type { CasinoTableId, NpcPlayEvent, NpcPlayEventCode, NpcPresence, NpcRoundSettlement } from "../contracts.ts";
@@ -49,6 +50,52 @@ export default function CasinoLedgerPanel({
   const tapeRef = useFlipTape(tapeKeys);
   const lastMinuteCount = allTape.filter((event) => currentUtcSecond - event.utcSecond < 60).length;
   const recentSettlements = settlements.slice(0, 5);
+  const boardRef = useRef<HTMLTableSectionElement>(null);
+  const inviteCount = presences.filter((presence) => presence.phase === "idle").length;
+  const seatedCount = presences.length - inviteCount;
+  /** Highest shown balance is the full bar. No absolute ceiling is invented. */
+  const topBalance = Math.max(1, ...leaderboard.map((entry) => entry.balance));
+  /** One backlit portrait per screen, picked by name so every client agrees. */
+  const backlitNpcId = presences.filter((presence) => presence.phase === "settling")
+    .map((presence) => presence.npcId).sort(compareText)[0];
+  /** -1 the floor is losing, +1 the floor is winning. Presentation only. */
+  const mood = useMemo(() => {
+    const recent = settlements.filter((settlement) => currentUtcSecond - settlement.utcSecond < 120);
+    const scale = recent.reduce((sum, settlement) => sum + Math.abs(settlement.delta), 0);
+    if (scale === 0) return 0;
+    return Number((recent.reduce((sum, settlement) => sum + settlement.delta, 0) / scale).toFixed(2));
+  }, [currentUtcSecond, settlements]);
+  /* Quantised on purpose. --ca-busy drives an animation-duration, and changing
+     that mid-run makes the dust jump, so it may only move in steps of ten. */
+  const busy = Math.round(lastMinuteCount / 10) * 10;
+  useEffect(() => {
+    const root = document.documentElement;
+    root.style.setProperty("--ca-busy", String(busy));
+    root.style.setProperty("--ca-mood", String(mood));
+    root.style.setProperty("--ca-drift-duration", `${150 - Math.min(90, Math.max(0, busy)) * 1.4}s`);
+    root.style.setProperty("--ca-gold-mood-opacity", String(0.66 + Math.max(0, mood) * 0.34));
+    root.style.setProperty("--ca-crimson-mood-opacity", String(0.66 + Math.max(0, -mood) * 0.34));
+    return () => {
+      root.style.removeProperty("--ca-busy");
+      root.style.removeProperty("--ca-mood");
+      root.style.removeProperty("--ca-drift-duration");
+      root.style.removeProperty("--ca-gold-mood-opacity");
+      root.style.removeProperty("--ca-crimson-mood-opacity");
+    };
+  }, [busy, mood]);
+  /* The leaderboard rows are reused across renders, so React leaving the same
+     class in place would swallow a second move in the same direction. Own the
+     animation class here and force a reflow between removing and adding it. */
+  useLayoutEffect(() => {
+    const body = boardRef.current;
+    if (!body) return;
+    for (const row of [...body.querySelectorAll<HTMLTableRowElement>("tr[data-npc]")]) {
+      row.classList.remove("is-changing");
+      if (!balanceMoves[row.dataset.npc ?? ""]) continue;
+      void row.offsetWidth;
+      row.classList.add("is-changing");
+    }
+  }, [balanceMoves]);
   useEffect(() => {
     const changed = Object.fromEntries(Object.keys(npcBalances).flatMap((id) => {
       const previous = previousBalances.current[id];
@@ -62,20 +109,45 @@ export default function CasinoLedgerPanel({
     return () => window.clearTimeout(timer);
   }, [npcBalances]);
   return <>
+  <div className="casino-floor-status">
+    <span className="ca-label"><i className={inviteCount > 0 ? "ca-live" : "ca-idle"} aria-hidden="true" /> 지금 초대 가능 {inviteCount}명</span>
+    <span className="ca-label">테이블 착석 {seatedCount}명</span>
+  </div>
   <section className="casino-live-grid" aria-label="운영 중인 게임 테이블">
-    {tables.map((table) => { const latest = settlements.find((settlement) => settlement.tableId === table.id); return <LiveTableCard key={table.id} table={table} presences={presences.filter((presence) => presence.tableId === table.id && presence.phase !== "idle")} portraits={portraits} names={names} currentUtcSecond={currentUtcSecond} {...(latest ? { latest } : {})} onPlay={() => onPlay(table.id)} />; })}
+    {tables.map((table) => {
+      const latest = settlements.find((settlement) => settlement.tableId === table.id);
+      const pulseKey = playEvents.find((event) => event.tableId === table.id)?.eventId;
+      return <LiveTableCard
+        key={table.id}
+        table={table}
+        presences={presences.filter((presence) => presence.tableId === table.id && presence.phase !== "idle")}
+        portraits={portraits}
+        names={names}
+        npcBalances={npcBalances}
+        currentUtcSecond={currentUtcSecond}
+        {...(latest ? { latest } : {})}
+        {...(pulseKey ? { pulseKey } : {})}
+        {...(backlitNpcId ? { backlitNpcId } : {})}
+        onPlay={() => onPlay(table.id)}
+      />;
+    })}
   </section>
   <section className="casino-ledger-panel" aria-label="카지노 활동 원장">
     <div className="casino-ledger-board ca-brackets">
       <table>
         <caption className="ca-serif">명예의 전당</caption>
         <thead><tr><th scope="col">순위</th><th scope="col">이름</th><th scope="col">잔고</th></tr></thead>
-        <tbody>{leaderboard.map((entry) => <tr key={`${entry.kind}:${entry.id}`} className={`${entry.kind === "user" ? "is-user" : ""}${entry.kind === "npc" && balanceMoves[entry.id] ? ` is-changing is-${balanceMoves[entry.id]}` : ""}`}>
+        <tbody ref={boardRef}>{leaderboard.map((entry) => <tr
+          key={`${entry.kind}:${entry.id}`}
+          {...(entry.kind === "npc" ? { "data-npc": entry.id } : {})}
+          className={`${entry.kind === "user" ? "is-user" : ""}${entry.kind === "npc" && balanceMoves[entry.id] ? ` is-${balanceMoves[entry.id]}` : ""}`}
+          style={{ "--ledger-depth": `${(entry.balance / topBalance * 100).toFixed(2)}%` } as React.CSSProperties}
+        >
           <td className="ca-num">{entry.rank}</td>
-          <th scope="row"><span className="ledger-person">
-            {entry.kind === "npc" && entry.rank <= 3 && <span className="ledger-portrait"><span aria-hidden="true">{entry.name.slice(0, 1)}</span>{portraits[entry.id] && <img src={portraits[entry.id]} alt="" loading="lazy" onError={(event) => { event.currentTarget.hidden = true; }} />}</span>}
+          <th scope="row"><div className="ledger-person">
+            {entry.kind === "npc" && entry.rank <= 3 && <LedgerPortrait name={entry.name} src={portraits[entry.id]} crowned={entry.rank === 1} />}
             {entry.name}
-          </span></th>
+          </div></th>
           <td className="ca-num"><NumberTicker value={entry.balance} suffix=" P" durationMs={650} /></td>
         </tr>)}</tbody>
       </table>
@@ -92,6 +164,15 @@ export default function CasinoLedgerPanel({
     </div>
   </section>
   </>;
+}
+
+/** The leader alone gets real foil. It is the only holo layer on this screen. */
+function LedgerPortrait({ name, src, crowned }: { name: string; src: string | undefined; crowned: boolean }): React.ReactElement {
+  const face = <span className="ledger-portrait">
+    <span aria-hidden="true">{name.slice(0, 1)}</span>
+    {src && <img src={src} alt="" loading="lazy" onError={(event) => { event.currentTarget.hidden = true; }} />}
+  </span>;
+  return crowned ? <HoloFoil className="ledger-crown" tilt={false}>{face}</HoloFoil> : face;
 }
 
 function TapeLine({ event, name, currentUtcSecond }: { event: CasinoTapeEvent; name: string; currentUtcSecond: number }): React.ReactElement {
@@ -120,25 +201,62 @@ function SettlementLine({ settlement, name, currentUtcSecond }: { settlement: Np
   </article>;
 }
 
-function LiveTableCard({ table, presences, portraits, names, currentUtcSecond, latest, onPlay }: { table: CasinoLiveTable; presences: readonly NpcPresence[]; portraits: Readonly<Record<string, string>>; names: ReadonlyMap<string, string>; currentUtcSecond: number; latest?: NpcRoundSettlement; onPlay(): void }): React.ReactElement {
+function LiveTableCard({ table, presences, portraits, names, npcBalances, currentUtcSecond, latest, pulseKey, backlitNpcId, onPlay }: { table: CasinoLiveTable; presences: readonly NpcPresence[]; portraits: Readonly<Record<string, string>>; names: ReadonlyMap<string, string>; npcBalances: Readonly<Record<string, number>>; currentUtcSecond: number; latest?: NpcRoundSettlement; pulseKey?: string; backlitNpcId?: string; onPlay(): void }): React.ReactElement {
   const active = presences.filter((presence) => presence.phase !== "leaving");
-  const nearest = active.toSorted((left, right) => (left.availableAtUtcSecond ?? Infinity) - (right.availableAtUtcSecond ?? Infinity))[0];
-  const remaining = nearest?.availableAtUtcSecond === undefined ? null : Math.max(0, nearest.availableAtUtcSecond - currentUtcSecond);
-  return <article className={`table-card playable live-table-card is-${table.id} ${active.length > 0 ? "is-active" : "is-idle"}`}>
+  /* A visit runs 45~120 minutes, so `playing` is almost the whole clock and the
+     three transitions are seconds each. The card shows whichever transition is
+     happening; a table nobody has left yet is still emptying, not open. */
+  const representative = active.toSorted((left, right) => phasePriority(left.phase) - phasePriority(right.phase)
+    || (left.availableAtUtcSecond ?? Infinity) - (right.availableAtUtcSecond ?? Infinity))[0]
+    ?? presences.toSorted((left, right) => (left.availableAtUtcSecond ?? Infinity) - (right.availableAtUtcSecond ?? Infinity))[0];
+  const state = representative?.phase ?? "open";
+  const displayed = (active.length > 0 ? active : presences).toSorted((left, right) => {
+    if (left.npcId === backlitNpcId) return -1;
+    if (right.npcId === backlitNpcId) return 1;
+    return phasePriority(left.phase) - phasePriority(right.phase) || compareText(left.npcId, right.npcId);
+  });
+  const started = state === "playing" ? representative?.startedAtUtcSecond : undefined;
+  const settles = state === "playing" ? representative?.settlesAtUtcSecond : undefined;
+  const progress = started === undefined || settles === undefined
+    ? null
+    : Math.min(1, Math.max(0, (currentUtcSecond - started) / Math.max(1, settles - started)));
+  return <article
+    className={`table-card playable live-table-card is-${table.id} is-${state} ${state === "open" ? "is-idle ca-shine" : "is-active"}${state === "settling" ? " ca-glare" : ""}`}
+    {...(progress === null ? {} : { style: { "--progress": progress.toFixed(3) } as React.CSSProperties })}
+  >
     <span className="table-suit" aria-hidden="true">{table.suit}</span>
-    <span className="table-group"><i className={active.length > 0 ? "ca-live" : "ca-idle"} aria-hidden="true" /><span className="ca-label">{active.length > 0 ? `${phaseLabel(nearest?.phase)} · ${remainingLabel(remaining)}` : "지금 입장 가능"}</span></span>
+    <span className="table-group"><i className={state === "open" ? "ca-idle" : "ca-live"} aria-hidden="true" /><span className="ca-label">{state === "open" ? "지금 입장 가능" : `${phaseLabel(state)} · ${displayed.length}명`}</span></span>
     <h3 className="ca-serif">{table.title}</h3>
     <p>{table.description}</p>
-    <div className="live-table-stage" aria-hidden="true"><TableLoop tableId={table.id} active={active.length > 0} /></div>
-    <div className="live-table-players" aria-label={active.length > 0 ? `게임 중인 NPC ${active.length}명` : "게임 중인 NPC 없음"}>
-      {active.slice(0, 3).map((presence) => <span className={`live-player is-${presence.phase}`} key={presence.npcId}>{portraits[presence.npcId] ? <img src={portraits[presence.npcId]} alt="" loading="lazy" /> : <i aria-hidden="true">{(names.get(presence.npcId) ?? presence.npcId).slice(0, 1)}</i>}<b>{names.get(presence.npcId) ?? presence.npcId}</b><small>{phaseLabel(presence.phase)}</small></span>)}
-      {active.length > 3 && <span className="live-player-more">+{active.length - 3}</span>}
-      {active.length === 0 && <span className="live-table-empty">빈 테이블 · 바로 시작할 수 있습니다</span>}
+    <div className="live-table-stage" aria-hidden="true">
+      <TableLoop tableId={table.id} active={active.length > 0} />
+      {pulseKey && active.length > 0 && <span className="live-table-pulse" key={pulseKey} />}
+    </div>
+    <div className="live-table-players" aria-label={displayed.length > 0 ? `테이블에 있는 NPC ${displayed.length}명` : "테이블에 있는 NPC 없음"}>
+      {displayed.slice(0, 3).map((presence) => {
+        const portrait = portraits[presence.npcId];
+        const visit = presence.openingBalance === undefined ? 0 : (npcBalances[presence.npcId] ?? presence.openingBalance) - presence.openingBalance;
+        const backlit = portrait !== undefined && presence.npcId === backlitNpcId;
+        return <span
+          className={`live-player is-${presence.phase}${backlit ? " ca-backlight" : ""}`}
+          key={presence.npcId}
+          {...(visit === 0 ? {} : { "data-visit": visit > 0 ? "rising" : "falling" })}
+          {...(backlit ? { style: { "--ca-backlight": `url("${portrait}")` } as React.CSSProperties } : {})}
+        >
+          {portrait ? <img src={portrait} alt="" loading="lazy" /> : <i aria-hidden="true">{(names.get(presence.npcId) ?? presence.npcId).slice(0, 1)}</i>}
+          <b>{names.get(presence.npcId) ?? presence.npcId}</b>
+          <small>{phaseLabel(presence.phase)}</small>
+        </span>;
+      })}
+      {displayed.length > 3 && <span className="live-player-more">+{displayed.length - 3}</span>}
+      {displayed.length === 0 && <span className="live-table-empty">빈 테이블 · 바로 시작할 수 있습니다</span>}
     </div>
     {latest && <small className="live-table-result">최근 · {names.get(latest.npcId) ?? latest.npcId} {latest.delta > 0 ? "+" : ""}{latest.delta} P</small>}
     <small className="ca-num">{table.meta}</small>
-    <button className="ca-gold-btn ca-press ca-floorlight" onClick={onPlay}>{table.entryLabel}<span aria-hidden="true">▶</span></button>
+    <button className={`ca-gold-btn ca-press ca-reflect${state === "open" ? " ca-floorlight ca-pulse" : ""}`} onClick={onPlay}>{table.entryLabel}<span aria-hidden="true">▶</span></button>
     <span className="ca-brackets" aria-hidden="true" />
+    {state === "approaching" && <span className="ca-scan" aria-hidden="true" />}
+    {progress !== null && <span className="live-table-progress" aria-hidden="true" />}
   </article>;
 }
 
@@ -156,10 +274,12 @@ function phaseLabel(phase?: NpcPresence["phase"]): string {
   return phase === "playing" ? "게임 중" : "대기 중";
 }
 
-function remainingLabel(seconds: number | null): string {
-  if (seconds === null) return "";
-  if (seconds < 60) return `${seconds}초 남음`;
-  return `${Math.floor(seconds / 60)}분 ${seconds % 60}초 남음`;
+function phasePriority(phase: NpcPresence["phase"]): number {
+  if (phase === "settling") return 0;
+  if (phase === "approaching") return 1;
+  if (phase === "playing") return 2;
+  if (phase === "leaving") return 3;
+  return 4;
 }
 
 function tableName(tableId: CasinoTableId): string {

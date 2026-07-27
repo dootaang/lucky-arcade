@@ -11,10 +11,15 @@
  *
  * Pseudo-element ownership, so parts never collide:
  *   ::before -> .ca-shine, .ca-gold-rim      ::after -> .ca-glare
+ *   Both     -> .ca-holo, .ca-spotlight
  *   Overlays that need their own span: .ca-brackets, .ca-spotlight, .ca-scan
  */
 
 @property --ca-angle { syntax: "<angle>"; initial-value: 0deg; inherits: false; }
+/* How busy the casino is right now, in actions per minute. Set by the floor. */
+@property --ca-busy { syntax: "<number>"; initial-value: 0; inherits: true; }
+/* Which way the floor is running: +1 all winning, -1 all losing. */
+@property --ca-mood { syntax: "<number>"; initial-value: 0; inherits: true; }
 
 :root {
   --ca-void: #0c0f14;
@@ -98,19 +103,51 @@
     radial-gradient(circle at 50% 0%, color-mix(in srgb, var(--ca-gold) 7%, transparent), transparent 46%);
   background-size: 87px 91px, 53px 61px, 100% 100%;
   background-position: 0 0, 17px 23px, 50% 0;
-  animation: ca-drift 90s linear infinite;
+  /* The dust runs with the room. An empty floor drifts for 150s, a busy one
+     down to 24s. Only the duration changes, so nothing new is composited.
+     Longhand so the calc() survives minification of the shorthand. */
+  animation-name: ca-drift;
+  animation-duration: var(--ca-drift-duration, 150s);
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
 }
 @keyframes ca-drift {
   to { background-position: 87px 273px, -53px 183px, 50% 0; }
 }
 
-/* Two beams falling from above. Needs its own span inside a positioned parent. */
+/* Two beams falling from above. Needs its own span inside a positioned parent.
+   Split across both pseudos so --ca-mood can lean the room gold or crimson
+   without recolouring anything: only the two opacities move. */
 .ca-spotlight {
   position: absolute; inset: 0; pointer-events: none; overflow: hidden; border-radius: inherit;
-  background:
-    radial-gradient(58% 52% at 20% -10%, color-mix(in srgb, var(--ca-gold) 26%, transparent), transparent 66%),
-    radial-gradient(50% 46% at 86% -14%, color-mix(in srgb, var(--ca-crimson) 34%, transparent), transparent 62%);
 }
+.ca-spotlight::before, .ca-spotlight::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  transition: opacity 1.6s ease;
+}
+.ca-spotlight::before {
+  background: radial-gradient(58% 52% at 20% -10%, color-mix(in srgb, var(--ca-gold) 26%, transparent), transparent 66%);
+  opacity: var(--ca-gold-mood-opacity, .66);
+}
+.ca-spotlight::after {
+  background: radial-gradient(50% 46% at 86% -14%, color-mix(in srgb, var(--ca-crimson) 34%, transparent), transparent 62%);
+  opacity: var(--ca-crimson-mood-opacity, .66);
+}
+
+/* One highlight that slides between cells, driven by useSlideHighlight. Only
+   `translate` and `opacity` transition; the size snaps, which is invisible in a
+   uniform grid and keeps this off the layout path. */
+.ca-slide { position: relative; }
+.ca-slide::before {
+  content: ""; position: absolute; top: 0; left: 0; z-index: 0; opacity: 0; pointer-events: none;
+  width: var(--slide-w, 0); height: var(--slide-h, 0);
+  translate: var(--slide-x, 0) var(--slide-y, 0);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--ca-gold) 15%, transparent);
+  transition: translate .26s cubic-bezier(.2, .8, .2, 1), opacity .18s ease;
+}
+.ca-slide[data-sliding]::before { opacity: 1; }
+.ca-slide > * { position: relative; z-index: 1; }
 
 /* Four corner brackets. Own span so the host keeps its background. */
 .ca-brackets {
@@ -187,13 +224,27 @@
   to { background-position: 88% 92%, 16% 12%; }
 }
 
-/* Live status dot. */
+/* Live status dot, and its resting twin. Both live here because `.ca-*` is this
+   file's namespace — a cabinet stylesheet must not mint new ones. */
 .ca-live { display: inline-grid; place-items: center; width: 7px; height: 7px; border-radius: 50%; background: var(--ca-crimson); box-shadow: 0 0 6px 1px color-mix(in srgb, var(--ca-crimson) 75%, transparent); animation: ca-blink 2s ease-in-out infinite; }
+.ca-idle { display: inline-grid; width: 7px; height: 7px; border-radius: 50%; background: color-mix(in srgb, var(--ca-gold) 40%, transparent); }
 @keyframes ca-blink { 50% { opacity: .35; } }
+
+/* Light bleeding out from behind a portrait, so the sitter's own colours become
+   the lamp. No new art: the host passes its own image in as --ca-backlight.
+   Expensive — the blur budget allows one of these per screen. */
+.ca-backlight { position: relative; }
+.ca-backlight::before {
+  content: ""; position: absolute; inset: -30%; z-index: -1; pointer-events: none;
+  background-image: var(--ca-backlight, none);
+  background-size: cover; background-position: center 22%;
+  filter: blur(11px) saturate(1.8); opacity: .55;
+}
 
 @media (prefers-reduced-motion: reduce) {
   .ca-shine::before, .ca-tableau, .ca-scan::after, .ca-pulse, .ca-live, .ca-holo[data-holo-drift]::before { animation: none; }
-  .ca-press, .ca-holo { transition: none; }
+  .ca-press, .ca-holo, .ca-spotlight::before, .ca-spotlight::after, .ca-slide::before { transition: none; }
+  .ca-slide::before { display: none; }
   .ca-press:active { transform: none; }
   .ca-holo { transform: none; }
 }

@@ -338,6 +338,9 @@ importers:
       '@lucky-arcade/engine':
         specifier: workspace:*
         version: link:../../packages/engine
+      '@lucky-arcade/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
       react:
         specifier: 19.2.8
         version: 19.2.8

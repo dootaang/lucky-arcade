@@ -123,15 +123,29 @@ export function SlotMachineScreen({ state, symbols, variants, balance, busy, err
         const landingSteps = Math.max(0, track.children.length - 3);
         const distance = tileHeight * landingSteps;
         if (distance <= 0 || typeof track.animate !== "function") return [];
-        const duration = reel === 2 && outcome && hasSlotMachineReach(outcome) ? SLOT_MACHINE_REACH_DURATION_MS : SLOT_MACHINE_REEL_DURATIONS_MS[reel] ?? SLOT_MACHINE_REEL_DURATIONS_MS[2];
-        const animation = track.animate([
+        const reach = reel === 2 && outcome !== null && hasSlotMachineReach(outcome);
+        const duration = reach ? SLOT_MACHINE_REACH_DURATION_MS : SLOT_MACHINE_REEL_DURATIONS_MS[reel] ?? SLOT_MACHINE_REEL_DURATIONS_MS[2];
+        /* A reach reel does not glide to a stop. It stalls, creeps, stalls again
+           and only then lands — two keyframes sharing a value make each pause.
+           Offsets are fractions of the travel so they stay ordered at any tile
+           count, and the effect easing is linear so the plateaus read as stops. */
+        const animation = track.animate(reach ? [
+          { transform: "translate3d(0, 0, 0)", offset: 0, easing: "cubic-bezier(.3,0,.7,1)" },
+          { transform: `translate3d(0, ${-Math.min(distance * .34, tileHeight * 7)}px, 0)`, offset: .22, easing: "cubic-bezier(.16,.7,.3,1)" },
+          { transform: `translate3d(0, ${-(distance * .62)}px, 0)`, offset: .40, easing: "linear" },
+          { transform: `translate3d(0, ${-(distance * .62)}px, 0)`, offset: .50, easing: "cubic-bezier(.16,.7,.3,1)" },
+          { transform: `translate3d(0, ${-(distance * .86)}px, 0)`, offset: .70, easing: "linear" },
+          { transform: `translate3d(0, ${-(distance * .86)}px, 0)`, offset: .82, easing: "cubic-bezier(.25,.85,.35,1)" },
+          { transform: `translate3d(0, ${-(distance + 11)}px, 0)`, offset: .95, easing: "ease-out" },
+          { transform: `translate3d(0, ${-distance}px, 0)`, offset: 1 },
+        ] : [
           { transform: "translate3d(0, 0, 0)", offset: 0 },
           { transform: `translate3d(0, ${-Math.min(distance * .08, tileHeight * 1.6)}px, 0)`, offset: .08 },
           { transform: `translate3d(0, ${-Math.min(distance * .34, tileHeight * 7)}px, 0)`, offset: .25 },
           { transform: `translate3d(0, ${-(distance - tileHeight * 2.2)}px, 0)`, offset: .74 },
           { transform: `translate3d(0, ${-(distance + 11)}px, 0)`, offset: .95 },
           { transform: `translate3d(0, ${-distance}px, 0)`, offset: 1 },
-        ], { duration, easing: "cubic-bezier(.12,.72,.18,1)", fill: "forwards" });
+        ], { duration, easing: reach ? "linear" : "cubic-bezier(.12,.72,.18,1)", fill: "forwards" });
         void animation.finished.then(() => {
           if (animationGenerationRef.current === generation) setReelStopPulse(reel + 1);
         }).catch(() => undefined);
@@ -244,8 +258,8 @@ export function SlotMachineScreen({ state, symbols, variants, balance, busy, err
 
         <div className="slot-machine-bet-console" aria-label="판돈 선택">
           <span>CURRENT BET</span><strong className="ca-num">{stake} P</strong>
-          <button type="button" disabled={spinning || busy || affordableStakes.length === 0} onClick={cycleStake}>BET</button>
-          <button type="button" disabled={spinning || busy || affordableStakes.length === 0} onClick={selectMaximumStake}>MAX BET</button>
+          <button type="button" className="ca-gold-rim ca-press" disabled={spinning || busy || affordableStakes.length === 0} onClick={cycleStake}>BET</button>
+          <button type="button" className="ca-gold-rim ca-press" disabled={spinning || busy || affordableStakes.length === 0} onClick={selectMaximumStake}>MAX BET</button>
         </div>
 
         {state.status === "complete" && outcome && <section className={`slot-machine-result${credit > 0 ? " won" : " lost"}`} aria-live="polite">
@@ -255,7 +269,7 @@ export function SlotMachineScreen({ state, symbols, variants, balance, busy, err
         {spinning && <p className="slot-machine-status" aria-live="polite">{paused ? "일시정지됨" : revealPhase === "lines" ? credit > 0 ? "당첨선을 확인하는 중…" : "결과를 확인하는 중…" : revealPhase === "cutin" ? "당첨 연출 중…" : revealPhase === "settling" ? "포인트를 정산하는 중…" : "릴이 돌아가는 중…"}</p>}
         {error && <p className="slot-machine-error" role="alert">{error}</p>}
 
-        {spinning && <div className="slot-machine-actions"><button type="button" onClick={() => setManualPaused((value) => !value)}>{paused ? "계속" : "일시정지"}</button></div>}
+        {spinning && <div className="slot-machine-actions"><button type="button" className="ca-gold-rim ca-press" onClick={() => setManualPaused((value) => !value)}>{paused ? "계속" : "일시정지"}</button></div>}
         <p className="slot-machine-lever-hint">판돈을 정한 뒤 기계의 레버를 당기세요.</p>
       </aside>
     </section>

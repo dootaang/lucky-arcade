@@ -1,5 +1,6 @@
 import { IconArrowLeft, IconRefresh } from "@tabler/icons-react";
 import { PlayingCardBack, StandardPlayingCard, type CourtAtlas, type StandardPlayingCardId } from "@lucky-arcade/ui/playing-card";
+import { useSlideHighlight } from "@lucky-arcade/ui/slide-highlight";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createIndianPokerState, indianPokerRanking, reduceIndianPoker } from "../engine.ts";
 import { INDIAN_POKER_ROUNDS, INDIAN_POKER_STAKES, type IndianPokerAction, type IndianPokerCartridge, type IndianPokerStake, type IndianPokerState } from "../contracts.ts";
@@ -26,6 +27,7 @@ export function IndianPokerScreen({ cartridge, assets, thumbAssets, atlas, initi
   const [stake, setStake] = useState<IndianPokerStake>(INDIAN_POKER_STAKES[0]);
   const [starting, setStarting] = useState(false);
   const [manualPaused, setManualPaused] = useState(false);
+  const opponentPickerRef = useSlideHighlight<HTMLDivElement>();
   const [hiddenPaused, setHiddenPaused] = useState(() => typeof document !== "undefined" && document.hidden);
   const stateRef = useRef(state), queueRef = useRef(Promise.resolve()), responseDelayRef = useRef<PausableDelay | null>(null);
   const randomSelectionRef = useRef(0);
@@ -110,7 +112,7 @@ export function IndianPokerScreen({ cartridge, assets, thumbAssets, atlas, initi
       <div className="indian-poker-center">
         {state.status === "ready" && <section className="indian-poker-ready">
           <h2>상대를 고르세요</h2><p>상대 카드는 보이지만 내 카드는 보이지 않습니다. 표정과 베팅을 함께 읽으세요.</p>
-          <div className="indian-poker-opponent-picker" role="list" aria-label="상대 선택">
+          <div className="indian-poker-opponent-picker ca-slide" role="list" aria-label="상대 선택" ref={opponentPickerRef}>
             {cartridge.characters.map((character) => { const selected = character.id === state.opponentId; const availability = opponentAvailability[character.id]; const unavailable = !selected && availability?.available === false; return <button type="button" role="listitem" className={unavailable ? "is-unavailable" : undefined} key={character.id} aria-pressed={selected} aria-disabled={unavailable || undefined} disabled={unavailable} onClick={() => { dispatch({ type: "select-opponent", opponentId: character.id }); onOpponentSelectionChange?.(character.id); }}>
               <img src={thumbAssets[character.portraits.neutral]} alt="" loading="lazy" /><span>{character.name}<small>{selected && !selectedOpponentUnavailable ? "초대 수락" : availability?.label}</small></span>
             </button>; })}

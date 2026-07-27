@@ -12,8 +12,8 @@ const rules = new Map([
   ["packages/card-table", ["@lucky-arcade/engine"]],
   ["packages/persistence", ["@lucky-arcade/contracts"]],
   ["packages/cabinet-sdk", ["@lucky-arcade/contracts", "@lucky-arcade/engine"]],
-  ["cabinets/casino-ledger", ["@lucky-arcade/engine", "@lucky-arcade/ui/number-ticker"]],
-  ["cabinets/match-pairs", ["@lucky-arcade/engine"]],
+  ["cabinets/casino-ledger", ["@lucky-arcade/engine", "@lucky-arcade/ui/number-ticker", "@lucky-arcade/ui/holo-card"]],
+  ["cabinets/match-pairs", ["@lucky-arcade/engine", "@lucky-arcade/ui/slide-highlight"]],
 ]);
 const domAllowed = ["/packages/ui/", "/apps/web/"];
 const failures = [];

@@ -1,3 +1,4 @@
+import { useSlideHighlight } from "@lucky-arcade/ui/slide-highlight";
 import { useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent } from "react";
 import { createMatchPairsState, reduceMatchPairs } from "../engine.ts";
 import { MATCH_PAIRS_STAKES, type MatchPairsAction, type MatchPairsDifficulty, type MatchPairsFace, type MatchPairsOpponent, type MatchPairsStake, type MatchPairsState } from "../contracts.ts";
@@ -66,6 +67,7 @@ export function MatchPairsScreen({
   const [loadAttempt, setLoadAttempt] = useState(0);
   const [imageLoad, setImageLoad] = useState<{ signature: string | null; status: "loading" | "ready" | "error" }>({ signature: null, status: "loading" });
   const [manualPaused, setManualPaused] = useState(false);
+  const opponentPickerRef = useSlideHighlight<HTMLDivElement>();
   const [hiddenPaused, setHiddenPaused] = useState(() => typeof document !== "undefined" && document.hidden);
   const [announcement, setAnnouncement] = useState("");
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
@@ -263,7 +265,7 @@ export function MatchPairsScreen({
       {state.status === "ready" && <section className="match-pairs-panel match-pairs-ready-panel" aria-label="게임 준비">
         <h2>상대를 고르세요</h2>
         <p>같은 그림 두 장을 찾으면 한 번 더 뒤집습니다. 이름 없이 이미지만 보고 더 많은 짝을 가져가세요.</p>
-        <div className="match-pairs-opponent-picker" role="list" aria-label="상대 선택">
+        <div className="match-pairs-opponent-picker ca-slide" role="list" aria-label="상대 선택" ref={opponentPickerRef}>
           {opponents.map((candidate) => {
             const selected = candidate.id === state.opponentId;
             const thumb = thumbAssets[candidate.portraits.neutral];
