@@ -11,3 +11,98 @@
 .mini-old-maid i{margin-left:-16px;transform:rotate(var(--card-angle,0deg));transform-origin:50% 110%}.mini-old-maid i:first-child{margin-left:0;--card-angle:-12deg}.mini-old-maid i:nth-child(2){--card-angle:-4deg}.mini-old-maid i:nth-child(3){--card-angle:4deg}.mini-old-maid i:nth-child(4){--card-angle:12deg}.mini-old-maid.is-running{animation:mini-hand 2.8s ease-in-out infinite}@keyframes mini-hand{50%{transform:translateX(16px)}}
 @media(max-width:760px){.casino-live-grid{grid-template-columns:1fr}.live-table-card{min-height:310px}.live-table-players{overflow:hidden}.live-player:nth-of-type(n+3){display:none}}
 @media(prefers-reduced-motion:reduce){.ledger-activity-line,.ledger-activity-line::after,.mini-slot i,.mini-pairs i,.mini-poker b,.mini-old-maid{animation:none!important}.casino-ledger-board tr{transition:none}}
+
+/* Real settlements stay readable while the faster play tape keeps moving. */
+.casino-ledger-panel{
+  grid-template-areas:"board activity" "settlements activity";
+  align-items:start;
+}
+.casino-ledger-board{grid-area:board}
+.casino-ledger-settlements{
+  grid-area:settlements;
+  padding:12px;
+  border:1px solid color-mix(in srgb,var(--ca-gold) 28%,transparent);
+  border-radius:14px;
+  background:color-mix(in srgb,var(--ca-surface) 94%,transparent);
+  overflow:hidden;
+}
+.casino-ledger-activity{grid-area:activity}
+.casino-ledger-settlements ol{
+  display:grid;
+  gap:6px;
+  margin:0;
+  padding:0;
+  list-style:none;
+}
+.ledger-settlement-line{
+  --settlement-color:var(--ca-gold);
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  gap:4px 10px;
+  min-height:54px;
+  padding:8px 10px;
+  border:1px solid color-mix(in srgb,var(--settlement-color) 30%,transparent);
+  border-left:4px solid var(--settlement-color);
+  border-radius:8px;
+  background:color-mix(in srgb,var(--settlement-color) 9%,var(--ca-raised));
+  font-size:.7rem;
+  font-variant-numeric:tabular-nums;
+}
+.ledger-settlement-line.is-gain{--settlement-color:var(--ca-rising)}
+.ledger-settlement-line.is-loss{--settlement-color:var(--ca-falling)}
+.ledger-settlement-line.is-flat{--settlement-color:color-mix(in srgb,var(--ca-gold) 65%,#fff)}
+.ledger-settlement-line>div{
+  display:flex;
+  align-items:center;
+  min-width:0;
+  gap:7px;
+}
+.ledger-settlement-line>div b{
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.ledger-settlement-line>div small{opacity:.62}
+.ledger-settlement-line>span{
+  min-width:0;
+  overflow:hidden;
+  color:color-mix(in srgb,var(--ca-gold-bright) 72%,#fff);
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.ledger-settlement-line>strong{
+  grid-column:2;
+  grid-row:2;
+  color:var(--settlement-color);
+  text-align:right;
+}
+.ledger-settlement-line>strong i{font-style:normal}
+.ledger-settlement-amount{
+  grid-column:2;
+  grid-row:1;
+  color:var(--settlement-color);
+  font-size:1.02rem;
+  font-weight:950;
+  text-align:right;
+  text-shadow:0 0 14px color-mix(in srgb,var(--settlement-color) 32%,transparent);
+}
+.ledger-settlement-line.is-fresh{animation:ledger-settlement-arrive 1.25s ease-out}
+.ledger-activity-line.is-settlement{
+  border-left-width:4px;
+  background:color-mix(in srgb,var(--ledger-row-color,var(--ca-gold)) 10%,var(--ca-raised));
+}
+.ledger-activity-line.is-settlement.is-rising{--ledger-row-color:var(--ca-rising)}
+.ledger-activity-line.is-settlement.is-falling{--ledger-row-color:var(--ca-falling)}
+@keyframes ledger-settlement-arrive{
+  0%,18%{filter:brightness(1.7);box-shadow:0 0 0 1px var(--settlement-color),0 0 24px color-mix(in srgb,var(--settlement-color) 42%,transparent)}
+  100%{filter:brightness(1);box-shadow:none}
+}
+@media(max-width:760px){
+  .casino-ledger-panel{grid-template-areas:"board" "settlements" "activity"}
+  .casino-ledger-settlements{order:2}
+  .casino-ledger-activity{order:3}
+  .ledger-settlement-line{min-height:58px}
+}
+@media(prefers-reduced-motion:reduce){
+  .ledger-settlement-line{animation:none!important}
+}

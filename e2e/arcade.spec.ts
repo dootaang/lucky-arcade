@@ -70,9 +70,14 @@ test("loads the living ledger lazily and reuses the casino manifest in a game", 
   await page.goto("/venues/temerosa-casino");
   await expect(page.locator(".casino-ledger-board caption")).toHaveText("명예의 전당");
   await expect(page.locator(".casino-ledger-board tbody tr")).toHaveCount(6);
+  await expect(page.getByRole("region", { name: "최근 정산" })).toBeVisible();
+  await expect(page.locator(".casino-ledger-settlements .ledger-settlement-line")).toHaveCount(5);
+  expect(await page.locator(".ledger-settlement-line.is-gain, .ledger-settlement-line.is-loss").count()).toBeGreaterThan(0);
+  await expect(page.locator(".ledger-settlement-line strong").first()).toHaveText(/▲ 획득|▼ 손실|— 변동 없음/);
+  await expect(page.locator(".ledger-settlement-amount").first()).toHaveText(/[+−]?\d[\d,]* P/);
   await expect(page.locator(".casino-ledger-activity [aria-live]")).toHaveCount(0);
   await expect(page.getByText("LIVE PLAY TAPE", { exact: true })).toBeVisible();
-  await expect(page.locator(".ledger-heading small")).toContainText("ACTIONS / 60s");
+  await expect(page.locator(".casino-ledger-activity .ledger-heading small")).toContainText("ACTIONS / 60s");
   await expect(page.locator(".ledger-motion [data-tape-key]")).toHaveCount(12);
   expect(await page.locator(".casino-live-grid .live-table-card.is-active").count()).toBeGreaterThan(0);
   const firstTapeKey = await page.locator(".ledger-motion [data-tape-key]").first().getAttribute("data-tape-key");

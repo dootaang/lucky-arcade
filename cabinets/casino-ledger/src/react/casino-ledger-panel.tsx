@@ -48,6 +48,7 @@ export default function CasinoLedgerPanel({
   const tapeKeys = tape.map((event) => event.id).join("|");
   const tapeRef = useFlipTape(tapeKeys);
   const lastMinuteCount = allTape.filter((event) => currentUtcSecond - event.utcSecond < 60).length;
+  const recentSettlements = activities.slice(0, 5);
   useEffect(() => {
     const changed = Object.fromEntries(Object.keys(npcBalances).flatMap((id) => {
       const previous = previousBalances.current[id];
@@ -79,6 +80,10 @@ export default function CasinoLedgerPanel({
         </tr>)}</tbody>
       </table>
     </div>
+    <section className="casino-ledger-settlements" aria-labelledby="settlement-heading">
+      <div className="ledger-heading"><span id="settlement-heading">최근 정산</span><small>실제 잔고 변동</small></div>
+      <ol>{recentSettlements.map((activity) => <li key={activityKey(activity)}><SettlementLine activity={activity} name={names.get(activity.npcId) ?? activity.npcId} currentUtcSecond={currentUtcSecond} /></li>)}</ol>
+    </section>
     <div className="casino-ledger-activity">
       <div className="ledger-heading"><span><i className="ca-live" aria-hidden="true" /> LIVE PLAY TAPE</span><small>{lastMinuteCount} ACTIONS / 60s{clockSource === "device" ? " · 기기 시간" : ""}</small></div>
       <div className="ledger-tape-columns" aria-hidden="true"><span>PLAYER</span><span>AGE</span><span>TABLE · ACTION</span><span>STAKE / P&amp;L</span></div>
@@ -92,8 +97,27 @@ export default function CasinoLedgerPanel({
 function TapeLine({ event, name, currentUtcSecond }: { event: CasinoTapeEvent; name: string; currentUtcSecond: number }): React.ReactElement {
   const age = Math.max(0, currentUtcSecond - event.utcSecond);
   return <span data-tape-key={event.id} className={`ledger-activity-line is-${event.kind}${event.delta === undefined ? "" : event.delta >= 0 ? " is-rising" : " is-falling"}`}>
-    <b>{name}</b><small>{age < 60 ? `${age}초` : `${Math.floor(age / 60)}분`}</small><span><i>{tableName(event.tableId)}</i> · {event.label}</span><strong className="ca-num">{event.delta === undefined ? event.stake === 0 ? "FREE" : `${event.stake} P` : `${event.delta > 0 ? "+" : ""}${event.delta} P`}</strong>
+    <b>{name}</b><small>{ageLabel(age)}</small><span><i>{tableName(event.tableId)}</i> · {event.label}</span><strong className="ca-num">{event.delta === undefined ? event.stake === 0 ? "FREE" : `${event.stake} P` : `${event.delta > 0 ? "▲ +" : event.delta < 0 ? "▼ −" : "— "}${Math.abs(event.delta)} P`}</strong>
   </span>;
+}
+
+function SettlementLine({ activity, name, currentUtcSecond }: { activity: NpcActivity; name: string; currentUtcSecond: number }): React.ReactElement {
+  const delta = activity.session.delta;
+  const direction = delta > 0 ? "gain" : delta < 0 ? "loss" : "flat";
+  const directionLabel = delta > 0 ? "획득" : delta < 0 ? "손실" : "변동 없음";
+  const symbol = delta > 0 ? "▲" : delta < 0 ? "▼" : "—";
+  const age = Math.max(0, currentUtcSecond - activity.utcMinute * 60);
+  const fresh = age < 15;
+  return <article
+    className={`ledger-settlement-line is-${direction}${fresh ? " is-fresh" : ""}`}
+    data-direction={direction}
+    aria-label={`${name}, ${tableName(activity.session.tableId)}, ${ageLabel(age)}, ${directionLabel} ${Math.abs(delta)} 포인트`}
+  >
+    <div><b>{name}</b><small>{ageLabel(age)}</small></div>
+    <span>{tableName(activity.session.tableId)} · {settlementLabel(activity)}</span>
+    <strong><i aria-hidden="true">{symbol}</i> {directionLabel}</strong>
+    <NumberTicker value={Math.abs(delta)} prefix={delta > 0 ? "+" : delta < 0 ? "−" : ""} suffix=" P" durationMs={650} className="ca-num ledger-settlement-amount" />
+  </article>;
 }
 
 function LiveTableCard({ table, presences, portraits, names, currentUtcSecond, latest, onPlay }: { table: CasinoLiveTable; presences: readonly NpcPresence[]; portraits: Readonly<Record<string, string>>; names: ReadonlyMap<string, string>; currentUtcSecond: number; latest?: NpcActivity; onPlay(): void }): React.ReactElement {
@@ -145,6 +169,14 @@ function tableName(tableId: NpcActivity["session"]["tableId"]): string {
   return "인디언 포커";
 }
 
+function activityKey(activity: NpcActivity): string {
+  return `${activity.utcMinute}:${activity.npcId}:${activity.session.tableId}`;
+}
+
+function ageLabel(seconds: number): string {
+  return seconds < 60 ? `${seconds}초` : `${Math.floor(seconds / 60)}분`;
+}
+
 interface CasinoTapeEvent {
   id: string;
   npcId: string;
@@ -164,7 +196,7 @@ function casinoTape(playEvents: readonly NpcPlayEvent[], activities: readonly Np
   const settlements: CasinoTapeEvent[] = activities.map((activity) => ({
     id: `settlement:${activity.utcMinute}:${activity.npcId}:${activity.session.tableId}`,
     npcId: activity.npcId, tableId: activity.session.tableId, utcSecond: activity.utcMinute * 60,
-    kind: "settlement", label: settlementLabel(activity), stake: activity.session.stake, delta: activity.session.delta,
+    kind: "settlement", label: `${settlementLabel(activity)} · ${activity.session.delta > 0 ? "획득" : activity.session.delta < 0 ? "손실" : "변동 없음"}`, stake: activity.session.stake, delta: activity.session.delta,
   }));
   return [...play, ...settlements]
     .filter((event) => event.utcSecond <= currentUtcSecond)
