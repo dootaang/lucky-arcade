@@ -2,10 +2,21 @@ import { XorShift32 } from "@lucky-arcade/engine";
 import type { SlotMachineOutcome, SlotMachineVisualVariant } from "./contracts.ts";
 
 export const SLOT_MACHINE_REEL_FILLERS = [12, 15, 18] as const;
+export const SLOT_MACHINE_REEL_DURATIONS_MS = [2_400, 3_150, 3_900] as const;
+export const SLOT_MACHINE_REACH_DURATION_MS = 4_600;
 
 export interface SlotMachinePresentation {
   variantsBySymbolId: Readonly<Record<string, SlotMachineVisualVariant>>;
   reels: readonly (readonly string[])[];
+}
+
+/**
+ * A reach is visible after the first two reels stop: one of the five declared
+ * paylines has the same symbol on those two reels. It changes timing only.
+ */
+export function hasSlotMachineReach(outcome: SlotMachineOutcome): boolean {
+  const pairs: readonly (readonly [number, number])[] = [[0, 1], [3, 4], [6, 7], [0, 4], [6, 4]];
+  return pairs.some(([left, middle]) => outcome.grid[left] === outcome.grid[middle]);
 }
 
 export function createSlotMachinePresentation(

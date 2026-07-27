@@ -127,7 +127,14 @@ test("reserves and settles one deterministic Temerosa slot spin", async ({ page 
   await expect(page.locator(".slot-machine-cabinet")).toHaveAttribute("data-variant-count", "268");
   await expect(page.locator(".slot-machine-cabinet")).toHaveAttribute("data-series-count", "4");
   await expect(page.locator(".slot-machine-symbol img")).toHaveCount(9);
-  await page.getByRole("button", { name: "10 P로 돌리기", exact: true }).click();
+  const betConsole = page.locator(".slot-machine-bet-console");
+  await page.getByRole("button", { name: "BET", exact: true }).click();
+  await expect(betConsole).toContainText("50 P");
+  await page.getByRole("button", { name: "MAX BET", exact: true }).click();
+  await expect(betConsole).toContainText("200 P");
+  await page.getByRole("button", { name: "BET", exact: true }).click();
+  await expect(betConsole).toContainText("10 P");
+  await page.getByRole("button", { name: "10 P 베팅 레버 당기기", exact: true }).click();
   await expect(page.locator(".slot-machine-track[data-track-count]")).toHaveCount(3);
   await expect(page.locator(".slot-machine-track[data-track-count]").first()).not.toHaveAttribute("data-track-count", "3");
   await page.waitForTimeout(180);

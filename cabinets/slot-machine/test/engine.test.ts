@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { SLOT_MACHINE_LINE_MULTIPLIER, SLOT_MACHINE_PAYLINES, createSlotMachineOutcome, createSlotMachinePresentation, createSlotMachineState, reduceSlotMachine, selectSlotMachineVisualVariant, slotMachineCredit, type SlotMachineVisualVariant } from "../src/index.ts";
+import { SLOT_MACHINE_LINE_MULTIPLIER, SLOT_MACHINE_PAYLINES, SLOT_MACHINE_REACH_DURATION_MS, SLOT_MACHINE_REEL_DURATIONS_MS, createSlotMachineOutcome, createSlotMachinePresentation, createSlotMachineState, hasSlotMachineReach, reduceSlotMachine, selectSlotMachineVisualVariant, slotMachineCredit, type SlotMachineOutcome, type SlotMachineVisualVariant } from "../src/index.ts";
 
 const symbols = Array.from({ length: 16 }, (_, index) => ({ id: `symbol-${index}`, label: `Symbol ${index}`, weight: 1 as const }));
 
@@ -49,5 +49,15 @@ describe("slot machine core", () => {
     }
     const chosen = selectSlotMachineVisualVariant(variants, symbols[0]!.id, "presentation-seed");
     expect(chosen.symbolId).toBe(symbols[0]!.id);
+  });
+
+  it("derives reach suspense only from the fixed grid without changing the outcome", () => {
+    const base = { activeSymbolIds: symbols.slice(0, 6).map((symbol) => symbol.id), winningLineIndexes: [], payoutMultiplier: 0, rngPosition: 9 } as const;
+    const reach = { ...base, grid: ["a", "a", "b", "c", "d", "e", "f", "g", "h"] } satisfies SlotMachineOutcome;
+    const plain = { ...base, grid: ["a", "b", "c", "d", "e", "f", "g", "h", "i"] } satisfies SlotMachineOutcome;
+    expect(hasSlotMachineReach(reach)).toBe(true);
+    expect(hasSlotMachineReach(plain)).toBe(false);
+    expect(SLOT_MACHINE_REEL_DURATIONS_MS).toEqual([2_400, 3_150, 3_900]);
+    expect(SLOT_MACHINE_REACH_DURATION_MS).toBe(4_600);
   });
 });

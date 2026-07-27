@@ -2,8 +2,11 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import {
   SLOT_MACHINE_LINE_MULTIPLIER,
   SLOT_MACHINE_PAYLINES,
+  SLOT_MACHINE_REACH_DURATION_MS,
+  SLOT_MACHINE_REEL_DURATIONS_MS,
   SLOT_MACHINE_STAKES,
   createSlotMachinePresentation,
+  hasSlotMachineReach,
   selectSlotMachineVisualVariant,
   slotMachineCredit,
   type SlotMachinePresentation,
@@ -26,10 +29,13 @@ export interface SlotMachineScreenProps {
   onExit(): void;
 }
 
-const REEL_DURATIONS_MS = [1_100, 1_430, 1_820] as const;
+type SlotRevealPhase = "ready" | "spinning" | "lines" | "cutin" | "settling" | "complete";
 
 export function SlotMachineScreen({ state, symbols, variants, balance, busy, error, onSpin, onFinish, onExit }: SlotMachineScreenProps) {
   const [stake, setStake] = useState<SlotMachineStake>(SLOT_MACHINE_STAKES[0]);
+  const [leverPulled, setLeverPulled] = useState(false);
+  const [revealPhase, setRevealPhase] = useState<SlotRevealPhase>(() => state.status === "complete" ? "complete" : state.status === "spinning" ? "spinning" : "ready");
+  const [reelStopPulse, setReelStopPulse] = useState(0);
   const [manualPaused, setManualPaused] = useState(false);
   const [hiddenPaused, setHiddenPaused] = useState(() => typeof document !== "undefined" && document.hidden);
   const reducedMotion = useReducedMotion();
@@ -40,6 +46,8 @@ export function SlotMachineScreen({ state, symbols, variants, balance, busy, err
   const finishedSpinRef = useRef<string | null>(null);
   const previousGridRef = useRef<readonly string[] | undefined>(undefined);
   const previousVisualsRef = useRef<Readonly<Record<string, SlotMachineVisualVariant>>>({});
+  const leverLockRef = useRef(false);
+  const leverTimersRef = useRef<number[]>([]);
   finishRef.current = onFinish;
   const paused = manualPaused || hiddenPaused;
   const symbolById = useMemo(() => new Map(symbols.map((symbol) => [symbol.id, symbol])), [symbols]);
@@ -47,17 +55,20 @@ export function SlotMachineScreen({ state, symbols, variants, balance, busy, err
   const credit = slotMachineCredit(state);
   const spinning = state.status === "spinning";
   const canSpin = !busy && !spinning && balance >= stake;
+  const affordableStakes = useMemo(() => SLOT_MACHINE_STAKES.filter((value) => value <= balance), [balance]);
   const readyGrid = useMemo(() => Array.from({ length: 9 }, (_, cell) => symbols[(cell * 5 + Math.floor(cell / 3)) % symbols.length]?.id ?? ""), [symbols]);
   const presentation = useMemo<SlotMachinePresentation | null>(() => {
     if (!outcome || !state.spinSeed) return null;
     return createSlotMachinePresentation(variants, outcome, state.spinSeed, previousGridRef.current ?? readyGrid);
   }, [outcome, readyGrid, state.spinSeed, variants]);
   const staticVisuals = useMemo(() => selectStaticVisuals(variants, outcome?.grid ?? readyGrid, state.spinSeed ?? "slot-ready"), [outcome?.grid, readyGrid, state.spinSeed, variants]);
+  const showingWin = revealPhase === "lines" || revealPhase === "cutin" || revealPhase === "settling" || revealPhase === "complete";
+  const highlightingWin = revealPhase === "cutin" || revealPhase === "settling" || revealPhase === "complete";
   const winningCells = useMemo(() => new Set<number>(
-    state.status === "complete" && outcome
+    highlightingWin && outcome
       ? outcome.winningLineIndexes.flatMap((lineIndex) => [...(SLOT_MACHINE_PAYLINES[lineIndex] ?? [])])
       : [],
-  ), [outcome, state.status]);
+  ), [highlightingWin, outcome]);
   const winnerVisual = useMemo(() => {
     const winningCell = [...winningCells][0];
     const symbolId = winningCell === undefined ? undefined : outcome?.grid[winningCell];
@@ -65,11 +76,22 @@ export function SlotMachineScreen({ state, symbols, variants, balance, busy, err
     const pleased = variants.filter((variant) => variant.symbolId === symbolId && ["pleased", "smile"].includes(variant.expression));
     return selectSlotMachineVisualVariant(pleased.length > 0 ? pleased : variants, symbolId, `${state.spinSeed}:winner`);
   }, [outcome?.grid, state.spinSeed, variants, winningCells]);
+  const displayedCredit = useCountUp(state.status === "complete" ? credit : 0, reducedMotion);
 
   useEffect(() => {
     if (state.status === "complete" && outcome) previousGridRef.current = outcome.grid;
     if (!spinning) previousVisualsRef.current = staticVisuals;
   }, [outcome, spinning, state.status, staticVisuals]);
+
+  useEffect(() => {
+    if (balance >= stake || affordableStakes.length === 0) return;
+    setStake(affordableStakes.at(-1) ?? SLOT_MACHINE_STAKES[0]);
+  }, [affordableStakes, balance, stake]);
+
+  useEffect(() => {
+    if (state.status === "ready") setRevealPhase("ready");
+    else if (state.status === "complete") setRevealPhase("complete");
+  }, [state.status]);
 
   useEffect(() => {
     if (typeof document === "undefined") return;
@@ -82,15 +104,14 @@ export function SlotMachineScreen({ state, symbols, variants, balance, busy, err
   useEffect(() => {
     if (!spinning || !state.spinSeed || !presentation) return;
     setManualPaused(false);
+    setRevealPhase("spinning");
+    setReelStopPulse(0);
     const generation = animationGenerationRef.current + 1;
     animationGenerationRef.current = generation;
     finishedSpinRef.current = null;
     if (reducedMotion) {
       const timer = window.setTimeout(() => {
-        if (animationGenerationRef.current === generation && finishedSpinRef.current !== state.spinSeed) {
-          finishedSpinRef.current = state.spinSeed;
-          void finishRef.current();
-        }
+        if (animationGenerationRef.current === generation) setRevealPhase("settling");
       }, 0);
       return () => window.clearTimeout(timer);
     }
@@ -102,24 +123,28 @@ export function SlotMachineScreen({ state, symbols, variants, balance, busy, err
         const landingSteps = Math.max(0, track.children.length - 3);
         const distance = tileHeight * landingSteps;
         if (distance <= 0 || typeof track.animate !== "function") return [];
+        const duration = reel === 2 && outcome && hasSlotMachineReach(outcome) ? SLOT_MACHINE_REACH_DURATION_MS : SLOT_MACHINE_REEL_DURATIONS_MS[reel] ?? SLOT_MACHINE_REEL_DURATIONS_MS[2];
         const animation = track.animate([
           { transform: "translate3d(0, 0, 0)", offset: 0 },
-          { transform: `translate3d(0, ${-Math.min(distance * .14, tileHeight * 3)}px, 0)`, offset: .14 },
-          { transform: `translate3d(0, ${-(distance - tileHeight * .72)}px, 0)`, offset: .79 },
-          { transform: `translate3d(0, ${-(distance + 9)}px, 0)`, offset: .94 },
+          { transform: `translate3d(0, ${-Math.min(distance * .08, tileHeight * 1.6)}px, 0)`, offset: .08 },
+          { transform: `translate3d(0, ${-Math.min(distance * .34, tileHeight * 7)}px, 0)`, offset: .25 },
+          { transform: `translate3d(0, ${-(distance - tileHeight * 2.2)}px, 0)`, offset: .74 },
+          { transform: `translate3d(0, ${-(distance + 11)}px, 0)`, offset: .95 },
           { transform: `translate3d(0, ${-distance}px, 0)`, offset: 1 },
-        ], { duration: REEL_DURATIONS_MS[reel] ?? REEL_DURATIONS_MS[2], easing: "cubic-bezier(.17,.67,.2,1)", fill: "forwards" });
+        ], { duration, easing: "cubic-bezier(.12,.72,.18,1)", fill: "forwards" });
+        void animation.finished.then(() => {
+          if (animationGenerationRef.current === generation) setReelStopPulse(reel + 1);
+        }).catch(() => undefined);
         return [animation];
       });
       reelAnimationsRef.current = animations;
       if (manualPaused || hiddenPaused) for (const animation of animations) animation.pause();
       const completion = animations.length === 3
         ? Promise.all(animations.map((animation) => animation.finished))
-        : delay(REEL_DURATIONS_MS[2]);
+        : delay(outcome && hasSlotMachineReach(outcome) ? SLOT_MACHINE_REACH_DURATION_MS : SLOT_MACHINE_REEL_DURATIONS_MS[2]);
       void completion.then(() => {
         if (animationGenerationRef.current !== generation || finishedSpinRef.current === state.spinSeed) return;
-        finishedSpinRef.current = state.spinSeed;
-        void finishRef.current();
+        setRevealPhase("lines");
       }).catch(() => undefined);
     });
     return () => {
@@ -128,7 +153,20 @@ export function SlotMachineScreen({ state, symbols, variants, balance, busy, err
       for (const animation of reelAnimationsRef.current) animation.cancel();
       reelAnimationsRef.current = [];
     };
-  }, [presentation, reducedMotion, spinning, state.spinSeed]);
+  }, [outcome, presentation, reducedMotion, spinning, state.spinSeed]);
+
+  useEffect(() => {
+    if (!spinning || !state.spinSeed || paused || revealPhase === "ready" || revealPhase === "spinning" || revealPhase === "complete") return;
+    if (revealPhase === "settling") {
+      if (finishedSpinRef.current === state.spinSeed) return;
+      finishedSpinRef.current = state.spinSeed;
+      void finishRef.current();
+      return;
+    }
+    const duration = revealPhase === "lines" ? (credit > 0 ? Math.max(520, (outcome?.winningLineIndexes.length ?? 1) * 360) : 420) : 900;
+    const timer = window.setTimeout(() => setRevealPhase(revealPhase === "lines" && credit > 0 ? "cutin" : "settling"), duration);
+    return () => window.clearTimeout(timer);
+  }, [credit, outcome?.winningLineIndexes.length, paused, revealPhase, spinning, state.spinSeed]);
 
   useEffect(() => {
     for (const animation of reelAnimationsRef.current) {
@@ -136,6 +174,28 @@ export function SlotMachineScreen({ state, symbols, variants, balance, busy, err
       else animation.play();
     }
   }, [paused]);
+
+  useEffect(() => () => { for (const timer of leverTimersRef.current) window.clearTimeout(timer); }, []);
+
+  function cycleStake() {
+    if (affordableStakes.length === 0 || spinning || busy) return;
+    const current = affordableStakes.indexOf(stake);
+    setStake(affordableStakes[(current + 1) % affordableStakes.length] ?? affordableStakes[0]!);
+  }
+
+  function selectMaximumStake() {
+    const maximum = affordableStakes.at(-1);
+    if (maximum !== undefined && !spinning && !busy) setStake(maximum);
+  }
+
+  function pullLever() {
+    if (!canSpin || leverLockRef.current) return;
+    leverLockRef.current = true;
+    setLeverPulled(true);
+    if (typeof navigator !== "undefined" && "vibrate" in navigator) navigator.vibrate(18);
+    leverTimersRef.current.push(window.setTimeout(() => { void onSpin(stake); }, 180));
+    leverTimersRef.current.push(window.setTimeout(() => { setLeverPulled(false); leverLockRef.current = false; }, 520));
+  }
 
   return <main className="slot-machine-shell">
     <header className="slot-machine-header">
@@ -145,7 +205,7 @@ export function SlotMachineScreen({ state, symbols, variants, balance, busy, err
     </header>
 
     <section className="slot-machine-stage" aria-label="슬롯머신">
-      <div className={`slot-machine-cabinet${spinning ? " is-spinning" : ""}${state.status === "complete" && credit > 0 ? " is-winning" : ""}${paused ? " is-paused" : ""}`} data-spin-seed={state.spinSeed ?? undefined} data-symbol-count={symbols.length} data-variant-count={variants.length} data-series-count={new Set(variants.map((variant) => variant.series)).size}>
+      <div className={`slot-machine-cabinet${spinning ? " is-spinning" : ""}${revealPhase !== "spinning" && spinning ? " is-revealing" : ""}${showingWin && credit > 0 ? " is-winning" : ""}${paused ? " is-paused" : ""} reel-stop-${reelStopPulse}`} data-spin-seed={state.spinSeed ?? undefined} data-symbol-count={symbols.length} data-variant-count={variants.length} data-series-count={new Set(variants.map((variant) => variant.series)).size} data-reveal-phase={revealPhase}>
         <div className="slot-machine-marquee"><small>FOUR SERIES · EMOTION REELS</small><strong>777</strong><span>다섯 라인</span></div>
         <div className="slot-machine-window" aria-busy={spinning}>
           <span className="slot-machine-payline" aria-hidden="true" />
@@ -162,12 +222,16 @@ export function SlotMachineScreen({ state, symbols, variants, balance, busy, err
                 })}
               </div>}
           </div>)}
-          {state.status === "complete" && credit > 0 && <span className="slot-machine-win-sweep" aria-hidden="true" />}
+          {showingWin && credit > 0 && outcome && <WinningLines lineIndexes={outcome.winningLineIndexes} />}
+          {revealPhase === "complete" && credit > 0 && <span className="slot-machine-win-sweep" aria-hidden="true" />}
         </div>
         <div className="slot-machine-lamps" aria-hidden="true">{Array.from({ length: 9 }, (_, index) => <i key={index} />)}</div>
-        {winnerVisual && state.status === "complete" && credit > 0 && <div className="slot-machine-winner-cutin" aria-label={`${symbolById.get(winnerVisual.symbolId)?.label ?? winnerVisual.symbolId} 당첨`}>
+        {winnerVisual && credit > 0 && (revealPhase === "cutin" || revealPhase === "settling" || revealPhase === "complete") && <div className="slot-machine-winner-cutin" aria-label={`${symbolById.get(winnerVisual.symbolId)?.label ?? winnerVisual.symbolId} 당첨`}>
           <img src={winnerVisual.src} alt="" /><span>WIN</span><strong>{symbolById.get(winnerVisual.symbolId)?.label ?? winnerVisual.symbolId}</strong>
         </div>}
+        <button type="button" className={`slot-machine-lever${leverPulled ? " is-pulled" : ""}`} disabled={!canSpin} onClick={pullLever} aria-label={busy ? "회전 준비 중" : balance < stake ? "포인트 부족" : `${stake} P 베팅 레버 당기기`}>
+          <span className="slot-machine-lever-rail" aria-hidden="true"><i /><b /></span><strong>{spinning ? "SPIN" : "PULL"}</strong>
+        </button>
       </div>
 
       <aside className="slot-machine-console">
@@ -178,21 +242,21 @@ export function SlotMachineScreen({ state, symbols, variants, balance, busy, err
           <small>매 회전 서로 다른 인물 6명과 시리즈별 감정 스프라이트를 고릅니다.</small>
         </section>
 
-        <div className="slot-machine-stakes" aria-label="판돈 선택">
-          {SLOT_MACHINE_STAKES.map((value) => <button type="button" key={value} aria-pressed={stake === value} disabled={spinning || busy || balance < value} onClick={() => setStake(value)}>{value} P</button>)}
+        <div className="slot-machine-bet-console" aria-label="판돈 선택">
+          <span>CURRENT BET</span><strong className="ca-num">{stake} P</strong>
+          <button type="button" disabled={spinning || busy || affordableStakes.length === 0} onClick={cycleStake}>BET</button>
+          <button type="button" disabled={spinning || busy || affordableStakes.length === 0} onClick={selectMaximumStake}>MAX BET</button>
         </div>
 
         {state.status === "complete" && outcome && <section className={`slot-machine-result${credit > 0 ? " won" : " lost"}`} aria-live="polite">
           <strong>{credit > 0 ? `${outcome.winningLineIndexes.length}줄 적중` : "당첨 없음"}</strong>
-          <span>{credit > 0 ? `${credit.toLocaleString("ko-KR")} P 지급` : `${state.stake ?? 0} P 사용`}</span>
+          <span>{credit > 0 ? `${displayedCredit.toLocaleString("ko-KR")} P 지급` : `${state.stake ?? 0} P 사용`}</span>
         </section>}
-        {spinning && <p className="slot-machine-status" aria-live="polite">{paused ? "일시정지됨" : "릴이 돌아가는 중…"}</p>}
+        {spinning && <p className="slot-machine-status" aria-live="polite">{paused ? "일시정지됨" : revealPhase === "lines" ? credit > 0 ? "당첨선을 확인하는 중…" : "결과를 확인하는 중…" : revealPhase === "cutin" ? "당첨 연출 중…" : revealPhase === "settling" ? "포인트를 정산하는 중…" : "릴이 돌아가는 중…"}</p>}
         {error && <p className="slot-machine-error" role="alert">{error}</p>}
 
-        <div className="slot-machine-actions">
-          {spinning && <button type="button" onClick={() => setManualPaused((value) => !value)}>{paused ? "계속" : "일시정지"}</button>}
-          <button type="button" className="slot-machine-spin" disabled={!canSpin} onClick={() => { void onSpin(stake); }}>{busy ? "회전 준비 중…" : balance < stake ? "포인트 부족" : `${stake} P로 돌리기`}</button>
-        </div>
+        {spinning && <div className="slot-machine-actions"><button type="button" onClick={() => setManualPaused((value) => !value)}>{paused ? "계속" : "일시정지"}</button></div>}
+        <p className="slot-machine-lever-hint">판돈을 정한 뒤 기계의 레버를 당기세요.</p>
       </aside>
     </section>
   </main>;
@@ -204,11 +268,43 @@ function SymbolTile({ symbol, visual, winning = false }: { symbol: SlotMachineSy
   </div>;
 }
 
+const PAYLINE_GEOMETRY = [
+  [12, 50, 288, 50],
+  [12, 150, 288, 150],
+  [12, 250, 288, 250],
+  [16, 16, 284, 284],
+  [16, 284, 284, 16],
+] as const;
+
+function WinningLines({ lineIndexes }: { lineIndexes: readonly number[] }) {
+  return <svg className="slot-machine-winning-lines" viewBox="0 0 300 300" preserveAspectRatio="none" aria-hidden="true">
+    {lineIndexes.map((lineIndex) => { const line = PAYLINE_GEOMETRY[lineIndex]; return line ? <line key={lineIndex} x1={line[0]} y1={line[1]} x2={line[2]} y2={line[3]} /> : null; })}
+  </svg>;
+}
+
 function selectStaticVisuals(variants: readonly SlotMachineVisualVariant[], grid: readonly string[], seed: string): Readonly<Record<string, SlotMachineVisualVariant>> {
   return Object.freeze(Object.fromEntries([...new Set(grid.filter(Boolean))].map((symbolId) => [symbolId, selectSlotMachineVisualVariant(variants, symbolId, seed)])));
 }
 
 function delay(duration: number): Promise<void> { return new Promise((resolve) => window.setTimeout(resolve, duration)); }
+
+function useCountUp(value: number, reducedMotion: boolean): number {
+  const [displayed, setDisplayed] = useState(value);
+  useEffect(() => {
+    if (reducedMotion || value <= 0) { setDisplayed(value); return; }
+    setDisplayed(0);
+    const startedAt = performance.now();
+    let frame = 0;
+    const update = (now: number) => {
+      const progress = Math.min(1, (now - startedAt) / 760);
+      setDisplayed(Math.round(value * (1 - (1 - progress) ** 3)));
+      if (progress < 1) frame = window.requestAnimationFrame(update);
+    };
+    frame = window.requestAnimationFrame(update);
+    return () => window.cancelAnimationFrame(frame);
+  }, [reducedMotion, value]);
+  return displayed;
+}
 
 function useReducedMotion(): boolean {
   const [reduced, setReduced] = useState(() => typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
