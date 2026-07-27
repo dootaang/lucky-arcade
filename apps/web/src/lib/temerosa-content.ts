@@ -1,7 +1,10 @@
+import { casinoClockSampleFromResponse, type CasinoClockSample } from "./casino-clock.ts";
+
 interface ManifestVariant { size: "sm" | "md" | "lg"; path: string; }
 export interface TemerosaManifestAsset { id: string; characterId?: string; expression?: string; appearanceSet?: string; variants: ManifestVariant[]; }
-interface TemerosaManifest { version: string; assets: TemerosaManifestAsset[]; }
+export interface TemerosaManifest { version: string; assets: TemerosaManifestAsset[]; }
 export interface ResolvedTemerosaManifestAsset extends TemerosaManifestAsset { packVersion: string; }
+export interface TemerosaManifestLoad { manifest: TemerosaManifest; clockSample: CasinoClockSample; }
 
 const PACKS = ["0.1.0", "0.2.0", "0.3.0", "0.4.0", "0.5.0", "0.6.0", "0.7.0", "0.8.0"] as const;
 const REQUIRED_ASSETS = [
@@ -54,6 +57,7 @@ const REQUIRED_ASSETS = [
 ] as const;
 let assetPromise: Promise<Readonly<Record<string, string>>> | null = null;
 let casinoAssetPromise: Promise<TemerosaCasinoAssetBundle> | null = null;
+const manifestPromises = new Map<string, Promise<TemerosaManifestLoad>>();
 
 export interface TemerosaCasinoAssetBundle {
   thumbAssets: Readonly<Record<string, string>>;
@@ -64,11 +68,7 @@ export interface TemerosaCasinoAssetBundle {
 }
 
 export function loadTemerosaPilotAssets(): Promise<Readonly<Record<string, string>>> {
-  assetPromise ??= Promise.all(PACKS.map(async (version) => {
-    const response = await fetch(`/content/temerosa-margin/${version}/manifest.json`);
-    if (!response.ok) throw new Error(`temerosa_manifest_missing:${version}`);
-    return response.json() as Promise<TemerosaManifest>;
-  })).then((manifests) => {
+  assetPromise ??= Promise.all(PACKS.map((version) => fetchManifest(version).then((loaded) => loaded.manifest))).then((manifests) => {
     const assets: Record<string, string> = {};
     for (const manifest of manifests) for (const asset of manifest.assets) {
       const variant = asset.variants.find((candidate) => candidate.size === "md") ?? asset.variants[0];
@@ -78,12 +78,12 @@ export function loadTemerosaPilotAssets(): Promise<Readonly<Record<string, strin
       if (!assets[required]) throw new Error(`temerosa_pilot_asset_missing:${required}`);
     }
     return Object.freeze(assets);
-  });
+  }).catch((error: unknown) => { assetPromise = null; throw error; });
   return assetPromise;
 }
 
 export function loadTemerosaCasinoAssets(): Promise<TemerosaCasinoAssetBundle> {
-  casinoAssetPromise ??= Promise.all(PACKS.map(fetchManifest)).then((manifests) => {
+  casinoAssetPromise ??= Promise.all(PACKS.map((version) => fetchManifest(version).then((loaded) => loaded.manifest))).then((manifests) => {
     const thumbAssets: Record<string, string> = {};
     const assets: Record<string, string> = {};
     const detailAssets: Record<string, string> = {};
@@ -107,13 +107,30 @@ export function loadTemerosaCasinoAssets(): Promise<TemerosaCasinoAssetBundle> {
       contentAssets: Object.freeze(casinoManifest.assets),
       allContentAssets: Object.freeze(allContentAssets),
     });
-  });
+  }).catch((error: unknown) => { casinoAssetPromise = null; throw error; });
   return casinoAssetPromise;
 }
 
-async function fetchManifest(version: string): Promise<TemerosaManifest> {
-  const response = await fetch(`/content/temerosa-margin/${version}/manifest.json`);
-  if (!response.ok) throw new Error(`temerosa_manifest_missing:${version}`);
-  return response.json() as Promise<TemerosaManifest>;
+export function loadTemerosaCasinoManifest(): Promise<TemerosaManifestLoad> {
+  return fetchManifest("0.8.0");
 }
-function contentUrl(version: string, path: string): string { return `/content/temerosa-margin/${version}/${path}`; }
+
+function fetchManifest(version: string): Promise<TemerosaManifestLoad> {
+  const existing = manifestPromises.get(version);
+  if (existing) return existing;
+  const started = performance.now();
+  const promise = fetch(`/content/temerosa-margin/${version}/manifest.json`).then(async (response) => {
+    const received = performance.now();
+    const clockSample = casinoClockSampleFromResponse(response, started, received);
+    if (!response.ok) throw new Error(`temerosa_manifest_missing:${version}`);
+    const manifest = await response.json() as TemerosaManifest;
+    return Object.freeze({ manifest, clockSample });
+  }).catch((error: unknown) => {
+    manifestPromises.delete(version);
+    throw error;
+  });
+  manifestPromises.set(version, promise);
+  return promise;
+}
+export function temerosaContentUrl(version: string, path: string): string { return `/content/temerosa-margin/${version}/${path}`; }
+function contentUrl(version: string, path: string): string { return temerosaContentUrl(version, path); }

@@ -62,6 +62,23 @@ test("opens the sole public Venue with four open tables and five announced table
   await expect(page.getByRole("heading", { name: "도둑잡기", exact: true })).toBeVisible();
 });
 
+test("loads the living ledger lazily and reuses the casino manifest in a game", async ({ page }) => {
+  let casinoManifestRequests = 0;
+  page.on("request", (request) => {
+    if (request.url().includes("/content/temerosa-margin/0.8.0/manifest.json")) casinoManifestRequests += 1;
+  });
+  await page.goto("/venues/temerosa-casino");
+  await expect(page.locator(".casino-ledger-board caption")).toHaveText("명예의 전당");
+  await expect(page.locator(".casino-ledger-board tbody tr")).toHaveCount(6);
+  await expect(page.locator(".casino-ledger-activity [aria-live]")).toHaveCount(0);
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await expect(page.locator(".ledger-motion")).toBeHidden();
+  await expect(page.locator(".ledger-static")).toBeVisible();
+  await page.locator(".table-card.playable").filter({ hasText: "슬롯 777" }).getByRole("button", { name: "시작", exact: true }).click();
+  await expect(page.getByRole("heading", { name: "슬롯 777", exact: true })).toBeVisible();
+  expect(casinoManifestRequests).toBe(1);
+});
+
 test("keeps the Venue title and entry action when its hero image fails", async ({ page }) => {
   await page.route("**/temerosa-casino-venue/0.1.0/**/*.webp", (route) => route.abort());
   await page.goto("/");

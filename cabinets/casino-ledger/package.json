@@ -1,0 +1,23 @@
+{
+  "name": "@lucky-arcade/casino-ledger",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./react": "./src/react/casino-ledger-panel.tsx"
+  },
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@lucky-arcade/engine": "workspace:*",
+    "@lucky-arcade/ui": "workspace:*",
+    "react": "19.2.8"
+  },
+  "devDependencies": {
+    "@types/node": "24.13.3",
+    "@types/react": "19.2.17"
+  }
+}

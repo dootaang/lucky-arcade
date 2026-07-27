@@ -73,6 +73,9 @@ importers:
       '@lucky-arcade/casino-cards':
         specifier: workspace:*
         version: link:../../cabinets/casino-cards
+      '@lucky-arcade/casino-ledger':
+        specifier: workspace:*
+        version: link:../../cabinets/casino-ledger
       '@lucky-arcade/contracts':
         specifier: workspace:*
         version: link:../../packages/contracts
@@ -177,6 +180,25 @@ importers:
       react-dom:
         specifier: 19.2.8
         version: 19.2.8(react@19.2.8)
+
+  cabinets/casino-ledger:
+    dependencies:
+      '@lucky-arcade/engine':
+        specifier: workspace:*
+        version: link:../../packages/engine
+      '@lucky-arcade/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
+      react:
+        specifier: 19.2.8
+        version: 19.2.8
+    devDependencies:
+      '@types/node':
+        specifier: 24.13.3
+        version: 24.13.3
+      '@types/react':
+        specifier: 19.2.17
+        version: 19.2.17
 
   cabinets/favorite-cup:
     dependencies:
