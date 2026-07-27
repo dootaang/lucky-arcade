@@ -20,17 +20,11 @@ export function npcDaySessions(
 ): readonly NpcSession[] {
   validateInputs(profile, dayIndex, openingBalance, contract);
   const prefix = `${contract.version}:${profile.id}:${dayIndex}`;
-  const balanceRng = new XorShift32(`${prefix}:balance`);
   const scheduleRng = new XorShift32(`${prefix}:schedule`);
   const tableRng = new XorShift32(`${prefix}:tables`);
   const stakeRng = new XorShift32(`${prefix}:stakes`);
-  const bridgeRng = new XorShift32(`${prefix}:bridge`);
-  const noise = balanceRng.next() * 2 - 1;
+  const outcomeRng = new XorShift32(`${prefix}:outcomes`);
   const maximum = profile.target * 20;
-  const rawClosing = openingBalance
-    + profile.reversion * (profile.target - openingBalance)
-    + profile.volatility * profile.target * noise;
-  const closing = clamp(Math.round(rawClosing), 0, maximum);
   const count = randomInteger(profile.sessionsPerDay.min, profile.sessionsPerDay.max, scheduleRng);
   const schedule = sessionSchedule(profile, count, scheduleRng);
   const sessions: NpcSession[] = [];
@@ -38,42 +32,26 @@ export function npcDaySessions(
 
   for (let index = 0; index < count; index += 1) {
     const remaining = count - index;
-    const last = remaining === 1;
-    let tableId: NpcSession["tableId"];
-    let stake: NpcStake;
-    let delta: number;
-
-    if (current < MIN_WAGER && !last) {
-      tableId = "temerosa-old-maid";
-      stake = 0;
-      delta = Math.max(MIN_WAGER - current, 1, Math.round(profile.reversion * profile.target));
-      delta = Math.min(delta, maximum - current);
-    } else if (current < MIN_WAGER) {
-      tableId = "temerosa-old-maid";
-      stake = 0;
-      delta = closing - current;
-    } else {
-      tableId = weightedTable(profile, tableRng);
-      stake = weightedStake(profile.volatility, current, stakeRng);
-      if (last) {
-        delta = closing - current;
-      } else {
-        const bridge = (closing - current) / remaining;
-        const jitter = (bridgeRng.next() * 2 - 1) * stake;
-        delta = clamp(Math.round(bridge + jitter), -current, maximum - current);
-        const candidate = current + delta;
-        if (candidate > 0 && candidate < MIN_WAGER) {
-          const normalized = closing >= MIN_WAGER ? MIN_WAGER : 0;
-          delta = normalized - current;
-        }
-      }
+    let tableId: NpcSession["tableId"] = current < MIN_WAGER ? "temerosa-old-maid" : weightedTable(profile, tableRng);
+    let stake: NpcStake = tableId === "temerosa-old-maid" ? 0 : weightedStake(profile.volatility, current, stakeRng);
+    let candidates = settlementCandidates(tableId, stake).filter((candidate) => current + candidate.delta >= 0 && current + candidate.delta <= maximum);
+    if (candidates.length === 0) {
+      tableId = "temerosa-match-pairs";
+      stake = current >= 200 ? 200 : current >= 50 ? 50 : 10;
+      candidates = settlementCandidates(tableId, stake).filter((candidate) => current + candidate.delta >= 0 && current + candidate.delta <= maximum);
     }
-
-    current += delta;
-    sessions.push({ minuteOfDay: schedule[index]!, tableId, stake, delta });
+    if (candidates.length === 0) throw new Error("npc_ledger_no_legal_settlement");
+    const desired = profile.reversion * (profile.target - current) / remaining
+      + (outcomeRng.next() * 2 - 1) * profile.volatility * Math.max(stake, MIN_WAGER);
+    const chosen = chooseSettlement(candidates, desired, Math.max(stake, MIN_WAGER), outcomeRng);
+    current += chosen.delta;
+    sessions.push(Object.freeze({
+      minuteOfDay: schedule[index]!, tableId, stake,
+      reservedAmount: chosen.reservedAmount, creditAmount: chosen.creditAmount, delta: chosen.delta,
+      resultKind: chosen.resultKind, termsVersion: chosen.termsVersion,
+    }));
   }
 
-  if (current !== closing) throw new Error("npc_ledger_closing_mismatch");
   return Object.freeze(sessions.map((session) => Object.freeze(session)));
 }
 
@@ -206,6 +184,64 @@ function weightedStake(volatility: number, balance: number, rng: XorShift32): Ex
   return stakes[drawWeightedIndex(weights, rng)]!;
 }
 
+interface SettlementCandidate {
+  reservedAmount: number;
+  creditAmount: number;
+  delta: number;
+  resultKind: string;
+  termsVersion: string;
+  baseWeight: number;
+}
+
+function settlementCandidates(tableId: NpcSession["tableId"], stake: NpcStake): readonly SettlementCandidate[] {
+  if (tableId === "temerosa-old-maid") {
+    return [
+      candidate(0, 10, "rank-1", "old-maid-rank-reward/0.1", 1),
+      candidate(0, 5, "rank-2", "old-maid-rank-reward/0.1", 2),
+      candidate(0, 3, "rank-3", "old-maid-rank-reward/0.1", 3),
+      candidate(0, 1, "rank-last", "old-maid-rank-reward/0.1", 4),
+    ];
+  }
+  if (stake === 0) throw new Error("npc_ledger_paid_table_requires_stake");
+  if (tableId === "temerosa-match-pairs") {
+    return [
+      candidate(stake, 0, "loss", "match-pairs-paytable/0.1", 5),
+      candidate(stake, stake, "draw", "match-pairs-paytable/0.1", 1),
+      candidate(stake, Math.round(stake * 1.5), "win-1.5x", "match-pairs-paytable/0.1", 3),
+      candidate(stake, stake * 2, "win-2x", "match-pairs-paytable/0.1", 2),
+      candidate(stake, Math.round(stake * 2.5), "win-2.5x", "match-pairs-paytable/0.1", 1),
+    ];
+  }
+  if (tableId === "indian-poker") {
+    return Array.from({ length: 21 }, (_, chips) => candidate(
+      stake,
+      Math.floor(stake * chips / 10),
+      `chips-${chips}`,
+      "temerosa-indian-poker-paytable/0.2",
+      11 - Math.abs(10 - chips),
+    ));
+  }
+  return [0, 1, 2, 3, 4, 5].map((lines) => candidate(
+    stake,
+    stake * lines * 6,
+    `lines-${lines}`,
+    "temerosa-slot-paytable/0.2",
+    [10_000, 160, 30, 6, 2, 1][lines]!,
+  ));
+}
+
+function candidate(reservedAmount: number, creditAmount: number, resultKind: string, termsVersion: string, baseWeight: number): SettlementCandidate {
+  return Object.freeze({ reservedAmount, creditAmount, delta: creditAmount - reservedAmount, resultKind, termsVersion, baseWeight });
+}
+
+function chooseSettlement(candidates: readonly SettlementCandidate[], desired: number, scale: number, rng: XorShift32): SettlementCandidate {
+  const weights = candidates.map((value) => {
+    const closeness = 1 / (1 + Math.abs(value.delta - desired) / scale);
+    return value.baseWeight * (0.25 + closeness * 3.75);
+  });
+  return candidates[drawWeightedIndex(weights, rng)]!;
+}
+
 function drawWeightedIndex(weights: readonly number[], rng: XorShift32): number {
   const total = weights.reduce((sum, weight) => sum + weight, 0);
   if (!(total > 0)) throw new Error("npc_ledger_empty_weight");
@@ -232,7 +268,7 @@ function normalizedUtcMinute(clock: CasinoClock): number {
 }
 
 function validateInputs(profile: NpcGamblingProfile, dayIndex: number, openingBalance: number, contract: NpcLedgerContract): void {
-  if (contract.version !== "npc-ledger/0.1" || !Number.isSafeInteger(contract.epochUtcDay)) throw new Error("npc_ledger_invalid_contract");
+  if (contract.version !== "npc-ledger/0.2" || !Number.isSafeInteger(contract.epochUtcDay)) throw new Error("npc_ledger_invalid_contract");
   if (!profile.id || !profile.name || !Number.isSafeInteger(profile.target) || profile.target <= 0) throw new Error("npc_ledger_invalid_profile");
   if (!(profile.volatility >= 0.06 && profile.volatility <= 0.30) || !(profile.reversion >= 0.04 && profile.reversion <= 0.18)) throw new Error("npc_ledger_invalid_profile");
   if (!Number.isSafeInteger(dayIndex) || dayIndex < 0 || !Number.isSafeInteger(openingBalance) || openingBalance < 0 || openingBalance > profile.target * 20) throw new Error("npc_ledger_invalid_state");

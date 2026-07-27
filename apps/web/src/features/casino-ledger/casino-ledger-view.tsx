@@ -1,9 +1,10 @@
 import {
+  casinoPresenceAt,
   recentNpcActivitiesAt,
   TEMEROSA_NPC_GAMBLING_PROFILES,
   TEMEROSA_NPC_LEDGER_CONTRACT,
 } from "@lucky-arcade/casino-ledger";
-import CasinoLedgerPanel from "@lucky-arcade/casino-ledger/react";
+import CasinoLedgerPanel, { type CasinoLiveTable } from "@lucky-arcade/casino-ledger/react";
 import { useEffect, useMemo, useState } from "react";
 import { casinoClockFromSample, deviceCasinoClockSample, type CasinoClockSample } from "../../lib/casino-clock.ts";
 import { npcBalancesAtWithCheckpoint } from "../../lib/casino-ledger-cache.ts";
@@ -17,7 +18,7 @@ const LEGACY_PORTRAITS: Readonly<Record<string, string>> = Object.freeze({
   wares: temerosaContentUrl("0.6.0", "assets/margin/gallery-finale-wares-neutral/sm.webp"),
 });
 
-export default function CasinoLedgerView({ userBalance }: { userBalance: number }): React.ReactElement | null {
+export default function CasinoLedgerView({ userBalance, tables, onPlay }: { userBalance: number; tables: readonly CasinoLiveTable[]; onPlay(id: string): void }): React.ReactElement | null {
   const [loaded, setLoaded] = useState<{ sample: CasinoClockSample; manifest?: TemerosaManifest }>();
   const [, setRevision] = useState(0);
 
@@ -34,10 +35,10 @@ export default function CasinoLedgerView({ userBalance }: { userBalance: number 
   const clock = useMemo(() => loaded ? casinoClockFromSample(loaded.sample) : undefined, [loaded]);
   useEffect(() => {
     if (!clock) return;
-    let previousMinute = clock.utcMinute();
+    let previousSecond = clock.utcSecond();
     const refresh = () => {
-      const nextMinute = clock.utcMinute();
-      if (nextMinute !== previousMinute) { previousMinute = nextMinute; setRevision((value) => value + 1); }
+      const nextSecond = clock.utcSecond();
+      if (nextSecond !== previousSecond) { previousSecond = nextSecond; setRevision((value) => value + 1); }
     };
     const interval = window.setInterval(refresh, 1_000);
     const visible = () => { if (document.visibilityState === "visible") refresh(); };
@@ -48,15 +49,21 @@ export default function CasinoLedgerView({ userBalance }: { userBalance: number 
   if (!loaded || !clock) return <section className="casino-ledger-loading ca-label" aria-label="카지노 원장 불러오는 중">원장 정리 중…</section>;
   try {
     const currentUtcMinute = clock.utcMinute();
+    const currentUtcSecond = clock.utcSecond();
     const snapshot = npcBalancesAtWithCheckpoint(clock, TEMEROSA_NPC_LEDGER_CONTRACT);
     const activities = recentNpcActivitiesAt(TEMEROSA_NPC_GAMBLING_PROFILES, clock, TEMEROSA_NPC_LEDGER_CONTRACT, 6);
+    const presences = casinoPresenceAt(TEMEROSA_NPC_GAMBLING_PROFILES, clock, TEMEROSA_NPC_LEDGER_CONTRACT);
     return <CasinoLedgerPanel
       npcBalances={snapshot.balances}
       userBalance={userBalance}
       activities={activities}
       portraits={portraitMap(loaded.manifest)}
       currentUtcMinute={currentUtcMinute}
+      currentUtcSecond={currentUtcSecond}
       clockSource={loaded.sample.source}
+      presences={presences}
+      tables={tables}
+      onPlay={onPlay}
     />;
   } catch {
     return <section className="casino-ledger-loading ca-label">원장을 정리하지 못했습니다. 게임 테이블은 그대로 이용할 수 있습니다.</section>;

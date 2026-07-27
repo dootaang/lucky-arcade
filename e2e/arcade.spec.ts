@@ -71,6 +71,9 @@ test("loads the living ledger lazily and reuses the casino manifest in a game", 
   await expect(page.locator(".casino-ledger-board caption")).toHaveText("명예의 전당");
   await expect(page.locator(".casino-ledger-board tbody tr")).toHaveCount(6);
   await expect(page.locator(".casino-ledger-activity [aria-live]")).toHaveCount(0);
+  await expect(page.locator(".casino-live-grid .live-table-card")).toHaveCount(4);
+  await expect(page.locator(".casino-live-grid .live-table-stage")).toHaveCount(4);
+  await expect(page.locator(".casino-live-grid").getByText(/게임 중|지금 입장 가능/).first()).toBeVisible();
   await page.emulateMedia({ reducedMotion: "reduce" });
   await expect(page.locator(".ledger-motion")).toBeHidden();
   await expect(page.locator(".ledger-static")).toBeVisible();
@@ -445,6 +448,7 @@ test("becomes a provisional navigator and restores the chosen Temerosa party", a
 test("plays and restores a complete Temerosa old maid table", async ({ page }, testInfo) => {
   test.setTimeout(180_000);
   test.skip(testInfo.project.metadata.mobile === true);
+  await holdCasinoOpponents(page, ["echo", "adesha", "ttaengchil"]);
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/");
   await page.getByRole("button", { name: "카지노 입장" }).click();
@@ -471,7 +475,7 @@ test("plays and restores a complete Temerosa old maid table", async ({ page }, t
   await expect(page.locator(".old-maid-opponent-picker button.selected")).toHaveCount(3);
   await expect.poll(() => page.locator(".old-maid-opponent-picker button.selected").allTextContents()).not.toEqual(initialRoster);
   while (await page.locator(".old-maid-opponent-picker button.selected").count()) await page.locator(".old-maid-opponent-picker button.selected").first().click();
-  for (const name of ["에코", "아데샤", "땡칠이"]) await page.getByRole("button", { name, exact: true }).click();
+  for (const name of ["에코", "아데샤", "땡칠이"]) await page.locator(".old-maid-opponent-picker button").filter({ hasText: name }).click();
   await expect(page.locator(".seat-cpu-1 strong")).toHaveText("에코");
   await expect(page.locator(".seat-cpu-2 strong")).toHaveText("아데샤");
   await expect(page.locator(".seat-cpu-3 strong")).toHaveText("땡칠이");
@@ -766,6 +770,7 @@ test("starts an open-hand four-NPC Temerosa spectator table", async ({ page }, t
 
 test("mobile Temerosa old maid keeps the draw cards reachable", async ({ page }, testInfo) => {
   test.skip(testInfo.project.metadata.mobile !== true);
+  await holdCasinoOpponents(page, ["pale", "kano", "nemo"]);
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/play/temerosa-old-maid");
   const mobileAngles = await page.locator(".old-maid-center").evaluate((center) => {
@@ -782,7 +787,7 @@ test("mobile Temerosa old maid keeps the draw cards reachable", async ({ page },
   });
   expect(mobileAngles).toEqual(["180deg", "180deg", "180deg", "0deg"]);
   while (await page.locator(".old-maid-opponent-picker button.selected").count()) await page.locator(".old-maid-opponent-picker button.selected").first().click();
-  for (const name of ["페일", "카노", "네모"]) await page.getByRole("button", { name, exact: true }).click();
+  for (const name of ["페일", "카노", "네모"]) await page.locator(".old-maid-opponent-picker button").filter({ hasText: name }).click();
   await page.getByRole("button", { name: "시작", exact: true }).click();
   await expect(page.locator(".old-maid-progress-controls-mobile")).toBeVisible();
   await expect(page.locator(".old-maid-progress-controls-desktop")).toBeHidden();
@@ -853,4 +858,11 @@ test("mobile Temerosa pilot keeps the first choice and dialogue controls reachab
 
 async function advanceDialogue(page: import("@playwright/test").Page, count: number) {
   for (let index = 0; index < count; index += 1) await page.getByRole("button", { name: "계속", exact: true }).click();
+}
+
+async function holdCasinoOpponents(page: import("@playwright/test").Page, npcIds: readonly string[]) {
+  await page.addInitScript((ids) => {
+    const expiresAtUtcSecond = Math.floor(Date.now() / 1_000) + 600;
+    sessionStorage.setItem("casino-invite/0.1:temerosa-old-maid", JSON.stringify(ids.map((npcId) => ({ npcId, expiresAtUtcSecond }))));
+  }, npcIds);
 }

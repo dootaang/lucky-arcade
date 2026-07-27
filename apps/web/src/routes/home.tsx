@@ -9,6 +9,7 @@ import { analyzeCardFile } from "../lib/card-analysis.ts";
 import { listCards, listRecentPlays, loadCardSource, replaceAnalyzedCard, type StoredCard } from "../lib/database.ts";
 import { readWallet } from "../lib/wallet.ts";
 import { NumberTicker } from "@lucky-arcade/ui/number-ticker";
+import type { CasinoTableId } from "@lucky-arcade/casino-ledger";
 import { getPublicVenue, getVenueForCabinet, listPublicVenues, type VenueManifest } from "../venues/registry.ts";
 
 const CasinoLedgerView = lazy(() => import("../features/casino-ledger/casino-ledger-view.tsx"));
@@ -122,17 +123,15 @@ function VenueFloor({ venue, balance, onPlay }: { venue: VenueManifest; balance:
     <span className="floor-backdrop ca-tableau" aria-hidden="true" />
     <span className="ca-spotlight" aria-hidden="true" />
     <header><span className="eyebrow">여백의 카지노 플로어</span><h2 id="floor-heading" className="ca-serif">테이블을 골라주세요</h2><p>현재 실제로 운영 중인 테이블만 입장할 수 있습니다.</p></header>
-    <Suspense fallback={<section className="casino-ledger-loading ca-label">원장 정리 중…</section>}><CasinoLedgerView userBalance={balance} /></Suspense>
+    <Suspense fallback={<section className="casino-ledger-loading ca-label">원장 정리 중…</section>}><CasinoLedgerView userBalance={balance} onPlay={onPlay} tables={playable.map(({ entry }) => ({
+      id: entry.manifest.id as CasinoTableId,
+      title: entry.manifest.title.replace("테메로세 ", ""),
+      description: entry.manifest.description,
+      suit: TABLE_SUITS[entry.manifest.id] ?? "♠",
+      entryLabel: "시작",
+      meta: `${entry.manifest.estimatedMinutes.min}~${entry.manifest.estimatedMinutes.max}분 · ${entry.manifest.entry === "wager" ? `${entry.manifest.wagerTiers?.[0] ?? 0} P부터` : "포인트 없이 시작"}`,
+    }))} /></Suspense>
     <div className="table-grid">
-      {playable.map(({ entry }) => <article className="table-card playable ca-shine ca-glare" key={entry.manifest.id}>
-        <span className="table-suit" aria-hidden="true">{TABLE_SUITS[entry.manifest.id] ?? "♠"}</span>
-        <span className="table-group"><i className="ca-live" aria-hidden="true" /><span className="ca-label">Live · {entry.manifest.entry === "wager" ? "판돈" : "무료"}</span></span>
-        <h3 className="ca-serif">{entry.manifest.title.replace("테메로세 ", "")}</h3>
-        <p>{entry.manifest.description}</p>
-        <small className="ca-num">{entry.manifest.estimatedMinutes.min}~{entry.manifest.estimatedMinutes.max}분 · {entry.manifest.entry === "wager" ? `${entry.manifest.wagerTiers?.[0] ?? 0} P부터` : "포인트 없이 시작"}</small>
-        <button className="ca-gold-btn ca-press ca-floorlight" onClick={() => onPlay(entry.manifest.id)}>시작<IconPlayerPlay size={17} /></button>
-        <span className="ca-brackets" aria-hidden="true" />
-      </article>)}
       <p className="table-locked-divider ca-label" aria-hidden="true">개장 준비 중</p>
       {preparing.map(({ entry }) => <article className="table-card coming-soon" key={entry.manifest.id}>
         <span className="table-suit" aria-hidden="true">{TABLE_SUITS[entry.manifest.id] ?? "♠"}</span>

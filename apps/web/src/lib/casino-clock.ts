@@ -1,4 +1,4 @@
-import type { CasinoClock } from "@lucky-arcade/casino-ledger";
+import type { CasinoPresentationClock } from "@lucky-arcade/casino-ledger";
 
 export interface CasinoClockSample {
   serverEpochMs: number;
@@ -45,8 +45,10 @@ export function deviceCasinoClockSample(
 export function casinoClockFromSample(
   sample: CasinoClockSample,
   performanceNow: () => number = () => performance.now(),
-): CasinoClock {
+): CasinoPresentationClock {
+  const epochMs = () => sample.serverEpochMs + performanceNow() - sample.sampledAtPerformanceMs;
   return Object.freeze({
-    utcMinute: () => Math.floor((sample.serverEpochMs + performanceNow() - sample.sampledAtPerformanceMs) / 60_000),
+    utcMinute: () => Math.floor(epochMs() / 60_000),
+    utcSecond: () => Math.floor(epochMs() / 1_000),
   });
 }

@@ -40,7 +40,7 @@ const MEDIUM: NpcSessionRange = Object.freeze({ min: 5, max: 9 });
 const HIGH: NpcSessionRange = Object.freeze({ min: 8, max: 14 });
 
 /**
- * Frozen npc-ledger/0.1 data. Values were transcribed from the approved
+ * Frozen npc-ledger/0.2 data. Values were transcribed from the approved
  * interpretation; this module intentionally does not import another cabinet.
  */
 export const TEMEROSA_NPC_GAMBLING_PROFILES: readonly NpcGamblingProfile[] = Object.freeze([
@@ -82,7 +82,7 @@ export const TEMEROSA_NPC_GAMBLING_PROFILES: readonly NpcGamblingProfile[] = Obj
 ]);
 
 export const TEMEROSA_NPC_LEDGER_CONTRACT: NpcLedgerContract = Object.freeze({
-  version: "npc-ledger/0.1",
+  version: "npc-ledger/0.2",
   epochUtcDay: TEMEROSA_LEDGER_EPOCH_UTC_DAY,
   profiles: TEMEROSA_NPC_GAMBLING_PROFILES,
 });

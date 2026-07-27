@@ -8,7 +8,6 @@ import {
   TEMEROSA_NPC_GAMBLING_PROFILES,
   TEMEROSA_NPC_LEDGER_CONTRACT,
   type CasinoClock,
-  type NpcGamblingProfile,
   type NpcSession,
 } from "../src/index.ts";
 
@@ -23,13 +22,16 @@ describe("casino ledger core", () => {
     expect(sum(first)).toBe(sum(second));
   });
 
-  it("bridges every daily close exactly and keeps every prefix in bounds", () => {
+  it("uses only player-scale settlements and keeps every prefix in bounds", () => {
     for (const candidate of TEMEROSA_NPC_GAMBLING_PROFILES) {
       let opening = candidate.target;
       for (let day = 0; day < 200; day += 1) {
         const sessions = npcDaySessions(candidate, day, opening, contract);
         let current = opening;
         for (const session of sessions) {
+          expect(session.delta).toBe(session.creditAmount - session.reservedAmount);
+          expect([0, 10, 50, 200]).toContain(session.stake);
+          expect(session.reservedAmount).toBe(session.stake);
           current += session.delta;
           expect(current).toBeGreaterThanOrEqual(0);
           expect(current).toBeLessThanOrEqual(candidate.target * 20);
@@ -55,9 +57,9 @@ describe("casino ledger core", () => {
   it("opens a positive free old-maid recovery session below minimum wager", () => {
     for (const opening of [0, 1, 9]) {
       const first = npcDaySessions(profile, 8, opening, contract)[0]!;
-      expect(first).toMatchObject({ tableId: "temerosa-old-maid", stake: 0 });
+      expect(first).toMatchObject({ tableId: "temerosa-old-maid", stake: 0, reservedAmount: 0 });
       expect(first.delta).toBeGreaterThan(0);
-      expect(opening + first.delta).toBeGreaterThanOrEqual(10);
+      expect([1, 3, 5, 10]).toContain(first.creditAmount);
     }
   });
 
@@ -78,17 +80,23 @@ describe("casino ledger core", () => {
     });
   });
 
-  it("keeps daily closing independent from schedule, table and stake domains", () => {
-    const changed: NpcGamblingProfile = {
-      ...profile,
-      volatility: profile.volatility,
-      sessionsPerDay: { min: 14, max: 14 },
-      activeHours: [{ startMinute: 1_000, endMinute: 1_440, weight: 9 }],
-      tables: [{ tableId: "temerosa-match-pairs", weight: 1 }],
-    };
-    const opening = 2_777;
-    expect(opening + sum(npcDaySessions(changed, 91, opening, contract)))
-      .toBe(opening + sum(npcDaySessions(profile, 91, opening, contract)));
+  it("never invents a settlement outside the frozen player paytables", () => {
+    for (const candidateProfile of TEMEROSA_NPC_GAMBLING_PROFILES) {
+      for (const session of npcDaySessions(candidateProfile, 91, candidateProfile.target, contract)) {
+        if (session.tableId === "temerosa-old-maid") {
+          expect(session).toMatchObject({ stake: 0, reservedAmount: 0, termsVersion: "old-maid-rank-reward/0.1" });
+          expect([1, 3, 5, 10]).toContain(session.creditAmount);
+        } else if (session.tableId === "temerosa-match-pairs") {
+          expect([0, session.stake, Math.round(session.stake * 1.5), session.stake * 2, Math.round(session.stake * 2.5)]).toContain(session.creditAmount);
+        } else if (session.tableId === "indian-poker") {
+          expect(session.creditAmount).toBeGreaterThanOrEqual(0);
+          expect(session.creditAmount).toBeLessThanOrEqual(session.stake * 2);
+        } else {
+          expect(session.creditAmount % (session.stake * 6)).toBe(0);
+          expect(session.creditAmount).toBeLessThanOrEqual(session.stake * 30);
+        }
+      }
+    }
   });
 
   it("returns recent activity across UTC midnight", () => {

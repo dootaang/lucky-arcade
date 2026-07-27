@@ -14,24 +14,29 @@ export interface IndianPokerScreenProps {
   walletBalance?: number;
   busy?: boolean;
   error?: string;
+  opponentAvailability?: Readonly<Record<string, { available: boolean; label: string; availableAtUtcSecond?: number }>>;
+  onOpponentSelectionChange?(id: string): void;
   onStart(stake: IndianPokerStake): Promise<IndianPokerState>;
   onPersist(previous: IndianPokerState, next: IndianPokerState, action: IndianPokerAction): Promise<void>;
   onExit(): void;
 }
 
-export function IndianPokerScreen({ cartridge, assets, thumbAssets, atlas, initialState, walletBalance, busy = false, error, onStart, onPersist, onExit }: IndianPokerScreenProps) {
+export function IndianPokerScreen({ cartridge, assets, thumbAssets, atlas, initialState, walletBalance, busy = false, error, opponentAvailability = {}, onOpponentSelectionChange, onStart, onPersist, onExit }: IndianPokerScreenProps) {
   const [state, setState] = useState(() => initialState ?? createIndianPokerState(cartridge, new Date().toISOString().slice(0, 10)));
   const [stake, setStake] = useState<IndianPokerStake>(INDIAN_POKER_STAKES[0]);
   const [starting, setStarting] = useState(false);
   const [manualPaused, setManualPaused] = useState(false);
   const [hiddenPaused, setHiddenPaused] = useState(() => typeof document !== "undefined" && document.hidden);
   const stateRef = useRef(state), queueRef = useRef(Promise.resolve()), responseDelayRef = useRef<PausableDelay | null>(null);
+  const randomSelectionRef = useRef(0);
   const paused = manualPaused || hiddenPaused;
   const characters = useMemo(() => new Map(cartridge.characters.map((character) => [character.id, character])), [cartridge]);
   const opponent = characters.get(state.opponentId) ?? cartridge.characters[0];
   if (!opponent) throw new Error("indian_poker_character_missing");
   const portraitId = opponent.portraits[state.npcReaction];
   const interactionBusy = busy || starting;
+  const selectedOpponentUnavailable = opponentAvailability[state.opponentId]?.available === false;
+  const availableCharacters = cartridge.characters.filter((character) => opponentAvailability[character.id]?.available !== false);
 
   const dispatch = (action: IndianPokerAction) => {
     if (interactionBusy) return;
@@ -41,7 +46,7 @@ export function IndianPokerScreen({ cartridge, assets, thumbAssets, atlas, initi
   };
 
   const startMatch = () => {
-    if (interactionBusy || (walletBalance ?? 0) < stake) return;
+    if (interactionBusy || selectedOpponentUnavailable || (walletBalance ?? 0) < stake) return;
     setStarting(true);
     queueRef.current = queueRef.current.catch(() => undefined).then(async () => {
       const next = await onStart(stake);
@@ -98,14 +103,15 @@ export function IndianPokerScreen({ cartridge, assets, thumbAssets, atlas, initi
         {state.status === "ready" && <section className="indian-poker-ready">
           <h2>상대를 고르세요</h2><p>상대 카드는 보이지만 내 카드는 보이지 않습니다. 표정과 베팅을 함께 읽으세요.</p>
           <div className="indian-poker-opponent-picker" role="list" aria-label="상대 선택">
-            {cartridge.characters.map((character) => <button type="button" role="listitem" key={character.id} aria-pressed={character.id === state.opponentId} onClick={() => dispatch({ type: "select-opponent", opponentId: character.id })}>
-              <img src={thumbAssets[character.portraits.neutral]} alt="" loading="lazy" /><span>{character.name}</span>
-            </button>)}
+            {cartridge.characters.map((character) => { const selected = character.id === state.opponentId; const availability = opponentAvailability[character.id]; const unavailable = !selected && availability?.available === false; return <button type="button" role="listitem" className={unavailable ? "is-unavailable" : undefined} key={character.id} aria-pressed={selected} aria-disabled={unavailable || undefined} disabled={unavailable} onClick={() => { dispatch({ type: "select-opponent", opponentId: character.id }); onOpponentSelectionChange?.(character.id); }}>
+              <img src={thumbAssets[character.portraits.neutral]} alt="" loading="lazy" /><span>{character.name}<small>{selected && !selectedOpponentUnavailable ? "초대 수락" : availability?.label}</small></span>
+            </button>; })}
           </div>
-          <button className="indian-poker-random" onClick={() => dispatch({ type: "random-opponent" })}>무작위 상대</button>
+          <button className="indian-poker-random" disabled={availableCharacters.length === 0} onClick={() => { randomSelectionRef.current += 1; const candidate = availableCharacters[(state.sequence + randomSelectionRef.current) % availableCharacters.length]; if (candidate) { dispatch({ type: "select-opponent", opponentId: candidate.id }); onOpponentSelectionChange?.(candidate.id); } }}>무작위 상대</button>
           <div className="indian-poker-stakes">{INDIAN_POKER_STAKES.map((value) => <button key={value} aria-pressed={stake === value} disabled={interactionBusy || (walletBalance ?? 0) < value} onClick={() => setStake(value)}>{value} P</button>)}</div>
           <small>선택한 포인트가 10칩이 됩니다. 대국 종료 시 남은 칩 비율대로 돌려받습니다.</small>
-          <button className="primary" disabled={interactionBusy || (walletBalance ?? 0) < stake} onClick={startMatch}>시작</button>
+          {selectedOpponentUnavailable && <p className="indian-poker-availability">선택한 NPC가 다른 테이블에서 게임 중입니다.</p>}
+          <button className="primary" disabled={interactionBusy || selectedOpponentUnavailable || (walletBalance ?? 0) < stake} onClick={startMatch}>시작</button>
         </section>}
 
         {state.status === "player-action" && <section className="indian-poker-decision">

@@ -11,11 +11,13 @@ import { recoverSession } from "../../lib/session-recovery.ts";
 import { loadTemerosaCasinoAssets } from "../../lib/temerosa-content.ts";
 import { readWallet } from "../../lib/wallet.ts";
 import { buildTemerosaIndianPokerCartridge } from "./temerosa-indian-poker-cartridge.ts";
+import { useCasinoOpponentAvailability } from "../casino-ledger/use-casino-opponent-availability.ts";
 
 const CABINET_ID = "indian-poker", SESSION = "indian-poker:heads-up-1";
 interface Ready { state: IndianPokerState; cartridge: IndianPokerCartridge; assets: Readonly<Record<string, string>>; thumbAssets: Readonly<Record<string, string>>; atlas: CourtAtlas; }
 
 export default function IndianPokerView({ onExit }: { onExit(): void }) {
+  const availability = useCasinoOpponentAvailability(SESSION);
   const [ready, setReady] = useState<Ready | null>(null), [balance, setBalance] = useState(0), [busy, setBusy] = useState(false), [error, setError] = useState("");
   const stateRef = useRef<IndianPokerState | null>(null), cartridgeRef = useRef<IndianPokerCartridge | null>(null);
   useEffect(() => {
@@ -55,6 +57,7 @@ export default function IndianPokerView({ onExit }: { onExit(): void }) {
   async function start(stake: IndianPokerStake): Promise<IndianPokerState> {
     const current = stateRef.current, cartridge = cartridgeRef.current;
     if (!current || !cartridge || busy || current.status !== "ready") throw new Error("indian_poker_not_ready");
+    if (availability.opponents[current.opponentId]?.available === false) throw new Error("casino_opponent_busy");
     setBusy(true); setError("");
     try {
       const seed = `${current.seed}:deal:${crypto.randomUUID()}`;
@@ -93,7 +96,7 @@ export default function IndianPokerView({ onExit }: { onExit(): void }) {
     await appendMatchRecord(record); await pruneMatchRecords(200);
   }
   if (!ready) return <main className="game-shell"><div className="game-loading">{error || "카드 덱과 상대를 준비하고 있습니다…"}{error && <button onClick={onExit}>카지노로 돌아가기</button>}</div></main>;
-  return <IndianPokerScreen cartridge={ready.cartridge} assets={ready.assets} thumbAssets={ready.thumbAssets} atlas={ready.atlas} initialState={ready.state} walletBalance={balance} busy={busy} error={error} onStart={start} onPersist={persist} onExit={onExit} />;
+  return <IndianPokerScreen cartridge={ready.cartridge} assets={ready.assets} thumbAssets={ready.thumbAssets} atlas={ready.atlas} initialState={ready.state} walletBalance={balance} busy={busy} error={error} opponentAvailability={availability.opponents} onOpponentSelectionChange={(id) => availability.holdOpponents([id])} onStart={start} onPersist={persist} onExit={onExit} />;
 }
 
 async function persistState(previous: IndianPokerState, next: IndianPokerState, action: IndianPokerAction): Promise<void> {

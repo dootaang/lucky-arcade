@@ -10,11 +10,13 @@ import { readCollection, unlockCollectionItem } from "../../lib/collection.ts";
 import { grantOldMaidCompletion, readWallet } from "../../lib/wallet.ts";
 import { invalidatePrediction, listPredictions, PREDICTION_MULTIPLIERS, PREDICTION_STAKES, reservePrediction, settlePrediction } from "../../lib/wager.ts";
 import type { CollectionSnapshot, PredictionMultiplier, PredictionStake, SpectatorPrediction, WalletSnapshot } from "@lucky-arcade/persistence";
+import { useCasinoOpponentAvailability } from "../casino-ledger/use-casino-opponent-availability.ts";
 
 const SESSION = "temerosa-old-maid:table-1";
 const COLLECTION = "temerosa-old-maid";
 
 export default function TemerosaOldMaidView({ onExit }: { onExit(): void }) {
+  const availability = useCasinoOpponentAvailability(SESSION);
   const [ready, setReady] = useState<{ thumbAssets: Readonly<Record<string, string>>; assets: Readonly<Record<string, string>>; detailAssets: Readonly<Record<string, string>>; cartridge: OldMaidCartridge; state: OldMaidState | null } | null>(null);
   const [error, setError] = useState(false);
   const [matchSummary, setMatchSummary] = useState<MatchSummary | null>(null);
@@ -103,7 +105,7 @@ export default function TemerosaOldMaidView({ onExit }: { onExit(): void }) {
   if (error) return <main className="game-shell"><div className="game-loading">도둑잡기 카드를 불러오지 못했습니다.<button onClick={() => window.location.reload()}>다시 불러오기</button><button onClick={onExit}>오락실로 돌아가기</button></div></main>;
   if (!ready) return <main className="game-shell"><div className="game-loading">도둑잡기 카드와 캐릭터 표정을 불러오고 있습니다…</div></main>;
   const economy = wallet && collection ? { balance: wallet.balance, award, unlockedFaceIds: collection.unlockedFaceIds, onUnlock: async () => { const result = await unlockCollectionItem(COLLECTION, ready.cartridge.faces.map((face) => face.id)); setWallet(result.wallet); setCollection(result.collection); }, prediction: { stakes: PREDICTION_STAKES, multipliers: PREDICTION_MULTIPLIERS, active: activePrediction, onStart: startPrediction, onClear: () => setActivePrediction(null) } } : undefined;
-  return <OldMaidScreen cartridge={ready.cartridge} thumbAssets={ready.thumbAssets} assets={ready.assets} detailAssets={ready.detailAssets} initialState={ready.state} matchSummary={matchSummary} {...(economy ? { economy } : {})} onPersist={persist} onExit={onExit} />;
+  return <OldMaidScreen cartridge={ready.cartridge} thumbAssets={ready.thumbAssets} assets={ready.assets} detailAssets={ready.detailAssets} initialState={ready.state} matchSummary={matchSummary} {...(economy ? { economy } : {})} opponentAvailability={availability.opponents} onOpponentSelectionChange={availability.holdOpponents} onPersist={persist} onExit={onExit} />;
 }
 
 function predictionOutcomeKey(state: Pick<OldMaidState, "seed" | "mode" | "characters" | "spectatorCharacterId">): string {

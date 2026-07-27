@@ -23,6 +23,8 @@ export interface OldMaidScreenProps {
   initialState: OldMaidState | null;
   matchSummary?: OldMaidMatchSummary | null;
   economy?: OldMaidEconomy;
+  opponentAvailability?: Readonly<Record<string, { available: boolean; label: string; availableAtUtcSecond?: number }>>;
+  onOpponentSelectionChange?(ids: readonly string[]): void;
   onPersist(previous: OldMaidState, next: OldMaidState, action: OldMaidAction, psychology: OldMaidPsychologySummary): Promise<void>;
   onExit(): void;
 }
@@ -51,7 +53,7 @@ export interface OldMaidMatchSummary {
   opponents: Array<{ participantId: string; displayName: string; played: number; beaten: number }>;
 }
 
-export function OldMaidScreen({ cartridge, assets, thumbAssets = assets, detailAssets = assets, initialState, matchSummary, economy, onPersist, onExit }: OldMaidScreenProps) {
+export function OldMaidScreen({ cartridge, assets, thumbAssets = assets, detailAssets = assets, initialState, matchSummary, economy, opponentAvailability = {}, onOpponentSelectionChange, onPersist, onExit }: OldMaidScreenProps) {
   useMemo(() => validateOldMaidLines(cartridge), [cartridge]);
   const [state, setState] = useState(() => initialState ?? createOldMaidState(cartridge, dailySeed()));
   const [detail, setDetail] = useState<OldMaidFace | null>(null);
@@ -100,6 +102,8 @@ export function OldMaidScreen({ cartridge, assets, thumbAssets = assets, detailA
     const selectable = new Set(cartridge.selectableCharacterIds ?? cartridge.characters.map((character) => character.id));
     return cartridge.characters.filter((character) => selectable.has(character.id));
   }, [cartridge]);
+  const availableCharacters = selectableCharacters.filter((character) => opponentAvailability[character.id]?.available !== false);
+  const hasUnavailableOpponent = !replaySetup && opponentIds.some((id) => opponentAvailability[id]?.available === false);
 
   function updatePaused(next: boolean) {
     // Timers can fire before React commits the paused render. Keep an
@@ -307,30 +311,39 @@ export function OldMaidScreen({ cartridge, assets, thumbAssets = assets, detailA
   const background = assets["pequod-ruins"];
 
   function toggleOpponent(characterId: string) {
+    if (!opponentIds.includes(characterId) && opponentAvailability[characterId]?.available === false) return;
     const limit = lobbyMode === "spectate" ? 4 : 3;
-    setOpponentIds((current) => current.includes(characterId) ? current.filter((id) => id !== characterId) : current.length < limit ? [...current, characterId] : [...current.slice(1), characterId]);
+    const next = opponentIds.includes(characterId) ? opponentIds.filter((id) => id !== characterId) : opponentIds.length < limit ? [...opponentIds, characterId] : [...opponentIds.slice(1), characterId];
+    setOpponentIds(next);
+    onOpponentSelectionChange?.(next);
   }
 
   function chooseMode(mode: OldMaidMode) {
     setLobbyMode(mode);
     setDirectPrediction(false);
     setPredictedCharacterId("");
-    setOpponentIds((current) => {
-      const limit = mode === "spectate" ? 4 : 3;
-      const next = current.slice(0, limit);
-      for (const character of selectableCharacters) if (next.length < limit && !next.includes(character.id)) next.push(character.id);
-      return next;
-    });
+    const limit = mode === "spectate" ? 4 : 3;
+    const next = opponentIds.slice(0, limit);
+    for (const character of availableCharacters) if (next.length < limit && !next.includes(character.id)) next.push(character.id);
+    setOpponentIds(next);
+    onOpponentSelectionChange?.(next);
   }
 
   function chooseRandomOpponents() {
     randomSelectionRef.current += 1;
-    setOpponentIds(automaticCharacterIds(cartridge, `${state.seed}:lobby:${randomSelectionRef.current}`, lobbyMode));
+    const eligibleIds = availableCharacters.map((character) => character.id);
+    const next = automaticCharacterIds({ ...cartridge, selectableCharacterIds: eligibleIds }, `${state.seed}:lobby:${randomSelectionRef.current}`, lobbyMode);
+    setOpponentIds(next);
+    onOpponentSelectionChange?.(next);
     setPredictedCharacterId("");
   }
 
   async function startMatch(withPrediction: boolean) {
     setPredictionError("");
+    if (!replaySetup && opponentIds.some((id) => opponentAvailability[id]?.available === false)) {
+      setPredictionError("선택한 NPC가 다른 테이블에서 게임 중입니다. 이용 가능한 상대를 골라주세요.");
+      return;
+    }
     setPreparingAssets(true);
     await preloadMatchImages(cartridge, state, opponentIds, assets);
     setPreparingAssets(false);
@@ -427,7 +440,7 @@ export function OldMaidScreen({ cartridge, assets, thumbAssets = assets, detailA
           <p>같은 그림 두 장을 맞춰 버리세요. 차례가 오면 지정된 상대에게서 한 장을 뽑고, 마지막까지 조커를 가진 사람이 집니다.</p>
           {!replaySetup && <div className="old-maid-mode-picker" aria-label="대국 방식"><button type="button" className={lobbyMode === "play" ? "selected" : ""} onClick={() => chooseMode("play")}>직접 플레이</button><button type="button" className={lobbyMode === "spectate" ? "selected" : ""} onClick={() => chooseMode("spectate")}>NPC 4명 관전</button></div>}
           <strong className="old-maid-opponent-title">{replaySetup ? "같은 상대와 새 패로 다시 시작합니다" : lobbyMode === "spectate" ? "관전할 NPC 4명을 고르기" : "함께할 상대 3명 고르기"}</strong>
-          {!replaySetup && <><button type="button" className="old-maid-random" onClick={chooseRandomOpponents}><IconRefresh size={15} /> 무작위 선택</button><div className="old-maid-opponent-picker">{selectableCharacters.map((character) => { const selected = opponentIds.includes(character.id); const portrait = thumbAssets[character.portraits.neutral] ?? assets[character.portraits.neutral]; return <button type="button" className={selected ? "selected" : ""} aria-pressed={selected} key={character.id} onClick={() => toggleOpponent(character.id)}>{portrait && <img src={portrait} alt="" decoding="async" loading="lazy" />}<span>{character.name}</span></button>; })}</div></>}
+          {!replaySetup && <><button type="button" className="old-maid-random" disabled={availableCharacters.length < (lobbyMode === "spectate" ? 4 : 3)} onClick={chooseRandomOpponents}><IconRefresh size={15} /> 무작위 선택</button><div className="old-maid-opponent-picker">{selectableCharacters.map((character) => { const selected = opponentIds.includes(character.id); const availability = opponentAvailability[character.id]; const unavailable = !selected && availability?.available === false; const portrait = thumbAssets[character.portraits.neutral] ?? assets[character.portraits.neutral]; return <button type="button" className={`${selected ? "selected" : ""}${unavailable ? " unavailable" : ""}`} aria-pressed={selected} aria-disabled={unavailable || undefined} disabled={unavailable} key={character.id} onClick={() => toggleOpponent(character.id)}>{portrait && <img src={portrait} alt="" decoding="async" loading="lazy" />}<span>{character.name}<small>{selected && availability?.available !== false ? "초대 수락" : availability?.label}</small></span></button>; })}</div></>}
           <div className="old-maid-roster" aria-label="선택한 좌석 순서">{lobbyMode === "play" && <span>하단 · 플레이어</span>}{opponentIds.map((id, index) => <span key={id}>{index < 3 ? `상단 ${index + 1}` : "하단"} · {characters.get(id)?.name}</span>)}</div>
           {economy?.prediction && (lobbyMode === "spectate" || directPrediction) && <section className="old-maid-prediction" aria-label={lobbyMode === "spectate" ? "최종 조커 보유자 예측" : "1등 예측 베팅"}>
             <strong>{lobbyMode === "spectate" ? "마지막 조커를 가질 인물에게 베팅" : "누가 가장 먼저 손을 비울지 베팅"}</strong>
@@ -437,7 +450,8 @@ export function OldMaidScreen({ cartridge, assets, thumbAssets = assets, detailA
             <small>최대 손익 {predictionStake * predictionMultiplier} P · 적중과 실패 모두 선택 배율을 적용합니다.</small>
             {predictionError && <p>{predictionError}</p>}
           </section>}
-          {lobbyMode === "play" ? <><div className="old-maid-start-actions"><button className="old-maid-primary" disabled={predictionStarting || preparingAssets || opponentIds.length !== 3} onClick={() => void startMatch(false)}>{preparingAssets ? "카드 준비 중…" : "시작"}</button>{economy?.prediction && (directPrediction ? <button disabled={predictionStarting || preparingAssets || economy.balance < predictionStake * predictionMultiplier || opponentIds.length !== 3} onClick={() => void startMatch(true)}>{predictionStarting ? "판돈 예약 중…" : "베팅하고 시작"}</button> : <button onClick={() => setDirectPrediction(true)}>선택 베팅 열기</button>)}</div>{economy && <small className="old-maid-rank-rewards">순위 보상 · 1등 10 P · 2등 5 P · 3등 3 P · 패배 1 P</small>}</> : <button className="old-maid-primary" disabled={predictionStarting || preparingAssets || opponentIds.length !== 4 || economy && economy.balance < predictionStake * predictionMultiplier} onClick={() => void startMatch(true)}>{preparingAssets ? "카드 준비 중…" : predictionStarting ? "판돈 예약 중…" : "예측하고 NPC 대국 관전"}</button>}
+          {hasUnavailableOpponent && <p className="old-maid-availability-warning">다른 테이블에서 게임 중인 NPC가 포함되어 있습니다.</p>}
+          {lobbyMode === "play" ? <><div className="old-maid-start-actions"><button className="old-maid-primary" disabled={predictionStarting || preparingAssets || opponentIds.length !== 3 || hasUnavailableOpponent} onClick={() => void startMatch(false)}>{preparingAssets ? "카드 준비 중…" : "시작"}</button>{economy?.prediction && (directPrediction ? <button disabled={predictionStarting || preparingAssets || economy.balance < predictionStake * predictionMultiplier || opponentIds.length !== 3 || hasUnavailableOpponent} onClick={() => void startMatch(true)}>{predictionStarting ? "판돈 예약 중…" : "베팅하고 시작"}</button> : <button onClick={() => setDirectPrediction(true)}>선택 베팅 열기</button>)}</div>{economy && <small className="old-maid-rank-rewards">순위 보상 · 1등 10 P · 2등 5 P · 3등 3 P · 패배 1 P</small>}</> : <button className="old-maid-primary" disabled={predictionStarting || preparingAssets || opponentIds.length !== 4 || hasUnavailableOpponent || economy && economy.balance < predictionStake * predictionMultiplier} onClick={() => void startMatch(true)}>{preparingAssets ? "카드 준비 중…" : predictionStarting ? "판돈 예약 중…" : "예측하고 NPC 대국 관전"}</button>}
         </div>}
 
         {state.status === "dealing" && <div className="old-maid-dealing-copy" aria-live="polite"><IconCards /><strong>카드를 나누는 중…</strong><span>배분이 끝나면 처음부터 맞은 짝을 정리합니다.</span></div>}

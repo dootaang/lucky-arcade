@@ -22,6 +22,7 @@ import { loadTemerosaCasinoAssets } from "../../lib/temerosa-content.ts";
 import { readWallet } from "../../lib/wallet.ts";
 import { createTemerosaMatchPairsOpponents } from "./temerosa-match-pairs-opponents.ts";
 import { TEMEROSA_MATCH_PAIRS_FACES, TEMEROSA_MATCH_PAIRS_PACK_VERSION } from "./temerosa-match-pairs-selection.ts";
+import { useCasinoOpponentAvailability } from "../casino-ledger/use-casino-opponent-availability.ts";
 
 const CABINET_ID = "temerosa-match-pairs";
 const SESSION = "temerosa-match-pairs:versus-1";
@@ -40,6 +41,7 @@ interface WagerIdentity {
 }
 
 export default function MatchPairsView({ onExit }: { onExit(): void }) {
+  const availability = useCasinoOpponentAvailability(SESSION);
   const [ready, setReady] = useState<ReadyMatchPairs | null>(null);
   const [balance, setBalance] = useState(0);
   const [busy, setBusy] = useState(false);
@@ -104,6 +106,7 @@ export default function MatchPairsView({ onExit }: { onExit(): void }) {
     const current = stateRef.current;
     const opponents = opponentsRef.current;
     if (!current || busy || current.status !== "ready") throw new Error("match_pairs_not_ready");
+    if (availability.opponents[current.opponentId]?.available === false) throw new Error("casino_opponent_busy");
     setBusy(true);
     setError("");
     try {
@@ -162,6 +165,8 @@ export default function MatchPairsView({ onExit }: { onExit(): void }) {
     walletBalance={balance}
     busy={busy}
     wagerError={error}
+    opponentAvailability={availability.opponents}
+    onOpponentSelectionChange={(id) => availability.holdOpponents([id])}
     onStart={start}
     onTransition={persist}
     onExit={onExit}

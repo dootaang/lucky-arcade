@@ -22,6 +22,8 @@ export interface MatchPairsScreenProps {
   walletBalance?: number;
   busy?: boolean;
   wagerError?: string;
+  opponentAvailability?: Readonly<Record<string, { available: boolean; label: string; availableAtUtcSecond?: number }>>;
+  onOpponentSelectionChange?(id: string): void;
   onStart?(stake: MatchPairsStake): MatchPairsState | Promise<MatchPairsState>;
   onTransition?(previous: MatchPairsState, next: MatchPairsState, action: MatchPairsAction): void | Promise<void>;
   createRestartSeed?(state: MatchPairsState): string;
@@ -53,6 +55,8 @@ export function MatchPairsScreen({
   walletBalance = 0,
   busy = false,
   wagerError = "",
+  opponentAvailability = {},
+  onOpponentSelectionChange,
   onStart,
   onTransition,
   createRestartSeed,
@@ -78,6 +82,7 @@ export function MatchPairsScreen({
   const resolutionTimerRef = useRef<PausableDelay | null>(null);
   const npcTimerRef = useRef<PausableDelay | null>(null);
   const cardRefs = useRef<Array<HTMLButtonElement | null>>([]);
+  const randomSelectionRef = useRef(0);
   stateRef.current = state;
   facesRef.current = faces;
   opponentsRef.current = opponents;
@@ -103,6 +108,8 @@ export function MatchPairsScreen({
   const opponentById = useMemo(() => new Map(opponents.map((opponent) => [opponent.id, opponent])), [opponents]);
   const opponent = opponentById.get(state.opponentId) ?? opponents[0];
   if (!opponent) throw new Error("match_pairs_opponent_missing");
+  const selectedOpponentUnavailable = opponentAvailability[state.opponentId]?.available === false;
+  const availableOpponents = opponents.filter((candidate) => opponentAvailability[candidate.id]?.available !== false);
   const boardAssets = useMemo(() => [...new Set(state.cards.map((card) => card.pairId))].map((pairId) => {
     const face = faceById.get(pairId);
     return { pairId, assetId: face?.assetId ?? null, url: face ? assets[face.assetId] ?? null : null };
@@ -252,12 +259,15 @@ export function MatchPairsScreen({
           {opponents.map((candidate) => {
             const selected = candidate.id === state.opponentId;
             const thumb = thumbAssets[candidate.portraits.neutral];
-            return <button type="button" role="listitem" key={candidate.id} aria-pressed={selected} onClick={() => dispatch({ type: "select-opponent", opponentId: candidate.id })}>
+            const availability = opponentAvailability[candidate.id];
+            const unavailable = !selected && availability?.available === false;
+            return <button type="button" role="listitem" key={candidate.id} className={unavailable ? "is-unavailable" : undefined} aria-pressed={selected} aria-disabled={unavailable || undefined} disabled={unavailable} onClick={() => { dispatch({ type: "select-opponent", opponentId: candidate.id }); onOpponentSelectionChange?.(candidate.id); }}>
               {thumb && <img src={thumb} alt="" loading="lazy" />}<span>{candidate.name}</span>
+              <small>{selected && !selectedOpponentUnavailable ? "초대 수락" : availability?.label}</small>
             </button>;
           })}
         </div>
-        <button type="button" className="match-pairs-random" onClick={() => dispatch({ type: "random-opponent" })}>무작위 상대</button>
+        <button type="button" className="match-pairs-random" disabled={availableOpponents.length === 0} onClick={() => { randomSelectionRef.current += 1; const candidate = availableOpponents[(state.sequence + randomSelectionRef.current) % availableOpponents.length]; if (candidate) { dispatch({ type: "select-opponent", opponentId: candidate.id }); onOpponentSelectionChange?.(candidate.id); } }}>무작위 상대</button>
         <div className="match-pairs-difficulty" aria-label="난도 선택">
           <button type="button" aria-pressed={state.difficulty === "easy"} onClick={() => chooseDifficulty("easy")}>쉬움 · 6짝</button>
           <button type="button" aria-pressed={state.difficulty === "normal"} onClick={() => chooseDifficulty("normal")}>보통 · 8짝</button>
@@ -271,9 +281,10 @@ export function MatchPairsScreen({
           <small>승리 시 {Math.round(selectedStake * opponent.winCreditMultiplier)} P 반환 · 무승부는 판돈 환불</small>
         </div>
         {wagerError && <p className="match-pairs-wager-error" role="alert">{wagerError}</p>}
+        {selectedOpponentUnavailable && <p className="match-pairs-wager-error">선택한 NPC가 다른 테이블에서 게임 중입니다.</p>}
         {loadStatus === "loading" && <p role="status">카드 준비 중…</p>}
         {loadStatus === "error" && <div role="alert"><p>이미지를 준비하지 못했습니다.</p><button type="button" onClick={() => setLoadAttempt((value) => value + 1)}>다시 불러오기</button></div>}
-        <button type="button" className="match-pairs-primary" disabled={loadStatus !== "ready" || busy || Boolean(onStart) && walletBalance < selectedStake} onClick={startGame}>{busy ? "예약 중…" : `${selectedStake} P로 시작`}</button>
+        <button type="button" className="match-pairs-primary" disabled={loadStatus !== "ready" || busy || selectedOpponentUnavailable || Boolean(onStart) && walletBalance < selectedStake} onClick={startGame}>{busy ? "예약 중…" : `${selectedStake} P로 시작`}</button>
       </section>}
 
       {state.status !== "ready" && loadStatus === "error" && <section className="match-pairs-panel" role="alert"><p>이미지를 준비하지 못했습니다. 현재 판은 그대로 유지됩니다.</p><button type="button" onClick={() => setLoadAttempt((value) => value + 1)}>다시 불러오기</button></section>}
