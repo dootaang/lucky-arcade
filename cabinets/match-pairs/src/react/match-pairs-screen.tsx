@@ -124,6 +124,14 @@ export function MatchPairsScreen({
   pausedRef.current = timersPaused;
 
   useEffect(() => {
+    if (state.status !== "ready" || !selectedOpponentUnavailable) return;
+    const candidate = availableOpponents[0];
+    if (!candidate || candidate.id === state.opponentId) return;
+    dispatch({ type: "select-opponent", opponentId: candidate.id });
+    onOpponentSelectionChange?.(candidate.id);
+  }, [availableOpponents, dispatch, onOpponentSelectionChange, selectedOpponentUnavailable, state.opponentId, state.status]);
+
+  useEffect(() => {
     let active = true;
     setImageLoad({ signature: assetSignature, status: "loading" });
     const urls = [...boardAssets.map(({ url }) => url), ...portraitUrls];

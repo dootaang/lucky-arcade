@@ -45,6 +45,14 @@ export function IndianPokerScreen({ cartridge, assets, thumbAssets, atlas, initi
     queueRef.current = queueRef.current.catch(() => undefined).then(() => onPersist(previous, next, action));
   };
 
+  useEffect(() => {
+    if (state.status !== "ready" || !selectedOpponentUnavailable) return;
+    const candidate = availableCharacters[0];
+    if (!candidate || candidate.id === state.opponentId) return;
+    dispatch({ type: "select-opponent", opponentId: candidate.id });
+    onOpponentSelectionChange?.(candidate.id);
+  }, [availableCharacters, onOpponentSelectionChange, selectedOpponentUnavailable, state.opponentId, state.status]);
+
   const startMatch = () => {
     if (interactionBusy || selectedOpponentUnavailable || (walletBalance ?? 0) < stake) return;
     setStarting(true);

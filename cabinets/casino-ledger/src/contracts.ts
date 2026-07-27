@@ -72,6 +72,36 @@ export interface NpcActivity {
   session: NpcSession;
 }
 
+export type NpcPlayEventCode =
+  | "table-enter"
+  | "wager-placed"
+  | "old-maid-draw"
+  | "old-maid-discard"
+  | "old-maid-reorder"
+  | "old-maid-watch"
+  | "pairs-open-first"
+  | "pairs-open-second"
+  | "pairs-match"
+  | "pairs-turn"
+  | "slot-spin"
+  | "slot-reel-stop"
+  | "slot-line-check"
+  | "slot-reach"
+  | "poker-check"
+  | "poker-call"
+  | "poker-raise"
+  | "poker-read";
+
+/** Presentation-only activity. It never changes either ledger balance. */
+export interface NpcPlayEvent {
+  eventId: string;
+  npcId: string;
+  tableId: CasinoTableId;
+  utcSecond: number;
+  code: NpcPlayEventCode;
+  stake: NpcStake;
+}
+
 export interface NpcPresence {
   npcId: string;
   phase: NpcPresencePhase;

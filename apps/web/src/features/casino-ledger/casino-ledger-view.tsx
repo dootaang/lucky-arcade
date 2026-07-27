@@ -1,5 +1,6 @@
 import {
   casinoPresenceAt,
+  recentNpcPlayEventsAt,
   recentNpcActivitiesAt,
   TEMEROSA_NPC_GAMBLING_PROFILES,
   TEMEROSA_NPC_LEDGER_CONTRACT,
@@ -48,17 +49,17 @@ export default function CasinoLedgerView({ userBalance, tables, onPlay }: { user
 
   if (!loaded || !clock) return <section className="casino-ledger-loading ca-label" aria-label="카지노 원장 불러오는 중">원장 정리 중…</section>;
   try {
-    const currentUtcMinute = clock.utcMinute();
     const currentUtcSecond = clock.utcSecond();
     const snapshot = npcBalancesAtWithCheckpoint(clock, TEMEROSA_NPC_LEDGER_CONTRACT);
-    const activities = recentNpcActivitiesAt(TEMEROSA_NPC_GAMBLING_PROFILES, clock, TEMEROSA_NPC_LEDGER_CONTRACT, 6);
+    const activities = recentNpcActivitiesAt(TEMEROSA_NPC_GAMBLING_PROFILES, clock, TEMEROSA_NPC_LEDGER_CONTRACT, 24);
     const presences = casinoPresenceAt(TEMEROSA_NPC_GAMBLING_PROFILES, clock, TEMEROSA_NPC_LEDGER_CONTRACT);
+    const playEvents = recentNpcPlayEventsAt(presences, clock, 512);
     return <CasinoLedgerPanel
       npcBalances={snapshot.balances}
       userBalance={userBalance}
       activities={activities}
+      playEvents={playEvents}
       portraits={portraitMap(loaded.manifest)}
-      currentUtcMinute={currentUtcMinute}
       currentUtcSecond={currentUtcSecond}
       clockSource={loaded.sample.source}
       presences={presences}

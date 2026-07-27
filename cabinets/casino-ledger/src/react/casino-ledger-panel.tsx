@@ -1,7 +1,7 @@
 import { NumberTicker } from "@lucky-arcade/ui/number-ticker";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { casinoLeaderboard } from "../presentation.ts";
-import type { CasinoTableId, NpcActivity, NpcPresence } from "../contracts.ts";
+import type { CasinoTableId, NpcActivity, NpcPlayEvent, NpcPlayEventCode, NpcPresence } from "../contracts.ts";
 import { TEMEROSA_NPC_GAMBLING_PROFILES } from "../temerosa-profiles.ts";
 import "./casino-ledger-panel.css";
 
@@ -9,8 +9,8 @@ export interface CasinoLedgerPanelProps {
   npcBalances: Readonly<Record<string, number>>;
   userBalance: number;
   activities: readonly NpcActivity[];
+  playEvents: readonly NpcPlayEvent[];
   portraits: Readonly<Record<string, string>>;
-  currentUtcMinute: number;
   currentUtcSecond: number;
   clockSource: "http-date" | "device";
   presences: readonly NpcPresence[];
@@ -31,8 +31,8 @@ export default function CasinoLedgerPanel({
   npcBalances,
   userBalance,
   activities,
+  playEvents,
   portraits,
-  currentUtcMinute,
   currentUtcSecond,
   clockSource,
   presences,
@@ -42,13 +42,22 @@ export default function CasinoLedgerPanel({
   const leaderboard = casinoLeaderboard(TEMEROSA_NPC_GAMBLING_PROFILES, npcBalances, userBalance);
   const names = new Map(TEMEROSA_NPC_GAMBLING_PROFILES.map((profile) => [profile.id, profile.name]));
   const previousBalances = useRef(npcBalances);
-  const [changedIds, setChangedIds] = useState<ReadonlySet<string>>(new Set());
+  const [balanceMoves, setBalanceMoves] = useState<Readonly<Record<string, "rising" | "falling">>>({});
+  const allTape = useMemo(() => casinoTape(playEvents, activities, currentUtcSecond), [activities, currentUtcSecond, playEvents]);
+  const tape = allTape.slice(0, 12);
+  const tapeKeys = tape.map((event) => event.id).join("|");
+  const tapeRef = useFlipTape(tapeKeys);
+  const lastMinuteCount = allTape.filter((event) => currentUtcSecond - event.utcSecond < 60).length;
   useEffect(() => {
-    const changed = new Set(Object.keys(npcBalances).filter((id) => previousBalances.current[id] !== npcBalances[id]));
+    const changed = Object.fromEntries(Object.keys(npcBalances).flatMap((id) => {
+      const previous = previousBalances.current[id];
+      const next = npcBalances[id];
+      return previous === undefined || next === undefined || previous === next ? [] : [[id, next > previous ? "rising" : "falling"]];
+    })) as Record<string, "rising" | "falling">;
     previousBalances.current = npcBalances;
-    if (changed.size === 0) return;
-    setChangedIds(changed);
-    const timer = window.setTimeout(() => setChangedIds(new Set()), 1_600);
+    if (Object.keys(changed).length === 0) return;
+    setBalanceMoves(changed);
+    const timer = window.setTimeout(() => setBalanceMoves({}), 1_600);
     return () => window.clearTimeout(timer);
   }, [npcBalances]);
   return <>
@@ -60,29 +69,30 @@ export default function CasinoLedgerPanel({
       <table>
         <caption className="ca-serif">명예의 전당</caption>
         <thead><tr><th scope="col">순위</th><th scope="col">이름</th><th scope="col">잔고</th></tr></thead>
-        <tbody>{leaderboard.map((entry) => <tr key={`${entry.kind}:${entry.id}`} className={`${entry.kind === "user" ? "is-user" : ""}${entry.kind === "npc" && changedIds.has(entry.id) ? " is-changing" : ""}`}>
+        <tbody>{leaderboard.map((entry) => <tr key={`${entry.kind}:${entry.id}`} className={`${entry.kind === "user" ? "is-user" : ""}${entry.kind === "npc" && balanceMoves[entry.id] ? ` is-changing is-${balanceMoves[entry.id]}` : ""}`}>
           <td className="ca-num">{entry.rank}</td>
           <th scope="row"><span className="ledger-person">
             {entry.kind === "npc" && entry.rank <= 3 && <span className="ledger-portrait"><span aria-hidden="true">{entry.name.slice(0, 1)}</span>{portraits[entry.id] && <img src={portraits[entry.id]} alt="" loading="lazy" onError={(event) => { event.currentTarget.hidden = true; }} />}</span>}
             {entry.name}
           </span></th>
-          <td className="ca-num"><NumberTicker value={entry.balance} suffix=" P" /></td>
+          <td className="ca-num"><NumberTicker value={entry.balance} suffix=" P" durationMs={650} /></td>
         </tr>)}</tbody>
       </table>
     </div>
     <div className="casino-ledger-activity">
-      <div className="ledger-heading"><span><i className="ca-live" aria-hidden="true" /> 최근 활동</span>{clockSource === "device" && <small>기기 시간 기준</small>}</div>
-      <div className="ledger-motion" aria-hidden="true">{activities.slice(0, 6).map((activity) => <ActivityLine key={activityKey(activity)} activity={activity} name={names.get(activity.npcId) ?? activity.npcId} currentUtcMinute={currentUtcMinute} />)}</div>
-      <ol className="ledger-static" aria-label="최근 활동 세 건">{activities.slice(0, 3).map((activity) => <li key={activityKey(activity)}><ActivityLine activity={activity} name={names.get(activity.npcId) ?? activity.npcId} currentUtcMinute={currentUtcMinute} /></li>)}</ol>
+      <div className="ledger-heading"><span><i className="ca-live" aria-hidden="true" /> LIVE PLAY TAPE</span><small>{lastMinuteCount} ACTIONS / 60s{clockSource === "device" ? " · 기기 시간" : ""}</small></div>
+      <div className="ledger-tape-columns" aria-hidden="true"><span>PLAYER</span><span>AGE</span><span>TABLE · ACTION</span><span>STAKE / P&amp;L</span></div>
+      <div className="ledger-motion" aria-hidden="true" ref={tapeRef}>{tape.map((event) => <TapeLine key={event.id} event={event} name={names.get(event.npcId) ?? event.npcId} currentUtcSecond={currentUtcSecond} />)}</div>
+      <ol className="ledger-static" aria-label="최근 카지노 활동 세 건">{tape.slice(0, 3).map((event) => <li key={event.id}><TapeLine event={event} name={names.get(event.npcId) ?? event.npcId} currentUtcSecond={currentUtcSecond} /></li>)}</ol>
     </div>
   </section>
   </>;
 }
 
-function ActivityLine({ activity, name, currentUtcMinute }: { activity: NpcActivity; name: string; currentUtcMinute: number }): React.ReactElement {
-  const delta = activity.session.delta;
-  return <span className={`ledger-activity-line ${delta > 0 ? "is-rising" : "is-falling"}`}>
-    <b>{name}</b><small>{Math.max(0, currentUtcMinute - activity.utcMinute)}분 전</small><span>{tableName(activity.session.tableId)} · {activity.session.stake === 0 ? "무료" : `${activity.session.stake} P`}</span><strong className="ca-num">{delta > 0 ? "+" : ""}{delta} P</strong>
+function TapeLine({ event, name, currentUtcSecond }: { event: CasinoTapeEvent; name: string; currentUtcSecond: number }): React.ReactElement {
+  const age = Math.max(0, currentUtcSecond - event.utcSecond);
+  return <span data-tape-key={event.id} className={`ledger-activity-line is-${event.kind}${event.delta === undefined ? "" : event.delta >= 0 ? " is-rising" : " is-falling"}`}>
+    <b>{name}</b><small>{age < 60 ? `${age}초` : `${Math.floor(age / 60)}분`}</small><span><i>{tableName(event.tableId)}</i> · {event.label}</span><strong className="ca-num">{event.delta === undefined ? event.stake === 0 ? "FREE" : `${event.stake} P` : `${event.delta > 0 ? "+" : ""}${event.delta} P`}</strong>
   </span>;
 }
 
@@ -135,6 +145,86 @@ function tableName(tableId: NpcActivity["session"]["tableId"]): string {
   return "인디언 포커";
 }
 
-function activityKey(activity: NpcActivity): string {
-  return `${activity.utcMinute}:${activity.npcId}:${activity.session.tableId}`;
+interface CasinoTapeEvent {
+  id: string;
+  npcId: string;
+  tableId: CasinoTableId;
+  utcSecond: number;
+  kind: "play" | "settlement";
+  label: string;
+  stake: number;
+  delta?: number;
+}
+
+function casinoTape(playEvents: readonly NpcPlayEvent[], activities: readonly NpcActivity[], currentUtcSecond: number): readonly CasinoTapeEvent[] {
+  const play: CasinoTapeEvent[] = playEvents.map((event) => ({
+    id: event.eventId, npcId: event.npcId, tableId: event.tableId, utcSecond: event.utcSecond,
+    kind: "play", label: playEventLabel(event.code, event.stake), stake: event.stake,
+  }));
+  const settlements: CasinoTapeEvent[] = activities.map((activity) => ({
+    id: `settlement:${activity.utcMinute}:${activity.npcId}:${activity.session.tableId}`,
+    npcId: activity.npcId, tableId: activity.session.tableId, utcSecond: activity.utcMinute * 60,
+    kind: "settlement", label: settlementLabel(activity), stake: activity.session.stake, delta: activity.session.delta,
+  }));
+  return [...play, ...settlements]
+    .filter((event) => event.utcSecond <= currentUtcSecond)
+    .sort((left, right) => right.utcSecond - left.utcSecond || compareText(left.id, right.id));
+}
+
+function playEventLabel(code: NpcPlayEventCode, stake: number): string {
+  if (code === "table-enter") return "테이블 입장";
+  if (code === "wager-placed") return stake === 0 ? "무료 대국 시작" : "판돈 투입";
+  if (code === "old-maid-draw") return "카드 선택";
+  if (code === "old-maid-discard") return "짝 버리기";
+  if (code === "old-maid-reorder") return "손패 재배열";
+  if (code === "old-maid-watch") return "조커 추적";
+  if (code === "pairs-open-first") return "첫 카드 공개";
+  if (code === "pairs-open-second") return "두 번째 카드 공개";
+  if (code === "pairs-match") return "짝 판정";
+  if (code === "pairs-turn") return "턴 교대";
+  if (code === "slot-spin") return "릴 회전";
+  if (code === "slot-reel-stop") return "릴 정지";
+  if (code === "slot-line-check") return "당첨선 확인";
+  if (code === "slot-reach") return "리치";
+  if (code === "poker-check") return "체크";
+  if (code === "poker-call") return "콜";
+  if (code === "poker-raise") return "레이즈";
+  return "표정 읽기";
+}
+
+function settlementLabel(activity: NpcActivity): string {
+  if (activity.session.tableId === "temerosa-slot") {
+    const lines = Number(activity.session.resultKind.replace("lines-", ""));
+    return lines > 0 ? `${lines}줄 적중` : "당첨 없음";
+  }
+  if (activity.session.tableId === "indian-poker") return "칩 정산";
+  if (activity.session.tableId === "temerosa-match-pairs") return "대국 정산";
+  return "순위 보상";
+}
+
+function useFlipTape(keySignature: string): React.RefObject<HTMLDivElement | null> {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const previousPositions = useRef<ReadonlyMap<string, number>>(new Map());
+  useLayoutEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+    const rows = [...container.querySelectorAll<HTMLElement>("[data-tape-key]")];
+    const nextPositions = new Map(rows.map((row) => [row.dataset.tapeKey ?? "", row.getBoundingClientRect().top]));
+    const reduce = typeof window.matchMedia === "function" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (!reduce) {
+      for (const row of rows) {
+        const key = row.dataset.tapeKey ?? "";
+        const previous = previousPositions.current.get(key);
+        const current = nextPositions.get(key);
+        if (previous === undefined || current === undefined || previous === current || typeof row.animate !== "function") continue;
+        row.animate([{ transform: `translateY(${previous - current}px)` }, { transform: "translateY(0)" }], { duration: 420, easing: "cubic-bezier(.2,.8,.2,1)" });
+      }
+    }
+    previousPositions.current = nextPositions;
+  }, [keySignature]);
+  return containerRef;
+}
+
+function compareText(left: string, right: string): number {
+  return left < right ? -1 : left > right ? 1 : 0;
 }

@@ -25,7 +25,8 @@ describe("casino floor presence", () => {
     expect(beforeSettlement.phase).toBe("playing");
     expect(npcAvailability([beforeSettlement])[profile.id]?.available).toBe(false);
     const after = casinoPresenceAt([profile], fixedClock(interval.availableAtUtcSecond), contract)[0]!;
-    expect(after.phase).toBe("idle");
+    expect(["idle", "approaching"]).toContain(after.phase);
+    if (after.phase === "approaching") expect(after.startedAtUtcSecond).toBe(interval.availableAtUtcSecond);
   });
 
   it("keeps at least four NPCs available at every transition for 10,000 days", () => {
@@ -47,6 +48,30 @@ describe("casino floor presence", () => {
         if (TEMEROSA_NPC_GAMBLING_PROFILES.length - busy < 4) throw new Error(`insufficient_available:${day}:${event.second}`);
       }
     }
+  }, 30_000);
+
+  it("keeps the casino floor occupied throughout the first year", () => {
+    const balances = Object.fromEntries(TEMEROSA_NPC_GAMBLING_PROFILES.map((profile) => [profile.id, profile.target]));
+    const intervals = [] as ReturnType<typeof npcPresenceIntervalsForDay>[number][];
+    for (let day = 0; day <= 366; day += 1) {
+      for (const profile of TEMEROSA_NPC_GAMBLING_PROFILES) {
+        const opening = balances[profile.id]!;
+        const values = npcPresenceIntervalsForDay(profile, day, opening, contract);
+        balances[profile.id] = opening + npcDaySessions(profile, day, opening, contract).reduce((sum, session) => sum + session.delta, 0);
+        intervals.push(...values);
+      }
+    }
+    intervals.sort((left, right) => left.startedAtUtcSecond - right.startedAtUtcSecond);
+    const rangeStart = (contract.epochUtcDay + 1) * 86_400;
+    const rangeEnd = (contract.epochUtcDay + 366) * 86_400;
+    let coveredUntil = rangeStart;
+    for (const interval of intervals) {
+      if (interval.availableAtUtcSecond <= rangeStart || interval.startedAtUtcSecond >= rangeEnd) continue;
+      if (interval.startedAtUtcSecond > coveredUntil) throw new Error(`quiet_floor:${coveredUntil}`);
+      coveredUntil = Math.max(coveredUntil, interval.availableAtUtcSecond);
+      if (coveredUntil >= rangeEnd) break;
+    }
+    expect(coveredUntil).toBeGreaterThanOrEqual(rangeEnd);
   }, 30_000);
 });
 

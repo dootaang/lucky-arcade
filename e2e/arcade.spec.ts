@@ -71,6 +71,12 @@ test("loads the living ledger lazily and reuses the casino manifest in a game", 
   await expect(page.locator(".casino-ledger-board caption")).toHaveText("명예의 전당");
   await expect(page.locator(".casino-ledger-board tbody tr")).toHaveCount(6);
   await expect(page.locator(".casino-ledger-activity [aria-live]")).toHaveCount(0);
+  await expect(page.getByText("LIVE PLAY TAPE", { exact: true })).toBeVisible();
+  await expect(page.locator(".ledger-heading small")).toContainText("ACTIONS / 60s");
+  await expect(page.locator(".ledger-motion [data-tape-key]")).toHaveCount(12);
+  expect(await page.locator(".casino-live-grid .live-table-card.is-active").count()).toBeGreaterThan(0);
+  const firstTapeKey = await page.locator(".ledger-motion [data-tape-key]").first().getAttribute("data-tape-key");
+  await expect.poll(() => page.locator(".ledger-motion [data-tape-key]").first().getAttribute("data-tape-key")).not.toBe(firstTapeKey);
   await expect(page.locator(".casino-live-grid .live-table-card")).toHaveCount(4);
   await expect(page.locator(".casino-live-grid .live-table-stage")).toHaveCount(4);
   await expect(page.locator(".casino-live-grid").getByText(/게임 중|지금 입장 가능/).first()).toBeVisible();
@@ -482,10 +488,13 @@ test("plays and restores a complete Temerosa old maid table", async ({ page }, t
   await expect(page.locator(".old-maid-opponent-picker button.selected")).toHaveCount(3);
   await expect.poll(() => page.locator(".old-maid-opponent-picker button.selected").allTextContents()).not.toEqual(initialRoster);
   while (await page.locator(".old-maid-opponent-picker button.selected").count()) await page.locator(".old-maid-opponent-picker button.selected").first().click();
-  for (const name of ["에코", "아데샤", "땡칠이"]) await page.locator(".old-maid-opponent-picker button").filter({ hasText: name }).click();
-  await expect(page.locator(".seat-cpu-1 strong")).toHaveText("에코");
-  await expect(page.locator(".seat-cpu-2 strong")).toHaveText("아데샤");
-  await expect(page.locator(".seat-cpu-3 strong")).toHaveText("땡칠이");
+  const availableOpponentButtons = page.locator(".old-maid-opponent-picker button:not([disabled])");
+  await expect(availableOpponentButtons.nth(2)).toBeVisible();
+  const chosenRoster = await availableOpponentButtons.evaluateAll((buttons) => buttons.slice(0, 3).map((button) => button.querySelector("span")?.childNodes[0]?.textContent?.trim() ?? ""));
+  for (const name of chosenRoster) await page.locator(".old-maid-opponent-picker button:not([disabled])").filter({ hasText: name }).click();
+  await expect(page.locator(".seat-cpu-1 strong")).toHaveText(chosenRoster[0]!);
+  await expect(page.locator(".seat-cpu-2 strong")).toHaveText(chosenRoster[1]!);
+  await expect(page.locator(".seat-cpu-3 strong")).toHaveText(chosenRoster[2]!);
   // The reduced-motion deal lasts only 190 ms. Arm the pause before starting
   // so the browser clicks on the exact render where the ready-only disabled
   // state clears, without a Playwright round trip racing the deal timer.
@@ -562,7 +571,7 @@ test("plays and restores a complete Temerosa old maid table", async ({ page }, t
     if (!checkedSpeech && await speech.count()) {
       await expect(speech).toBeVisible();
       await expect(speech).not.toHaveAttribute("aria-live");
-      await expect(speech).toHaveAttribute("data-line-id", /^(echo|adesha|ttaengchil)-/);
+      await expect(speech).toHaveAttribute("data-line-id", /^[a-z0-9-]+-[a-z0-9-]+$/);
       checkedSpeech = true;
     }
     const ownCards = page.getByRole("button", { name: /크게 보기/ });
@@ -611,7 +620,7 @@ test("plays and restores a complete Temerosa old maid table", async ({ page }, t
           expect(targetId).toMatch(/^cpu-/);
           expect(offeredCardId).toBeTruthy();
           await offeredCard.hover();
-          await expect(page.locator(`.seat-${targetId} .old-maid-reaction-text`)).toHaveText(/만족한 듯|긴장한 듯/);
+          await expect(page.locator(`.seat-${targetId} .old-maid-reaction-text`)).toHaveText(/침착한 듯|만족한 듯|긴장한 듯/);
           const offeredCardBox = await offeredCard.boundingBox();
           expect(offeredCardBox).not.toBeNull();
           await offeredCard.dispatchEvent("pointerdown", { pointerType: "touch", pointerId: 1, isPrimary: true });
