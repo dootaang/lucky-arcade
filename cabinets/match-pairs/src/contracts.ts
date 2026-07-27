@@ -1,6 +1,6 @@
 export const MATCH_PAIRS_VERSION = "match-pairs/0.3" as const;
 export const MATCH_PAIRS_STATE_CONTRACT = "match-pairs-state/0.3" as const;
-export const MATCH_PAIRS_TERMS_VERSION = "match-pairs-paytable/0.1" as const;
+export const MATCH_PAIRS_TERMS_VERSION = "match-pairs-paytable/0.2" as const;
 
 export type MatchPairsDifficulty = "easy" | "normal";
 export type MatchPairsStatus = "ready" | "playing" | "checking" | "complete";

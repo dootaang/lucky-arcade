@@ -6,10 +6,10 @@ import {
 } from "@lucky-arcade/casino-ledger";
 
 const MINUTES_PER_DAY = 1_440;
-const PREFIX = "npc-ledger/0.2:checkpoint:";
+const PREFIX = "npc-ledger/0.3:checkpoint:";
 
 export interface NpcLedgerCheckpoint {
-  contract: "npc-ledger/0.2";
+  contract: "npc-ledger/0.3";
   dayIndex: number;
   balances: Readonly<Record<string, number>>;
 }

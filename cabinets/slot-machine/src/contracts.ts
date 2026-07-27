@@ -1,6 +1,6 @@
 export const SLOT_MACHINE_VERSION = "slot-machine/0.2" as const;
 export const SLOT_MACHINE_STATE_CONTRACT = "slot-machine-state/0.2" as const;
-export const SLOT_MACHINE_TERMS_VERSION = "temerosa-slot-paytable/0.2" as const;
+export const SLOT_MACHINE_TERMS_VERSION = "temerosa-slot-paytable/0.3" as const;
 export const SLOT_MACHINE_PACK_VERSION = "0.2.0" as const;
 export const SLOT_MACHINE_STAKES = [10, 50, 200] as const;
 export const SLOT_MACHINE_LINE_MULTIPLIER = 6;

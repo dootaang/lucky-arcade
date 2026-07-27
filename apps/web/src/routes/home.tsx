@@ -24,6 +24,7 @@ export function Home({ privatePreview = false }: { privatePreview?: boolean }) {
   const [balance, setBalance] = useState(0);
   const [activeCabinet, setActiveCabinet] = useState<string | null>(null);
   const [menu, setMenu] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [light, setLight] = useState(false);
   const refreshRecent = useCallback(() => { void listRecentPlays().then(setRecent); }, []);
 
@@ -74,11 +75,12 @@ export function Home({ privatePreview = false }: { privatePreview?: boolean }) {
   const recentCabinet = recentPlay ? getCabinetRegistration(recentPlay.cabinetId, privatePreview) : undefined;
   const recentVenue = recentPlay ? getVenueForCabinet(recentPlay.cabinetId) : undefined;
 
-  return <div className={`app-layout ${venue ? "venue-active" : ""}`}>
+  return <div className={`app-layout ${venue ? "venue-active" : ""}${sidebarCollapsed ? " sidebar-collapsed" : ""}`}>
     <button className="mobile-menu" onClick={() => setMenu(true)} aria-label="메뉴 열기"><IconMenu2 /></button>
+    {sidebarCollapsed && <button className="desktop-sidebar-open" onClick={() => setSidebarCollapsed(false)} aria-label="사이드바 열기"><IconMenu2 /></button>}
     {menu && <button className="sidebar-scrim" onClick={() => setMenu(false)} aria-label="메뉴 닫기" />}
     <aside className={`sidebar ${menu ? "open" : ""}`}>
-      <div className="brand"><span>★</span><div><strong>럭키 오락실</strong><small>BOT CARD ARCADE</small></div><button className="close-menu" onClick={() => setMenu(false)} aria-label="메뉴 닫기"><IconX /></button></div>
+      <div className="brand"><span><IconDeviceGamepad2 aria-hidden="true" /></span><div><strong>럭키 오락실</strong><small>BOT CARD ARCADE</small></div><button className="desktop-sidebar-close" onClick={() => setSidebarCollapsed(true)} aria-label="사이드바 닫기"><IconX /></button><button className="close-menu" onClick={() => setMenu(false)} aria-label="메뉴 닫기"><IconX /></button></div>
       <nav aria-label="주 메뉴">
         <Nav icon={<IconHome />} active={!venueId} label="로비" onClick={() => { setMenu(false); navigate(privatePreview ? "/dev" : "/"); }} />
         {!privatePreview && <Nav icon={<IconDeviceGamepad2 />} active={Boolean(venue)} label="카지노" onClick={() => { setMenu(false); navigate("/venues/temerosa-casino"); }} />}
@@ -105,8 +107,8 @@ function VenueCard({ venue, eager, onEnter }: { venue: VenueManifest; eager: boo
 }
 
 const plannedTables = [
-  { group: "관전", title: "관전석", description: "다른 대국을 보는 자리를 준비 중입니다." },
-  { group: "교환소", title: "알제의 교환소", description: "포인트 교환 품목을 정리하고 있습니다." },
+  { group: "관전", title: "관전석" },
+  { group: "교환소", title: "알제의 교환소" },
 ] as const;
 
 /** A suit stamped on each table, so a bare card still reads as a casino table. */
@@ -126,7 +128,6 @@ function VenueFloor({ venue, balance, onPlay }: { venue: VenueManifest; balance:
     <Suspense fallback={<section className="casino-ledger-loading ca-label">원장 정리 중…</section>}><CasinoLedgerView userBalance={balance} onPlay={onPlay} tables={playable.map(({ entry }) => ({
       id: entry.manifest.id as CasinoTableId,
       title: entry.manifest.title.replace("테메로세 ", ""),
-      description: entry.manifest.description,
       suit: TABLE_SUITS[entry.manifest.id] ?? "♠",
       entryLabel: "시작",
       meta: `${entry.manifest.estimatedMinutes.min}~${entry.manifest.estimatedMinutes.max}분 · ${entry.manifest.entry === "wager" ? `${entry.manifest.wagerTiers?.[0] ?? 0} P부터` : "포인트 없이 시작"}`,
@@ -137,14 +138,12 @@ function VenueFloor({ venue, balance, onPlay }: { venue: VenueManifest; balance:
         <span className="table-suit" aria-hidden="true">{TABLE_SUITS[entry.manifest.id] ?? "♠"}</span>
         <span className="table-group ca-label">게임 테이블</span>
         <h3 className="ca-serif">{entry.manifest.title.replace("테메로세 ", "")}</h3>
-        <p>{entry.manifest.description}</p>
         <strong>개장 준비 중</strong>
       </article>)}
       {plannedTables.map((table) => <article className="table-card coming-soon" key={table.group}>
         <span className="table-suit" aria-hidden="true">{TABLE_SUITS[table.title] ?? "♣"}</span>
         <span className="table-group ca-label">{table.group}</span>
         <h3 className="ca-serif">{table.title}</h3>
-        <p>{table.description}</p>
         <strong>준비 중</strong>
       </article>)}
     </div>

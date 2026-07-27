@@ -6,6 +6,37 @@ export * from "./random.ts";
 
 export const ENGINE_VERSION = "arcade-engine/0.1" as const;
 
+export const WAGER_MULTIPLIERS = [2, 3, 4, 5] as const;
+export type WagerMultiplier = (typeof WAGER_MULTIPLIERS)[number];
+
+/** Maximum amount removed from the wallet before a leveraged game starts. */
+export function wagerExposure(stake: number, multiplier: WagerMultiplier, baseExposure = 1): number {
+  if (!Number.isSafeInteger(stake) || stake < 0 || !Number.isSafeInteger(baseExposure) || baseExposure < 1) throw new Error("wager_exposure_invalid");
+  const exposure = stake * multiplier * baseExposure;
+  if (!Number.isSafeInteger(exposure)) throw new Error("wager_exposure_invalid");
+  return exposure;
+}
+
+/**
+ * Scales the underlying game's net result in both directions. `baseCredit`
+ * includes the unleveraged reservation; the returned credit includes the
+ * leveraged reservation. A 5x choice therefore multiplies wins and losses,
+ * rather than multiplying only the upside.
+ */
+export function leveragedWagerCredit(baseReserved: number, baseCredit: number, multiplier: WagerMultiplier): number {
+  if (!Number.isSafeInteger(baseReserved) || baseReserved < 0 || !Number.isSafeInteger(baseCredit) || baseCredit < 0) throw new Error("wager_credit_invalid");
+  const credit = baseCredit * multiplier;
+  if (!Number.isSafeInteger(credit) || credit < 0) throw new Error("wager_credit_invalid");
+  return credit;
+}
+
+export function wagerMultiplierFromExposure(stake: number, reservedAmount: number, baseExposure = 1): WagerMultiplier {
+  const unit = stake * baseExposure;
+  const multiplier = unit > 0 ? reservedAmount / unit : 0;
+  if (!WAGER_MULTIPLIERS.includes(multiplier as WagerMultiplier)) throw new Error("wager_multiplier_invalid");
+  return multiplier as WagerMultiplier;
+}
+
 export function canonicalJson(value: unknown): string {
   if (value === null || typeof value !== "object") return JSON.stringify(value);
   if (Array.isArray(value)) return `[${value.map(canonicalJson).join(",")}]`;

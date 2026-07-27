@@ -17,7 +17,7 @@ export const temerosaOldMaidManifest: CabinetManifest = {
   id: "temerosa-old-maid",
   version: OLD_MAID_VERSION,
   title: "테메로세 도둑잡기",
-  description: "테메로세 인물들과 즐기는 도둑잡기.",
+  description: "즐거운 도둑잡기",
   requiredCapabilities: [],
   sessionKind: "repeat",
   launchKind: "built-in",

@@ -1,24 +1,26 @@
 import { INDIAN_POKER_TERMS_VERSION, INDIAN_POKER_VERSION, TEMEROSA_INDIAN_POKER_PACK_VERSION, createIndianPokerState, indianPokerRanking, isIndianPokerState, reduceIndianPoker, type IndianPokerAction, type IndianPokerCartridge, type IndianPokerStake, type IndianPokerState } from "@lucky-arcade/indian-poker";
 import { IndianPokerScreen } from "@lucky-arcade/indian-poker/react";
-import { ENGINE_VERSION, makeReceipt, resultHash } from "@lucky-arcade/engine";
+import { ENGINE_VERSION, leveragedWagerCredit, makeReceipt, resultHash, wagerExposure, wagerMultiplierFromExposure, type WagerMultiplier } from "@lucky-arcade/engine";
 import type { GameWagerReceipt, MatchRecord } from "@lucky-arcade/persistence";
 import type { CourtAtlas } from "@lucky-arcade/ui/playing-card";
 import { useEffect, useRef, useState } from "react";
-import { appendAction, appendMatchRecord, pruneMatchRecords, saveSnapshot } from "../../lib/database.ts";
-import { listWagers, reserveWager, settleWager } from "../../lib/game-wager.ts";
+import { appendAction, appendMatchRecord, listMatchRecordsForSession, pruneMatchRecords, saveSnapshot } from "../../lib/database.ts";
+import { invalidateWager, listWagers, reserveWager, settleWager } from "../../lib/game-wager.ts";
 import { loadPlayingCardAtlas } from "../../lib/playing-card-atlas.ts";
 import { recoverSession } from "../../lib/session-recovery.ts";
 import { loadTemerosaCasinoAssets } from "../../lib/temerosa-content.ts";
 import { readWallet } from "../../lib/wallet.ts";
+import { summarizeOpponentRecords, type OpponentRecordSummary } from "../../lib/opponent-records.ts";
 import { buildTemerosaIndianPokerCartridge } from "./temerosa-indian-poker-cartridge.ts";
 import { useCasinoOpponentAvailability } from "../casino-ledger/use-casino-opponent-availability.ts";
 
 const CABINET_ID = "indian-poker", SESSION = "indian-poker:heads-up-1";
-interface Ready { state: IndianPokerState; cartridge: IndianPokerCartridge; assets: Readonly<Record<string, string>>; thumbAssets: Readonly<Record<string, string>>; atlas: CourtAtlas; }
+interface Ready { state: IndianPokerState; cartridge: IndianPokerCartridge; assets: Readonly<Record<string, string>>; thumbAssets: Readonly<Record<string, string>>; atlas: CourtAtlas; multiplier: WagerMultiplier; }
 
 export default function IndianPokerView({ onExit }: { onExit(): void }) {
   const availability = useCasinoOpponentAvailability(SESSION);
   const [ready, setReady] = useState<Ready | null>(null), [balance, setBalance] = useState(0), [busy, setBusy] = useState(false), [error, setError] = useState("");
+  const [opponentRecords, setOpponentRecords] = useState<Readonly<Record<string, OpponentRecordSummary>>>({});
   const stateRef = useRef<IndianPokerState | null>(null), cartridgeRef = useRef<IndianPokerCartridge | null>(null);
   useEffect(() => {
     let alive = true;
@@ -34,7 +36,13 @@ export default function IndianPokerView({ onExit }: { onExit(): void }) {
         reduce: (state, action) => reduceIndianPoker(cartridge, state, action),
       });
       let state = recovered.state, nextBalance = wallet.balance;
-      const pending = (await listWagers(SESSION)).find((receipt) => receipt.status === "reserved");
+      const wagers = await listWagers(SESSION);
+      const reserved = wagers.filter((receipt) => receipt.status === "reserved");
+      const pending = reserved.find((receipt) => receipt.termsVersion === INDIAN_POKER_TERMS_VERSION && validReceipt(receipt));
+      for (const receipt of reserved) if (receipt !== pending) {
+        const transaction = await invalidateWager({ wagerId: receipt.wagerId, reason: receipt.termsVersion === INDIAN_POKER_TERMS_VERSION ? "corrupt-state" : "version-mismatch" });
+        nextBalance = transaction.wallet.balance;
+      }
       if (pending && state.wagerId !== pending.wagerId) {
         const identity = identityFromReceipt(pending);
         if (identity && isStake(pending.stake) && cartridge.characters.some((character) => character.id === identity.opponentId)) {
@@ -44,28 +52,34 @@ export default function IndianPokerView({ onExit }: { onExit(): void }) {
         }
       }
       if (pending && state.wagerId === pending.wagerId && state.status === "complete") {
-        const transaction = await settleWager({ wagerId: pending.wagerId, settlementSequence: state.sequence, resultKey: resultHash(state), creditAmount: state.creditAmount });
+        const transaction = await settleWager({ wagerId: pending.wagerId, settlementSequence: state.sequence, resultKey: resultHash(state), creditAmount: leveragedCredit(state, pending) });
         nextBalance = transaction.wallet.balance;
+        await recordIndianPokerMatch(state, cartridge);
       }
+      const restoredReceipt = state.wagerId ? wagers.find((receipt) => receipt.wagerId === state.wagerId) : undefined;
+      if (!pending && state.status === "complete" && restoredReceipt?.status === "settled") await recordIndianPokerMatch(state, cartridge);
+      const records = summarizeOpponentRecords(await listMatchRecordsForSession(SESSION, 200));
       if (!alive) return;
       stateRef.current = state; cartridgeRef.current = cartridge;
-      setReady({ state, cartridge, assets: bundle.assets, thumbAssets: bundle.thumbAssets, atlas }); setBalance(nextBalance);
+      const activeReceipt = pending ?? (state.wagerId ? wagers.find((receipt) => receipt.wagerId === state.wagerId) : undefined);
+      setReady({ state, cartridge, assets: bundle.assets, thumbAssets: bundle.thumbAssets, atlas, multiplier: activeReceipt && validReceipt(activeReceipt) ? wagerMultiplierFromExposure(activeReceipt.stake, activeReceipt.reservedAmount) : 2 }); setBalance(nextBalance);
+      setOpponentRecords(records);
     }).catch(() => { if (alive) setError("인디언 포커를 준비하지 못했습니다."); });
     return () => { alive = false; };
   }, []);
 
-  async function start(stake: IndianPokerStake): Promise<IndianPokerState> {
+  async function start(stake: IndianPokerStake, multiplier: WagerMultiplier): Promise<IndianPokerState> {
     const current = stateRef.current, cartridge = cartridgeRef.current;
     if (!current || !cartridge || busy || current.status !== "ready") throw new Error("indian_poker_not_ready");
     if (availability.opponents[current.opponentId]?.available === false) throw new Error("casino_opponent_busy");
     setBusy(true); setError("");
     try {
       const seed = `${current.seed}:deal:${crypto.randomUUID()}`;
-      const transaction = await reserveWager({ outcomeKey: `${INDIAN_POKER_TERMS_VERSION}:${current.opponentId}:${seed}`, cabinetId: CABINET_ID, sessionId: SESSION, termsVersion: INDIAN_POKER_TERMS_VERSION, choiceKey: `deal:${current.opponentId}|${seed}`, stake, reservedAmount: stake });
+      const transaction = await reserveWager({ outcomeKey: `${INDIAN_POKER_TERMS_VERSION}:${current.opponentId}:${seed}`, cabinetId: CABINET_ID, sessionId: SESSION, termsVersion: INDIAN_POKER_TERMS_VERSION, choiceKey: `deal:${current.opponentId}|${seed}`, stake, reservedAmount: wagerExposure(stake, multiplier) });
       setBalance(transaction.wallet.balance);
       const action: IndianPokerAction = { type: "start", seed, stake, wagerId: transaction.wager.wagerId };
       const next = reduceIndianPoker(cartridge, current, action);
-      stateRef.current = next; setReady((value) => value ? { ...value, state: next } : value);
+      stateRef.current = next; setReady((value) => value ? { ...value, state: next, multiplier } : value);
       await persistState(current, next, action); setBusy(false); return next;
     } catch (cause) { setBusy(false); setError(cause instanceof Error && cause.message === "insufficient_points" ? "포인트가 부족합니다." : "대국을 시작하지 못했습니다."); throw cause; }
   }
@@ -78,12 +92,21 @@ export default function IndianPokerView({ onExit }: { onExit(): void }) {
   async function finish(state: IndianPokerState): Promise<void> {
     if (!state.wagerId) return; setBusy(true);
     try {
-      const transaction = await settleWager({ wagerId: state.wagerId, settlementSequence: state.sequence, resultKey: resultHash(state), creditAmount: state.creditAmount });
-      setBalance(transaction.wallet.balance); setBusy(false); try { await record(state); } catch { setError("포인트는 정산됐지만 전적 기록을 남기지 못했습니다."); }
+      const receipt = (await listWagers(SESSION)).find((candidate) => candidate.wagerId === state.wagerId);
+      if (!receipt) throw new Error("indian_poker_wager_receipt_missing");
+      const transaction = await settleWager({ wagerId: state.wagerId, settlementSequence: state.sequence, resultKey: resultHash(state), creditAmount: leveragedCredit(state, receipt) });
+      setBalance(transaction.wallet.balance); setBusy(false); try { await record(state); setOpponentRecords(summarizeOpponentRecords(await listMatchRecordsForSession(SESSION, 200))); } catch { setError("포인트는 정산됐지만 전적 기록을 남기지 못했습니다."); }
     } catch { setBusy(false); setError("결과는 보존됐지만 정산이 남았습니다. 다시 들어오면 같은 영수증으로 처리합니다."); throw new Error("indian_poker_settlement_pending"); }
   }
   async function record(state: IndianPokerState): Promise<void> {
     const cartridge = cartridgeRef.current; if (!cartridge) return;
+    await recordIndianPokerMatch(state, cartridge);
+  }
+  if (!ready) return <main className="game-shell"><div className="game-loading">{error || "카드 덱과 상대를 준비하고 있습니다…"}{error && <button onClick={onExit}>카지노로 돌아가기</button>}</div></main>;
+  return <IndianPokerScreen cartridge={ready.cartridge} assets={ready.assets} thumbAssets={ready.thumbAssets} atlas={ready.atlas} initialState={ready.state} initialMultiplier={ready.multiplier} walletBalance={balance} busy={busy} error={error} opponentAvailability={availability.opponents} opponentRecords={opponentRecords} onOpponentSelectionChange={(id) => availability.holdOpponents([id])} onStart={start} onPersist={persist} onExit={onExit} />;
+}
+
+async function recordIndianPokerMatch(state: IndianPokerState, cartridge: IndianPokerCartridge): Promise<void> {
     const opponent = cartridge.characters.find((character) => character.id === state.opponentId), ranking = indianPokerRanking(state), player = ranking.find((standing) => standing.seatId === "player");
     const tied = ranking[0]?.rank === ranking[1]?.rank;
     const record: MatchRecord = {
@@ -94,9 +117,6 @@ export default function IndianPokerView({ onExit }: { onExit(): void }) {
       outcome: tied ? "draw" : player?.rank === 1 ? "win" : "loss", resultHash: resultHash(state),
     };
     await appendMatchRecord(record); await pruneMatchRecords(200);
-  }
-  if (!ready) return <main className="game-shell"><div className="game-loading">{error || "카드 덱과 상대를 준비하고 있습니다…"}{error && <button onClick={onExit}>카지노로 돌아가기</button>}</div></main>;
-  return <IndianPokerScreen cartridge={ready.cartridge} assets={ready.assets} thumbAssets={ready.thumbAssets} atlas={ready.atlas} initialState={ready.state} walletBalance={balance} busy={busy} error={error} opponentAvailability={availability.opponents} onOpponentSelectionChange={(id) => availability.holdOpponents([id])} onStart={start} onPersist={persist} onExit={onExit} />;
 }
 
 async function persistState(previous: IndianPokerState, next: IndianPokerState, action: IndianPokerAction): Promise<void> {
@@ -105,4 +125,6 @@ async function persistState(previous: IndianPokerState, next: IndianPokerState, 
 }
 function identityFromReceipt(receipt: GameWagerReceipt): { opponentId: string; seed: string } | null { if (!receipt.choiceKey?.startsWith("deal:")) return null; const payload = receipt.choiceKey.slice(5), separator = payload.indexOf("|"); return separator > 0 ? { opponentId: payload.slice(0, separator), seed: payload.slice(separator + 1) } : null; }
 function isStake(value: number): value is IndianPokerStake { return value === 10 || value === 50 || value === 200; }
+function validReceipt(receipt: GameWagerReceipt): boolean { try { wagerMultiplierFromExposure(receipt.stake, receipt.reservedAmount); return isStake(receipt.stake); } catch { return false; } }
+function leveragedCredit(state: IndianPokerState, receipt: GameWagerReceipt): number { return leveragedWagerCredit(state.stake ?? receipt.stake, state.creditAmount, wagerMultiplierFromExposure(receipt.stake, receipt.reservedAmount)); }
 function dailySeed(): string { return new Date().toISOString().slice(0, 10); }

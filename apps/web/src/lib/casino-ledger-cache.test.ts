@@ -15,8 +15,8 @@ describe("casino ledger checkpoint adapter", () => {
 
   it("rejects corrupt, future and foreign-contract checkpoints", () => {
     const storage = new MemoryStorage();
-    storage.setItem("npc-ledger/0.2:checkpoint:99", JSON.stringify({ contract: "npc-ledger/0.2", dayIndex: 99, balances: {} }));
-    storage.setItem("npc-ledger/0.2:checkpoint:2", JSON.stringify({ contract: "npc-ledger/9.9", dayIndex: 2, balances: {} }));
+    storage.setItem("npc-ledger/0.3:checkpoint:99", JSON.stringify({ contract: "npc-ledger/0.3", dayIndex: 99, balances: {} }));
+    storage.setItem("npc-ledger/0.3:checkpoint:2", JSON.stringify({ contract: "npc-ledger/9.9", dayIndex: 2, balances: {} }));
     expect(readLatestCheckpoint(storage, 5, TEMEROSA_NPC_LEDGER_CONTRACT)).toBeUndefined();
     expect(storage.length).toBe(0);
   });
@@ -27,7 +27,7 @@ describe("casino ledger checkpoint adapter", () => {
     for (const dayIndex of [1, 2, 3]) {
       writeCheckpoint(storage, { contract: contract.version, dayIndex, balances: completedDayBalances(contract.profiles, dayIndex, contract) }, contract);
     }
-    expect(storage.keys().sort()).toEqual(["npc-ledger/0.2:checkpoint:2", "npc-ledger/0.2:checkpoint:3"]);
+    expect(storage.keys().sort()).toEqual(["npc-ledger/0.3:checkpoint:2", "npc-ledger/0.3:checkpoint:3"]);
   });
 });
 

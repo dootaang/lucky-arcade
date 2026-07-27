@@ -42,7 +42,9 @@ test("mobile navigation and Venue floor remain reachable", async ({ page }, test
   await expect(page.getByRole("button", { name: "카지노", exact: true })).toBeVisible();
   await page.getByRole("button", { name: "카지노", exact: true }).click();
   await expect(page.getByRole("heading", { name: "테이블을 골라주세요" })).toBeVisible();
-  await expect(page.locator(".table-card.playable").filter({ hasText: "도둑잡기" }).getByRole("button", { name: "시작", exact: true })).toBeInViewport();
+  const firstTable = page.locator(".table-card.playable").filter({ hasText: "도둑잡기" }).getByRole("button", { name: "시작", exact: true });
+  await firstTable.scrollIntoViewIfNeeded();
+  await expect(firstTable).toBeInViewport();
 });
 
 test("opens the sole public Venue with four open tables and five announced tables", async ({ page }) => {
@@ -51,7 +53,12 @@ test("opens the sole public Venue with four open tables and five announced table
   await expect(page.getByRole("heading", { name: "테메로세 카지노" })).toBeVisible();
   await expect(page.getByText("내 카드로 놀기")).toHaveCount(0);
   await page.getByRole("button", { name: "카지노 입장" }).click();
+  await page.getByRole("button", { name: "사이드바 닫기" }).click();
+  await expect(page.locator(".sidebar")).toBeHidden();
+  await page.getByRole("button", { name: "사이드바 열기" }).click();
+  await expect(page.locator(".sidebar")).toBeVisible();
   await expect(page.locator(".table-card.playable")).toHaveCount(4);
+  await expect(page.locator(".casino-live-grid .live-table-card > p")).toHaveCount(0);
   await expect(page.locator(".table-card.playable").filter({ hasText: "도둑잡기" }).getByRole("button", { name: "시작", exact: true })).toBeVisible();
   await expect(page.locator(".table-card.playable").filter({ hasText: "짝맞추기" }).getByRole("button", { name: "시작", exact: true })).toBeVisible();
   await expect(page.locator(".table-card.playable").filter({ hasText: "슬롯 777" })).toContainText("10 P부터");
@@ -78,13 +85,13 @@ test("loads the living ledger lazily and reuses the casino manifest in a game", 
   await expect(page.locator(".casino-ledger-activity [aria-live]")).toHaveCount(0);
   await expect(page.getByText("LIVE PLAY TAPE", { exact: true })).toBeVisible();
   await expect(page.locator(".casino-ledger-activity .ledger-heading small")).toContainText("ACTIONS / 60s");
-  await expect(page.locator(".ledger-motion [data-tape-key]")).toHaveCount(12);
+  await expect(page.locator(".ledger-motion [data-tape-key]")).toHaveCount(8);
   expect(await page.locator(".casino-live-grid .live-table-card.is-active").count()).toBeGreaterThan(0);
   const firstTapeKey = await page.locator(".ledger-motion [data-tape-key]").first().getAttribute("data-tape-key");
   await expect.poll(() => page.locator(".ledger-motion [data-tape-key]").first().getAttribute("data-tape-key")).not.toBe(firstTapeKey);
   await expect(page.locator(".casino-live-grid .live-table-card")).toHaveCount(4);
   await expect(page.locator(".casino-live-grid .live-table-stage")).toHaveCount(4);
-  await expect(page.locator(".casino-live-grid").getByText(/게임 중|지금 입장 가능/).first()).toBeVisible();
+  await expect(page.locator(".casino-live-grid .live-table-card")).toHaveCount(4);
   await page.emulateMedia({ reducedMotion: "reduce" });
   await expect(page.locator(".ledger-motion")).toBeHidden();
   await expect(page.locator(".ledger-static")).toBeVisible();
@@ -145,7 +152,7 @@ test("reserves and settles one deterministic Temerosa slot spin", async ({ page 
   await expect(betConsole).toContainText("200 P");
   await page.getByRole("button", { name: "BET", exact: true }).click();
   await expect(betConsole).toContainText("10 P");
-  await page.getByRole("button", { name: "10 P 베팅 레버 당기기", exact: true }).click();
+  await page.getByRole("button", { name: "10 P, 2배 베팅 레버 당기기", exact: true }).click();
   await expect(page.locator(".slot-machine-track[data-track-count]")).toHaveCount(3);
   await expect(page.locator(".slot-machine-track[data-track-count]").first()).not.toHaveAttribute("data-track-count", "3");
   await page.waitForTimeout(180);
@@ -167,9 +174,9 @@ test("reserves and settles one deterministic Temerosa slot spin", async ({ page 
     const wallet = await database.readWallet();
     return { wager: wagers[0], legacy, balance: wallet.balance };
   });
-  expect(economy.wager).toMatchObject({ cabinetId: "temerosa-slot", stake: 10, reservedAmount: 10, status: "settled" });
+  expect(economy.wager).toMatchObject({ cabinetId: "temerosa-slot", stake: 10, reservedAmount: 20, status: "settled" });
   expect(economy.legacy).toMatchObject({ wagerId: "legacy-slot-wager", status: "refunded", settlementCredit: 10 });
-  expect(economy.balance).toBe(1_000 - 10 + economy.wager.settlementCredit);
+  expect(economy.balance).toBe(1_000 - 20 + economy.wager.settlementCredit);
 });
 
 test("plays, wagers, records, and restores the public image-only match-pairs table", async ({ page }, testInfo) => {
@@ -192,7 +199,7 @@ test("plays, wagers, records, and restores the public image-only match-pairs tab
   await expect(page.getByRole("heading", { name: "짝맞추기" })).toBeVisible();
   expect(await page.locator(".match-pairs-card-front").evaluateAll((fronts) => fronts.every((front) => (front.textContent ?? "").trim() === ""))).toBe(true);
   await expect(page.locator(".match-pairs-card-front img").first()).toHaveAttribute("alt", "");
-  await page.getByRole("button", { name: "10 P로 시작", exact: true }).click();
+  await page.getByRole("button", { name: "10 P · 2배로 시작", exact: true }).click();
   await expect(page.locator(".match-pairs-ready-panel")).toHaveCount(0);
   const pairs = await page.locator(".match-pairs-card").evaluateAll((cards) => {
     const indexes = new Map<string, number[]>();
@@ -213,21 +220,22 @@ test("plays, wagers, records, and restores the public image-only match-pairs tab
         const database = await new Function("return import('/src/lib/database.ts')")();
         return { wallet: await database.readWallet(), wager: (await database.listGameWagers("temerosa-match-pairs:versus-1"))[0] };
       });
-      expect(pending.wallet.balance).toBe(27);
-      expect(pending.wager).toMatchObject({ status: "reserved", stake: 10, reservedAmount: 10 });
+      expect(pending.wallet.balance).toBe(17);
+      expect(pending.wager).toMatchObject({ status: "reserved", stake: 10, reservedAmount: 20 });
       await page.reload();
       await expect(page.getByRole("heading", { name: "짝맞추기" })).toBeVisible();
       await expect(page.locator(".match-pairs-card.is-matched")).toHaveCount(2);
     }
   }
   await expect(page.locator(".match-pairs-result")).toContainText("승리했습니다");
+  await expect(page.locator(".match-pairs-result")).toContainText("상대 전적 · 1승 0패");
   const persisted = await page.evaluate(async () => {
     const database = await new Function("return import('/src/lib/database.ts')")();
     return { wallet: await database.readWallet(), wagers: await database.listGameWagers("temerosa-match-pairs:versus-1"), records: await database.listMatchRecordsForSession("temerosa-match-pairs:versus-1", 10) };
   });
-  expect([15, 20, 25]).toContain(persisted.wagers[0]?.settlementCredit);
-  expect(persisted.wallet.balance).toBe(37 - 10 + persisted.wagers[0].settlementCredit);
-  expect(persisted.wagers[0]).toMatchObject({ cabinetId: "temerosa-match-pairs", stake: 10, reservedAmount: 10, status: "settled" });
+  expect([30, 40, 50]).toContain(persisted.wagers[0]?.settlementCredit);
+  expect(persisted.wallet.balance).toBe(37 - 20 + persisted.wagers[0].settlementCredit);
+  expect(persisted.wagers[0]).toMatchObject({ cabinetId: "temerosa-match-pairs", stake: 10, reservedAmount: 20, status: "settled" });
   expect(persisted.records).toHaveLength(1);
   expect(persisted.records[0]).toMatchObject({ cabinetId: "temerosa-match-pairs", outcome: "win", turns: 6 });
   await page.goto("/");
@@ -521,9 +529,6 @@ test("plays and restores a complete Temerosa old maid table", async ({ page }, t
   await expect(page.getByText("카드를 나누는 중…")).toBeVisible();
   await page.getByRole("button", { name: "계속", exact: true }).click();
   await expect(page.locator(".old-maid-player-hand")).toBeVisible();
-  await page.getByRole("button", { name: "수동", exact: true }).click();
-  await expect(page.getByRole("button", { name: "수동", exact: true })).toHaveClass(/selected/);
-  await page.getByRole("button", { name: "자동", exact: true }).click();
   let checkedDetail = false;
   let checkedDiscardPile = false;
   let checkedDiscardSpread = false;
@@ -738,9 +743,21 @@ test("starts an open-hand four-NPC Temerosa spectator table", async ({ page }, t
   await expect(page.locator(".old-maid-spectator-hand .old-maid-card.face")).toHaveCount(0);
   await expect(page.getByText("최대 손익 20 P", { exact: false })).toBeVisible();
   await expect(page.getByRole("button", { name: "2배", exact: true })).toHaveClass(/selected/);
+  await page.evaluate(() => {
+    const pause = document.querySelector<HTMLButtonElement>(".old-maid-pause");
+    if (!pause) throw new Error("pause button missing");
+    const clickWhenOfferAppears = () => {
+      if (pause.disabled || !document.querySelector(".old-maid-offer-card:disabled")) return;
+      observer.disconnect();
+      pause.click();
+    };
+    const observer = new MutationObserver(clickWhenOfferAppears);
+    observer.observe(document.body, { childList: true, subtree: true, attributes: true });
+    clickWhenOfferAppears();
+  });
   await page.getByRole("button", { name: "예측하고 NPC 대국 관전" }).click();
   await expect(page.getByText("카드를 나누는 중…")).toBeVisible();
-  await page.getByRole("button", { name: "수동", exact: true }).click();
+  await expect(page.getByText("일시정지됨")).toBeVisible();
   await expect(page.locator(".old-maid-spectator-seat")).toBeVisible({ timeout: 20_000 });
   const npcOffer = page.locator(".old-maid-offer-card:disabled").first();
   await expect(npcOffer).toBeVisible();
@@ -749,21 +766,8 @@ test("starts an open-hand four-NPC Temerosa spectator table", async ({ page }, t
     pointerEvents: getComputedStyle(button).pointerEvents,
     cardTransform: getComputedStyle(button.querySelector<HTMLElement>(".old-maid-card")!).transform,
   }))).toEqual({ pointerEvents: "none", cardTransform: "none" });
-  await page.getByRole("button", { name: "자동", exact: true }).click();
-  const desktopControls = page.locator(".old-maid-progress-controls-desktop");
-  await expect(desktopControls).toBeVisible();
+  await expect(page.locator(".old-maid-progress-controls-desktop")).toBeHidden();
   await expect(page.locator(".old-maid-progress-controls-mobile")).toBeHidden();
-  await expect(desktopControls.getByRole("button", { name: "보통", exact: true })).toBeVisible();
-  await expect(desktopControls.getByRole("button", { name: "빠르게", exact: true })).toBeVisible();
-  const controlBounds = await desktopControls.evaluate((controls) => {
-    const box = controls.getBoundingClientRect();
-    const table = controls.closest(".old-maid-table")!.getBoundingClientRect();
-    return { left: box.left, right: box.right, top: box.top, tableLeft: table.left, tableRight: table.right, tableTop: table.top, viewportWidth: window.innerWidth, insideClippedCenter: Boolean(controls.closest(".old-maid-center")) };
-  });
-  expect(controlBounds.insideClippedCenter).toBe(false);
-  expect(controlBounds.left).toBeGreaterThanOrEqual(controlBounds.tableLeft);
-  expect(controlBounds.right).toBeLessThanOrEqual(Math.min(controlBounds.tableRight, controlBounds.viewportWidth));
-  expect(controlBounds.top).toBeGreaterThanOrEqual(controlBounds.tableTop);
   await page.evaluate(() => {
     const selector = '.old-maid-flight-layer[data-draw-path="direct"] .old-maid-card.face';
     document.body.dataset.directFaceSeen = document.querySelector(selector) ? "true" : "false";
@@ -775,7 +779,7 @@ test("starts an open-hand four-NPC Temerosa spectator table", async ({ page }, t
     observer.observe(document.body, { childList: true, subtree: true });
     window.setTimeout(() => observer.disconnect(), 30_000);
   });
-  await page.getByRole("button", { name: "빠르게", exact: true }).click();
+  await page.getByRole("button", { name: "계속", exact: true }).click();
   await expect(page.getByText("상대끼리 뽑은 카드는 비공개")).toHaveCount(0);
   await expect(page.locator(".old-maid-spectator-hand .old-maid-card.face").first()).toBeVisible();
   await expect.poll(() => page.locator("body").getAttribute("data-direct-face-seen"), { timeout: 30_000 }).toBe("true");
@@ -813,7 +817,7 @@ test("mobile Temerosa old maid keeps the draw cards reachable", async ({ page },
     await candidate.click();
   }
   await page.getByRole("button", { name: "시작", exact: true }).click();
-  await expect(page.locator(".old-maid-progress-controls-mobile")).toBeVisible();
+  await expect(page.locator(".old-maid-progress-controls-mobile")).toBeHidden();
   await expect(page.locator(".old-maid-progress-controls-desktop")).toBeHidden();
   const speech = page.locator(".old-maid-speech").first();
   for (let step = 0; step < 160 && !await speech.isVisible(); step += 1) {

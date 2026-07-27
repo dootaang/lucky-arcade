@@ -112,3 +112,38 @@
 .old-maid-verdict.lost{color:#ff9a8a;text-shadow:0 0 36px color-mix(in srgb,var(--ca-crimson,#8b0000) 46%,transparent)}
 .old-maid-modal-foil{width:min(62vw,240px);border-radius:14px}
 .old-maid-modal-foil .old-maid-card.large{width:100%;height:auto;aspect-ratio:3/4}
+
+/* The pacing controls had no useful player-facing distinction. Keep their
+   implementation inert for timer compatibility, but remove the UI. */
+.old-maid-progress-controls{display:none!important}
+
+/* Desktop table: larger cards inside a strict one-viewport height budget. */
+@media(min-width:901px){
+  .old-maid-shell.is-live{height:100dvh;min-height:0;overflow:hidden}
+  .old-maid-header{height:60px}
+  .old-maid-shell.is-live .old-maid-table{
+    height:calc(100dvh - 60px);
+    min-height:0;
+    grid-template-columns:minmax(180px,220px) minmax(460px,1fr) minmax(180px,220px);
+    grid-template-rows:112px minmax(300px,1fr) 150px;
+    gap:8px;
+    padding:8px clamp(10px,2vw,24px);
+    overflow:visible;
+  }
+  .old-maid-seat{padding:6px 8px}
+  .old-maid-seat-portrait{width:78px;height:104px}
+  .old-maid-seat.seat-cpu-1{width:min(360px,86%)}
+  .old-maid-shell.is-live .old-maid-center{min-height:0}
+  .old-maid-turn-callout{top:8px}
+  .old-maid-draw-row{padding-top:38px}
+  .old-maid-card{width:88px;height:131px}
+  .old-maid-card.back{margin-left:-29px}
+  .old-maid-card-button{margin-left:-29px}
+  .old-maid-player{max-width:1080px;padding:6px 10px}
+  .old-maid-player>div:first-child{margin-bottom:2px}
+  .old-maid-player-hand{min-height:132px;padding-top:4px;padding-left:29px}
+  .old-maid-log{max-height:165px;padding:8px}
+  .old-maid-log ol{max-height:130px}
+  .old-maid-flip-card .old-maid-card{width:124px;height:184px}
+  .old-maid-flight-card,.old-maid-reveal-card-space{width:124px;height:184px}
+}

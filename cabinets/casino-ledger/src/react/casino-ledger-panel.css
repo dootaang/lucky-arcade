@@ -1,10 +1,11 @@
-.casino-ledger-panel{position:relative;z-index:1;display:grid;grid-template-columns:minmax(0,.78fr) minmax(420px,1.22fr);gap:14px;margin:18px 0 22px}.casino-ledger-board,.casino-ledger-activity{position:relative;border:1px solid color-mix(in srgb,var(--ca-gold) 28%,transparent);border-radius:14px;background:color-mix(in srgb,var(--ca-surface) 92%,transparent);overflow:hidden}.casino-ledger-board{padding:12px}.casino-ledger-board table{width:100%;border-collapse:collapse}.casino-ledger-board caption{text-align:left;font-size:1.08rem;padding:0 0 8px}.casino-ledger-board th,.casino-ledger-board td{padding:7px 6px;text-align:left;border-top:1px solid color-mix(in srgb,var(--ca-gold) 12%,transparent)}.casino-ledger-board thead th{border-top:0;color:var(--ca-gold-bright);font-size:.68rem}.casino-ledger-board td:last-child{text-align:right}.casino-ledger-board tr.is-user{color:var(--ca-gold-bright)}.ledger-person{display:flex;align-items:center;gap:8px}.ledger-portrait{position:relative;display:grid;place-items:center;width:30px;height:30px;border-radius:50%;overflow:hidden;background:var(--ca-raised);color:var(--ca-gold);font-size:.72rem}.ledger-portrait img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 24%}.casino-ledger-activity{min-height:390px;padding:12px;background:linear-gradient(180deg,color-mix(in srgb,var(--ca-gold) 5%,var(--ca-surface)),var(--ca-surface))}.ledger-heading{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;font-weight:900;letter-spacing:.03em}.ledger-heading>span{display:flex;align-items:center;gap:7px}.ledger-heading small{font-size:.62rem;color:var(--ca-gold);font-variant-numeric:tabular-nums}.ledger-tape-columns,.ledger-activity-line{display:grid;grid-template-columns:minmax(70px,.8fr) 42px minmax(145px,1.5fr) 64px;gap:7px;align-items:center}.ledger-tape-columns{padding:0 9px 5px;color:color-mix(in srgb,var(--ca-gold) 68%,transparent);font-size:.55rem;font-weight:900;letter-spacing:.1em}.ledger-tape-columns span:last-child{text-align:right}.ledger-motion{position:relative;display:grid;gap:3px;overflow:hidden}.ledger-activity-line{position:relative;min-height:27px;padding:4px 8px;border-left:2px solid color-mix(in srgb,var(--ca-gold) 32%,transparent);border-radius:5px;background:color-mix(in srgb,var(--ca-raised) 90%,transparent);font-size:.68rem;font-variant-numeric:tabular-nums;animation:ledger-enter .34s cubic-bezier(.2,.8,.2,1) both}.ledger-activity-line::after{position:absolute;inset:0;content:"";pointer-events:none;opacity:0}.ledger-activity-line b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.ledger-activity-line small{opacity:.58}.ledger-activity-line>span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.ledger-activity-line>span i{color:var(--ca-gold);font-style:normal}.ledger-activity-line strong{text-align:right;color:color-mix(in srgb,var(--ca-gold-bright) 80%,white)}.ledger-activity-line.is-settlement{border-left-color:var(--ca-gold-bright);font-weight:800}.ledger-activity-line.is-settlement::after{animation:ledger-settle-flash .85s ease-out}.ledger-activity-line.is-rising{border-left-color:var(--ca-rising)}.ledger-activity-line.is-rising strong{color:var(--ca-rising)}.ledger-activity-line.is-rising::after{background:color-mix(in srgb,var(--ca-rising) 34%,transparent)}.ledger-activity-line.is-falling{border-left-color:var(--ca-falling)}.ledger-activity-line.is-falling strong{color:var(--ca-falling)}.ledger-activity-line.is-falling::after{background:color-mix(in srgb,var(--ca-falling) 34%,transparent)}.ledger-static{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}.ledger-static li{list-style:none}@media(max-width:760px){.casino-ledger-panel{grid-template-columns:1fr}.casino-ledger-activity{min-height:350px}.ledger-tape-columns,.ledger-activity-line{grid-template-columns:minmax(62px,.7fr) minmax(130px,1.5fr) 60px}.ledger-tape-columns span:nth-child(2),.ledger-activity-line small{display:none}.ledger-activity-line{font-size:.66rem}}@media(prefers-reduced-motion:reduce){.ledger-motion{display:none}.ledger-static{position:static!important;width:auto!important;height:auto!important;margin:0!important;overflow:visible!important;clip:auto!important;white-space:normal!important;display:grid;gap:5px}.ledger-static .ledger-activity-line{display:grid}}
+.casino-ledger-panel{position:relative;z-index:1;display:grid;grid-template-columns:minmax(0,.78fr) minmax(420px,1.22fr);gap:14px;margin:18px 0 22px}.casino-ledger-board,.casino-ledger-activity{position:relative;border:1px solid color-mix(in srgb,var(--ca-gold) 28%,transparent);border-radius:14px;background:color-mix(in srgb,var(--ca-surface) 92%,transparent);overflow:hidden}.casino-ledger-board{padding:12px}.casino-ledger-board table{width:100%;border-collapse:collapse}.casino-ledger-board caption{text-align:left;font-size:1.08rem;padding:0 0 8px}.casino-ledger-board th,.casino-ledger-board td{padding:7px 6px;text-align:left;border-top:1px solid color-mix(in srgb,var(--ca-gold) 12%,transparent)}.casino-ledger-board thead th{border-top:0;color:var(--ca-gold-bright);font-size:.68rem}.casino-ledger-board td:last-child{text-align:right}.casino-ledger-board tr.is-user{color:var(--ca-gold-bright)}.ledger-person{display:flex;align-items:center;gap:8px}.ledger-portrait{position:relative;display:grid;place-items:center;width:30px;height:30px;border-radius:50%;overflow:hidden;background:var(--ca-raised);color:var(--ca-gold);font-size:.72rem}.ledger-portrait img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 24%}.casino-ledger-activity{min-height:300px;padding:12px;background:linear-gradient(180deg,color-mix(in srgb,var(--ca-gold) 5%,var(--ca-surface)),var(--ca-surface))}.ledger-heading{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;font-weight:900;letter-spacing:.03em}.ledger-heading>span{display:flex;align-items:center;gap:7px}.ledger-heading small{font-size:.62rem;color:var(--ca-gold);font-variant-numeric:tabular-nums}.ledger-tape-columns,.ledger-activity-line{display:grid;grid-template-columns:minmax(70px,.8fr) 42px minmax(145px,1.5fr) 64px;gap:7px;align-items:center}.ledger-tape-columns{padding:0 9px 5px;color:color-mix(in srgb,var(--ca-gold) 68%,transparent);font-size:.55rem;font-weight:900;letter-spacing:.1em}.ledger-tape-columns span:last-child{text-align:right}.ledger-motion{position:relative;display:grid;gap:3px;overflow:hidden}.ledger-activity-line{--ledger-flash-opacity:.26;position:relative;min-height:27px;padding:4px 8px;border-left:2px solid color-mix(in srgb,var(--ca-gold) 32%,transparent);border-radius:5px;background:color-mix(in srgb,var(--ca-raised) 90%,transparent);font-size:.68rem;font-variant-numeric:tabular-nums}.ledger-activity-line.is-newest{animation:ledger-enter .18s ease-out both}.ledger-activity-line::after{position:absolute;inset:0;content:"";pointer-events:none;background:color-mix(in srgb,var(--ca-gold) 24%,transparent);opacity:0}.ledger-activity-line.is-newest::after{animation:ledger-tape-flash .62s ease-out}.ledger-activity-line b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.ledger-activity-line small{opacity:.58}.ledger-activity-line>span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.ledger-activity-line>span i{color:var(--ca-gold);font-style:normal}.ledger-activity-line strong{text-align:right;color:color-mix(in srgb,var(--ca-gold-bright) 80%,white)}.ledger-activity-line.is-newest strong{animation:ledger-value-flash .62s ease-out}.ledger-activity-line.is-settlement{border-left-color:var(--ca-gold-bright);font-weight:800}.ledger-activity-line.is-rising{border-left-color:var(--ca-rising)}.ledger-activity-line.is-rising strong{color:var(--ca-rising)}.ledger-activity-line.is-rising::after{background:color-mix(in srgb,var(--ca-rising) 34%,transparent)}.ledger-activity-line.is-falling{border-left-color:var(--ca-falling)}.ledger-activity-line.is-falling strong{color:var(--ca-falling)}.ledger-activity-line.is-falling::after{background:color-mix(in srgb,var(--ca-falling) 34%,transparent)}.ledger-static{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}.ledger-static li{list-style:none}@media(max-width:760px){.casino-ledger-panel{grid-template-columns:1fr}.casino-ledger-activity{min-height:250px}.ledger-tape-columns,.ledger-activity-line{grid-template-columns:minmax(62px,.7fr) minmax(130px,1.5fr) 60px}.ledger-tape-columns span:nth-child(2),.ledger-activity-line small{display:none}.ledger-activity-line{--ledger-flash-opacity:.13;font-size:.66rem}.ledger-motion>.ledger-activity-line:nth-child(n+7){display:none}}@media(prefers-reduced-motion:reduce){.ledger-motion{display:none}.ledger-static{position:static!important;width:auto!important;height:auto!important;margin:0!important;overflow:visible!important;clip:auto!important;white-space:normal!important;display:grid;gap:5px}.ledger-static .ledger-activity-line{display:grid}}
 .casino-ledger-board tr{transition:background .25s ease,color .25s ease,box-shadow .25s ease}.casino-ledger-board tr.is-changing{animation:ledger-balance-flash 1.15s ease-out}.casino-ledger-board tr.is-changing.is-rising{--ledger-flash:var(--ca-rising)}.casino-ledger-board tr.is-changing.is-falling{--ledger-flash:var(--ca-falling)}
-@keyframes ledger-enter{from{opacity:0;transform:translateY(-9px);filter:brightness(1.8)}to{opacity:1;transform:translateY(0);filter:brightness(1)}}
-@keyframes ledger-settle-flash{0%{opacity:.78}100%{opacity:0}}
+@keyframes ledger-enter{from{opacity:0}to{opacity:1}}
+@keyframes ledger-tape-flash{0%{opacity:var(--ledger-flash-opacity)}100%{opacity:0}}
+@keyframes ledger-value-flash{0%,28%{text-shadow:0 0 10px currentColor}100%{text-shadow:none}}
 @keyframes ledger-balance-flash{0%,12%{background:color-mix(in srgb,var(--ledger-flash,var(--ca-gold)) 30%,transparent);box-shadow:inset 3px 0 var(--ledger-flash,var(--ca-gold))}100%{background:transparent;box-shadow:inset 0 0 transparent}}
 .casino-live-grid{position:relative;z-index:1;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin:0 0 24px}
-.live-table-card{min-height:330px}.live-table-stage{position:relative;height:70px;display:grid;place-items:center;margin:8px 0;border-radius:12px;background:radial-gradient(circle at 50% 45%,color-mix(in srgb,var(--ca-gold) 14%,transparent),transparent 68%);overflow:hidden}.live-table-players{display:flex;align-items:center;gap:8px;min-height:58px;margin:8px 0}.live-player{display:grid;grid-template-columns:34px auto;grid-template-rows:auto auto;column-gap:7px;align-items:center;min-width:0}.live-player img,.live-player>i{grid-row:1/3;width:34px;height:42px;border-radius:8px;object-fit:cover;object-position:center 22%;background:var(--ca-raised);font-style:normal;display:grid;place-items:center}.live-player b{font-size:.72rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.live-player small{font-size:.62rem;color:var(--ca-gold)}.live-player-more{font-weight:900;color:var(--ca-gold)}.live-table-empty{font-size:.72rem;opacity:.72}.live-table-result{display:block;color:var(--ca-gold-bright);margin-bottom:6px}
+.live-table-card{min-height:330px}.live-table-stage{position:relative;height:70px;display:grid;place-items:center;margin:8px 0;border-radius:12px;background:radial-gradient(circle at 50% 45%,color-mix(in srgb,var(--ca-gold) 14%,transparent),transparent 68%);overflow:hidden}.live-table-players{display:flex;align-items:center;gap:8px;min-height:58px;margin:8px 0}.live-player{display:grid;grid-template-columns:34px auto;column-gap:7px;align-items:center;min-width:0}.live-player img,.live-player>i{width:34px;height:42px;border-radius:8px;object-fit:cover;object-position:center 22%;background:var(--ca-raised);font-style:normal;display:grid;place-items:center}.live-player b{font-size:.72rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.live-player-more{font-weight:900;color:var(--ca-gold)}.live-table-empty{font-size:.72rem;opacity:.72}.live-table-result{display:block;color:var(--ca-gold-bright);margin-bottom:6px}
 .mini-slot,.mini-pairs,.mini-poker,.mini-old-maid{display:flex;align-items:center;justify-content:center;gap:7px;perspective:200px}.mini-slot i{display:grid;place-items:center;width:34px;height:46px;border:1px solid color-mix(in srgb,var(--ca-gold) 45%,transparent);border-radius:6px;background:var(--ca-raised);font:900 1.15rem/1 var(--ca-serif);color:var(--ca-gold-bright)}.mini-slot.is-running i{animation:mini-reel 1.15s ease-in-out infinite}.mini-slot.is-running i:nth-child(2){animation-delay:.14s}.mini-slot.is-running i:nth-child(3){animation-delay:.28s}@keyframes mini-reel{0%,100%{transform:translateY(0);filter:blur(0)}48%{transform:translateY(-9px);filter:blur(1px)}52%{transform:translateY(9px);filter:blur(1px)}}
 .mini-pairs i,.mini-old-maid i,.mini-poker i{display:block;width:30px;height:42px;border:1px solid color-mix(in srgb,var(--ca-gold) 45%,transparent);border-radius:5px;background:repeating-linear-gradient(135deg,var(--ca-raised) 0 4px,color-mix(in srgb,var(--ca-gold) 12%,var(--ca-raised)) 4px 8px)}.mini-pairs.is-running i{animation:mini-flip 2.4s ease-in-out infinite}.mini-pairs.is-running i:nth-child(2){animation-delay:.28s}@keyframes mini-flip{0%,28%,100%{transform:rotateY(0)}38%,65%{transform:rotateY(180deg);background:var(--ca-gold)}}
 .mini-poker{position:relative}.mini-poker b{width:9px;height:9px;border-radius:50%;background:var(--ca-gold);font-size:0}.mini-poker.is-running b{animation:mini-chip 1.8s ease-in-out infinite alternate}.mini-poker.is-running b:nth-of-type(2){animation-delay:.2s}.mini-poker.is-running b:nth-of-type(3){animation-delay:.4s}@keyframes mini-chip{to{transform:translateY(-10px)}}
@@ -197,4 +198,77 @@
 @media(prefers-reduced-motion:reduce){
   .live-table-pulse,.live-table-card.is-settling.ca-glare::after,.live-table-card>.ca-scan::after{animation:none!important}
   .casino-ledger-board tbody tr,.live-table-card.is-leaving .live-table-players{transition:none}
+}
+
+/* The activity ledger is the floor's top dashboard. All three panels share one
+   baseline and one height so they read as a single instrument cluster. */
+.casino-ledger-panel{
+  grid-template-columns:minmax(200px,.78fr) minmax(250px,1fr) minmax(330px,1.35fr);
+  grid-template-areas:"board settlements activity";
+  align-items:stretch;
+  gap:12px;
+  margin:12px 0 18px;
+}
+.casino-ledger-board,.casino-ledger-settlements,.casino-ledger-activity{
+  min-width:0;
+  height:340px;
+  min-height:340px;
+  margin:0;
+}
+.casino-ledger-board{display:flex;padding:12px;overflow:auto}
+.casino-ledger-board table{align-self:stretch}
+.casino-ledger-settlements{display:flex;flex-direction:column}
+.casino-ledger-settlements ol{overflow:auto;padding-right:2px}
+.casino-ledger-activity{display:flex;flex-direction:column}
+.ledger-motion{min-height:0;overflow:hidden}
+
+/* Game entries are navigation rows, not promotional cards. The animation,
+   current guests, last result and start action remain; prose does not. */
+.casino-live-grid{grid-template-columns:1fr;gap:8px;margin:0 0 18px}
+.live-table-card{
+  display:grid!important;
+  min-height:88px;
+  grid-template-columns:minmax(128px,.55fr) 104px minmax(170px,1fr) minmax(145px,.72fr) auto;
+  align-items:center!important;
+  gap:8px 14px;
+  padding:10px 14px!important;
+  border-radius:14px!important;
+}
+.live-table-card h3{margin:0;font-size:1.02rem}
+.live-table-stage{height:54px;margin:0}
+.live-table-players{min-height:46px;margin:0;overflow:hidden}
+.live-table-result{margin:0;font-size:.68rem}
+.live-table-card>.ca-num{margin:0;font-size:.68rem}
+.venue-active .live-table-card.playable button{align-self:center;justify-self:end;min-height:40px;margin:0;padding:0 17px;font-size:.82rem}
+.live-table-card .table-suit{top:50%;right:12px;translate:0 -50%;font-size:54px}
+.live-table-empty{white-space:nowrap}
+
+@media(max-width:1500px){
+  .casino-ledger-panel{
+    grid-template-columns:minmax(220px,.8fr) minmax(280px,1fr);
+    grid-template-areas:"board settlements" "activity activity";
+  }
+  .casino-ledger-board,.casino-ledger-settlements{height:330px;min-height:330px}
+  .casino-ledger-activity{height:300px;min-height:300px}
+  .live-table-card{grid-template-columns:minmax(128px,.6fr) 90px minmax(160px,1fr) auto}
+  .live-table-card>.ca-num{display:none}
+}
+@media(max-width:760px){
+  .casino-ledger-panel{grid-template-columns:1fr;grid-template-areas:"board" "settlements" "activity"}
+  .casino-ledger-board,.casino-ledger-settlements,.casino-ledger-activity{height:auto;min-height:0}
+  .casino-ledger-board{max-height:340px}
+  .casino-ledger-settlements ol{max-height:330px}
+  .casino-ledger-activity{min-height:250px}
+  .live-table-card{min-height:112px;grid-template-columns:minmax(116px,.8fr) 86px minmax(130px,1fr) auto;gap:7px 10px}
+  .live-table-card h3{font-size:.94rem}
+  .live-table-stage{height:48px}
+  .live-table-players{min-height:42px}
+  .live-table-card .live-player:nth-of-type(n+2){display:none}
+  .venue-active .live-table-card.playable button{padding:0 13px}
+}
+@media(max-width:520px){
+  .live-table-card{grid-template-columns:1fr 78px auto;min-height:126px}
+  .live-table-players{grid-column:1/3;grid-row:2}
+  .live-table-result{grid-column:1/3;grid-row:3}
+  .venue-active .live-table-card.playable button{grid-column:3;grid-row:1/4}
 }

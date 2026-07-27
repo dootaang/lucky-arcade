@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { WAGER_MULTIPLIERS, leveragedWagerCredit, wagerExposure, type WagerMultiplier } from "@lucky-arcade/engine";
 import {
   SLOT_MACHINE_LINE_MULTIPLIER,
   SLOT_MACHINE_PAYLINES,
@@ -24,15 +25,17 @@ export interface SlotMachineScreenProps {
   balance: number;
   busy: boolean;
   error?: string;
-  onSpin(stake: SlotMachineStake): void | Promise<void>;
+  initialMultiplier?: WagerMultiplier;
+  onSpin(stake: SlotMachineStake, multiplier: WagerMultiplier): void | Promise<void>;
   onFinish(): void | Promise<void>;
   onExit(): void;
 }
 
 type SlotRevealPhase = "ready" | "spinning" | "lines" | "cutin" | "settling" | "complete";
 
-export function SlotMachineScreen({ state, symbols, variants, balance, busy, error, onSpin, onFinish, onExit }: SlotMachineScreenProps) {
+export function SlotMachineScreen({ state, symbols, variants, balance, busy, error, initialMultiplier = 2, onSpin, onFinish, onExit }: SlotMachineScreenProps) {
   const [stake, setStake] = useState<SlotMachineStake>(SLOT_MACHINE_STAKES[0]);
+  const [multiplier, setMultiplier] = useState<WagerMultiplier>(initialMultiplier);
   const [leverPulled, setLeverPulled] = useState(false);
   const [revealPhase, setRevealPhase] = useState<SlotRevealPhase>(() => state.status === "complete" ? "complete" : state.status === "spinning" ? "spinning" : "ready");
   const [reelStopPulse, setReelStopPulse] = useState(0);
@@ -53,9 +56,11 @@ export function SlotMachineScreen({ state, symbols, variants, balance, busy, err
   const symbolById = useMemo(() => new Map(symbols.map((symbol) => [symbol.id, symbol])), [symbols]);
   const outcome = state.outcome;
   const credit = slotMachineCredit(state);
+  const actualCredit = leveragedWagerCredit(state.stake ?? stake, credit, multiplier);
+  const exposure = wagerExposure(state.status === "ready" ? stake : state.stake ?? stake, multiplier);
   const spinning = state.status === "spinning";
-  const canSpin = !busy && !spinning && balance >= stake;
-  const affordableStakes = useMemo(() => SLOT_MACHINE_STAKES.filter((value) => value <= balance), [balance]);
+  const canSpin = !busy && !spinning && balance >= wagerExposure(stake, multiplier);
+  const affordableStakes = useMemo(() => SLOT_MACHINE_STAKES.filter((value) => wagerExposure(value, multiplier) <= balance), [balance, multiplier]);
   const readyGrid = useMemo(() => Array.from({ length: 9 }, (_, cell) => symbols[(cell * 5 + Math.floor(cell / 3)) % symbols.length]?.id ?? ""), [symbols]);
   const presentation = useMemo<SlotMachinePresentation | null>(() => {
     if (!outcome || !state.spinSeed) return null;
@@ -76,7 +81,7 @@ export function SlotMachineScreen({ state, symbols, variants, balance, busy, err
     const pleased = variants.filter((variant) => variant.symbolId === symbolId && ["pleased", "smile"].includes(variant.expression));
     return selectSlotMachineVisualVariant(pleased.length > 0 ? pleased : variants, symbolId, `${state.spinSeed}:winner`);
   }, [outcome?.grid, state.spinSeed, variants, winningCells]);
-  const displayedCredit = useCountUp(state.status === "complete" ? credit : 0, reducedMotion);
+  const displayedCredit = useCountUp(state.status === "complete" ? actualCredit : 0, reducedMotion);
 
   useEffect(() => {
     if (state.status === "complete" && outcome) previousGridRef.current = outcome.grid;
@@ -84,9 +89,9 @@ export function SlotMachineScreen({ state, symbols, variants, balance, busy, err
   }, [outcome, spinning, state.status, staticVisuals]);
 
   useEffect(() => {
-    if (balance >= stake || affordableStakes.length === 0) return;
+    if (balance >= wagerExposure(stake, multiplier) || affordableStakes.length === 0) return;
     setStake(affordableStakes.at(-1) ?? SLOT_MACHINE_STAKES[0]);
-  }, [affordableStakes, balance, stake]);
+  }, [affordableStakes, balance, multiplier, stake]);
 
   useEffect(() => {
     if (state.status === "ready") setRevealPhase("ready");
@@ -207,7 +212,7 @@ export function SlotMachineScreen({ state, symbols, variants, balance, busy, err
     leverLockRef.current = true;
     setLeverPulled(true);
     if (typeof navigator !== "undefined" && "vibrate" in navigator) navigator.vibrate(18);
-    leverTimersRef.current.push(window.setTimeout(() => { void onSpin(stake); }, 180));
+    leverTimersRef.current.push(window.setTimeout(() => { void onSpin(stake, multiplier); }, 180));
     leverTimersRef.current.push(window.setTimeout(() => { setLeverPulled(false); leverLockRef.current = false; }, 520));
   }
 
@@ -243,7 +248,7 @@ export function SlotMachineScreen({ state, symbols, variants, balance, busy, err
         {winnerVisual && credit > 0 && (revealPhase === "cutin" || revealPhase === "settling" || revealPhase === "complete") && <div className="slot-machine-winner-cutin" aria-label={`${symbolById.get(winnerVisual.symbolId)?.label ?? winnerVisual.symbolId} 당첨`}>
           <img src={winnerVisual.src} alt="" /><span>WIN</span><strong>{symbolById.get(winnerVisual.symbolId)?.label ?? winnerVisual.symbolId}</strong>
         </div>}
-        <button type="button" className={`slot-machine-lever${leverPulled ? " is-pulled" : ""}`} disabled={!canSpin} onClick={pullLever} aria-label={busy ? "회전 준비 중" : balance < stake ? "포인트 부족" : `${stake} P 베팅 레버 당기기`}>
+        <button type="button" className={`slot-machine-lever${leverPulled ? " is-pulled" : ""}`} disabled={!canSpin} onClick={pullLever} aria-label={busy ? "회전 준비 중" : balance < wagerExposure(stake, multiplier) ? "포인트 부족" : `${stake} P, ${multiplier}배 베팅 레버 당기기`}>
           <span className="slot-machine-lever-rail" aria-hidden="true"><i /><b /></span><strong>{spinning ? "SPIN" : "PULL"}</strong>
         </button>
       </div>
@@ -257,14 +262,16 @@ export function SlotMachineScreen({ state, symbols, variants, balance, busy, err
         </section>
 
         <div className="slot-machine-bet-console" aria-label="판돈 선택">
-          <span>CURRENT BET</span><strong className="ca-num">{stake} P</strong>
+          <span>CURRENT BET</span><strong className="ca-num">{stake} P × {multiplier}</strong>
           <button type="button" className="ca-gold-rim ca-press" disabled={spinning || busy || affordableStakes.length === 0} onClick={cycleStake}>BET</button>
           <button type="button" className="ca-gold-rim ca-press" disabled={spinning || busy || affordableStakes.length === 0} onClick={selectMaximumStake}>MAX BET</button>
+          <div className="slot-machine-multipliers" aria-label="배율 선택">{WAGER_MULTIPLIERS.map((value) => <button type="button" key={value} aria-pressed={multiplier === value} disabled={spinning || busy || balance < wagerExposure(stake, value)} onClick={() => setMultiplier(value)}>{value}배</button>)}</div>
+          <small>최대 손실 {wagerExposure(stake, multiplier)} P · 당첨 순이익도 {multiplier}배</small>
         </div>
 
         {state.status === "complete" && outcome && <section className={`slot-machine-result${credit > 0 ? " won" : " lost"}`} aria-live="polite">
           <strong>{credit > 0 ? `${outcome.winningLineIndexes.length}줄 적중` : "당첨 없음"}</strong>
-          <span>{credit > 0 ? `${displayedCredit.toLocaleString("ko-KR")} P 지급` : `${state.stake ?? 0} P 사용`}</span>
+          <span>{credit > 0 ? `${displayedCredit.toLocaleString("ko-KR")} P 지급` : `${exposure} P 손실`}</span>
         </section>}
         {spinning && <p className="slot-machine-status" aria-live="polite">{paused ? "일시정지됨" : revealPhase === "lines" ? credit > 0 ? "당첨선을 확인하는 중…" : "결과를 확인하는 중…" : revealPhase === "cutin" ? "당첨 연출 중…" : revealPhase === "settling" ? "포인트를 정산하는 중…" : "릴이 돌아가는 중…"}</p>}
         {error && <p className="slot-machine-error" role="alert">{error}</p>}

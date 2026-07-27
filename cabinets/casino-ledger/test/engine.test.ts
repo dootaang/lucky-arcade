@@ -31,7 +31,8 @@ describe("casino ledger core", () => {
         for (const session of sessions) {
           expect(session.delta).toBe(session.creditAmount - session.reservedAmount);
           expect([0, 10, 50, 200]).toContain(session.stake);
-          expect(session.reservedAmount).toBe(session.stake);
+          if (session.stake === 0) expect(session.reservedAmount).toBe(0);
+          else expect([2, 3, 4, 5]).toContain(session.reservedAmount / session.stake);
           current += session.delta;
           expect(current).toBeGreaterThanOrEqual(0);
           expect(current).toBeLessThanOrEqual(candidate.target * 20);
@@ -87,13 +88,16 @@ describe("casino ledger core", () => {
           expect(session).toMatchObject({ stake: 0, reservedAmount: 0, termsVersion: "old-maid-rank-reward/0.1" });
           expect([1, 3, 5, 10]).toContain(session.creditAmount);
         } else if (session.tableId === "temerosa-match-pairs") {
-          expect([0, session.stake, Math.round(session.stake * 1.5), session.stake * 2, Math.round(session.stake * 2.5)]).toContain(session.creditAmount);
+          const multiplier = session.reservedAmount / session.stake;
+          expect([0, session.stake, Math.round(session.stake * 1.5), session.stake * 2, Math.round(session.stake * 2.5)]).toContain(session.creditAmount / multiplier);
         } else if (session.tableId === "indian-poker") {
+          const multiplier = session.reservedAmount / session.stake;
           expect(session.creditAmount).toBeGreaterThanOrEqual(0);
-          expect(session.creditAmount).toBeLessThanOrEqual(session.stake * 2);
+          expect(session.creditAmount).toBeLessThanOrEqual(session.stake * 2 * multiplier);
         } else {
-          expect(session.creditAmount % (session.stake * 6)).toBe(0);
-          expect(session.creditAmount).toBeLessThanOrEqual(session.stake * 30);
+          const multiplier = session.reservedAmount / session.stake;
+          expect(session.creditAmount % (session.stake * 6 * multiplier)).toBe(0);
+          expect(session.creditAmount).toBeLessThanOrEqual(session.stake * 30 * multiplier);
         }
       }
     }

@@ -55,7 +55,7 @@ export interface NpcSession {
 }
 
 export interface NpcLedgerContract {
-  version: "npc-ledger/0.2";
+  version: "npc-ledger/0.3";
   epochUtcDay: number;
   profiles: readonly NpcGamblingProfile[];
 }

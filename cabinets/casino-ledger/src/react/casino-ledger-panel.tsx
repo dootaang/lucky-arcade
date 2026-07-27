@@ -22,7 +22,6 @@ export interface CasinoLedgerPanelProps {
 export interface CasinoLiveTable {
   id: CasinoTableId;
   title: string;
-  description: string;
   suit: string;
   entryLabel: string;
   meta: string;
@@ -45,9 +44,7 @@ export default function CasinoLedgerPanel({
   const previousBalances = useRef(npcBalances);
   const [balanceMoves, setBalanceMoves] = useState<Readonly<Record<string, "rising" | "falling">>>({});
   const allTape = useMemo(() => casinoTape(playEvents, settlements, currentUtcSecond), [currentUtcSecond, playEvents, settlements]);
-  const tape = allTape.slice(0, 12);
-  const tapeKeys = tape.map((event) => event.id).join("|");
-  const tapeRef = useFlipTape(tapeKeys);
+  const tape = allTape.slice(0, 8);
   const lastMinuteCount = allTape.filter((event) => currentUtcSecond - event.utcSecond < 60).length;
   const recentSettlements = settlements.slice(0, 5);
   const boardRef = useRef<HTMLTableSectionElement>(null);
@@ -113,25 +110,6 @@ export default function CasinoLedgerPanel({
     <span className="ca-label"><i className={inviteCount > 0 ? "ca-live" : "ca-idle"} aria-hidden="true" /> 지금 초대 가능 {inviteCount}명</span>
     <span className="ca-label">테이블 착석 {seatedCount}명</span>
   </div>
-  <section className="casino-live-grid" aria-label="운영 중인 게임 테이블">
-    {tables.map((table) => {
-      const latest = settlements.find((settlement) => settlement.tableId === table.id);
-      const pulseKey = playEvents.find((event) => event.tableId === table.id)?.eventId;
-      return <LiveTableCard
-        key={table.id}
-        table={table}
-        presences={presences.filter((presence) => presence.tableId === table.id && presence.phase !== "idle")}
-        portraits={portraits}
-        names={names}
-        npcBalances={npcBalances}
-        currentUtcSecond={currentUtcSecond}
-        {...(latest ? { latest } : {})}
-        {...(pulseKey ? { pulseKey } : {})}
-        {...(backlitNpcId ? { backlitNpcId } : {})}
-        onPlay={() => onPlay(table.id)}
-      />;
-    })}
-  </section>
   <section className="casino-ledger-panel" aria-label="카지노 활동 원장">
     <div className="casino-ledger-board ca-brackets">
       <table>
@@ -159,9 +137,28 @@ export default function CasinoLedgerPanel({
     <div className="casino-ledger-activity">
       <div className="ledger-heading"><span><i className="ca-live" aria-hidden="true" /> LIVE PLAY TAPE</span><small>{lastMinuteCount} ACTIONS / 60s{clockSource === "device" ? " · 기기 시간" : ""}</small></div>
       <div className="ledger-tape-columns" aria-hidden="true"><span>PLAYER</span><span>AGE</span><span>TABLE · ACTION</span><span>STAKE / P&amp;L</span></div>
-      <div className="ledger-motion" aria-hidden="true" ref={tapeRef}>{tape.map((event) => <TapeLine key={event.id} event={event} name={names.get(event.npcId) ?? event.npcId} currentUtcSecond={currentUtcSecond} />)}</div>
+      <div className="ledger-motion" aria-hidden="true">{tape.map((event, index) => <TapeLine key={event.id} event={event} name={names.get(event.npcId) ?? event.npcId} currentUtcSecond={currentUtcSecond} newest={index === 0} />)}</div>
       <ol className="ledger-static" aria-label="최근 카지노 활동 세 건">{tape.slice(0, 3).map((event) => <li key={event.id}><TapeLine event={event} name={names.get(event.npcId) ?? event.npcId} currentUtcSecond={currentUtcSecond} /></li>)}</ol>
     </div>
+  </section>
+  <section className="casino-live-grid" aria-label="운영 중인 게임 테이블">
+    {tables.map((table) => {
+      const latest = settlements.find((settlement) => settlement.tableId === table.id);
+      const pulseKey = playEvents.find((event) => event.tableId === table.id)?.eventId;
+      return <LiveTableCard
+        key={table.id}
+        table={table}
+        presences={presences.filter((presence) => presence.tableId === table.id && presence.phase !== "idle")}
+        portraits={portraits}
+        names={names}
+        npcBalances={npcBalances}
+        currentUtcSecond={currentUtcSecond}
+        {...(latest ? { latest } : {})}
+        {...(pulseKey ? { pulseKey } : {})}
+        {...(backlitNpcId ? { backlitNpcId } : {})}
+        onPlay={() => onPlay(table.id)}
+      />;
+    })}
   </section>
   </>;
 }
@@ -175,9 +172,9 @@ function LedgerPortrait({ name, src, crowned }: { name: string; src: string | un
   return crowned ? <HoloFoil className="ledger-crown" tilt={false}>{face}</HoloFoil> : face;
 }
 
-function TapeLine({ event, name, currentUtcSecond }: { event: CasinoTapeEvent; name: string; currentUtcSecond: number }): React.ReactElement {
+function TapeLine({ event, name, currentUtcSecond, newest = false }: { event: CasinoTapeEvent; name: string; currentUtcSecond: number; newest?: boolean }): React.ReactElement {
   const age = Math.max(0, currentUtcSecond - event.utcSecond);
-  return <span data-tape-key={event.id} className={`ledger-activity-line is-${event.kind}${event.delta === undefined ? "" : event.delta >= 0 ? " is-rising" : " is-falling"}`}>
+  return <span data-tape-key={event.id} className={`ledger-activity-line is-${event.kind}${event.delta === undefined ? "" : event.delta >= 0 ? " is-rising" : " is-falling"}${newest ? " is-newest" : ""}`}>
     <b>{name}</b><small>{ageLabel(age)}</small><span><i>{tableName(event.tableId)}</i> · {event.label}</span><strong className="ca-num">{event.delta === undefined ? event.stake === 0 ? "FREE" : `${event.stake} P` : `${event.delta > 0 ? "▲ +" : event.delta < 0 ? "▼ −" : "— "}${Math.abs(event.delta)} P`}</strong>
   </span>;
 }
@@ -189,13 +186,14 @@ function SettlementLine({ settlement, name, currentUtcSecond }: { settlement: Np
   const symbol = delta > 0 ? "▲" : delta < 0 ? "▼" : "—";
   const age = Math.max(0, currentUtcSecond - settlement.utcSecond);
   const fresh = age < 15;
+  const leverage = settlement.stake === 0 ? null : settlement.reservedAmount / settlement.stake;
   return <article
     className={`ledger-settlement-line is-${direction}${fresh ? " is-fresh" : ""}`}
     data-direction={direction}
     aria-label={`${name}, ${tableName(settlement.tableId)}, ${ageLabel(age)}, ${directionLabel} ${Math.abs(delta)} 포인트`}
   >
     <div><b>{name}</b><small>{ageLabel(age)}</small></div>
-    <span>{tableName(settlement.tableId)} · {settlementLabel(settlement)}</span>
+    <span>{tableName(settlement.tableId)} · {settlementLabel(settlement)}{leverage === null ? "" : ` · ${leverage}배`}</span>
     <strong><i aria-hidden="true">{symbol}</i> {directionLabel}</strong>
     <NumberTicker value={Math.abs(delta)} prefix={delta > 0 ? "+" : delta < 0 ? "−" : ""} suffix=" P" durationMs={650} className="ca-num ledger-settlement-amount" />
   </article>;
@@ -225,9 +223,7 @@ function LiveTableCard({ table, presences, portraits, names, npcBalances, curren
     {...(progress === null ? {} : { style: { "--progress": progress.toFixed(3) } as React.CSSProperties })}
   >
     <span className="table-suit" aria-hidden="true">{table.suit}</span>
-    <span className="table-group"><i className={state === "open" ? "ca-idle" : "ca-live"} aria-hidden="true" /><span className="ca-label">{state === "open" ? "지금 입장 가능" : `${phaseLabel(state)} · ${displayed.length}명`}</span></span>
     <h3 className="ca-serif">{table.title}</h3>
-    <p>{table.description}</p>
     <div className="live-table-stage" aria-hidden="true">
       <TableLoop tableId={table.id} active={active.length > 0} />
       {pulseKey && active.length > 0 && <span className="live-table-pulse" key={pulseKey} />}
@@ -245,11 +241,10 @@ function LiveTableCard({ table, presences, portraits, names, npcBalances, curren
         >
           {portrait ? <img src={portrait} alt="" loading="lazy" /> : <i aria-hidden="true">{(names.get(presence.npcId) ?? presence.npcId).slice(0, 1)}</i>}
           <b>{names.get(presence.npcId) ?? presence.npcId}</b>
-          <small>{phaseLabel(presence.phase)}</small>
         </span>;
       })}
       {displayed.length > 3 && <span className="live-player-more">+{displayed.length - 3}</span>}
-      {displayed.length === 0 && <span className="live-table-empty">빈 테이블 · 바로 시작할 수 있습니다</span>}
+      {displayed.length === 0 && <span className="live-table-empty">빈 테이블</span>}
     </div>
     {latest && <small className="live-table-result">최근 · {names.get(latest.npcId) ?? latest.npcId} {latest.delta > 0 ? "+" : ""}{latest.delta} P</small>}
     <small className="ca-num">{table.meta}</small>
@@ -265,13 +260,6 @@ function TableLoop({ tableId, active }: { tableId: CasinoTableId; active: boolea
   if (tableId === "temerosa-match-pairs") return <span className={`mini-pairs ${active ? "is-running" : ""}`}><i /><i /></span>;
   if (tableId === "indian-poker") return <span className={`mini-poker ${active ? "is-running" : ""}`}><i /><b>●</b><b>●</b><b>●</b></span>;
   return <span className={`mini-old-maid ${active ? "is-running" : ""}`}><i /><i /><i /><i /></span>;
-}
-
-function phaseLabel(phase?: NpcPresence["phase"]): string {
-  if (phase === "approaching") return "입장 중";
-  if (phase === "settling") return "정산 중";
-  if (phase === "leaving") return "퇴장 중";
-  return phase === "playing" ? "게임 중" : "대기 중";
 }
 
 function phasePriority(phase: NpcPresence["phase"]): number {
@@ -312,7 +300,7 @@ function casinoTape(playEvents: readonly NpcPlayEvent[], settlements: readonly N
   const settlementEvents: CasinoTapeEvent[] = settlements.map((settlement) => ({
     id: settlement.roundId,
     npcId: settlement.npcId, tableId: settlement.tableId, utcSecond: settlement.utcSecond,
-    kind: "settlement", label: `${settlementLabel(settlement)} · ${settlement.delta > 0 ? "획득" : settlement.delta < 0 ? "손실" : "변동 없음"}`, stake: settlement.stake, delta: settlement.delta,
+    kind: "settlement", label: `${settlementLabel(settlement)}${settlement.stake === 0 ? "" : ` · ${settlement.reservedAmount / settlement.stake}배`} · ${settlement.delta > 0 ? "획득" : settlement.delta < 0 ? "손실" : "변동 없음"}`, stake: settlement.stake, delta: settlement.delta,
   }));
   return [...play, ...settlementEvents]
     .filter((event) => event.utcSecond <= currentUtcSecond)
@@ -348,29 +336,6 @@ function settlementLabel(settlement: NpcRoundSettlement): string {
   if (settlement.tableId === "indian-poker") return "칩 정산";
   if (settlement.tableId === "temerosa-match-pairs") return "대국 정산";
   return "순위 보상";
-}
-
-function useFlipTape(keySignature: string): React.RefObject<HTMLDivElement | null> {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const previousPositions = useRef<ReadonlyMap<string, number>>(new Map());
-  useLayoutEffect(() => {
-    const container = containerRef.current;
-    if (!container) return;
-    const rows = [...container.querySelectorAll<HTMLElement>("[data-tape-key]")];
-    const nextPositions = new Map(rows.map((row) => [row.dataset.tapeKey ?? "", row.getBoundingClientRect().top]));
-    const reduce = typeof window.matchMedia === "function" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (!reduce) {
-      for (const row of rows) {
-        const key = row.dataset.tapeKey ?? "";
-        const previous = previousPositions.current.get(key);
-        const current = nextPositions.get(key);
-        if (previous === undefined || current === undefined || previous === current || typeof row.animate !== "function") continue;
-        row.animate([{ transform: `translateY(${previous - current}px)` }, { transform: "translateY(0)" }], { duration: 420, easing: "cubic-bezier(.2,.8,.2,1)" });
-      }
-    }
-    previousPositions.current = nextPositions;
-  }, [keySignature]);
-  return containerRef;
 }
 
 function compareText(left: string, right: string): number {

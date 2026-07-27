@@ -1,6 +1,7 @@
 import { IconArrowLeft, IconRefresh } from "@tabler/icons-react";
 import { PlayingCardBack, StandardPlayingCard, type CourtAtlas, type StandardPlayingCardId } from "@lucky-arcade/ui/playing-card";
 import { useSlideHighlight } from "@lucky-arcade/ui/slide-highlight";
+import { WAGER_MULTIPLIERS, leveragedWagerCredit, wagerExposure, type WagerMultiplier } from "@lucky-arcade/engine";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createIndianPokerState, indianPokerRanking, reduceIndianPoker } from "../engine.ts";
 import { INDIAN_POKER_ROUNDS, INDIAN_POKER_STAKES, type IndianPokerAction, type IndianPokerCartridge, type IndianPokerStake, type IndianPokerState } from "../contracts.ts";
@@ -15,16 +16,19 @@ export interface IndianPokerScreenProps {
   walletBalance?: number;
   busy?: boolean;
   error?: string;
+  initialMultiplier?: WagerMultiplier;
   opponentAvailability?: Readonly<Record<string, { available: boolean; label: string; availableAtUtcSecond?: number }>>;
+  opponentRecords?: Readonly<Record<string, { played: number; wins: number; losses: number; draws: number }>>;
   onOpponentSelectionChange?(id: string): void;
-  onStart(stake: IndianPokerStake): Promise<IndianPokerState>;
+  onStart(stake: IndianPokerStake, multiplier: WagerMultiplier): Promise<IndianPokerState>;
   onPersist(previous: IndianPokerState, next: IndianPokerState, action: IndianPokerAction): Promise<void>;
   onExit(): void;
 }
 
-export function IndianPokerScreen({ cartridge, assets, thumbAssets, atlas, initialState, walletBalance, busy = false, error, opponentAvailability = {}, onOpponentSelectionChange, onStart, onPersist, onExit }: IndianPokerScreenProps) {
+export function IndianPokerScreen({ cartridge, assets, thumbAssets, atlas, initialState, walletBalance, busy = false, error, initialMultiplier = 2, opponentAvailability = {}, opponentRecords = {}, onOpponentSelectionChange, onStart, onPersist, onExit }: IndianPokerScreenProps) {
   const [state, setState] = useState(() => initialState ?? createIndianPokerState(cartridge, new Date().toISOString().slice(0, 10)));
   const [stake, setStake] = useState<IndianPokerStake>(INDIAN_POKER_STAKES[0]);
+  const [multiplier, setMultiplier] = useState<WagerMultiplier>(initialMultiplier);
   const [starting, setStarting] = useState(false);
   const [manualPaused, setManualPaused] = useState(false);
   const opponentPickerRef = useSlideHighlight<HTMLDivElement>();
@@ -56,10 +60,10 @@ export function IndianPokerScreen({ cartridge, assets, thumbAssets, atlas, initi
   }, [availableCharacters, onOpponentSelectionChange, selectedOpponentUnavailable, state.opponentId, state.status]);
 
   const startMatch = () => {
-    if (interactionBusy || selectedOpponentUnavailable || (walletBalance ?? 0) < stake) return;
+    if (interactionBusy || selectedOpponentUnavailable || (walletBalance ?? 0) < wagerExposure(stake, multiplier)) return;
     setStarting(true);
     queueRef.current = queueRef.current.catch(() => undefined).then(async () => {
-      const next = await onStart(stake);
+      const next = await onStart(stake, multiplier);
       stateRef.current = next; setState(next);
     }).catch(() => undefined).finally(() => setStarting(false));
   };
@@ -93,6 +97,8 @@ export function IndianPokerScreen({ cartridge, assets, thumbAssets, atlas, initi
   const lastRound = state.history[state.history.length - 1];
   const canPause = state.status === "player-action" || state.status === "npc-response";
   const result = state.outcome === "player" ? "승리" : state.outcome === "npc" ? `${opponent.name}의 승리` : "무승부";
+  const exposure = wagerExposure(state.status === "ready" ? stake : state.stake ?? stake, multiplier);
+  const returned = leveragedWagerCredit(state.stake ?? stake, state.creditAmount, multiplier);
 
   return <main className="indian-poker-shell">
     <header>
@@ -113,15 +119,16 @@ export function IndianPokerScreen({ cartridge, assets, thumbAssets, atlas, initi
         {state.status === "ready" && <section className="indian-poker-ready">
           <h2>상대를 고르세요</h2><p>상대 카드는 보이지만 내 카드는 보이지 않습니다. 표정과 베팅을 함께 읽으세요.</p>
           <div className="indian-poker-opponent-picker ca-slide" role="list" aria-label="상대 선택" ref={opponentPickerRef}>
-            {cartridge.characters.map((character) => { const selected = character.id === state.opponentId; const availability = opponentAvailability[character.id]; const unavailable = !selected && availability?.available === false; return <button type="button" role="listitem" className={unavailable ? "is-unavailable" : undefined} key={character.id} aria-pressed={selected} aria-disabled={unavailable || undefined} disabled={unavailable} onClick={() => { dispatch({ type: "select-opponent", opponentId: character.id }); onOpponentSelectionChange?.(character.id); }}>
-              <img src={thumbAssets[character.portraits.neutral]} alt="" loading="lazy" /><span>{character.name}<small>{selected && !selectedOpponentUnavailable ? "초대 수락" : availability?.label}</small></span>
+            {cartridge.characters.map((character) => { const selected = character.id === state.opponentId; const availability = opponentAvailability[character.id]; const record = opponentRecords[character.id]; const unavailable = !selected && availability?.available === false; return <button type="button" role="listitem" className={unavailable ? "is-unavailable" : undefined} key={character.id} aria-pressed={selected} aria-disabled={unavailable || undefined} disabled={unavailable} onClick={() => { dispatch({ type: "select-opponent", opponentId: character.id }); onOpponentSelectionChange?.(character.id); }}>
+              <img src={thumbAssets[character.portraits.neutral]} alt="" loading="lazy" /><span>{character.name}<small>{selected && !selectedOpponentUnavailable ? "초대 수락" : availability?.label}</small><em>{record ? recordLabel(record) : "첫 대국"}</em></span>
             </button>; })}
           </div>
           <button className="indian-poker-random" disabled={availableCharacters.length === 0} onClick={() => { randomSelectionRef.current += 1; const candidate = availableCharacters[(state.sequence + randomSelectionRef.current) % availableCharacters.length]; if (candidate) { dispatch({ type: "select-opponent", opponentId: candidate.id }); onOpponentSelectionChange?.(candidate.id); } }}>무작위 상대</button>
-          <div className="indian-poker-stakes">{INDIAN_POKER_STAKES.map((value) => <button key={value} aria-pressed={stake === value} disabled={interactionBusy || (walletBalance ?? 0) < value} onClick={() => setStake(value)}>{value} P</button>)}</div>
-          <small>선택한 포인트가 10칩이 됩니다. 대국 종료 시 남은 칩 비율대로 돌려받습니다.</small>
+          <div className="indian-poker-stakes">{INDIAN_POKER_STAKES.map((value) => <button key={value} aria-pressed={stake === value} disabled={interactionBusy || (walletBalance ?? 0) < wagerExposure(value, multiplier)} onClick={() => setStake(value)}>{value} P</button>)}</div>
+          <div className="indian-poker-multipliers" aria-label="배율 선택">{WAGER_MULTIPLIERS.map((value) => <button key={value} aria-pressed={multiplier === value} disabled={interactionBusy || (walletBalance ?? 0) < wagerExposure(stake, value)} onClick={() => setMultiplier(value)}>{value}배</button>)}</div>
+          <small>{exposure} P를 최대 손실액으로 예약합니다. 종료 시 남은 칩의 순손익도 {multiplier}배입니다.</small>
           {selectedOpponentUnavailable && <p className="indian-poker-availability">선택한 NPC가 다른 테이블에서 게임 중입니다.</p>}
-          <button className="primary" disabled={interactionBusy || selectedOpponentUnavailable || (walletBalance ?? 0) < stake} onClick={startMatch}>시작</button>
+          <button className="primary" disabled={interactionBusy || selectedOpponentUnavailable || (walletBalance ?? 0) < exposure} onClick={startMatch}>시작</button>
         </section>}
 
         {state.status === "player-action" && <section className="indian-poker-decision">
@@ -148,7 +155,8 @@ export function IndianPokerScreen({ cartridge, assets, thumbAssets, atlas, initi
 
         {state.status === "complete" && <section className="indian-poker-result">
           <h2>{result}</h2><p>나 {state.playerChips}칩 · {opponent.name} {state.npcChips}칩</p>
-          <strong>{state.creditAmount.toLocaleString("ko-KR")} P 반환</strong>
+          <small className="indian-poker-record">상대 전적 · {recordLabel(opponentRecords[opponent.id])}</small>
+          <strong>{returned.toLocaleString("ko-KR")} P 반환 · {multiplier}배</strong>
           <ol>{indianPokerRanking(state).map((standing) => <li key={standing.seatId}><b>{standing.rank}위</b><span>{standing.seatId === "player" ? "플레이어" : opponent.name}</span><em>{standing.chips}칩</em></li>)}</ol>
           <button className="primary" disabled={busy} onClick={() => dispatch({ type: "restart", seed: `${state.seed}:next:${state.sequence}` })}><IconRefresh /> 다시하기</button>
         </section>}
@@ -162,6 +170,13 @@ export function IndianPokerScreen({ cartridge, assets, thumbAssets, atlas, initi
       {paused && canPause && <div className="indian-poker-pause-shield" role="status">일시정지됨</div>}
     </section>
   </main>;
+}
+
+function recordLabel(record: { wins: number; losses: number; draws: number } | undefined): string {
+  const wins = record?.wins ?? 0;
+  const losses = record?.losses ?? 0;
+  const draws = record?.draws ?? 0;
+  return `${wins}승 ${losses}패${draws > 0 ? ` ${draws}무` : ""}`;
 }
 
 function ForeheadCard({ id, atlas, revealed }: { id: string; atlas: CourtAtlas; revealed: boolean }) {

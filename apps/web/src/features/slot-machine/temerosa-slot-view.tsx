@@ -1,6 +1,6 @@
 import { SLOT_MACHINE_PACK_VERSION, SLOT_MACHINE_STAKES, SLOT_MACHINE_TERMS_VERSION, SLOT_MACHINE_VERSION, createSlotMachineOutcome, createSlotMachineState, isSlotMachineState, reduceSlotMachine, selectSlotMachineVisualVariant, slotMachineCredit, slotMachineResultHash, type SlotMachineAction, type SlotMachineSeries, type SlotMachineStake, type SlotMachineState, type SlotMachineSymbol, type SlotMachineVisualVariant } from "@lucky-arcade/slot-machine";
 import { SlotMachineScreen } from "@lucky-arcade/slot-machine/react";
-import { makeReceipt, resultHash, ENGINE_VERSION } from "@lucky-arcade/engine";
+import { ENGINE_VERSION, leveragedWagerCredit, makeReceipt, resultHash, wagerExposure, wagerMultiplierFromExposure, type WagerMultiplier } from "@lucky-arcade/engine";
 import type { GameWagerReceipt } from "@lucky-arcade/persistence";
 import { useEffect, useRef, useState } from "react";
 import { appendAction, saveSnapshot } from "../../lib/database.ts";
@@ -17,7 +17,7 @@ const SLOT_EXCLUDED_CHARACTERS = new Set(["bacikal"]);
 interface LoadedSlotPack { symbols: readonly SlotMachineSymbol[]; variants: readonly SlotMachineVisualVariant[]; }
 
 export default function TemerosaSlotView({ onExit }: { onExit(): void }) {
-  const [ready, setReady] = useState<{ pack: LoadedSlotPack; state: SlotMachineState } | null>(null);
+  const [ready, setReady] = useState<{ pack: LoadedSlotPack; state: SlotMachineState; multiplier: WagerMultiplier } | null>(null);
   const [balance, setBalance] = useState(0);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -44,7 +44,12 @@ export default function TemerosaSlotView({ onExit }: { onExit(): void }) {
       });
       let state = recovered.state;
       let nextBalance = wallet.balance;
-      const pending = (await listWagers(SESSION_ID)).find((wager) => wager.status === "reserved" && wager.termsVersion === SLOT_MACHINE_TERMS_VERSION);
+      const reserved = (await listWagers(SESSION_ID)).filter((wager) => wager.status === "reserved");
+      const pending = reserved.find((wager) => wager.termsVersion === SLOT_MACHINE_TERMS_VERSION && validReceipt(wager));
+      for (const wager of reserved) if (wager !== pending) {
+        const transaction = await invalidateWager({ wagerId: wager.wagerId, reason: wager.termsVersion === SLOT_MACHINE_TERMS_VERSION ? "corrupt-state" : "version-mismatch" });
+        nextBalance = transaction.wallet.balance;
+      }
       if (pending && state.wagerId !== pending.wagerId) {
         const seed = spinSeedFromReceipt(pending);
         if (seed && isStake(pending.stake)) {
@@ -55,14 +60,15 @@ export default function TemerosaSlotView({ onExit }: { onExit(): void }) {
         }
       }
       if (pending && state.wagerId === pending.wagerId && state.status === "complete") {
-        const settled = await settleWager({ wagerId: pending.wagerId, settlementSequence: state.sequence, resultKey: slotMachineResultHash(state), creditAmount: slotMachineCredit(state) });
+        const settled = await settleWager({ wagerId: pending.wagerId, settlementSequence: state.sequence, resultKey: slotMachineResultHash(state), creditAmount: leveragedCredit(state, pending) });
         nextBalance = settled.wallet.balance;
       }
       if (!alive) return;
       symbolsRef.current = pack.symbols;
       stateRef.current = state;
       setBalance(nextBalance);
-      setReady({ pack, state });
+      const activeReceipt = pending ?? (state.wagerId ? allWagers.find((receipt) => receipt.wagerId === state.wagerId) : undefined);
+      setReady({ pack, state, multiplier: activeReceipt && validReceipt(activeReceipt) ? wagerMultiplierFromExposure(activeReceipt.stake, activeReceipt.reservedAmount) : 2 });
     }).catch(() => { if (alive) setError("슬롯머신을 준비하지 못했습니다."); });
     return () => { alive = false; };
   }, []);
@@ -77,8 +83,8 @@ export default function TemerosaSlotView({ onExit }: { onExit(): void }) {
     return next;
   }
 
-  async function spin(stake: SlotMachineStake): Promise<void> {
-    if (!ready || busy || balance < stake || ready.state.status === "spinning") return;
+  async function spin(stake: SlotMachineStake, multiplier: WagerMultiplier): Promise<void> {
+    if (!ready || busy || balance < wagerExposure(stake, multiplier) || ready.state.status === "spinning") return;
     setBusy(true);
     setError("");
     try {
@@ -90,9 +96,10 @@ export default function TemerosaSlotView({ onExit }: { onExit(): void }) {
         termsVersion: SLOT_MACHINE_TERMS_VERSION,
         choiceKey: `spin:${spinSeed}`,
         stake,
-        reservedAmount: stake,
+        reservedAmount: wagerExposure(stake, multiplier),
       });
       setBalance(reserved.wallet.balance);
+      setReady((current) => current ? { ...current, multiplier } : current);
       const outcome = createSlotMachineOutcome(ready.pack.symbols, SLOT_MACHINE_PACK_VERSION, spinSeed);
       const sources = outcome.activeSymbolIds.map((symbolId) => selectSlotMachineVisualVariant(ready.pack.variants, symbolId, spinSeed).src);
       await Promise.allSettled([...new Set(sources)].map(preloadImage));
@@ -110,7 +117,9 @@ export default function TemerosaSlotView({ onExit }: { onExit(): void }) {
     let settlementComplete = false;
     try {
       const complete = await apply({ type: "finish" });
-      const transaction = await settleWager({ wagerId: current.wagerId, settlementSequence: complete.sequence, resultKey: slotMachineResultHash(complete), creditAmount: slotMachineCredit(complete) });
+      const receipt = (await listWagers(SESSION_ID)).find((candidate) => candidate.wagerId === current.wagerId);
+      if (!receipt) throw new Error("slot_wager_receipt_missing");
+      const transaction = await settleWager({ wagerId: current.wagerId, settlementSequence: complete.sequence, resultKey: slotMachineResultHash(complete), creditAmount: leveragedCredit(complete, receipt) });
       setBalance(transaction.wallet.balance);
       settlementComplete = true;
     } catch {
@@ -123,7 +132,7 @@ export default function TemerosaSlotView({ onExit }: { onExit(): void }) {
   }
 
   if (!ready) return <main className="game-shell"><div className="game-loading" role={error ? "alert" : undefined}>{error || "슬롯 심볼을 준비하고 있어요…"}{error && <button onClick={onExit}>카지노로 돌아가기</button>}</div></main>;
-  return <SlotMachineScreen state={ready.state} symbols={ready.pack.symbols} variants={ready.pack.variants} balance={balance} busy={busy} error={error} onSpin={spin} onFinish={finish} onExit={onExit} />;
+  return <SlotMachineScreen state={ready.state} symbols={ready.pack.symbols} variants={ready.pack.variants} balance={balance} busy={busy} error={error} initialMultiplier={ready.multiplier} onSpin={spin} onFinish={finish} onExit={onExit} />;
 }
 
 async function persistSlotTransition(previous: SlotMachineState, next: SlotMachineState, action: SlotMachineAction): Promise<void> {
@@ -193,3 +202,5 @@ function expressionName(expression: string): string {
 
 function spinSeedFromReceipt(receipt: GameWagerReceipt): string | null { return receipt.choiceKey?.startsWith("spin:") ? receipt.choiceKey.slice(5) || null : null; }
 function isStake(value: number): value is SlotMachineStake { return (SLOT_MACHINE_STAKES as readonly number[]).includes(value); }
+function validReceipt(receipt: GameWagerReceipt): boolean { try { wagerMultiplierFromExposure(receipt.stake, receipt.reservedAmount); return isStake(receipt.stake); } catch { return false; } }
+function leveragedCredit(state: SlotMachineState, receipt: GameWagerReceipt): number { return leveragedWagerCredit(state.stake ?? receipt.stake, slotMachineCredit(state), wagerMultiplierFromExposure(receipt.stake, receipt.reservedAmount)); }

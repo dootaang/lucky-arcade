@@ -100,13 +100,16 @@ function expectLegalRounds(rounds: readonly NpcRoundSettlement[]): void {
       expect(round).toMatchObject({ stake: 0, reservedAmount: 0, termsVersion: "old-maid-rank-reward/0.1" });
       expect([1, 3, 5, 10]).toContain(round.creditAmount);
     } else if (round.tableId === "temerosa-match-pairs") {
-      expect([0, round.stake, Math.round(round.stake * 1.5), round.stake * 2, Math.round(round.stake * 2.5)]).toContain(round.creditAmount);
+      const multiplier = round.reservedAmount / round.stake;
+      expect([0, round.stake, Math.round(round.stake * 1.5), round.stake * 2, Math.round(round.stake * 2.5)]).toContain(round.creditAmount / multiplier);
     } else if (round.tableId === "indian-poker") {
+      const multiplier = round.reservedAmount / round.stake;
       expect(round.creditAmount).toBeGreaterThanOrEqual(0);
-      expect(round.creditAmount).toBeLessThanOrEqual(round.stake * 2);
+      expect(round.creditAmount).toBeLessThanOrEqual(round.stake * 2 * multiplier);
     } else {
-      expect(round.creditAmount % (round.stake * 6)).toBe(0);
-      expect(round.creditAmount).toBeLessThanOrEqual(round.stake * 30);
+      const multiplier = round.reservedAmount / round.stake;
+      expect(round.creditAmount % (round.stake * 6 * multiplier)).toBe(0);
+      expect(round.creditAmount).toBeLessThanOrEqual(round.stake * 30 * multiplier);
     }
   }
 }

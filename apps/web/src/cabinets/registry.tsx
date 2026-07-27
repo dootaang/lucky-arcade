@@ -54,7 +54,7 @@ const registrations: readonly WebCabinetRegistration[] = [
   {
     manifest: {
       id: "temerosa-old-maid", version: "old-maid/0.9", title: "테메로세 도둑잡기",
-      description: "테메로세 인물들과 즐기는 도둑잡기.", requiredCapabilities: [],
+      description: "즐거운 도둑잡기", requiredCapabilities: [],
       sessionKind: "repeat", launchKind: "built-in", resumeLabel: "도둑잡기 이어하기", estimatedMinutes: { min: 2, max: 4 },
     },
     openingRank: null, badge: "바로 한 판",

@@ -12,14 +12,15 @@ import {
   type MatchPairsState,
 } from "@lucky-arcade/match-pairs";
 import { MatchPairsScreen } from "@lucky-arcade/match-pairs/react";
-import { ENGINE_VERSION, makeReceipt, resultHash } from "@lucky-arcade/engine";
+import { ENGINE_VERSION, leveragedWagerCredit, makeReceipt, resultHash, wagerExposure, wagerMultiplierFromExposure, type WagerMultiplier } from "@lucky-arcade/engine";
 import type { GameWagerReceipt, MatchRecord } from "@lucky-arcade/persistence";
 import { useEffect, useRef, useState } from "react";
-import { appendAction, appendMatchRecord, pruneMatchRecords, saveSnapshot } from "../../lib/database.ts";
+import { appendAction, appendMatchRecord, listMatchRecordsForSession, pruneMatchRecords, saveSnapshot } from "../../lib/database.ts";
 import { invalidateWager, listWagers, reserveWager, settleWager } from "../../lib/game-wager.ts";
 import { recoverSession } from "../../lib/session-recovery.ts";
 import { loadTemerosaCasinoAssets } from "../../lib/temerosa-content.ts";
 import { readWallet } from "../../lib/wallet.ts";
+import { summarizeOpponentRecords, type OpponentRecordSummary } from "../../lib/opponent-records.ts";
 import { createTemerosaMatchPairsOpponents } from "./temerosa-match-pairs-opponents.ts";
 import { TEMEROSA_MATCH_PAIRS_FACES, TEMEROSA_MATCH_PAIRS_PACK_VERSION } from "./temerosa-match-pairs-selection.ts";
 import { useCasinoOpponentAvailability } from "../casino-ledger/use-casino-opponent-availability.ts";
@@ -32,6 +33,7 @@ interface ReadyMatchPairs {
   thumbAssets: Readonly<Record<string, string>>;
   opponents: readonly MatchPairsOpponent[];
   state: MatchPairsState;
+  multiplier: WagerMultiplier;
 }
 
 interface WagerIdentity {
@@ -46,6 +48,7 @@ export default function MatchPairsView({ onExit }: { onExit(): void }) {
   const [balance, setBalance] = useState(0);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const [opponentRecords, setOpponentRecords] = useState<Readonly<Record<string, OpponentRecordSummary>>>({});
   const stateRef = useRef<MatchPairsState | null>(null);
   const opponentsRef = useRef<readonly MatchPairsOpponent[]>([]);
 
@@ -87,22 +90,25 @@ export default function MatchPairsView({ onExit }: { onExit(): void }) {
         state = next;
       }
       if (pending && state.wagerId === pending.wagerId && state.status === "complete") {
-        const transaction = await settleWager({ wagerId: pending.wagerId, settlementSequence: state.sequence, resultKey: matchPairsResultHash(state), creditAmount: state.creditAmount });
+        const transaction = await settleWager({ wagerId: pending.wagerId, settlementSequence: state.sequence, resultKey: matchPairsResultHash(state), creditAmount: leveragedCredit(state, pending) });
         nextBalance = transaction.wallet.balance;
         await recordMatch(state, opponents);
       }
       const restoredReceipt = state.wagerId ? wagers.find((receipt) => receipt.wagerId === state.wagerId) : undefined;
       if (!pending && state.status === "complete" && restoredReceipt?.status === "settled") await recordMatch(state, opponents);
+      const records = summarizeOpponentRecords(await listMatchRecordsForSession(SESSION, 200));
       if (!alive) return;
       stateRef.current = state;
       opponentsRef.current = opponents;
       setBalance(nextBalance);
-      setReady({ assets: bundle.assets, thumbAssets: bundle.thumbAssets, opponents, state });
+      setOpponentRecords(records);
+      const activeReceipt = pending ?? restoredReceipt;
+      setReady({ assets: bundle.assets, thumbAssets: bundle.thumbAssets, opponents, state, multiplier: activeReceipt && validIdentity(activeReceipt, opponents) ? wagerMultiplierFromExposure(activeReceipt.stake, activeReceipt.reservedAmount) : 2 });
     }).catch(() => { if (alive) setError("짝맞추기 이미지를 준비하지 못했습니다."); });
     return () => { alive = false; };
   }, []);
 
-  async function start(stake: MatchPairsStake): Promise<MatchPairsState> {
+  async function start(stake: MatchPairsStake, multiplier: WagerMultiplier): Promise<MatchPairsState> {
     const current = stateRef.current;
     const opponents = opponentsRef.current;
     if (!current || busy || current.status !== "ready") throw new Error("match_pairs_not_ready");
@@ -118,13 +124,13 @@ export default function MatchPairsView({ onExit }: { onExit(): void }) {
         termsVersion: MATCH_PAIRS_TERMS_VERSION,
         choiceKey: choiceKey(identity),
         stake,
-        reservedAmount: stake,
+        reservedAmount: wagerExposure(stake, multiplier),
       });
       setBalance(transaction.wallet.balance);
       const action: MatchPairsAction = { type: "start", seed: identity.seed, stake, wagerId: transaction.wager.wagerId };
       const next = reduceMatchPairs(TEMEROSA_MATCH_PAIRS_FACES, opponents, current, action);
       stateRef.current = next;
-      setReady((value) => value ? { ...value, state: next } : value);
+      setReady((value) => value ? { ...value, state: next, multiplier } : value);
       await persistState(current, next, action, opponents);
       setBusy(false);
       return next;
@@ -142,9 +148,12 @@ export default function MatchPairsView({ onExit }: { onExit(): void }) {
     if (previous.status !== "complete" && next.status === "complete") {
       if (!next.wagerId) throw new Error("match_pairs_wager_missing");
       try {
-        const transaction = await settleWager({ wagerId: next.wagerId, settlementSequence: next.sequence, resultKey: matchPairsResultHash(next), creditAmount: next.creditAmount });
+        const receipt = (await listWagers(SESSION)).find((candidate) => candidate.wagerId === next.wagerId);
+        if (!receipt) throw new Error("match_pairs_wager_receipt_missing");
+        const transaction = await settleWager({ wagerId: next.wagerId, settlementSequence: next.sequence, resultKey: matchPairsResultHash(next), creditAmount: leveragedCredit(next, receipt) });
         setBalance(transaction.wallet.balance);
         await recordMatch(next, opponents);
+        setOpponentRecords(summarizeOpponentRecords(await listMatchRecordsForSession(SESSION, 200)));
       } catch {
         setError("결과는 보존됐지만 정산이 남았습니다. 다시 들어오면 같은 영수증으로 처리합니다.");
         throw new Error("match_pairs_settlement_pending");
@@ -162,10 +171,12 @@ export default function MatchPairsView({ onExit }: { onExit(): void }) {
     seed={ready.state.seed}
     sessionId={SESSION}
     initialState={ready.state}
+    initialMultiplier={ready.multiplier}
     walletBalance={balance}
     busy={busy}
     wagerError={error}
     opponentAvailability={availability.opponents}
+    opponentRecords={opponentRecords}
     onOpponentSelectionChange={(id) => availability.holdOpponents([id])}
     onStart={start}
     onTransition={persist}
@@ -222,8 +233,13 @@ function identityFromReceipt(receipt: GameWagerReceipt): WagerIdentity | null {
 }
 function validIdentity(receipt: GameWagerReceipt, opponents: readonly MatchPairsOpponent[]): boolean {
   const identity = identityFromReceipt(receipt);
-  return Boolean(identity && receipt.cabinetId === CABINET_ID && receipt.reservedAmount === receipt.stake
+  let validMultiplier = false;
+  try { wagerMultiplierFromExposure(receipt.stake, receipt.reservedAmount); validMultiplier = true; } catch { /* invalid receipt */ }
+  return Boolean(identity && receipt.cabinetId === CABINET_ID && validMultiplier
     && (receipt.stake === 10 || receipt.stake === 50 || receipt.stake === 200)
     && opponents.some((opponent) => opponent.id === identity.opponentId));
+}
+function leveragedCredit(state: MatchPairsState, receipt: GameWagerReceipt): number {
+  return leveragedWagerCredit(state.stake ?? receipt.stake, state.creditAmount, wagerMultiplierFromExposure(receipt.stake, receipt.reservedAmount));
 }
 function dailySeed(): string { return new Date().toISOString().slice(0, 10); }

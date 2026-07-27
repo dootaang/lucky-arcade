@@ -42,8 +42,8 @@ describe("match pairs screen markup", () => {
     expect(markup).toContain('alt=""');
     expect(markup).toContain('aria-label="A1 카드 뒤집기"');
     expect(markup).toContain(`aria-label="${lastCoordinate} 카드 뒤집기"`);
-    expect(markup).toContain("10 P로 시작");
-    expect(markup).toContain("승리 시 20 P 반환");
+    expect(markup).toContain("10 P · 2배로 시작");
+    expect(markup).toContain("승리 시 40 P 반환");
     expect(markup).not.toContain("화면에 나오면 안 되는 인물");
     expect(markup).not.toContain("title=");
   });

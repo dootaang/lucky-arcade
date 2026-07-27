@@ -414,7 +414,7 @@ export function OldMaidScreen({ cartridge, assets, thumbAssets = assets, detailA
     </div>;
   }
 
-  return <main className="old-maid-shell" data-presentation-hold={speechHolding || undefined} aria-busy={speechHolding || undefined} style={background ? { "--old-maid-bg": `url(${JSON.stringify(background)})` } as React.CSSProperties : undefined}>
+  return <main className={`old-maid-shell${state.status !== "ready" && state.status !== "complete" ? " is-live" : ""}`} data-presentation-hold={speechHolding || undefined} aria-busy={speechHolding || undefined} style={background ? { "--old-maid-bg": `url(${JSON.stringify(background)})` } as React.CSSProperties : undefined}>
     <header className="old-maid-header">
       <button onClick={onExit} aria-label="오락실로 돌아가기"><IconArrowLeft /></button>
       <div><span>BOT CARD · TABLE GAME</span><h1>{cartridge.title}</h1></div>

@@ -16,9 +16,9 @@ const SETTLE_SECONDS = 6;
 const LEAVE_SECONDS = 8;
 
 const DURATION_SECONDS = Object.freeze({
-  "temerosa-slot": [2_700, 4_500],
-  "indian-poker": [3_300, 5_400],
-  "temerosa-match-pairs": [3_600, 6_300],
+  "temerosa-slot": [5_400, 7_200],
+  "indian-poker": [5_400, 7_200],
+  "temerosa-match-pairs": [5_400, 7_200],
   "temerosa-old-maid": [3_900, 7_200],
 } as const);
 

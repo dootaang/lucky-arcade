@@ -4,7 +4,7 @@ import type { StandardCardId } from "@lucky-arcade/card-table";
 export const INDIAN_POKER_VERSION = "indian-poker/0.3" as const;
 export const INDIAN_POKER_STATE_CONTRACT = "indian-poker-state/0.2" as const;
 export const TEMEROSA_INDIAN_POKER_PACK_VERSION = "temerosa-indian-poker/0.3" as const;
-export const INDIAN_POKER_TERMS_VERSION = "temerosa-indian-poker-paytable/0.2" as const;
+export const INDIAN_POKER_TERMS_VERSION = "temerosa-indian-poker-paytable/0.3" as const;
 export const INDIAN_POKER_STAKES = [10, 50, 200] as const;
 export const INDIAN_POKER_ROUNDS = 5;
 export const INDIAN_POKER_STARTING_CHIPS = 10;

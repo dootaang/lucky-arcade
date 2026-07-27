@@ -1,4 +1,5 @@
 import { useSlideHighlight } from "@lucky-arcade/ui/slide-highlight";
+import { WAGER_MULTIPLIERS, leveragedWagerCredit, wagerExposure, type WagerMultiplier } from "@lucky-arcade/engine";
 import { useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent } from "react";
 import { createMatchPairsState, reduceMatchPairs } from "../engine.ts";
 import { MATCH_PAIRS_STAKES, type MatchPairsAction, type MatchPairsDifficulty, type MatchPairsFace, type MatchPairsOpponent, type MatchPairsStake, type MatchPairsState } from "../contracts.ts";
@@ -23,9 +24,11 @@ export interface MatchPairsScreenProps {
   walletBalance?: number;
   busy?: boolean;
   wagerError?: string;
+  initialMultiplier?: WagerMultiplier;
   opponentAvailability?: Readonly<Record<string, { available: boolean; label: string; availableAtUtcSecond?: number }>>;
+  opponentRecords?: Readonly<Record<string, { played: number; wins: number; losses: number; draws: number }>>;
   onOpponentSelectionChange?(id: string): void;
-  onStart?(stake: MatchPairsStake): MatchPairsState | Promise<MatchPairsState>;
+  onStart?(stake: MatchPairsStake, multiplier: WagerMultiplier): MatchPairsState | Promise<MatchPairsState>;
   onTransition?(previous: MatchPairsState, next: MatchPairsState, action: MatchPairsAction): void | Promise<void>;
   createRestartSeed?(state: MatchPairsState): string;
   onExit?(): void;
@@ -56,7 +59,9 @@ export function MatchPairsScreen({
   walletBalance = 0,
   busy = false,
   wagerError = "",
+  initialMultiplier = 2,
   opponentAvailability = {},
+  opponentRecords = {},
   onOpponentSelectionChange,
   onStart,
   onTransition,
@@ -72,6 +77,7 @@ export function MatchPairsScreen({
   const [announcement, setAnnouncement] = useState("");
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const [selectedStake, setSelectedStake] = useState<MatchPairsStake>(10);
+  const [selectedMultiplier, setSelectedMultiplier] = useState<WagerMultiplier>(initialMultiplier);
   const reducedMotion = useReducedMotion();
   const paused = manualPaused || hiddenPaused;
   const stateRef = useRef(state);
@@ -214,7 +220,7 @@ export function MatchPairsScreen({
   const restart = () => dispatch({ type: "restart", seed: createRestartSeed?.(state) ?? `${state.seed}:restart:${state.sequence + 1}`, difficulty: state.difficulty, opponentId: state.opponentId });
   const startGame = () => {
     if (onStart) {
-      void Promise.resolve(onStart(selectedStake)).then((next) => { stateRef.current = next; setState(next); }).catch(() => undefined);
+      void Promise.resolve(onStart(selectedStake, selectedMultiplier)).then((next) => { stateRef.current = next; setState(next); }).catch(() => undefined);
       return;
     }
     dispatch({ type: "start", seed: `${state.seed}:local-preview`, stake: selectedStake, wagerId: `local-preview:${state.sequence}` });
@@ -223,6 +229,8 @@ export function MatchPairsScreen({
   const matchedPairIds = new Set(state.matchedPairIds);
   const openIndexes = new Set(state.openIndexes);
   const canPause = state.status === "playing" || state.status === "checking";
+  const exposure = wagerExposure(state.status === "ready" ? selectedStake : state.stake ?? selectedStake, selectedMultiplier);
+  const leveragedCredit = leveragedWagerCredit(state.stake ?? selectedStake, state.creditAmount, selectedMultiplier);
   const resultTitle = state.outcome === "player" ? "승리했습니다" : state.outcome === "npc" ? `${opponent.name}의 승리` : "무승부입니다";
 
   return <main className="match-pairs-shell">
@@ -270,10 +278,12 @@ export function MatchPairsScreen({
             const selected = candidate.id === state.opponentId;
             const thumb = thumbAssets[candidate.portraits.neutral];
             const availability = opponentAvailability[candidate.id];
+            const record = opponentRecords[candidate.id];
             const unavailable = !selected && availability?.available === false;
             return <button type="button" role="listitem" key={candidate.id} className={unavailable ? "is-unavailable" : undefined} aria-pressed={selected} aria-disabled={unavailable || undefined} disabled={unavailable} onClick={() => { dispatch({ type: "select-opponent", opponentId: candidate.id }); onOpponentSelectionChange?.(candidate.id); }}>
               {thumb && <img src={thumb} alt="" loading="lazy" />}<span>{candidate.name}</span>
               <small>{selected && !selectedOpponentUnavailable ? "초대 수락" : availability?.label}</small>
+              <em>{record ? recordLabel(record) : "첫 대국"}</em>
             </button>;
           })}
         </div>
@@ -286,27 +296,39 @@ export function MatchPairsScreen({
           <div><span>보유 포인트</span><strong>{walletBalance} P</strong></div>
           <div className="match-pairs-stakes">
             {MATCH_PAIRS_STAKES.map((stake) => <button type="button" key={stake} aria-pressed={selectedStake === stake}
-              disabled={busy || Boolean(onStart) && walletBalance < stake} onClick={() => setSelectedStake(stake)}>{stake} P</button>)}
+              disabled={busy || Boolean(onStart) && walletBalance < wagerExposure(stake, selectedMultiplier)} onClick={() => setSelectedStake(stake)}>{stake} P</button>)}
           </div>
-          <small>승리 시 {Math.round(selectedStake * opponent.winCreditMultiplier)} P 반환 · 무승부는 판돈 환불</small>
+          <div className="match-pairs-multipliers" aria-label="배율 선택">
+            {WAGER_MULTIPLIERS.map((multiplier) => <button type="button" key={multiplier} aria-pressed={selectedMultiplier === multiplier}
+              disabled={busy || Boolean(onStart) && walletBalance < wagerExposure(selectedStake, multiplier)} onClick={() => setSelectedMultiplier(multiplier)}>{multiplier}배</button>)}
+          </div>
+          <small>최대 손실 {exposure} P · 승리 시 {Math.round(selectedStake * opponent.winCreditMultiplier * selectedMultiplier)} P 반환 · 무승부는 전액 환불</small>
         </div>
         {wagerError && <p className="match-pairs-wager-error" role="alert">{wagerError}</p>}
         {selectedOpponentUnavailable && <p className="match-pairs-wager-error">선택한 NPC가 다른 테이블에서 게임 중입니다.</p>}
         {loadStatus === "loading" && <p role="status">카드 준비 중…</p>}
         {loadStatus === "error" && <div role="alert"><p>이미지를 준비하지 못했습니다.</p><button type="button" onClick={() => setLoadAttempt((value) => value + 1)}>다시 불러오기</button></div>}
-        <button type="button" className="match-pairs-primary" disabled={loadStatus !== "ready" || busy || selectedOpponentUnavailable || Boolean(onStart) && walletBalance < selectedStake} onClick={startGame}>{busy ? "예약 중…" : `${selectedStake} P로 시작`}</button>
+        <button type="button" className="match-pairs-primary" disabled={loadStatus !== "ready" || busy || selectedOpponentUnavailable || Boolean(onStart) && walletBalance < exposure} onClick={startGame}>{busy ? "예약 중…" : `${selectedStake} P · ${selectedMultiplier}배로 시작`}</button>
       </section>}
 
       {state.status !== "ready" && loadStatus === "error" && <section className="match-pairs-panel" role="alert"><p>이미지를 준비하지 못했습니다. 현재 판은 그대로 유지됩니다.</p><button type="button" onClick={() => setLoadAttempt((value) => value + 1)}>다시 불러오기</button></section>}
       {paused && canPause && <div className="match-pairs-pause-shield" role="status">일시정지됨</div>}
       {state.status === "complete" && <section className="match-pairs-panel match-pairs-result" aria-live="polite">
         <h2>{resultTitle}</h2><p>나 {state.claims.player.length}짝 · {opponent.name} {state.claims.npc.length}짝</p>
-        <strong className="match-pairs-credit">{state.outcome === "player" ? `${state.creditAmount} P 반환` : state.outcome === "draw" ? `${state.creditAmount} P 환불` : `${state.stake ?? 0} P 손실`}</strong>
+        <small className="match-pairs-record">상대 전적 · {recordLabel(opponentRecords[opponent.id])}</small>
+        <strong className="match-pairs-credit">{state.outcome === "player" ? `${leveragedCredit} P 반환` : state.outcome === "draw" ? `${exposure} P 환불` : `${exposure} P 손실`}</strong>
         <button type="button" className="match-pairs-primary" onClick={restart}>다시하기</button>
       </section>}
       <p className="match-pairs-announcement" aria-live="polite">{announcement}</p>
     </section>
   </main>;
+}
+
+function recordLabel(record: { wins: number; losses: number; draws: number } | undefined): string {
+  const wins = record?.wins ?? 0;
+  const losses = record?.losses ?? 0;
+  const draws = record?.draws ?? 0;
+  return `${wins}승 ${losses}패${draws > 0 ? ` ${draws}무` : ""}`;
 }
 
 export async function preloadMatchPairsImages(urls: readonly string[], createImage?: () => DecodableImage): Promise<void> {

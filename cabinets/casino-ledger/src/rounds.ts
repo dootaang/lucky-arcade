@@ -13,7 +13,7 @@ import { npcPresenceIntervalsForDay } from "./presence.ts";
 
 const SECONDS_PER_DAY = 86_400;
 const APPROACH_SECONDS = 12;
-const ROUND_CONTRACT = "npc-live-rounds/0.1";
+const ROUND_CONTRACT = "npc-live-rounds/0.2";
 
 interface RoundTemplate {
   reservedAmount: number;
@@ -25,7 +25,7 @@ interface RoundTemplate {
 
 /**
  * Expands one long NPC visit into player-scale real settlements. Neutral cycles
- * add visible play without rewriting the frozen npc-ledger/0.2 visit result.
+ * add visible play without rewriting the frozen npc-ledger/0.3 visit result.
  */
 export function npcVisitRounds(
   interval: NpcPresenceInterval,
@@ -156,17 +156,18 @@ export function npcLiveBalancesAt(
 function neutralCycleFor(session: NpcSession, openingBalance: number, maximum: number): readonly RoundTemplate[] {
   const stake = session.stake;
   if (stake === 0) return Object.freeze([]);
+  const multiplier = session.reservedAmount / stake;
   if (session.tableId === "temerosa-match-pairs") return Object.freeze([
-    round(stake, 0, "loss", "match-pairs-paytable/0.1"),
-    round(stake, stake * 2, "win-2x", "match-pairs-paytable/0.1"),
+    round(session.reservedAmount, 0, "loss", "match-pairs-paytable/0.2"),
+    round(session.reservedAmount, stake * 2 * multiplier, "win-2x", "match-pairs-paytable/0.2"),
   ]);
   if (session.tableId === "indian-poker") return Object.freeze([
-    round(stake, 0, "chips-0", "temerosa-indian-poker-paytable/0.2"),
-    round(stake, stake * 2, "chips-20", "temerosa-indian-poker-paytable/0.2"),
+    round(session.reservedAmount, 0, "chips-0", "temerosa-indian-poker-paytable/0.3"),
+    round(session.reservedAmount, stake * 2 * multiplier, "chips-20", "temerosa-indian-poker-paytable/0.3"),
   ]);
   const cycle = [
-    round(stake, stake * 6, "lines-1", "temerosa-slot-paytable/0.2"),
-    ...Array.from({ length: 5 }, () => round(stake, 0, "lines-0", "temerosa-slot-paytable/0.2")),
+    round(session.reservedAmount, stake * 6 * multiplier, "lines-1", "temerosa-slot-paytable/0.3"),
+    ...Array.from({ length: 5 }, () => round(session.reservedAmount, 0, "lines-0", "temerosa-slot-paytable/0.3")),
   ];
   return Object.freeze(orientCycle(cycle, openingBalance, maximum));
 }
@@ -197,9 +198,9 @@ function orientCycle(cycle: readonly RoundTemplate[], openingBalance: number, ma
 }
 
 function cycleDurationSeconds(tableId: NpcSession["tableId"]): number {
-  if (tableId === "temerosa-slot") return 240;
-  if (tableId === "indian-poker") return 180;
-  if (tableId === "temerosa-match-pairs") return 240;
+  if (tableId === "temerosa-slot") return 120;
+  if (tableId === "indian-poker") return 120;
+  if (tableId === "temerosa-match-pairs") return 120;
   return Number.POSITIVE_INFINITY;
 }
 
