@@ -1,7 +1,8 @@
 import {
   casinoPresenceAt,
+  npcLiveBalancesAt,
   recentNpcPlayEventsAt,
-  recentNpcActivitiesAt,
+  recentNpcRoundSettlementsAt,
   TEMEROSA_NPC_GAMBLING_PROFILES,
   TEMEROSA_NPC_LEDGER_CONTRACT,
 } from "@lucky-arcade/casino-ledger";
@@ -51,13 +52,14 @@ export default function CasinoLedgerView({ userBalance, tables, onPlay }: { user
   try {
     const currentUtcSecond = clock.utcSecond();
     const snapshot = npcBalancesAtWithCheckpoint(clock, TEMEROSA_NPC_LEDGER_CONTRACT);
-    const activities = recentNpcActivitiesAt(TEMEROSA_NPC_GAMBLING_PROFILES, clock, TEMEROSA_NPC_LEDGER_CONTRACT, 24);
     const presences = casinoPresenceAt(TEMEROSA_NPC_GAMBLING_PROFILES, clock, TEMEROSA_NPC_LEDGER_CONTRACT);
+    const settlements = recentNpcRoundSettlementsAt(TEMEROSA_NPC_GAMBLING_PROFILES, clock, TEMEROSA_NPC_LEDGER_CONTRACT, 64);
+    const liveBalances = npcLiveBalancesAt(snapshot.balances, TEMEROSA_NPC_GAMBLING_PROFILES, presences, clock);
     const playEvents = recentNpcPlayEventsAt(presences, clock, 512);
     return <CasinoLedgerPanel
-      npcBalances={snapshot.balances}
+      npcBalances={liveBalances}
       userBalance={userBalance}
-      activities={activities}
+      settlements={settlements}
       playEvents={playEvents}
       portraits={portraitMap(loaded.manifest)}
       currentUtcSecond={currentUtcSecond}

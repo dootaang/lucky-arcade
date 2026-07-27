@@ -31,7 +31,10 @@ export function npcPresenceIntervalsForDay(
 ): readonly NpcPresenceInterval[] {
   const absoluteDay = contract.epochUtcDay + dayIndex;
   let previousAvailableAt = previousAvailableAtUtcSecond;
+  let currentBalance = openingBalance;
   const intervals = npcDaySessions(profile, dayIndex, openingBalance, contract).map((session) => {
+    const sessionOpeningBalance = currentBalance;
+    currentBalance += session.delta;
     const settlesAtUtcSecond = absoluteDay * SECONDS_PER_DAY + session.minuteOfDay * 60;
     const [minimum, maximum] = DURATION_SECONDS[session.tableId];
     const rng = new XorShift32(`${contract.version}:${profile.id}:${dayIndex}:${session.minuteOfDay}:${session.tableId}:presence`);
@@ -40,7 +43,16 @@ export function npcPresenceIntervalsForDay(
     const startedAtUtcSecond = Math.min(latestStart, Math.max(settlesAtUtcSecond - desiredDuration, previousAvailableAt));
     const availableAtUtcSecond = settlesAtUtcSecond + SETTLE_SECONDS + LEAVE_SECONDS;
     previousAvailableAt = availableAtUtcSecond;
-    return Object.freeze({ profile, npcId: profile.id, tableId: session.tableId, session, startedAtUtcSecond, settlesAtUtcSecond, availableAtUtcSecond });
+    return Object.freeze({
+      profile,
+      npcId: profile.id,
+      tableId: session.tableId,
+      session,
+      openingBalance: sessionOpeningBalance,
+      startedAtUtcSecond,
+      settlesAtUtcSecond,
+      availableAtUtcSecond,
+    });
   });
   return Object.freeze(intervals.map(({ profile: _profile, ...interval }) => Object.freeze(interval)));
 }
@@ -62,6 +74,14 @@ export function casinoPresenceAt(
       ? profile.target
       : completedDayBalances([profile], firstDay - 1, contract)[profile.id]!;
     let previousAvailableAt = Number.NEGATIVE_INFINITY;
+    if (firstDay > 0) {
+      const priorDay = firstDay - 1;
+      const priorOpening = priorDay === 0
+        ? profile.target
+        : completedDayBalances([profile], priorDay - 1, contract)[profile.id]!;
+      previousAvailableAt = npcPresenceIntervalsForDay(profile, priorDay, priorOpening, contract).at(-1)?.availableAtUtcSecond
+        ?? previousAvailableAt;
+    }
     const intervals: NpcPresenceInterval[] = [];
     for (let currentDay = firstDay; currentDay <= lastDay; currentDay += 1) {
       const dayIntervals = npcPresenceIntervalsForDay(profile, currentDay, opening, contract, previousAvailableAt);
@@ -79,6 +99,7 @@ export function casinoPresenceAt(
         : now < active.settlesAtUtcSecond + SETTLE_SECONDS ? "settling" : "leaving";
     return Object.freeze({
       npcId: profile.id, phase, tableId: active.tableId, session: active.session,
+      openingBalance: active.openingBalance,
       startedAtUtcSecond: active.startedAtUtcSecond, settlesAtUtcSecond: active.settlesAtUtcSecond,
       availableAtUtcSecond: active.availableAtUtcSecond,
     });

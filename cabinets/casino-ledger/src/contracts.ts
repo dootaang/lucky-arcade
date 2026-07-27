@@ -72,6 +72,20 @@ export interface NpcActivity {
   session: NpcSession;
 }
 
+/** One real, player-scale result inside a longer NPC casino visit. */
+export interface NpcRoundSettlement {
+  roundId: string;
+  npcId: string;
+  tableId: CasinoTableId;
+  utcSecond: number;
+  stake: NpcStake;
+  reservedAmount: number;
+  creditAmount: number;
+  delta: number;
+  resultKind: string;
+  termsVersion: string;
+}
+
 export type NpcPlayEventCode =
   | "table-enter"
   | "wager-placed"
@@ -107,6 +121,7 @@ export interface NpcPresence {
   phase: NpcPresencePhase;
   tableId?: CasinoTableId;
   session?: NpcSession;
+  openingBalance?: number;
   startedAtUtcSecond?: number;
   settlesAtUtcSecond?: number;
   availableAtUtcSecond?: number;
@@ -116,6 +131,7 @@ export interface NpcPresenceInterval {
   npcId: string;
   tableId: CasinoTableId;
   session: NpcSession;
+  openingBalance: number;
   startedAtUtcSecond: number;
   settlesAtUtcSecond: number;
   availableAtUtcSecond: number;

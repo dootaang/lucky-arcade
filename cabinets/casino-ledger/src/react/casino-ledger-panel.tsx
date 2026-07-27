@@ -1,14 +1,14 @@
 import { NumberTicker } from "@lucky-arcade/ui/number-ticker";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { casinoLeaderboard } from "../presentation.ts";
-import type { CasinoTableId, NpcActivity, NpcPlayEvent, NpcPlayEventCode, NpcPresence } from "../contracts.ts";
+import type { CasinoTableId, NpcPlayEvent, NpcPlayEventCode, NpcPresence, NpcRoundSettlement } from "../contracts.ts";
 import { TEMEROSA_NPC_GAMBLING_PROFILES } from "../temerosa-profiles.ts";
 import "./casino-ledger-panel.css";
 
 export interface CasinoLedgerPanelProps {
   npcBalances: Readonly<Record<string, number>>;
   userBalance: number;
-  activities: readonly NpcActivity[];
+  settlements: readonly NpcRoundSettlement[];
   playEvents: readonly NpcPlayEvent[];
   portraits: Readonly<Record<string, string>>;
   currentUtcSecond: number;
@@ -30,7 +30,7 @@ export interface CasinoLiveTable {
 export default function CasinoLedgerPanel({
   npcBalances,
   userBalance,
-  activities,
+  settlements,
   playEvents,
   portraits,
   currentUtcSecond,
@@ -43,12 +43,12 @@ export default function CasinoLedgerPanel({
   const names = new Map(TEMEROSA_NPC_GAMBLING_PROFILES.map((profile) => [profile.id, profile.name]));
   const previousBalances = useRef(npcBalances);
   const [balanceMoves, setBalanceMoves] = useState<Readonly<Record<string, "rising" | "falling">>>({});
-  const allTape = useMemo(() => casinoTape(playEvents, activities, currentUtcSecond), [activities, currentUtcSecond, playEvents]);
+  const allTape = useMemo(() => casinoTape(playEvents, settlements, currentUtcSecond), [currentUtcSecond, playEvents, settlements]);
   const tape = allTape.slice(0, 12);
   const tapeKeys = tape.map((event) => event.id).join("|");
   const tapeRef = useFlipTape(tapeKeys);
   const lastMinuteCount = allTape.filter((event) => currentUtcSecond - event.utcSecond < 60).length;
-  const recentSettlements = activities.slice(0, 5);
+  const recentSettlements = settlements.slice(0, 5);
   useEffect(() => {
     const changed = Object.fromEntries(Object.keys(npcBalances).flatMap((id) => {
       const previous = previousBalances.current[id];
@@ -63,7 +63,7 @@ export default function CasinoLedgerPanel({
   }, [npcBalances]);
   return <>
   <section className="casino-live-grid" aria-label="운영 중인 게임 테이블">
-    {tables.map((table) => { const latest = activities.find((activity) => activity.session.tableId === table.id); return <LiveTableCard key={table.id} table={table} presences={presences.filter((presence) => presence.tableId === table.id && presence.phase !== "idle")} portraits={portraits} names={names} currentUtcSecond={currentUtcSecond} {...(latest ? { latest } : {})} onPlay={() => onPlay(table.id)} />; })}
+    {tables.map((table) => { const latest = settlements.find((settlement) => settlement.tableId === table.id); return <LiveTableCard key={table.id} table={table} presences={presences.filter((presence) => presence.tableId === table.id && presence.phase !== "idle")} portraits={portraits} names={names} currentUtcSecond={currentUtcSecond} {...(latest ? { latest } : {})} onPlay={() => onPlay(table.id)} />; })}
   </section>
   <section className="casino-ledger-panel" aria-label="카지노 활동 원장">
     <div className="casino-ledger-board ca-brackets">
@@ -82,7 +82,7 @@ export default function CasinoLedgerPanel({
     </div>
     <section className="casino-ledger-settlements" aria-labelledby="settlement-heading">
       <div className="ledger-heading"><span id="settlement-heading">최근 정산</span><small>실제 잔고 변동</small></div>
-      <ol>{recentSettlements.map((activity) => <li key={activityKey(activity)}><SettlementLine activity={activity} name={names.get(activity.npcId) ?? activity.npcId} currentUtcSecond={currentUtcSecond} /></li>)}</ol>
+      <ol>{recentSettlements.map((settlement) => <li key={settlement.roundId}><SettlementLine settlement={settlement} name={names.get(settlement.npcId) ?? settlement.npcId} currentUtcSecond={currentUtcSecond} /></li>)}</ol>
     </section>
     <div className="casino-ledger-activity">
       <div className="ledger-heading"><span><i className="ca-live" aria-hidden="true" /> LIVE PLAY TAPE</span><small>{lastMinuteCount} ACTIONS / 60s{clockSource === "device" ? " · 기기 시간" : ""}</small></div>
@@ -101,26 +101,26 @@ function TapeLine({ event, name, currentUtcSecond }: { event: CasinoTapeEvent; n
   </span>;
 }
 
-function SettlementLine({ activity, name, currentUtcSecond }: { activity: NpcActivity; name: string; currentUtcSecond: number }): React.ReactElement {
-  const delta = activity.session.delta;
+function SettlementLine({ settlement, name, currentUtcSecond }: { settlement: NpcRoundSettlement; name: string; currentUtcSecond: number }): React.ReactElement {
+  const delta = settlement.delta;
   const direction = delta > 0 ? "gain" : delta < 0 ? "loss" : "flat";
   const directionLabel = delta > 0 ? "획득" : delta < 0 ? "손실" : "변동 없음";
   const symbol = delta > 0 ? "▲" : delta < 0 ? "▼" : "—";
-  const age = Math.max(0, currentUtcSecond - activity.utcMinute * 60);
+  const age = Math.max(0, currentUtcSecond - settlement.utcSecond);
   const fresh = age < 15;
   return <article
     className={`ledger-settlement-line is-${direction}${fresh ? " is-fresh" : ""}`}
     data-direction={direction}
-    aria-label={`${name}, ${tableName(activity.session.tableId)}, ${ageLabel(age)}, ${directionLabel} ${Math.abs(delta)} 포인트`}
+    aria-label={`${name}, ${tableName(settlement.tableId)}, ${ageLabel(age)}, ${directionLabel} ${Math.abs(delta)} 포인트`}
   >
     <div><b>{name}</b><small>{ageLabel(age)}</small></div>
-    <span>{tableName(activity.session.tableId)} · {settlementLabel(activity)}</span>
+    <span>{tableName(settlement.tableId)} · {settlementLabel(settlement)}</span>
     <strong><i aria-hidden="true">{symbol}</i> {directionLabel}</strong>
     <NumberTicker value={Math.abs(delta)} prefix={delta > 0 ? "+" : delta < 0 ? "−" : ""} suffix=" P" durationMs={650} className="ca-num ledger-settlement-amount" />
   </article>;
 }
 
-function LiveTableCard({ table, presences, portraits, names, currentUtcSecond, latest, onPlay }: { table: CasinoLiveTable; presences: readonly NpcPresence[]; portraits: Readonly<Record<string, string>>; names: ReadonlyMap<string, string>; currentUtcSecond: number; latest?: NpcActivity; onPlay(): void }): React.ReactElement {
+function LiveTableCard({ table, presences, portraits, names, currentUtcSecond, latest, onPlay }: { table: CasinoLiveTable; presences: readonly NpcPresence[]; portraits: Readonly<Record<string, string>>; names: ReadonlyMap<string, string>; currentUtcSecond: number; latest?: NpcRoundSettlement; onPlay(): void }): React.ReactElement {
   const active = presences.filter((presence) => presence.phase !== "leaving");
   const nearest = active.toSorted((left, right) => (left.availableAtUtcSecond ?? Infinity) - (right.availableAtUtcSecond ?? Infinity))[0];
   const remaining = nearest?.availableAtUtcSecond === undefined ? null : Math.max(0, nearest.availableAtUtcSecond - currentUtcSecond);
@@ -135,7 +135,7 @@ function LiveTableCard({ table, presences, portraits, names, currentUtcSecond, l
       {active.length > 3 && <span className="live-player-more">+{active.length - 3}</span>}
       {active.length === 0 && <span className="live-table-empty">빈 테이블 · 바로 시작할 수 있습니다</span>}
     </div>
-    {latest && <small className="live-table-result">최근 · {names.get(latest.npcId) ?? latest.npcId} {latest.session.delta > 0 ? "+" : ""}{latest.session.delta} P</small>}
+    {latest && <small className="live-table-result">최근 · {names.get(latest.npcId) ?? latest.npcId} {latest.delta > 0 ? "+" : ""}{latest.delta} P</small>}
     <small className="ca-num">{table.meta}</small>
     <button className="ca-gold-btn ca-press ca-floorlight" onClick={onPlay}>{table.entryLabel}<span aria-hidden="true">▶</span></button>
     <span className="ca-brackets" aria-hidden="true" />
@@ -162,15 +162,11 @@ function remainingLabel(seconds: number | null): string {
   return `${Math.floor(seconds / 60)}분 ${seconds % 60}초 남음`;
 }
 
-function tableName(tableId: NpcActivity["session"]["tableId"]): string {
+function tableName(tableId: CasinoTableId): string {
   if (tableId === "temerosa-old-maid") return "도둑잡기";
   if (tableId === "temerosa-match-pairs") return "짝맞추기";
   if (tableId === "temerosa-slot") return "슬롯";
   return "인디언 포커";
-}
-
-function activityKey(activity: NpcActivity): string {
-  return `${activity.utcMinute}:${activity.npcId}:${activity.session.tableId}`;
 }
 
 function ageLabel(seconds: number): string {
@@ -188,17 +184,17 @@ interface CasinoTapeEvent {
   delta?: number;
 }
 
-function casinoTape(playEvents: readonly NpcPlayEvent[], activities: readonly NpcActivity[], currentUtcSecond: number): readonly CasinoTapeEvent[] {
+function casinoTape(playEvents: readonly NpcPlayEvent[], settlements: readonly NpcRoundSettlement[], currentUtcSecond: number): readonly CasinoTapeEvent[] {
   const play: CasinoTapeEvent[] = playEvents.map((event) => ({
     id: event.eventId, npcId: event.npcId, tableId: event.tableId, utcSecond: event.utcSecond,
     kind: "play", label: playEventLabel(event.code, event.stake), stake: event.stake,
   }));
-  const settlements: CasinoTapeEvent[] = activities.map((activity) => ({
-    id: `settlement:${activity.utcMinute}:${activity.npcId}:${activity.session.tableId}`,
-    npcId: activity.npcId, tableId: activity.session.tableId, utcSecond: activity.utcMinute * 60,
-    kind: "settlement", label: `${settlementLabel(activity)} · ${activity.session.delta > 0 ? "획득" : activity.session.delta < 0 ? "손실" : "변동 없음"}`, stake: activity.session.stake, delta: activity.session.delta,
+  const settlementEvents: CasinoTapeEvent[] = settlements.map((settlement) => ({
+    id: settlement.roundId,
+    npcId: settlement.npcId, tableId: settlement.tableId, utcSecond: settlement.utcSecond,
+    kind: "settlement", label: `${settlementLabel(settlement)} · ${settlement.delta > 0 ? "획득" : settlement.delta < 0 ? "손실" : "변동 없음"}`, stake: settlement.stake, delta: settlement.delta,
   }));
-  return [...play, ...settlements]
+  return [...play, ...settlementEvents]
     .filter((event) => event.utcSecond <= currentUtcSecond)
     .sort((left, right) => right.utcSecond - left.utcSecond || compareText(left.id, right.id));
 }
@@ -224,13 +220,13 @@ function playEventLabel(code: NpcPlayEventCode, stake: number): string {
   return "표정 읽기";
 }
 
-function settlementLabel(activity: NpcActivity): string {
-  if (activity.session.tableId === "temerosa-slot") {
-    const lines = Number(activity.session.resultKind.replace("lines-", ""));
+function settlementLabel(settlement: NpcRoundSettlement): string {
+  if (settlement.tableId === "temerosa-slot") {
+    const lines = Number(settlement.resultKind.replace("lines-", ""));
     return lines > 0 ? `${lines}줄 적중` : "당첨 없음";
   }
-  if (activity.session.tableId === "indian-poker") return "칩 정산";
-  if (activity.session.tableId === "temerosa-match-pairs") return "대국 정산";
+  if (settlement.tableId === "indian-poker") return "칩 정산";
+  if (settlement.tableId === "temerosa-match-pairs") return "대국 정산";
   return "순위 보상";
 }
 

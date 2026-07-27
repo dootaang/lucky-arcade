@@ -115,7 +115,7 @@ describe("casino ledger core", () => {
   });
 
   it("contains no ambient side effects in pure sources", () => {
-    const sources = ["engine.ts", "contracts.ts", "temerosa-profiles.ts"]
+    const sources = ["engine.ts", "contracts.ts", "presence.ts", "rounds.ts", "temerosa-profiles.ts"]
       .map((file) => readFileSync(new URL(`../src/${file}`, import.meta.url), "utf8"))
       .join("\n");
     const forbidden = ["Date" + ".now(", "Math" + ".random(", "local" + "Storage", "session" + "Storage", "fetch(", "re" + "act"];
