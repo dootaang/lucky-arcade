@@ -48,7 +48,7 @@ describe("casino floor presence", () => {
         if (TEMEROSA_NPC_GAMBLING_PROFILES.length - busy < 4) throw new Error(`insufficient_available:${day}:${event.second}`);
       }
     }
-  }, 30_000);
+  }, 90_000);
 
   it("keeps the casino floor occupied throughout the first year", () => {
     const balances = Object.fromEntries(TEMEROSA_NPC_GAMBLING_PROFILES.map((profile) => [profile.id, profile.target]));

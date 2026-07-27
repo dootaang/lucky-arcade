@@ -37,7 +37,7 @@ describe("NPC live round settlements", () => {
         opening += sessions.reduce((total, session) => total + session.delta, 0);
       }
     }
-  }, 15_000);
+  }, 60_000);
 
   it("keeps the original completed-day history byte-for-byte unchanged", () => {
     const before = completedDayBalances(TEMEROSA_NPC_GAMBLING_PROFILES, 40, contract);

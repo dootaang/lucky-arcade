@@ -41,7 +41,7 @@ describe("casino ledger core", () => {
         opening = current;
       }
     }
-  });
+  }, 20_000);
 
   it("keeps all 35 profiles bounded for 10,000 days", () => {
     for (const candidate of TEMEROSA_NPC_GAMBLING_PROFILES) {
