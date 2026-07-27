@@ -15,6 +15,10 @@ export interface VenueManifest {
   id: string;
   title: string;
   tagline: string;
+  marquee?: {
+    word: string;
+    sub: string;
+  };
   heroImage: ResponsiveImageRef;
   entryLabel: string;
   order: number;
@@ -37,6 +41,7 @@ const venues: readonly VenueManifest[] = [
     id: "temerosa-casino",
     title: "테메로세 카지노",
     tagline: "여백에 열린 한 판의 항로",
+    marquee: { word: "TEMEROSA", sub: "카지노 · CASINO · 여백" },
     heroImage: {
       sm: { src: `${CONTENT_ROOT}/sm.webp`, width: 640, height: 360, bytes: 21_966 },
       md: { src: `${CONTENT_ROOT}/md.webp`, width: 1280, height: 720, bytes: 47_386 },

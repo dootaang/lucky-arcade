@@ -11,6 +11,7 @@
     "./number-ticker": "./src/number-ticker.tsx",
     "./holo-card": "./src/holo-card.tsx",
     "./slide-highlight": "./src/slide-highlight.tsx",
+    "./venue-marquee": "./src/venue-marquee.tsx",
     "./celebrate": "./src/celebrate.ts"
   },
   "scripts": {

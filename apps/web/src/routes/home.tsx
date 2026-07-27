@@ -9,6 +9,7 @@ import { analyzeCardFile } from "../lib/card-analysis.ts";
 import { listCards, listRecentPlays, loadCardSource, replaceAnalyzedCard, type StoredCard } from "../lib/database.ts";
 import { readWallet } from "../lib/wallet.ts";
 import { NumberTicker } from "@lucky-arcade/ui/number-ticker";
+import { VenueMarquee } from "@lucky-arcade/ui/venue-marquee";
 import type { CasinoTableId } from "@lucky-arcade/casino-ledger";
 import { getPublicVenue, getVenueForCabinet, listPublicVenues, type VenueManifest } from "../venues/registry.ts";
 
@@ -89,7 +90,9 @@ export function Home({ privatePreview = false }: { privatePreview?: boolean }) {
       <div className="sidebar-bottom">{privatePreview && selected && <div className="selected-card"><span>현재 카드</span><strong>{selected.analyzed.report.card.name}</strong><small>{selected.analyzed.report.card.fingerprintShort}</small></div>}</div>
     </aside>
     <main className="dashboard">
-      <header className="topbar"><div><span className="eyebrow">{privatePreview ? "개발 전용 점검" : venue ? "Venue" : "Lucky Arcade Lobby"}</span><h1>{venue?.title ?? (privatePreview ? "보존 기능 점검" : "오늘은 어디서 놀까요?")}</h1></div><strong className="lobby-wallet"><NumberTicker value={balance} suffix=" P" /></strong><button className="icon-button" onClick={() => setLight((value) => !value)} aria-label={light ? "어두운 테마" : "밝은 테마"}>{light ? <IconMoon /> : <IconSun />}</button></header>
+      <header className="topbar">{venue?.marquee
+        ? <VenueMarquee title={venue.title} word={venue.marquee.word} sub={venue.marquee.sub} />
+        : <div><span className="eyebrow">{privatePreview ? "개발 전용 점검" : venue ? "Venue" : "Lucky Arcade Lobby"}</span><h1>{venue?.title ?? (privatePreview ? "보존 기능 점검" : "오늘은 어디서 놀까요?")}</h1></div>}<strong className="lobby-wallet"><NumberTicker value={balance} suffix=" P" /></strong><button className="icon-button" onClick={() => setLight((value) => !value)} aria-label={light ? "어두운 테마" : "밝은 테마"}>{light ? <IconMoon /> : <IconSun />}</button></header>
 
       {recentPlay && recentCabinet && <section className="resume-hero" aria-label="이어하기"><div className="resume-icon"><IconClockPlay /></div><div><span className="eyebrow">최근 플레이 · {timeAgo(recentPlay.updatedAt)}</span><h2>{recentVenue ? `${recentVenue.title} · ${recentCabinet.manifest.title.replace("테메로세 ", "")}` : recentPlay.title}</h2><p>{recentPlay.progressLabel} · 저장된 자리로 바로 돌아갑니다.</p></div><button onClick={() => { const card = recentPlay.cardFingerprint ? cards.find((item) => item.fingerprint === recentPlay.cardFingerprint) : undefined; if (card) setSelected(card); openCabinet(recentPlay.cabinetId); }}><IconPlayerPlay /> {recentCabinet.manifest.resumeLabel}</button></section>}
 

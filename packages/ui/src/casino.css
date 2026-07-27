@@ -224,6 +224,85 @@
   to { background-position: 88% 92%, 16% 12%; }
 }
 
+/* Venue marquee — a theatre sign with a chip medallion.
+   Double frame, two bulb rails, corner lozenges, and gold running through the
+   wordmark. The entrance sequence plays once when the sign mounts: the frame
+   settles, the bulbs ignite left to right over ~680ms, the wordmark flares.
+   After that only the bulb chase and the slow sweep keep moving, so the room
+   is lively on arrival without anything spinning for the next hour. */
+.ca-marquee {
+  --ca-bulb: 5px;
+  position: relative; display: grid; gap: .28rem; margin: 0;
+  padding: .42rem .9rem;
+  border: 1px solid var(--ca-gold);
+  /* A real sign has a face, so it stays a lit dark plaque on either theme.
+     The gap between the two gold lines shows the page through, which is why
+     the host may hand it a ground colour. */
+  background: linear-gradient(160deg, #1b1f27, #14161b);
+  box-shadow:
+    0 0 0 4px var(--ca-marquee-gap, var(--ca-void)),
+    0 0 0 5px var(--ca-gold-deep),
+    0 8px 34px -6px color-mix(in srgb, var(--ca-crimson) 40%, transparent);
+  animation: ca-marquee-in .5s cubic-bezier(.2, .8, .2, 1) both;
+}
+@keyframes ca-marquee-in { from { opacity: 0; transform: scale(.965); } }
+
+.ca-marquee-corners { position: absolute; inset: 0; pointer-events: none; }
+.ca-marquee-corners i { position: absolute; width: 6px; height: 6px; background: var(--ca-gold); transform: rotate(45deg); }
+.ca-marquee-corners i:nth-child(1) { top: -3.5px; left: -3.5px; }
+.ca-marquee-corners i:nth-child(2) { top: -3.5px; right: -3.5px; }
+.ca-marquee-corners i:nth-child(3) { bottom: -3.5px; left: -3.5px; }
+.ca-marquee-corners i:nth-child(4) { bottom: -3.5px; right: -3.5px; }
+
+.ca-marquee-rail { display: flex; justify-content: center; gap: .4rem; }
+/* The chase keeps its ordinary phase while only the reveal is staggered, so a
+   bulb is already mid-chase the moment it appears instead of waiting dark. */
+.ca-marquee-rail i {
+  width: var(--ca-bulb); height: var(--ca-bulb); border-radius: 50%;
+  background: #4a4132;
+  box-shadow: inset 0 0 1px #0009, inset 0 0 2px #0006;
+  animation: ca-marquee-ignite .34s ease-out both, ca-marquee-bulb 1.1s ease-in-out infinite alternate;
+  animation-delay: calc(var(--i, 0) * 62ms), calc(var(--i, 0) * -.41s);
+}
+@keyframes ca-marquee-ignite { from { opacity: 0; transform: scale(.5); } }
+/* Three inset rings light the glass from inside and three outer rings throw
+   it — the same filament the slot cabinet's nine lamps use. */
+@keyframes ca-marquee-bulb {
+  to {
+    background: #ffd777;
+    box-shadow: inset 0 0 1px #fff8dd, inset 0 0 2px #ffeaa8, inset 0 0 5px #ffcf6a,
+                0 0 4px #ffd777, 0 0 13px #ffd77777, 0 0 26px #ffd7773a;
+  }
+}
+
+.ca-marquee-body { display: flex; align-items: center; gap: .7rem; }
+.ca-marquee-chip { flex: none; display: grid; place-items: center; }
+.ca-marquee-type { display: grid; gap: .1rem; }
+.ca-marquee-word {
+  font-family: var(--ca-display); font-weight: 700; font-size: 1.5rem;
+  letter-spacing: .13em; line-height: 1.05;
+  /* The gradient .ca-gold-btn runs across its fill, clipped to the glyphs. */
+  background-image: linear-gradient(100deg, var(--ca-gold-deep) 0%, var(--ca-gold) 20%, #fff4d8 38%, var(--ca-gold) 56%, var(--ca-gold-deep) 100%);
+  background-size: 280% 100%;
+  -webkit-background-clip: text; background-clip: text;
+  color: transparent;
+  /* brightness() is animated exactly once, on arrival. It is the flare. */
+  animation: ca-marquee-flare .9s ease-out both, ca-marquee-sweep 7s linear 1s infinite;
+}
+@keyframes ca-marquee-flare { 0% { opacity: 0; filter: brightness(2.4); } 45% { opacity: 1; } 100% { filter: brightness(1); } }
+@keyframes ca-marquee-sweep { from { background-position: 190% 50%; } to { background-position: -90% 50%; } }
+.ca-marquee-sub { font-family: var(--ca-data); font-size: .52rem; letter-spacing: .26em; color: #b8a480; }
+
+@media (max-width: 600px) {
+  .ca-marquee { --ca-bulb: 4px; padding: .34rem .6rem; }
+  .ca-marquee-rail { gap: .3rem; }
+  .ca-marquee-rail i:nth-child(n+8) { display: none; }
+  .ca-marquee-body { gap: .5rem; }
+  .ca-marquee-chip svg { width: 27px; height: 27px; }
+  .ca-marquee-word { font-size: 1.02rem; }
+  .ca-marquee-sub { font-size: .44rem; }
+}
+
 /* Live status dot, and its resting twin. Both live here because `.ca-*` is this
    file's namespace — a cabinet stylesheet must not mint new ones. */
 .ca-live { display: inline-grid; place-items: center; width: 7px; height: 7px; border-radius: 50%; background: var(--ca-crimson); box-shadow: 0 0 6px 1px color-mix(in srgb, var(--ca-crimson) 75%, transparent); animation: ca-blink 2s ease-in-out infinite; }
@@ -243,6 +322,10 @@
 
 @media (prefers-reduced-motion: reduce) {
   .ca-shine::before, .ca-tableau, .ca-scan::after, .ca-pulse, .ca-live, .ca-holo[data-holo-drift]::before { animation: none; }
+  /* The sign arrives already lit rather than igniting. */
+  .ca-marquee, .ca-marquee-rail i, .ca-marquee-word { animation: none; }
+  .ca-marquee-rail i { background: #ffd777; box-shadow: inset 0 0 1px #fff8dd, 0 0 4px #ffd777; }
+  .ca-marquee-word { background-position: 38% 50%; }
   .ca-press, .ca-holo, .ca-spotlight::before, .ca-spotlight::after, .ca-slide::before { transition: none; }
   .ca-slide::before { display: none; }
   .ca-press:active { transform: none; }
