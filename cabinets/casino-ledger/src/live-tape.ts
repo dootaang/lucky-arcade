@@ -1,8 +1,8 @@
 import { XorShift32 } from "@lucky-arcade/engine";
 import { casinoDayPlan, completedDayBalances } from "./engine.ts";
-import type { CasinoPresentationClock, CasinoTableId, NpcGamblingProfile, NpcLedgerContract, NpcMatch, NpcPlayEvent, NpcPlayEventCode } from "./contracts.ts";
+import type { CasinoPresentationClock, CasinoTableId, NpcGamblingProfile, NpcLedgerContract, NpcMatch, NpcPlayEvent, NpcPlayEventCode, NpcPredictionWager } from "./contracts.ts";
 
-const TAPE_VERSION = "npc-live-tape/0.2";
+const TAPE_VERSION = "npc-live-tape/0.3";
 const DEFAULT_LOOKBACK_SECONDS = 90;
 const ACTIONS = Object.freeze({
   "temerosa-old-maid": ["old-maid-draw", "old-maid-discard", "old-maid-reorder", "old-maid-watch"] as const,
@@ -17,7 +17,7 @@ const CADENCE = Object.freeze({
   "temerosa-old-maid": [12,22],
 } as const);
 
-/** Every tape item belongs to a real v0.5 match. There are no ambient pseudo-actions. */
+/** Every tape item belongs to a real v0.7 match. There are no ambient pseudo-actions. */
 export function recentNpcPlayEventsAt(
   profiles: readonly NpcGamblingProfile[],
   clock: CasinoPresentationClock,
@@ -36,12 +36,14 @@ export function recentNpcPlayEventsAt(
   const firstDay=Math.max(0,dayIndex-1);
   let openings=firstDay===0?Object.freeze(Object.fromEntries(profiles.map((profile)=>[profile.id,profile.openingBalance]))):completedDayBalances(profiles,firstDay-1,contract);
   const matches:Array<{match:NpcMatch;absoluteStart:number;absoluteSettle:number;firstInVisit:boolean}>=[];
+  const predictions:Array<{prediction:NpcPredictionWager;absolutePlaced:number}>=[];
   for(let day=firstDay;day<=dayIndex;day+=1){
     const plan=casinoDayPlan(profiles,day,openings,contract);
     const firstByVisit=new Map<string,string>();
     for(const match of plan.matches)if(!firstByVisit.has(match.visitId))firstByVisit.set(match.visitId,match.matchId);
     const dayStart=(contract.epochUtcDay+day)*86_400;
     for(const match of plan.matches)matches.push({match,absoluteStart:dayStart+match.startsAtSecondOfDay,absoluteSettle:dayStart+match.settlesAtSecondOfDay,firstInVisit:firstByVisit.get(match.visitId)===match.matchId});
+    for(const prediction of plan.predictions)predictions.push({prediction,absolutePlaced:dayStart+prediction.placedAtSecondOfDay});
     openings=Object.freeze(Object.fromEntries(profiles.map((profile)=>[profile.id,openings[profile.id]!+(plan.sessions[profile.id]??[]).reduce((sum,session)=>sum+session.delta,0)])));
   }
   const lower=now-lookbackSeconds+1;
@@ -50,6 +52,7 @@ export function recentNpcPlayEventsAt(
     if(item.absoluteStart>now||item.absoluteSettle<lower)continue;
     for(const npcId of item.match.participantIds)events.push(...eventsForParticipant(item.match,npcId,item.absoluteStart,item.absoluteSettle,item.firstInVisit,lower,now));
   }
+  for(const item of predictions)if(item.absolutePlaced>=lower&&item.absolutePlaced<=now)events.push(predictionEvent(item.prediction,item.absolutePlaced));
   events.sort((a,b)=>b.utcSecond-a.utcSecond||compareText(a.matchId,b.matchId)||compareText(a.npcId,b.npcId)||compareText(a.eventId,b.eventId));
   return Object.freeze(events.slice(0,limit));
 }
@@ -71,5 +74,11 @@ function eventsForParticipant(match:NpcMatch,npcId:string,start:number,settle:nu
   return output;
 }
 function event(prefix:string,index:number,match:NpcMatch,npcId:string,utcSecond:number,code:NpcPlayEventCode):NpcPlayEvent{return Object.freeze({eventId:`${prefix}:${index}:${utcSecond}`,matchId:match.matchId,kind:"match-action",npcId,tableId:match.tableId,utcSecond,code,stake:match.stake});}
+function predictionEvent(prediction:NpcPredictionWager,utcSecond:number):NpcPlayEvent{return Object.freeze({
+  eventId:`${TAPE_VERSION}:${prediction.predictionId}:placed:${utcSecond}`,
+  matchId:prediction.matchId,kind:"match-action",npcId:prediction.bettorNpcId,tableId:"temerosa-old-maid",utcSecond,
+  code:"prediction-wager-placed",stake:prediction.stake,multiplier:prediction.multiplier,
+  predictionMarket:prediction.market,predictedNpcId:prediction.predictedNpcId,predictionRole:prediction.role,
+});}
 function randomInteger(min:number,max:number,rng:XorShift32):number{return min+Math.floor(rng.next()*(max-min+1));}
 function compareText(a:string,b:string):number{return a<b?-1:a>b?1:0;}

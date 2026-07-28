@@ -10,13 +10,13 @@ import type {
 } from "./contracts.ts";
 import { recentNpcActivitiesAt } from "./engine.ts";
 
-const ROUND_CONTRACT = "npc-live-rounds/0.4";
+const ROUND_CONTRACT = "npc-live-rounds/0.5";
 
 export type NpcMatchSettlementTone = "gain" | "loss" | "flat" | "mixed" | "reward";
 
 export function npcVisitRounds(interval: NpcPresenceInterval, _profile: NpcGamblingProfile): readonly NpcRoundSettlement[] {
   const absoluteDay = Math.floor(interval.startedAtUtcSecond/86_400);
-  return Object.freeze(interval.sessions.map((session)=>settlement(interval.npcId,absoluteDay*86_400+session.secondOfDay,session)));
+  return Object.freeze(interval.sessions.flatMap((session)=>settlements(interval.npcId,absoluteDay*86_400+session.secondOfDay,session)));
 }
 
 export function recentNpcRoundSettlementsAt(
@@ -27,7 +27,7 @@ export function recentNpcRoundSettlementsAt(
   const now = clock.utcSecond();
   if (!Number.isSafeInteger(now)) throw new Error("npc_rounds_invalid_clock");
   return Object.freeze(recentNpcActivitiesAt(profiles,clock,contract,Math.max(limit*8,256))
-    .map(({npcId,utcSecond,session})=>settlement(npcId,utcSecond,session))
+    .flatMap(({npcId,utcSecond,session})=>settlements(npcId,utcSecond,session))
     .filter((entry)=>entry.utcSecond>now-lookbackSeconds&&entry.utcSecond<=now)
     .sort((a,b)=>b.utcSecond-a.utcSecond||compareText(a.matchId,b.matchId)||compareText(a.npcId,b.npcId))
     .slice(0,limit));
@@ -49,10 +49,10 @@ export function groupNpcRoundSettlements(entries: readonly NpcRoundSettlement[])
 
 /** A match is not painted as a win merely because its highest-paid participant sorts first. */
 export function npcMatchSettlementTone(settlement: NpcMatchSettlement): NpcMatchSettlementTone {
-  if (settlement.tableId === "temerosa-old-maid") return "reward";
   const hasGain = settlement.entries.some((entry) => entry.delta > 0);
   const hasLoss = settlement.entries.some((entry) => entry.delta < 0);
   if (hasGain && hasLoss) return "mixed";
+  if (settlement.tableId === "temerosa-old-maid" && hasGain) return "reward";
   if (hasGain) return "gain";
   if (hasLoss) return "loss";
   return "flat";
@@ -66,13 +66,28 @@ export function npcLiveBalancesAt(
   return Object.freeze({ ...baseBalances });
 }
 
-function settlement(npcId:string,utcSecond:number,session:NpcSession):NpcRoundSettlement {
+function settlements(npcId:string,utcSecond:number,session:NpcSession):readonly NpcRoundSettlement[]{
+  if(session.rankReward&&session.prediction)return Object.freeze([
+    settlement(npcId,utcSecond,session,"rank"),
+    settlement(npcId,utcSecond,session,"prediction"),
+  ]);
+  return Object.freeze([settlement(npcId,utcSecond,session,session.prediction?"prediction":"combined")]);
+}
+function settlement(npcId:string,utcSecond:number,session:NpcSession,component:"rank"|"prediction"|"combined"):NpcRoundSettlement {
+  const rankOnly=component==="rank";
+  const predictionOnly=component==="prediction";
+  const prediction=predictionOnly?session.prediction:undefined;
+  const delta=rankOnly?session.rankReward!.amount:predictionOnly?prediction!.delta:session.delta;
   return Object.freeze({
-    roundId:`${ROUND_CONTRACT}:${session.matchId}:${npcId}`,
+    roundId:`${ROUND_CONTRACT}:${session.matchId}:${npcId}:${component}`,
     matchId:session.matchId,visitId:session.visitId,participantIds:session.participantIds,
-    npcId,tableId:session.tableId,utcSecond,stake:session.stake,
-    reservedAmount:session.reservedAmount,creditAmount:session.creditAmount,delta:session.delta,
-    resultKind:session.resultKind,termsVersion:session.termsVersion,
+    npcId,tableId:session.tableId,utcSecond,stake:predictionOnly?prediction!.stake:rankOnly?0:session.stake,
+    reservedAmount:predictionOnly?prediction!.reservedAmount:rankOnly?0:session.reservedAmount,
+    creditAmount:predictionOnly?prediction!.creditAmount:rankOnly?session.rankReward!.amount:session.creditAmount,delta,
+    resultKind:predictionOnly?(prediction!.won?"prediction-win":"prediction-loss"):rankOnly?`rank-${session.rankReward!.rank}`:session.resultKind,
+    termsVersion:session.termsVersion,
+    ...(rankOnly||component==="combined"&&session.rankReward?{rankReward:session.rankReward}:{}),
+    ...(prediction?{prediction}:{}),
   });
 }
 function compareText(a:string,b:string):number{return a<b?-1:a>b?1:0;}

@@ -17,7 +17,7 @@ const contract = TEMEROSA_NPC_LEDGER_CONTRACT;
 const profiles = TEMEROSA_NPC_GAMBLING_PROFILES;
 const openings = () => Object.fromEntries(profiles.map((profile) => [profile.id, profile.openingBalance]));
 
-describe("casino ledger 0.6 core", () => {
+describe("casino ledger 0.7 core", () => {
   it("repeats the same shared matches and exact closing for identical inputs", () => {
     const first = casinoDaySessions(profiles, 37, openings(), contract);
     expect(casinoDaySessions(profiles, 37, openings(), contract)).toEqual(first);
@@ -70,6 +70,32 @@ describe("casino ledger 0.6 core", () => {
     }
     expect(checked).toBeGreaterThan(100);
   });
+
+  it("lets old maid players self-bet and idle NPCs predict either winner or loser",()=>{
+    let balances=openings();let self=0,spectator=0,wins=0,losses=0;const markets=new Set<string>();
+    for(let day=0;day<120;day++){
+      const plan=casinoDayPlan(profiles,day,balances,contract);
+      for(const prediction of plan.predictions){
+        const match=plan.matches.find((entry)=>entry.matchId===prediction.matchId)!;
+        expect(match.tableId).toBe("temerosa-old-maid");
+        expect(prediction.delta).toBe(prediction.creditAmount-prediction.reservedAmount);
+        expect(prediction.delta).toBe(prediction.won?prediction.reservedAmount:-prediction.reservedAmount);
+        expect([10,50,200]).toContain(prediction.stake);
+        expect([2,3,4,5]).toContain(prediction.multiplier);
+        expect(prediction.reservedAmount).toBe(prediction.stake*prediction.multiplier);
+        const receipt=(plan.sessions[prediction.bettorNpcId]??[]).find((session)=>session.matchId===prediction.matchId&&session.prediction?.predictionId===prediction.predictionId);
+        expect(receipt?.prediction).toEqual(prediction);
+        if(prediction.role==="self"){
+          self++;expect(match.participantIds).toContain(prediction.bettorNpcId);expect(prediction.predictedNpcId).toBe(prediction.bettorNpcId);expect(prediction.market).toBe("first-place");
+        }else{
+          spectator++;expect(match.participantIds).not.toContain(prediction.bettorNpcId);markets.add(prediction.market);
+        }
+        if(prediction.won)wins++;else losses++;
+      }
+      balances=close(balances,plan.sessions);
+    }
+    expect(self).toBeGreaterThan(20);expect(spectator).toBeGreaterThan(10);expect([...markets].sort()).toEqual(["first-place","joker-holder"]);expect(wins).toBeGreaterThan(0);expect(losses).toBeGreaterThan(0);
+  },30_000);
 
   it("lets game skill beat weaker profiles over a large audit sample", () => {
     const strong=forcedProfile("katrinka","temerosa-match-pairs",.98);
@@ -124,7 +150,7 @@ describe("casino ledger 0.6 core", () => {
     expect(npcBalanceAt(profile,fixedClock(minute),contract)).toEqual(original);
   });
 
-  it("returns opening balances before the v0.6 epoch",()=>{
+  it("returns opening balances before the v0.7 epoch",()=>{
     const profile=profiles[0]!;
     expect(npcBalanceAt(profile,fixedClock(contract.epochUtcDay*1_440-1),contract)).toEqual({balance:profile.openingBalance,today:[],dayIndex:0});
   });
@@ -144,6 +170,11 @@ describe("casino ledger 0.6 core", () => {
   it("contains no ambient side effects in pure sources",()=>{
     const sources=["engine.ts","contracts.ts","presence.ts","rounds.ts","temerosa-profiles.ts"].map((file)=>readFileSync(new URL(`../src/${file}`,import.meta.url),"utf8")).join("\n");
     for(const token of ["Date"+".now(","Math"+".random(","local"+"Storage","session"+"Storage","fetch(","re"+"act"])expect(sources).not.toContain(token);
+  });
+
+  it("keeps prediction choice and match result in separate seed domains",()=>{
+    const source=readFileSync(new URL("../src/engine.ts",import.meta.url),"utf8");
+    expect(source).toContain(":self-prediction:");expect(source).toContain(":spectator-prediction:");expect(source).toContain(":result`");
   });
 });
 

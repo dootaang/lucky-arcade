@@ -27,7 +27,7 @@ describe("casino ledger checkpoint adapter", () => {
     for (const dayIndex of [1, 2, 3]) {
       writeCheckpoint(storage, { contract: contract.version, dayIndex, balances: completedDayBalances(contract.profiles, dayIndex, contract) }, contract);
     }
-    expect(storage.keys().sort()).toEqual(["npc-ledger/0.6:checkpoint:1", "npc-ledger/0.6:checkpoint:2", "npc-ledger/0.6:checkpoint:3"]);
+    expect(storage.keys().sort()).toEqual(["npc-ledger/0.7:checkpoint:1", "npc-ledger/0.7:checkpoint:2", "npc-ledger/0.7:checkpoint:3"]);
   });
 });
 

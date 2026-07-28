@@ -48,7 +48,7 @@ export default function CasinoLedgerPanel({
   const previousBalances = useRef(npcBalances);
   const [balanceMoves, setBalanceMoves] = useState<Readonly<Record<string, "rising" | "falling">>>({});
   const settlementGroups = useMemo(() => groupNpcRoundSettlements(settlements), [settlements]);
-  const allTape = useMemo(() => casinoTape(playEvents, settlementGroups, currentUtcSecond), [currentUtcSecond, playEvents, settlementGroups]);
+  const allTape = useMemo(() => casinoTape(playEvents, settlementGroups, currentUtcSecond, names), [currentUtcSecond, playEvents, settlementGroups]);
   const tape = allTape.slice(0, 8);
   const lastMinuteCount = allTape.filter((event) => currentUtcSecond - event.utcSecond < 60).length;
   const recentSettlements = settlements.slice(0, 8);
@@ -181,12 +181,15 @@ function LedgerPortrait({ name, src, crowned }: { name: string; src: string | un
 function TapeLine({ event, names, currentUtcSecond, newest = false }: { event: CasinoTapeEvent; names: ReadonlyMap<string,string>; currentUtcSecond: number; newest?: boolean }): React.ReactElement {
   const age = Math.max(0, currentUtcSecond - event.utcSecond);
   const entries = event.settlement?.entries;
-  const name = entries ? entries.map((entry) => names.get(entry.npcId) ?? entry.npcId).join(" · ") : names.get(event.npcId) ?? event.npcId;
+  const name = entries ? [...new Set(entries.map((entry) => names.get(entry.npcId) ?? entry.npcId))].join(" · ") : names.get(event.npcId) ?? event.npcId;
+  const actionLabel = event.predictedNpcId
+    ? `${names.get(event.predictedNpcId)??event.predictedNpcId} ${event.predictionMarket==="joker-holder"?"꼴찌":"우승"} 예측`
+    : event.label;
   const directionClass = event.tone === "gain" ? " is-rising" : event.tone === "loss" ? " is-falling" : event.tone ? " is-balanced" : "";
   return <span data-tape-key={event.id} className={`ledger-activity-line is-${event.kind}${event.tone ? ` is-tone-${event.tone}` : ""}${directionClass}${newest ? " is-newest" : ""}`}>
-    <b>{name}</b><small>{ageLabel(age)}</small><span><i>{tableName(event.tableId)}</i> · {event.label}</span><strong className="ca-num">{entries
-      ? entries.map((entry) => <i className={entry.delta > 0 ? "is-gain" : entry.delta < 0 ? "is-loss" : "is-flat"} key={entry.npcId}>{signedPoints(entry.delta)}</i>)
-      : event.stake === 0 ? "FREE" : `${event.stake} P`}</strong>
+    <b>{name}</b><small>{ageLabel(age)}</small><span><i>{tableName(event.tableId)}</i> · {actionLabel}</span><strong className="ca-num">{entries
+      ? entries.map((entry) => <i className={entry.delta > 0 ? "is-gain" : entry.delta < 0 ? "is-loss" : "is-flat"} key={entry.roundId}>{signedPoints(entry.delta)}</i>)
+      : event.stake === 0 ? "FREE" : `${event.stake} P${event.multiplier?` ×${event.multiplier}`:""}`}</strong>
   </span>;
 }
 
@@ -205,7 +208,7 @@ function SettlementLine({ settlement, names, currentUtcSecond }: { settlement: N
     aria-label={`${name}, ${tableName(settlement.tableId)}, ${ageLabel(age)}, ${directionLabel} ${Math.abs(delta)} 포인트`}
   >
     <div><b>{name}</b><small>{ageLabel(age)}</small></div>
-    <span>{tableName(settlement.tableId)} · {settlementLabel(settlement)}{leverage === null ? "" : ` · ${leverage}배`}</span>
+    <span>{tableName(settlement.tableId)} · {settlementLabel(settlement,names)}{leverage === null ? "" : ` · ${leverage}배`}</span>
     <strong><i aria-hidden="true">{symbol}</i> {directionLabel}</strong>
     <NumberTicker value={Math.abs(delta)} prefix={delta > 0 ? "+" : delta < 0 ? "−" : ""} suffix=" P" durationMs={650} className="ca-num ledger-settlement-amount" />
   </article>;
@@ -253,6 +256,7 @@ function LiveTableCard({ table, presences, portraits, names, npcBalances, curren
         >
           {portrait ? <img src={portrait} alt="" loading="lazy" /> : <i aria-hidden="true">{(names.get(presence.npcId) ?? presence.npcId).slice(0, 1)}</i>}
           <b>{names.get(presence.npcId) ?? presence.npcId}</b>
+          {presence.phase === "spectating" && <small>관전</small>}
         </span>;
       })}
       {displayed.length > 3 && <span className="live-player-more">+{displayed.length - 3}</span>}
@@ -278,8 +282,9 @@ function phasePriority(phase: NpcPresence["phase"]): number {
   if (phase === "settling") return 0;
   if (phase === "approaching") return 1;
   if (phase === "playing") return 2;
-  if (phase === "leaving") return 3;
-  return 4;
+  if (phase === "spectating") return 3;
+  if (phase === "leaving") return 4;
+  return 5;
 }
 
 function tableName(tableId: CasinoTableId): string {
@@ -303,19 +308,25 @@ interface CasinoTapeEvent {
   stake: number;
   tone?: NpcMatchSettlementTone;
   settlement?: NpcMatchSettlement;
+  predictedNpcId?: string;
+  predictionMarket?: "first-place" | "joker-holder";
+  multiplier?: number;
 }
 
-function casinoTape(playEvents: readonly NpcPlayEvent[], settlements: readonly NpcMatchSettlement[], currentUtcSecond: number): readonly CasinoTapeEvent[] {
+function casinoTape(playEvents: readonly NpcPlayEvent[], settlements: readonly NpcMatchSettlement[], currentUtcSecond: number, names: ReadonlyMap<string,string>): readonly CasinoTapeEvent[] {
   const play: CasinoTapeEvent[] = playEvents.map((event) => ({
     id: event.eventId, npcId: event.npcId, tableId: event.tableId, utcSecond: event.utcSecond,
     kind: "play", label: playEventLabel(event.code, event.stake), stake: event.stake,
+    ...(event.predictedNpcId?{predictedNpcId:event.predictedNpcId}:{}),
+    ...(event.predictionMarket?{predictionMarket:event.predictionMarket}:{}),
+    ...(event.multiplier?{multiplier:event.multiplier}:{}),
   }));
   const settlementEvents: CasinoTapeEvent[] = settlements.map((settlement) => {
     const primary=settlement.entries[0]!;
     return {
       id:settlement.matchId,
       npcId:primary.npcId,tableId:settlement.tableId,utcSecond:settlement.utcSecond,
-      kind:"settlement",label:`${settlementLabel(primary)}${primary.stake===0?"":` · ${primary.reservedAmount/primary.stake}배`}`,
+      kind:"settlement",label:`${settlementLabel(primary,names)}${primary.stake===0?"":` · ${primary.reservedAmount/primary.stake}배`}`,
       stake:primary.stake,tone:npcMatchSettlementTone(settlement),settlement,
     };
   });
@@ -331,6 +342,7 @@ function signedPoints(delta: number): string {
 function playEventLabel(code: NpcPlayEventCode, stake: number): string {
   if (code === "table-enter") return "테이블 입장";
   if (code === "wager-placed") return stake === 0 ? "무료 대국 시작" : "판돈 투입";
+  if (code === "prediction-wager-placed") return "예측 베팅 잠금";
   if (code === "old-maid-draw") return "카드 선택";
   if (code === "old-maid-discard") return "짝 버리기";
   if (code === "old-maid-reorder") return "손패 재배열";
@@ -349,14 +361,21 @@ function playEventLabel(code: NpcPlayEventCode, stake: number): string {
   return "표정 읽기";
 }
 
-function settlementLabel(settlement: NpcRoundSettlement): string {
+function settlementLabel(settlement: NpcRoundSettlement, names?: ReadonlyMap<string,string>): string {
   if (settlement.tableId === "temerosa-slot") {
     const lines = Number(settlement.resultKind.replace("lines-", ""));
     return lines > 0 ? `${lines}줄 적중` : "당첨 없음";
   }
   if (settlement.tableId === "indian-poker") return "칩 정산";
   if (settlement.tableId === "temerosa-match-pairs") return "대국 정산";
-  return "순위 보상";
+  if(settlement.prediction){
+    const target=names?.get(settlement.prediction.predictedNpcId)??settlement.prediction.predictedNpcId;
+    const market=settlement.prediction.market==="first-place"?"우승":"꼴찌";
+    const outcome=settlement.prediction.won?"적중":"실패";
+    if(settlement.rankReward)return `${settlement.rankReward.rank}위 보상 · 자기 우승 ${outcome}`;
+    return `${target} ${market} 예측 ${outcome}`;
+  }
+  return settlement.rankReward?`${settlement.rankReward.rank}위 보상`:"순위 보상";
 }
 
 function compareText(left: string, right: string): number {

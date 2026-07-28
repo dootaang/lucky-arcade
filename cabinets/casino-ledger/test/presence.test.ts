@@ -8,7 +8,7 @@ describe("casino floor presence",()=>{
 
   it("marks an active visit unavailable without exposing another result",()=>{
     const profile=profiles[0]!,opening=profile.openingBalance;const interval=npcPresenceIntervalsForDay(profile,0,opening,contract)[0]!;
-    const before=casinoPresenceAt(profiles,fixedClock(interval.settlesAtUtcSecond-10),contract).find((presence)=>presence.npcId===profile.id)!;expect(["playing","settling"]).toContain(before.phase);expect(npcAvailability([before])[profile.id]?.available).toBe(false);
+    const before=casinoPresenceAt(profiles,fixedClock(interval.settlesAtUtcSecond-10),contract).find((presence)=>presence.npcId===profile.id)!;expect(["playing","spectating","settling"]).toContain(before.phase);expect(npcAvailability([before])[profile.id]?.available).toBe(false);
   });
 
   it("keeps at least four NPCs available across a one-year audit",()=>{
@@ -20,6 +20,14 @@ describe("casino floor presence",()=>{
       balances=Object.fromEntries(profiles.map((profile)=>[profile.id,balances[profile.id]!+(plan.sessions[profile.id]??[]).reduce((sum,session)=>sum+session.delta,0)]));
     }
   },30_000);
+
+  it("marks a real spectator unavailable until the prediction settles",()=>{
+    const openings=Object.fromEntries(profiles.map((profile)=>[profile.id,profile.openingBalance]));
+    const plan=casinoDayPlan(profiles,0,openings,contract);const prediction=plan.predictions.find((entry)=>entry.role==="spectator");
+    expect(prediction).toBeDefined();const second=contract.epochUtcDay*86_400+prediction!.placedAtSecondOfDay+1;
+    const presence=casinoPresenceAt(profiles,fixedClock(second),contract).find((entry)=>entry.npcId===prediction!.bettorNpcId)!;
+    expect(presence.phase).toBe("spectating");expect(presence.role).toBe("spectating");expect(npcAvailability([presence])[presence.npcId]?.available).toBe(false);
+  });
 });
 
 function fixedClock(second:number):CasinoPresentationClock{return{utcSecond:()=>second,utcMinute:()=>Math.floor(second/60)};}

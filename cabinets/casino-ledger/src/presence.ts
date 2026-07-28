@@ -30,7 +30,7 @@ export function npcPresenceIntervalsForDay(
     contract,
   );
   const allSessions = plan.sessions[profile.id] ?? [];
-  return Object.freeze(plan.visits.filter((visit) => visit.participantIds.includes(profile.id)).map((visit) => {
+  const playing = plan.visits.filter((visit) => visit.participantIds.includes(profile.id)).map((visit) => {
     const sessions = allSessions.filter((session) => session.visitId === visit.visitId);
     const priorDelta = allSessions.filter((session) => session.secondOfDay < visit.startedAtSecondOfDay).reduce((sum,session)=>sum+session.delta,0);
     return Object.freeze({
@@ -43,8 +43,27 @@ export function npcPresenceIntervalsForDay(
       startedAtUtcSecond: absoluteDay*SECONDS_PER_DAY + visit.startedAtSecondOfDay,
       settlesAtUtcSecond: absoluteDay*SECONDS_PER_DAY + visit.endsAtSecondOfDay,
       availableAtUtcSecond: absoluteDay*SECONDS_PER_DAY + visit.endsAtSecondOfDay + SETTLE_SECONDS + LEAVE_SECONDS,
+      role: "playing" as const,
     });
-  }));
+  });
+  const spectating = plan.predictions.filter((prediction) => prediction.role === "spectator" && prediction.bettorNpcId === profile.id).map((prediction) => {
+    const startedAtSecondOfDay = Math.max(0,prediction.placedAtSecondOfDay-APPROACH_SECONDS);
+    const visit = Object.freeze({
+      visitId:`${prediction.predictionId}:presence`,tableId:"temerosa-old-maid" as const,
+      participantIds:Object.freeze([profile.id]),startedAtSecondOfDay,endsAtSecondOfDay:prediction.settlesAtSecondOfDay,
+    });
+    const sessions = allSessions.filter((session) => session.matchId === prediction.matchId && session.prediction?.predictionId === prediction.predictionId);
+    const priorDelta = allSessions.filter((session) => session.secondOfDay < startedAtSecondOfDay).reduce((sum,session)=>sum+session.delta,0);
+    return Object.freeze({
+      npcId:profile.id,tableId:"temerosa-old-maid" as const,visit,sessions:Object.freeze(sessions),
+      ...(sessions[0]?{session:sessions[0]}:{}),openingBalance:openingBalance+priorDelta,
+      startedAtUtcSecond:absoluteDay*SECONDS_PER_DAY+startedAtSecondOfDay,
+      settlesAtUtcSecond:absoluteDay*SECONDS_PER_DAY+prediction.settlesAtSecondOfDay,
+      availableAtUtcSecond:absoluteDay*SECONDS_PER_DAY+prediction.settlesAtSecondOfDay+SETTLE_SECONDS+LEAVE_SECONDS,
+      role:"spectating" as const,
+    });
+  });
+  return Object.freeze([...playing,...spectating].toSorted((left,right)=>left.startedAtUtcSecond-right.startedAtUtcSecond||compareText(left.visit.visitId,right.visit.visitId)));
 }
 
 export function casinoPresenceAt(
@@ -73,22 +92,27 @@ export function casinoPresenceAt(
       const next=intervals.find((interval)=>interval.startedAtUtcSecond>now);
       return Object.freeze({npcId:profile.id,phase:"idle" as const,...(next?{startedAtUtcSecond:next.startedAtUtcSecond}:{})});
     }
-    const currentSession = active.sessions.filter((session)=>absoluteDay*SECONDS_PER_DAY+session.secondOfDay<=now).at(-1)
-      ?? active.sessions.find((session)=>absoluteDay*SECONDS_PER_DAY+session.secondOfDay>now)
+    const intervalDayStart=Math.floor(active.startedAtUtcSecond/SECONDS_PER_DAY)*SECONDS_PER_DAY;
+    const currentSession = active.sessions.filter((session)=>intervalDayStart+session.secondOfDay<=now).at(-1)
+      ?? active.sessions.find((session)=>intervalDayStart+session.secondOfDay>now)
       ?? active.session;
-    const lastSettledAt = active.sessions.filter((session)=>absoluteDay*SECONDS_PER_DAY+session.secondOfDay<=now).at(-1)?.secondOfDay;
+    const lastSettledAt = active.sessions.filter((session)=>intervalDayStart+session.secondOfDay<=now).at(-1)?.secondOfDay;
     const phase = now < active.startedAtUtcSecond+APPROACH_SECONDS ? "approaching"
       : now >= active.settlesAtUtcSecond ? (now<active.settlesAtUtcSecond+SETTLE_SECONDS?"settling":"leaving")
-        : lastSettledAt !== undefined && now-(absoluteDay*SECONDS_PER_DAY+lastSettledAt)<SETTLE_SECONDS ? "settling" : "playing";
+        : lastSettledAt !== undefined && now-(intervalDayStart+lastSettledAt)<SETTLE_SECONDS ? "settling"
+          : active.role === "spectating" ? "spectating" : "playing";
     return Object.freeze({
       npcId:profile.id,phase,tableId:active.tableId,
       ...(currentSession?{session:currentSession,matchId:currentSession.matchId}:{}),
       visitId:active.visit.visitId,openingBalance:active.openingBalance,
       startedAtUtcSecond:active.startedAtUtcSecond,settlesAtUtcSecond:active.settlesAtUtcSecond,
       availableAtUtcSecond:active.availableAtUtcSecond,
+      role:active.role,
     });
   }));
 }
+
+function compareText(left:string,right:string):number{return left<right?-1:left>right?1:0;}
 
 export function npcAvailability(presences: readonly NpcPresence[]): Readonly<Record<string, NpcAvailability>> {
   return Object.freeze(Object.fromEntries(presences.map((presence) => [presence.npcId, Object.freeze({

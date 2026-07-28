@@ -60,7 +60,8 @@ export function useCasinoOpponentAvailability(scope: string): {
       if (heldIds.has(profile.id)) return [profile.id, Object.freeze({ available: true, label: "초대 수락" })];
       if (status.available) return [profile.id, Object.freeze({ available: true, label: "이용 가능" })];
       const remaining = status.availableAtUtcSecond === undefined ? "잠시 후" : remainingLabel(status.availableAtUtcSecond - now);
-      return [profile.id, Object.freeze({ available: false, label: `${tableLabel(status.tableId)} 중 · ${remaining}`, ...(status.availableAtUtcSecond === undefined ? {} : { availableAtUtcSecond: status.availableAtUtcSecond }) })];
+      const activity=status.phase==="spectating"?`${tableLabel(status.tableId)} 관전 중`:`${tableLabel(status.tableId)} 중`;
+      return [profile.id, Object.freeze({ available: false, label: `${activity} · ${remaining}`, ...(status.availableAtUtcSecond === undefined ? {} : { availableAtUtcSecond: status.availableAtUtcSecond }) })];
     })));
   }, [clock, held, now, revision]);
 

@@ -14,7 +14,10 @@ export type CasinoTableId =
 
 export type NpcStake = 0 | 10 | 50 | 200;
 
-export type NpcPresencePhase = "idle" | "approaching" | "playing" | "settling" | "leaving";
+export type NpcPresencePhase = "idle" | "approaching" | "playing" | "spectating" | "settling" | "leaving";
+
+export type NpcPredictionMarket = "first-place" | "joker-holder";
+export type NpcPredictionRole = "self" | "spectator";
 
 export interface NpcSessionRange {
   min: number;
@@ -79,7 +82,26 @@ export interface NpcMatch {
 export interface CasinoDayPlan {
   visits: readonly NpcVisit[];
   matches: readonly NpcMatch[];
+  predictions: readonly NpcPredictionWager[];
   sessions: Readonly<Record<string, readonly NpcSession[]>>;
+}
+
+export interface NpcPredictionWager {
+  predictionId: string;
+  matchId: string;
+  visitId: string;
+  bettorNpcId: string;
+  predictedNpcId: string;
+  market: NpcPredictionMarket;
+  role: NpcPredictionRole;
+  placedAtSecondOfDay: number;
+  settlesAtSecondOfDay: number;
+  stake: Exclude<NpcStake, 0>;
+  multiplier: 2 | 3 | 4 | 5;
+  reservedAmount: number;
+  creditAmount: number;
+  delta: number;
+  won: boolean;
 }
 
 export interface NpcSession {
@@ -95,10 +117,12 @@ export interface NpcSession {
   delta: number;
   resultKind: string;
   termsVersion: string;
+  rankReward?: Readonly<{ rank: number; amount: number }>;
+  prediction?: NpcPredictionWager;
 }
 
 export interface NpcLedgerContract {
-  version: "npc-ledger/0.6";
+  version: "npc-ledger/0.7";
   epochUtcDay: number;
   profiles: readonly NpcGamblingProfile[];
 }
@@ -131,6 +155,8 @@ export interface NpcRoundSettlement {
   delta: number;
   resultKind: string;
   termsVersion: string;
+  rankReward?: Readonly<{ rank: number; amount: number }>;
+  prediction?: NpcPredictionWager;
 }
 
 export interface NpcMatchSettlement {
@@ -145,6 +171,7 @@ export interface NpcMatchSettlement {
 export type NpcPlayEventCode =
   | "table-enter"
   | "wager-placed"
+  | "prediction-wager-placed"
   | "old-maid-draw"
   | "old-maid-discard"
   | "old-maid-reorder"
@@ -172,6 +199,10 @@ export interface NpcPlayEvent {
   utcSecond: number;
   code: NpcPlayEventCode;
   stake: NpcStake;
+  multiplier?: 2 | 3 | 4 | 5;
+  predictionMarket?: NpcPredictionMarket;
+  predictedNpcId?: string;
+  predictionRole?: NpcPredictionRole;
 }
 
 export interface NpcPresence {
@@ -185,6 +216,7 @@ export interface NpcPresence {
   startedAtUtcSecond?: number;
   settlesAtUtcSecond?: number;
   availableAtUtcSecond?: number;
+  role?: "playing" | "spectating";
 }
 
 export interface NpcPresenceInterval {
@@ -197,6 +229,7 @@ export interface NpcPresenceInterval {
   startedAtUtcSecond: number;
   settlesAtUtcSecond: number;
   availableAtUtcSecond: number;
+  role: "playing" | "spectating";
 }
 
 export interface NpcAvailability {

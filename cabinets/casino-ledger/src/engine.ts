@@ -8,6 +8,9 @@ import type {
   NpcGamblingProfile,
   NpcLedgerContract,
   NpcMatch,
+  NpcPredictionMarket,
+  NpcPredictionRole,
+  NpcPredictionWager,
   NpcSession,
   NpcStake,
   NpcVisit,
@@ -33,6 +36,20 @@ const MATCH_SECONDS = Object.freeze({
 
 interface VisitIntent { npcId: string; second: number; ordinal: number; tableId: CasinoTableId }
 interface MatchDraft { matchId: string; visitId: string; tableId: CasinoTableId; participantIds: readonly string[]; startsAtSecondOfDay: number; settlesAtSecondOfDay: number }
+interface PendingPrediction {
+  predictionId: string;
+  matchId: string;
+  visitId: string;
+  bettorNpcId: string;
+  predictedNpcId: string;
+  market: NpcPredictionMarket;
+  role: NpcPredictionRole;
+  placedAtSecondOfDay: number;
+  settlesAtSecondOfDay: number;
+  stake: Exclude<NpcStake,0>;
+  multiplier: WagerMultiplier;
+  reservedAmount: number;
+}
 const DAY_PLAN_CACHE = new Map<string,CasinoDayPlan>();
 
 /** The v0.5 source of truth: a visit contains independently resolved real matches. */
@@ -54,6 +71,8 @@ export function casinoDayPlan(
   const visitOpening = new Map<string,number>();
   const output: Record<string, NpcSession[]> = Object.fromEntries(profiles.map((profile) => [profile.id, []]));
   const matches: NpcMatch[] = [];
+  const predictions: NpcPredictionWager[] = [];
+  const spectatorBusyUntil = new Map<string,number>();
 
   for (const draft of drafts) {
     const participants = draft.participantIds.map((id) => byId.get(id)).filter((value): value is NpcGamblingProfile => Boolean(value));
@@ -61,7 +80,11 @@ export function casinoDayPlan(
     const rng = new XorShift32(`${contract.version}:${dayIndex}:${draft.matchId}:result`);
     for(const profile of participants){const key=`${draft.visitId}:${profile.id}`;if(!visitOpening.has(key))visitOpening.set(key,balances[profile.id]!);}
     if (draft.tableId === "temerosa-old-maid") {
-      settleFreeOldMaid(draft, participants, balances, output, rng);
+      const pendingPredictions = createOldMaidPredictions(
+        draft, participants, profiles, visits, balances, openingBalances,
+        spectatorBusyUntil, dayIndex, contract,
+      );
+      predictions.push(...settleFreeOldMaid(draft, participants, pendingPredictions, balances, output, rng));
       matches.push(matchFromDraft(draft, 0, 1));
       continue;
     }
@@ -85,6 +108,7 @@ export function casinoDayPlan(
   const plan=Object.freeze({
     visits: Object.freeze(finalVisits),
     matches: Object.freeze(matches),
+    predictions: Object.freeze(predictions),
     sessions: freezeSessions(output),
   });
   if(cacheKey!==undefined){DAY_PLAN_CACHE.set(cacheKey,plan);while(DAY_PLAN_CACHE.size>16)DAY_PLAN_CACHE.delete(DAY_PLAN_CACHE.keys().next().value!);}
@@ -228,10 +252,87 @@ function createMatchDrafts(visit: NpcVisit, dayIndex: number, contract: NpcLedge
   return Object.freeze(output);
 }
 
-function settleFreeOldMaid(plan: MatchDraft, profiles: readonly NpcGamblingProfile[], balances: Record<string,number>, output: Record<string,NpcSession[]>, rng: XorShift32): void {
+function createOldMaidPredictions(
+  plan: MatchDraft,
+  participants: readonly NpcGamblingProfile[],
+  allProfiles: readonly NpcGamblingProfile[],
+  visits: readonly NpcVisit[],
+  balances: Readonly<Record<string,number>>,
+  dayOpening: Readonly<Record<string,number>>,
+  spectatorBusyUntil: Map<string,number>,
+  dayIndex: number,
+  contract: NpcLedgerContract,
+): readonly PendingPrediction[] {
+  if (participants.length < 2) return Object.freeze([]);
+  const output: PendingPrediction[] = [];
+  for (const profile of participants) {
+    const rng = new XorShift32(`${contract.version}:${dayIndex}:${plan.matchId}:self-prediction:${profile.id}`);
+    const terms = chooseOptionalPredictionExposure(profile, balances[profile.id]!, dayOpening[profile.id]!, rng);
+    if (!terms) continue;
+    output.push(pendingPrediction(plan, profile.id, profile.id, "first-place", "self", terms.stake, terms.multiplier));
+  }
+
+  const audienceRng = new XorShift32(`${contract.version}:${dayIndex}:${plan.matchId}:spectator-market`);
+  const protectedStart = plan.startsAtSecondOfDay - 12;
+  const protectedEnd = plan.settlesAtSecondOfDay + 14;
+  const participantIds = new Set(participants.map((profile) => profile.id));
+  const eligible = allProfiles.filter((profile) => !participantIds.has(profile.id)
+    && (spectatorBusyUntil.get(profile.id) ?? Number.NEGATIVE_INFINITY) <= protectedStart
+    && !visits.some((visit) => visit.participantIds.includes(profile.id)
+      && intervalsOverlap(protectedStart, protectedEnd, visit.startedAtSecondOfDay - 12, visit.endsAtSecondOfDay + 14)))
+    .map((profile) => ({ profile, score: audienceRng.next() + profile.riskAppetite*.3 + profile.skills.oldMaid*.2 }))
+    .sort((left,right) => right.score-left.score || compareText(left.profile.id,right.profile.id));
+  const desiredSpectators = audienceRng.next() < .65 ? 0 : 1;
+  for (const {profile} of eligible) {
+    if (output.filter((prediction) => prediction.role === "spectator").length >= desiredSpectators) break;
+    const rng = new XorShift32(`${contract.version}:${dayIndex}:${plan.matchId}:spectator-prediction:${profile.id}`);
+    const terms = chooseOptionalPredictionExposure(profile, balances[profile.id]!, dayOpening[profile.id]!, rng);
+    if (!terms) continue;
+    const market: NpcPredictionMarket = rng.next() < .5 ? "first-place" : "joker-holder";
+    const predictedNpcId = choosePredictionTarget(participants, profile, market, rng);
+    output.push(pendingPrediction(plan, profile.id, predictedNpcId, market, "spectator", terms.stake, terms.multiplier));
+    spectatorBusyUntil.set(profile.id, protectedEnd);
+  }
+  return Object.freeze(output);
+}
+
+function settleFreeOldMaid(
+  plan: MatchDraft,
+  profiles: readonly NpcGamblingProfile[],
+  pendingPredictions: readonly PendingPrediction[],
+  balances: Record<string,number>,
+  output: Record<string,NpcSession[]>,
+  rng: XorShift32,
+): readonly NpcPredictionWager[] {
   const ranked = profiles.map((profile) => ({ profile, score: profile.skills.oldMaid + (rng.next()-.5)*.72 })).sort((a,b) => b.score-a.score || compareText(a.profile.id,b.profile.id));
   const rewards = ranked.length >= 4 ? [60,30,15,5] : ranked.length === 3 ? [60,30,15] : ranked.length === 2 ? [60,30] : [15];
-  ranked.forEach(({profile}, index) => addSession(profile.id, plan, 0, 0, rewards[index]!, `rank-${index+1}`, "old-maid-rank-reward/0.2", balances, output));
+  const winnerId = ranked[0]!.profile.id;
+  const jokerHolderId = ranked.at(-1)!.profile.id;
+  const finalized: NpcPredictionWager[] = [];
+  ranked.forEach(({profile}, index) => {
+    const pending = pendingPredictions.find((prediction) => prediction.role === "self" && prediction.bettorNpcId === profile.id);
+    const prediction = pending ? finalizePrediction(pending, pending.predictedNpcId === winnerId, balances[profile.id]!) : undefined;
+    if (prediction) finalized.push(prediction);
+    const reward = rewards[index]!;
+    addSession(
+      profile.id, plan, prediction?.stake ?? 0, prediction?.reservedAmount ?? 0,
+      reward + (prediction?.creditAmount ?? 0),
+      `rank-${index+1}${prediction ? prediction.won ? ":prediction-win" : ":prediction-loss" : ""}`,
+      "old-maid-rank-and-prediction/0.3", balances, output,
+      { rankReward: Object.freeze({rank:index+1,amount:reward}), ...(prediction?{prediction}:{}) },
+    );
+  });
+  for (const pending of pendingPredictions.filter((prediction) => prediction.role === "spectator")) {
+    const won = pending.market === "first-place" ? pending.predictedNpcId === winnerId : pending.predictedNpcId === jokerHolderId;
+    const prediction = finalizePrediction(pending, won, balances[pending.bettorNpcId]!);
+    finalized.push(prediction);
+    addSession(
+      pending.bettorNpcId, plan, prediction.stake, prediction.reservedAmount, prediction.creditAmount,
+      prediction.won ? "prediction-win" : "prediction-loss",
+      "old-maid-spectator-prediction/0.1", balances, output, {prediction},
+    );
+  }
+  return Object.freeze(finalized);
 }
 
 function settlePvp(plan: MatchDraft, tableId: "temerosa-match-pairs"|"indian-poker", profiles: readonly NpcGamblingProfile[], balances: Record<string,number>, output: Record<string,NpcSession[]>, stake: Exclude<NpcStake,0>, multiplier: WagerMultiplier, rng: XorShift32): void {
@@ -259,7 +360,18 @@ function settleSlot(plan: MatchDraft, profile: NpcGamblingProfile, balances: Rec
   addSession(profile.id, plan, stake, exposure, credit, `lines-${lines}`, "temerosa-slot-paytable/0.3", balances, output);
 }
 
-function addSession(npcId: string, plan: MatchDraft, stake: NpcStake, reservedAmount: number, creditAmount: number, resultKind: string, termsVersion: string, balances: Record<string,number>, output: Record<string,NpcSession[]>): void {
+function addSession(
+  npcId: string,
+  plan: MatchDraft,
+  stake: NpcStake,
+  reservedAmount: number,
+  creditAmount: number,
+  resultKind: string,
+  termsVersion: string,
+  balances: Record<string,number>,
+  output: Record<string,NpcSession[]>,
+  extras: Pick<NpcSession,"rankReward"|"prediction"> = {},
+): void {
   const affordableReserved = Math.min(reservedAmount, balances[npcId]!);
   const adjustedCredit = reservedAmount === affordableReserved ? creditAmount : affordableReserved;
   const delta = adjustedCredit-affordableReserved;
@@ -269,7 +381,72 @@ function addSession(npcId: string, plan: MatchDraft, stake: NpcStake, reservedAm
     secondOfDay: plan.settlesAtSecondOfDay, minuteOfDay: Math.floor(plan.settlesAtSecondOfDay/60),
     tableId: plan.tableId, stake, reservedAmount: affordableReserved, creditAmount: adjustedCredit,
     delta, resultKind, termsVersion,
+    ...extras,
   }));
+}
+
+function chooseOptionalPredictionExposure(
+  profile: NpcGamblingProfile,
+  balance: number,
+  opening: number,
+  rng: XorShift32,
+): {stake:Exclude<NpcStake,0>;multiplier:WagerMultiplier}|undefined {
+  if (!policyAllowsPaid(profile,balance,opening,rng)) return undefined;
+  const pnl = balance-opening;
+  const pressure = pnl<0 ? profile.lossChasing : pnl>0 ? profile.winPressing : .5;
+  const participation = Math.min(.30,.04+profile.riskAppetite*.18+pressure*.06);
+  if (rng.next() >= participation) return undefined;
+  const maximum=Math.floor(Math.min(balance,balance*profile.maxExposureRatio));
+  const stakes=PAID_STAKES.filter((stake)=>stake*2<=maximum);
+  if(stakes.length===0)return undefined;
+  const stakeWeights=stakes.map((stake)=>stake===10?20:stake===50?1+profile.riskAppetite*2:.05+profile.riskAppetite*.5);
+  const stake=stakes[drawWeightedIndex(stakeWeights,rng)]!;
+  const multipliers=WAGER_MULTIPLIERS.filter((value)=>stake*value<=maximum);
+  const multiplierWeights=multipliers.map((value)=>value===2?12:value===3?2+profile.riskAppetite:value===4?.5+profile.riskAppetite*.5:.1+profile.riskAppetite*.25);
+  const multiplier=multipliers[drawWeightedIndex(multiplierWeights,rng)]!;
+  return {stake,multiplier};
+}
+
+function pendingPrediction(
+  plan:MatchDraft,
+  bettorNpcId:string,
+  predictedNpcId:string,
+  market:NpcPredictionMarket,
+  role:NpcPredictionRole,
+  stake:Exclude<NpcStake,0>,
+  multiplier:WagerMultiplier,
+):PendingPrediction {
+  return Object.freeze({
+    predictionId:`npc-prediction/0.1:${plan.matchId}:${bettorNpcId}`,
+    matchId:plan.matchId,visitId:plan.visitId,bettorNpcId,predictedNpcId,market,role,
+    placedAtSecondOfDay:plan.startsAtSecondOfDay,
+    settlesAtSecondOfDay:plan.settlesAtSecondOfDay,
+    stake,multiplier,reservedAmount:stake*multiplier,
+  });
+}
+
+function finalizePrediction(pending:PendingPrediction,won:boolean,balance:number):NpcPredictionWager {
+  const reservedAmount=Math.min(pending.reservedAmount,balance);
+  const creditAmount=won?reservedAmount*2:0;
+  return Object.freeze({...pending,reservedAmount,creditAmount,delta:creditAmount-reservedAmount,won});
+}
+
+function choosePredictionTarget(
+  participants:readonly NpcGamblingProfile[],
+  bettor:NpcGamblingProfile,
+  market:NpcPredictionMarket,
+  rng:XorShift32,
+):string {
+  const precision=.3+bettor.skills.oldMaid*.8;
+  const scored=participants.map((profile)=>({
+    id:profile.id,
+    score:(market==="first-place"?profile.skills.oldMaid:1-profile.skills.oldMaid)*precision+rng.next()*(1-precision*.55),
+  })).sort((left,right)=>right.score-left.score||compareText(left.id,right.id));
+  return scored[0]!.id;
+}
+
+function intervalsOverlap(leftStart:number,leftEnd:number,rightStart:number,rightEnd:number):boolean {
+  return leftStart<rightEnd&&rightStart<leftEnd;
 }
 
 function chooseSharedExposure(profiles: readonly NpcGamblingProfile[], balances: Readonly<Record<string,number>>, dayOpening: Readonly<Record<string,number>>, rng: XorShift32): {stake: Exclude<NpcStake,0>; multiplier: WagerMultiplier; exposure:number} {
@@ -342,7 +519,7 @@ function normalizedUtcSecond(clock:CasinoClock):number {
 }
 function compareText(a:string,b:string):number{return a<b?-1:a>b?1:0;}
 function validateDay(profiles:readonly NpcGamblingProfile[],dayIndex:number,openings:Readonly<Record<string,number>>,contract:NpcLedgerContract):void {
-  if(contract.version!=="npc-ledger/0.6"||!Number.isSafeInteger(contract.epochUtcDay)||!Number.isSafeInteger(dayIndex)||dayIndex<0)throw new Error("npc_ledger_invalid_contract");
+  if(contract.version!=="npc-ledger/0.7"||!Number.isSafeInteger(contract.epochUtcDay)||!Number.isSafeInteger(dayIndex)||dayIndex<0)throw new Error("npc_ledger_invalid_contract");
   if(profiles.length===0||new Set(profiles.map((p)=>p.id)).size!==profiles.length||profiles.some((profile)=>!contract.profiles.some((entry)=>entry.id===profile.id)))throw new Error("npc_ledger_invalid_profiles");
   for(const profile of profiles){
     if(!profile.id||!profile.name||!Number.isSafeInteger(profile.openingBalance)||profile.openingBalance<=0)throw new Error("npc_ledger_invalid_profile");
