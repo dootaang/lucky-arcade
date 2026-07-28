@@ -1,5 +1,5 @@
 import { XorShift32 } from "@lucky-arcade/engine";
-import { completedDayBalances, npcDaySessions } from "./engine.ts";
+import { casinoDaySessions, completedDayBalances, npcDaySessions } from "./engine.ts";
 import type {
   CasinoPresentationClock,
   NpcAvailability,
@@ -28,11 +28,12 @@ export function npcPresenceIntervalsForDay(
   openingBalance: number,
   contract: NpcLedgerContract,
   previousAvailableAtUtcSecond = Number.NEGATIVE_INFINITY,
+  suppliedSessions?: readonly import("./contracts.ts").NpcSession[],
 ): readonly NpcPresenceInterval[] {
   const absoluteDay = contract.epochUtcDay + dayIndex;
   let previousAvailableAt = previousAvailableAtUtcSecond;
   let currentBalance = openingBalance;
-  const intervals = npcDaySessions(profile, dayIndex, openingBalance, contract).map((session) => {
+  const intervals = (suppliedSessions ?? npcDaySessions(profile, dayIndex, openingBalance, contract)).map((session) => {
     const sessionOpeningBalance = currentBalance;
     currentBalance += session.delta;
     const settlesAtUtcSecond = absoluteDay * SECONDS_PER_DAY + session.minuteOfDay * 60;
@@ -67,27 +68,34 @@ export function casinoPresenceAt(
   const absoluteDay = Math.floor(now / SECONDS_PER_DAY);
   const dayIndex = absoluteDay - contract.epochUtcDay;
   if (dayIndex < 0) return Object.freeze(profiles.map((profile) => Object.freeze({ npcId: profile.id, phase: "idle" as const })));
+  const firstDay = Math.max(0, dayIndex - 1);
+  const lastDay = dayIndex + 1;
+  let dayOpenings = firstDay === 0
+    ? Object.freeze(Object.fromEntries(profiles.map((profile) => [profile.id, profile.openingBalance])))
+    : completedDayBalances(profiles, firstDay - 1, contract);
+  const dayData = new Map<number, { openings: Readonly<Record<string, number>>; sessions: Readonly<Record<string, readonly import("./contracts.ts").NpcSession[]>> }>();
+  for (let currentDay = firstDay; currentDay <= lastDay; currentDay += 1) {
+    const sessions = casinoDaySessions(profiles, currentDay, dayOpenings, contract);
+    dayData.set(currentDay, { openings: dayOpenings, sessions });
+    dayOpenings = Object.freeze(Object.fromEntries(profiles.map((profile) => [profile.id, dayOpenings[profile.id]! + (sessions[profile.id] ?? []).reduce((sum, session) => sum + session.delta, 0)])));
+  }
   const output = profiles.map((profile) => {
-    const firstDay = Math.max(0, dayIndex - 1);
-    const lastDay = dayIndex + 1;
-    let opening = firstDay === 0
-      ? profile.target
-      : completedDayBalances([profile], firstDay - 1, contract)[profile.id]!;
     let previousAvailableAt = Number.NEGATIVE_INFINITY;
     if (firstDay > 0) {
       const priorDay = firstDay - 1;
-      const priorOpening = priorDay === 0
-        ? profile.target
-        : completedDayBalances([profile], priorDay - 1, contract)[profile.id]!;
-      previousAvailableAt = npcPresenceIntervalsForDay(profile, priorDay, priorOpening, contract).at(-1)?.availableAtUtcSecond
+      const priorOpenings = priorDay === 0
+        ? Object.freeze(Object.fromEntries(profiles.map((entry) => [entry.id, entry.openingBalance])))
+        : completedDayBalances(profiles, priorDay - 1, contract);
+      const priorSessions = casinoDaySessions(profiles, priorDay, priorOpenings, contract);
+      previousAvailableAt = npcPresenceIntervalsForDay(profile, priorDay, priorOpenings[profile.id]!, contract, Number.NEGATIVE_INFINITY, priorSessions[profile.id]).at(-1)?.availableAtUtcSecond
         ?? previousAvailableAt;
     }
     const intervals: NpcPresenceInterval[] = [];
     for (let currentDay = firstDay; currentDay <= lastDay; currentDay += 1) {
-      const dayIntervals = npcPresenceIntervalsForDay(profile, currentDay, opening, contract, previousAvailableAt);
+      const data = dayData.get(currentDay)!;
+      const dayIntervals = npcPresenceIntervalsForDay(profile, currentDay, data.openings[profile.id]!, contract, previousAvailableAt, data.sessions[profile.id]);
       intervals.push(...dayIntervals);
       previousAvailableAt = dayIntervals.at(-1)?.availableAtUtcSecond ?? previousAvailableAt;
-      opening += npcDaySessions(profile, currentDay, opening, contract).reduce((sum, session) => sum + session.delta, 0);
     }
     const active = intervals.find((interval) => now >= interval.startedAtUtcSecond && now < interval.availableAtUtcSecond);
     if (!active) {

@@ -1,15 +1,15 @@
 import {
   completedDayBalances,
-  npcDaySessions,
+  casinoDaySessions,
   type CasinoClock,
   type NpcLedgerContract,
 } from "@lucky-arcade/casino-ledger";
 
 const MINUTES_PER_DAY = 1_440;
-const PREFIX = "npc-ledger/0.3:checkpoint:";
+const PREFIX = "npc-ledger/0.4:checkpoint:";
 
 export interface NpcLedgerCheckpoint {
-  contract: "npc-ledger/0.3";
+  contract: "npc-ledger/0.4";
   dayIndex: number;
   balances: Readonly<Record<string, number>>;
 }
@@ -18,6 +18,26 @@ export interface CachedNpcBalances {
   dayIndex: number;
   balances: Readonly<Record<string, number>>;
   checkpointDayIndex: number;
+}
+
+export function npcRollingProfitsAtWithCheckpoint(
+  clock: CasinoClock,
+  contract: NpcLedgerContract,
+  currentBalances: Readonly<Record<string, number>>,
+  days = 7,
+  storage: StorageLike | undefined = browserStorage(),
+): Readonly<Record<string, number>> {
+  if (!Number.isSafeInteger(days) || days < 1) throw new Error("npc_ledger_invalid_period");
+  const absoluteDay = Math.floor(clock.utcMinute() / MINUTES_PER_DAY);
+  const dayIndex = absoluteDay - contract.epochUtcDay;
+  if (dayIndex < 0) return Object.freeze(Object.fromEntries(contract.profiles.map((profile) => [profile.id, 0])));
+  const beforePeriodDay = dayIndex - days;
+  const checkpoint = storage && beforePeriodDay >= 0 ? readLatestCheckpoint(storage, beforePeriodDay, contract) : undefined;
+  const periodOpening = beforePeriodDay >= 0
+    ? completedDayBalances(contract.profiles, beforePeriodDay, contract, checkpoint?.balances, checkpoint?.dayIndex ?? -1)
+    : openings(contract);
+  if (storage && beforePeriodDay >= 0 && checkpoint?.dayIndex !== beforePeriodDay) writeCheckpoint(storage, { contract: contract.version, dayIndex: beforePeriodDay, balances: periodOpening }, contract);
+  return Object.freeze(Object.fromEntries(contract.profiles.map((profile) => [profile.id, currentBalances[profile.id]! - periodOpening[profile.id]!])));
 }
 
 interface StorageLike {
@@ -38,7 +58,7 @@ export function npcBalancesAtWithCheckpoint(
   const absoluteDay = Math.floor(utcMinute / MINUTES_PER_DAY);
   const rawDayIndex = absoluteDay - contract.epochUtcDay;
   if (rawDayIndex < 0) {
-    return { dayIndex: 0, balances: targets(contract), checkpointDayIndex: -1 };
+    return { dayIndex: 0, balances: openings(contract), checkpointDayIndex: -1 };
   }
 
   const dayIndex = rawDayIndex;
@@ -46,19 +66,19 @@ export function npcBalancesAtWithCheckpoint(
   const checkpoint = storage ? readLatestCheckpoint(storage, completedDayIndex, contract) : undefined;
   const completed = completedDayIndex >= 0
     ? completedDayBalances(contract.profiles, completedDayIndex, contract, checkpoint?.balances, checkpoint?.dayIndex ?? -1)
-    : targets(contract);
+    : openings(contract);
   if (storage && completedDayIndex >= 0 && checkpoint?.dayIndex !== completedDayIndex) {
     writeCheckpoint(storage, { contract: contract.version, dayIndex: completedDayIndex, balances: completed }, contract);
   }
 
   const minuteOfDay = utcMinute - absoluteDay * MINUTES_PER_DAY;
+  const daySessions = casinoDaySessions(contract.profiles, dayIndex, completed, contract);
   const balances: Record<string, number> = {};
   for (const profile of contract.profiles) {
-    const opening = completed[profile.id]!;
-    const elapsed = npcDaySessions(profile, dayIndex, opening, contract)
+    const elapsed = (daySessions[profile.id] ?? [])
       .filter((session) => session.minuteOfDay <= minuteOfDay)
       .reduce((sum, session) => sum + session.delta, 0);
-    balances[profile.id] = opening + elapsed;
+    balances[profile.id] = completed[profile.id]! + elapsed;
   }
   return { dayIndex, balances: Object.freeze(balances), checkpointDayIndex: completedDayIndex };
 }
@@ -89,7 +109,7 @@ export function writeCheckpoint(storage: StorageLike, checkpoint: NpcLedgerCheck
       .map((key) => ({ key, day: Number(key.slice(PREFIX.length)) }))
       .filter((entry) => Number.isSafeInteger(entry.day))
       .sort((left, right) => right.day - left.day);
-    for (const stale of keys.slice(2)) storage.removeItem(stale.key);
+    for (const stale of keys.slice(9)) storage.removeItem(stale.key);
   } catch {
     // A checkpoint is optional. Quota and privacy failures must not block the floor.
   }
@@ -105,12 +125,12 @@ function isCheckpoint(value: unknown, keyDay: number, maximumDayIndex: number, c
   if (ids.length !== expected.length || ids.some((id, index) => id !== expected[index])) return false;
   return contract.profiles.every((profile) => {
     const balance = candidate.balances![profile.id];
-    return Number.isSafeInteger(balance) && balance! >= 0 && balance! <= profile.target * 20;
+    return Number.isSafeInteger(balance) && balance! >= 0 && balance! <= 1_000_000_000;
   });
 }
 
-function targets(contract: NpcLedgerContract): Readonly<Record<string, number>> {
-  return Object.freeze(Object.fromEntries(contract.profiles.map((profile) => [profile.id, profile.target])));
+function openings(contract: NpcLedgerContract): Readonly<Record<string, number>> {
+  return Object.freeze(Object.fromEntries(contract.profiles.map((profile) => [profile.id, profile.openingBalance])));
 }
 
 function ledgerKeys(storage: StorageLike): string[] {
@@ -118,7 +138,7 @@ function ledgerKeys(storage: StorageLike): string[] {
   try {
     for (let index = 0; index < storage.length; index += 1) {
       const key = storage.key(index);
-      if (key?.startsWith(PREFIX)) keys.push(key);
+      if (key?.startsWith("npc-ledger/") && key.includes(":checkpoint:")) keys.push(key);
     }
   } catch { /* optional cache unavailable */ }
   return keys;

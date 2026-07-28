@@ -6,7 +6,7 @@ import type {
   NpcTableWeight,
 } from "./contracts.ts";
 
-export const TEMEROSA_LEDGER_EPOCH_UTC_DAY = 20_661;
+export const TEMEROSA_LEDGER_EPOCH_UTC_DAY = 20_662;
 
 const SHIFTS: readonly (readonly NpcActiveWindow[])[] = [
   Object.freeze([{ startMinute: 0, endMinute: 480, weight: 1 }]),
@@ -39,8 +39,22 @@ const LOW: NpcSessionRange = Object.freeze({ min: 3, max: 6 });
 const MEDIUM: NpcSessionRange = Object.freeze({ min: 5, max: 9 });
 const HIGH: NpcSessionRange = Object.freeze({ min: 8, max: 14 });
 
+interface FrozenTraits { attention: number; bluff: number; oldMaid: number }
+
+/** Transcribed gameplay traits. Kept local so another cabinet cannot rewrite history. */
+const TRAITS: Readonly<Record<string, Readonly<FrozenTraits>>> = Object.freeze({
+  pale: t(.82,.72,.76), kano: t(.84,.38,.78), nemo: t(.58,.42,.46), bacikal: t(.84,.76,.72),
+  alger: t(.84,.55,.72), nieun: t(.84,.35,.74), lyla: t(.84,.68,.78), riel: t(.58,.75,.64), wares: t(.84,.38,.76),
+  adesha: t(.84,.62,.70), anna: t(.58,.78,.48), apollyon: t(.84,.40,.72), bche: t(.58,.70,.48), camille: t(.84,.82,.68),
+  cicero: t(.84,.60,.76), cradle: t(.58,.74,.60), deokbae: t(.84,.55,.72), diamo: t(.34,.58,.42), echo: t(.84,.72,.70),
+  esther: t(.84,.72,.76), hiro: t(.84,.52,.72), katrinka: t(.84,.60,.80), kreva: t(.84,.50,.74), levillotte: t(.58,.84,.54),
+  lilim: t(.34,.66,.40), machina: t(.84,.68,.72), morsisa: t(.34,.42,.34), nostalgia: t(.84,.56,.76), phaeo: t(.84,.52,.72),
+  raven: t(.84,.76,.78), temute: t(.84,.64,.70), traver: t(.84,.40,.72), ttaengchil: t(.34,.72,.38), "tumit-tu": t(.58,.68,.48), yul: t(.34,.60,.40),
+});
+
 /**
- * Frozen npc-ledger/0.3 data. Values were transcribed from the approved
+ * Frozen npc-ledger/0.4 data. The former `target` values are retained only as
+ * story-authored opening bankrolls. No outcome code may steer back to them.
  * interpretation; this module intentionally does not import another cabinet.
  */
 export const TEMEROSA_NPC_GAMBLING_PROFILES: readonly NpcGamblingProfile[] = Object.freeze([
@@ -82,7 +96,7 @@ export const TEMEROSA_NPC_GAMBLING_PROFILES: readonly NpcGamblingProfile[] = Obj
 ]);
 
 export const TEMEROSA_NPC_LEDGER_CONTRACT: NpcLedgerContract = Object.freeze({
-  version: "npc-ledger/0.3",
+  version: "npc-ledger/0.4",
   epochUtcDay: TEMEROSA_LEDGER_EPOCH_UTC_DAY,
   profiles: TEMEROSA_NPC_GAMBLING_PROFILES,
 });
@@ -90,20 +104,39 @@ export const TEMEROSA_NPC_LEDGER_CONTRACT: NpcLedgerContract = Object.freeze({
 function profile(
   id: string,
   name: string,
-  target: number,
-  volatility: number,
-  reversion: number,
+  openingBalance: number,
+  formerVolatility: number,
+  formerReversion: number,
   sessionsPerDay: NpcSessionRange,
   operation: 0 | 1 | 2,
 ): NpcGamblingProfile {
+  const riskAppetite = formerVolatility >= 0.27 ? 0.86 : formerVolatility >= 0.16 ? 0.56 : 0.28;
+  const discipline = formerReversion >= 0.16 ? 0.86 : formerReversion >= 0.10 ? 0.62 : 0.34;
+  const traits = TRAITS[id] ?? Object.freeze({ attention: 0.5, bluff: 0.5, oldMaid: 0.5 });
   return Object.freeze({
     id,
     name,
-    target,
-    volatility,
-    reversion,
+    openingBalance,
+    target: openingBalance,
+    riskAppetite,
+    discipline,
+    lossChasing: Number((1 - discipline * 0.78).toFixed(2)),
+    winPressing: Number((0.18 + riskAppetite * 0.68).toFixed(2)),
+    stopLossRatio: Number((0.22 + discipline * 0.28).toFixed(2)),
+    takeProfitRatio: Number((0.28 + discipline * 0.42).toFixed(2)),
+    maxExposureRatio: Number((0.12 + riskAppetite * 0.48).toFixed(2)),
+    skills: Object.freeze({
+      oldMaid: traits.oldMaid,
+      matchPairsMemory: traits.attention,
+      pokerRead: traits.attention,
+      pokerBluff: traits.bluff,
+    }),
     sessionsPerDay,
     tables: TABLE_SETS[operation]!,
     activeHours: SHIFTS[operation]!,
   });
+}
+
+function t(attention: number, bluff: number, oldMaid: number): Readonly<FrozenTraits> {
+  return Object.freeze({ attention, bluff, oldMaid });
 }

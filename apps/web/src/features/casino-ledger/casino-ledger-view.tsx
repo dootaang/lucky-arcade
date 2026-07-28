@@ -9,7 +9,7 @@ import {
 import CasinoLedgerPanel, { type CasinoLiveTable } from "@lucky-arcade/casino-ledger/react";
 import { useEffect, useMemo, useState } from "react";
 import { casinoClockFromSample, deviceCasinoClockSample, type CasinoClockSample } from "../../lib/casino-clock.ts";
-import { npcBalancesAtWithCheckpoint } from "../../lib/casino-ledger-cache.ts";
+import { npcBalancesAtWithCheckpoint, npcRollingProfitsAtWithCheckpoint } from "../../lib/casino-ledger-cache.ts";
 import { loadTemerosaCasinoManifest, temerosaContentUrl, type TemerosaManifest } from "../../lib/temerosa-content.ts";
 
 const LEGACY_PORTRAITS: Readonly<Record<string, string>> = Object.freeze({
@@ -52,12 +52,14 @@ export default function CasinoLedgerView({ userBalance, tables, onPlay }: { user
   try {
     const currentUtcSecond = clock.utcSecond();
     const snapshot = npcBalancesAtWithCheckpoint(clock, TEMEROSA_NPC_LEDGER_CONTRACT);
+    const sevenDayProfits = npcRollingProfitsAtWithCheckpoint(clock, TEMEROSA_NPC_LEDGER_CONTRACT, snapshot.balances, 7);
     const presences = casinoPresenceAt(TEMEROSA_NPC_GAMBLING_PROFILES, clock, TEMEROSA_NPC_LEDGER_CONTRACT);
     const settlements = recentNpcRoundSettlementsAt(TEMEROSA_NPC_GAMBLING_PROFILES, clock, TEMEROSA_NPC_LEDGER_CONTRACT, 64);
     const liveBalances = npcLiveBalancesAt(snapshot.balances, TEMEROSA_NPC_GAMBLING_PROFILES, presences, clock);
     const playEvents = recentNpcPlayEventsAt(presences, clock, 512);
     return <CasinoLedgerPanel
       npcBalances={liveBalances}
+      npcSevenDayProfits={sevenDayProfits}
       userBalance={userBalance}
       settlements={settlements}
       playEvents={playEvents}

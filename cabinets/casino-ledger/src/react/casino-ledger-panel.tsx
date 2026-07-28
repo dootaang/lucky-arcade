@@ -8,6 +8,7 @@ import "./casino-ledger-panel.css";
 
 export interface CasinoLedgerPanelProps {
   npcBalances: Readonly<Record<string, number>>;
+  npcSevenDayProfits: Readonly<Record<string, number>>;
   userBalance: number;
   settlements: readonly NpcRoundSettlement[];
   playEvents: readonly NpcPlayEvent[];
@@ -29,6 +30,7 @@ export interface CasinoLiveTable {
 
 export default function CasinoLedgerPanel({
   npcBalances,
+  npcSevenDayProfits,
   userBalance,
   settlements,
   playEvents,
@@ -39,7 +41,8 @@ export default function CasinoLedgerPanel({
   tables,
   onPlay,
 }: CasinoLedgerPanelProps): React.ReactElement {
-  const leaderboard = casinoLeaderboard(TEMEROSA_NPC_GAMBLING_PROFILES, npcBalances, userBalance);
+  const [leaderboardMode, setLeaderboardMode] = useState<"profit" | "balance">("profit");
+  const leaderboard = casinoLeaderboard(TEMEROSA_NPC_GAMBLING_PROFILES, npcBalances, userBalance, leaderboardMode === "profit" ? npcSevenDayProfits : undefined);
   const names = new Map(TEMEROSA_NPC_GAMBLING_PROFILES.map((profile) => [profile.id, profile.name]));
   const previousBalances = useRef(npcBalances);
   const [balanceMoves, setBalanceMoves] = useState<Readonly<Record<string, "rising" | "falling">>>({});
@@ -51,7 +54,7 @@ export default function CasinoLedgerPanel({
   const inviteCount = presences.filter((presence) => presence.phase === "idle").length;
   const seatedCount = presences.length - inviteCount;
   /** Highest shown balance is the full bar. No absolute ceiling is invented. */
-  const topBalance = Math.max(1, ...leaderboard.map((entry) => entry.balance));
+  const topBalance = Math.max(1, ...leaderboard.map((entry) => Math.abs(leaderboardMode === "profit" && entry.kind === "npc" ? entry.periodProfit ?? 0 : entry.balance)));
   /** One backlit portrait per screen, picked by name so every client agrees. */
   const backlitNpcId = presences.filter((presence) => presence.phase === "settling")
     .map((presence) => presence.npcId).sort(compareText)[0];
@@ -111,22 +114,23 @@ export default function CasinoLedgerPanel({
     <span className="ca-label">테이블 착석 {seatedCount}명</span>
   </div>
   <section className="casino-ledger-panel" aria-label="카지노 활동 원장">
-    <div className="casino-ledger-board ca-brackets">
+    <div className="casino-ledger-board">
+      <span className="ca-brackets" aria-hidden="true" />
       <table>
-        <caption className="ca-serif">명예의 전당</caption>
-        <thead><tr><th scope="col">순위</th><th scope="col">이름</th><th scope="col">잔고</th></tr></thead>
+        <caption className="ca-serif">명예의 전당 <span className="ledger-board-switch"><button aria-pressed={leaderboardMode === "profit"} onClick={() => setLeaderboardMode("profit")}>7일 손익</button><button aria-pressed={leaderboardMode === "balance"} onClick={() => setLeaderboardMode("balance")}>잔고</button></span></caption>
+        <thead><tr><th scope="col">순위</th><th scope="col">이름</th><th scope="col">{leaderboardMode === "profit" ? "7일 손익" : "잔고"}</th></tr></thead>
         <tbody ref={boardRef}>{leaderboard.map((entry) => <tr
           key={`${entry.kind}:${entry.id}`}
           {...(entry.kind === "npc" ? { "data-npc": entry.id } : {})}
           className={`${entry.kind === "user" ? "is-user" : ""}${entry.kind === "npc" && balanceMoves[entry.id] ? ` is-${balanceMoves[entry.id]}` : ""}`}
-          style={{ "--ledger-depth": `${(entry.balance / topBalance * 100).toFixed(2)}%` } as React.CSSProperties}
+          style={{ "--ledger-depth": `${(Math.abs(leaderboardMode === "profit" && entry.kind === "npc" ? entry.periodProfit ?? 0 : entry.balance) / topBalance * 100).toFixed(2)}%` } as React.CSSProperties}
         >
           <td className="ca-num">{entry.rank}</td>
           <th scope="row"><div className="ledger-person">
             {entry.kind === "npc" && entry.rank <= 3 && <LedgerPortrait name={entry.name} src={portraits[entry.id]} crowned={entry.rank === 1} />}
             {entry.name}
           </div></th>
-          <td className="ca-num"><NumberTicker value={entry.balance} suffix=" P" durationMs={650} /></td>
+          <td className="ca-num">{leaderboardMode === "profit" && entry.kind === "npc" ? <NumberTicker value={entry.periodProfit ?? 0} prefix={(entry.periodProfit ?? 0) > 0 ? "+" : ""} suffix=" P" durationMs={650} /> : <NumberTicker value={entry.balance} suffix=" P" durationMs={650} />}</td>
         </tr>)}</tbody>
       </table>
     </div>

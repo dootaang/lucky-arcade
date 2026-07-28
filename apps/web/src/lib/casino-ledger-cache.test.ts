@@ -21,13 +21,13 @@ describe("casino ledger checkpoint adapter", () => {
     expect(storage.length).toBe(0);
   });
 
-  it("keeps only the latest two valid checkpoints", () => {
+  it("keeps the rolling-window checkpoints needed for seven-day profit", () => {
     const contract = TEMEROSA_NPC_LEDGER_CONTRACT;
     const storage = new MemoryStorage();
     for (const dayIndex of [1, 2, 3]) {
       writeCheckpoint(storage, { contract: contract.version, dayIndex, balances: completedDayBalances(contract.profiles, dayIndex, contract) }, contract);
     }
-    expect(storage.keys().sort()).toEqual(["npc-ledger/0.3:checkpoint:2", "npc-ledger/0.3:checkpoint:3"]);
+    expect(storage.keys().sort()).toEqual(["npc-ledger/0.4:checkpoint:1", "npc-ledger/0.4:checkpoint:2", "npc-ledger/0.4:checkpoint:3"]);
   });
 });
 

@@ -35,15 +35,31 @@ export interface NpcTableWeight {
 export interface NpcGamblingProfile {
   id: string;
   name: string;
+  /** Story-authored bankroll at the v0.4 epoch. It is not a target. */
+  openingBalance: number;
+  /** @deprecated v0.4 compatibility alias. Never use as an outcome target. */
   target: number;
-  volatility: number;
-  reversion: number;
+  riskAppetite: number;
+  discipline: number;
+  lossChasing: number;
+  winPressing: number;
+  stopLossRatio: number;
+  takeProfitRatio: number;
+  maxExposureRatio: number;
+  skills: Readonly<{
+    oldMaid: number;
+    matchPairsMemory: number;
+    pokerRead: number;
+    pokerBluff: number;
+  }>;
   sessionsPerDay: NpcSessionRange;
   tables: readonly NpcTableWeight[];
   activeHours: readonly NpcActiveWindow[];
 }
 
 export interface NpcSession {
+  matchId: string;
+  participantIds: readonly string[];
   minuteOfDay: number;
   tableId: CasinoTableId;
   stake: NpcStake;
@@ -55,7 +71,7 @@ export interface NpcSession {
 }
 
 export interface NpcLedgerContract {
-  version: "npc-ledger/0.3";
+  version: "npc-ledger/0.4";
   epochUtcDay: number;
   profiles: readonly NpcGamblingProfile[];
 }
