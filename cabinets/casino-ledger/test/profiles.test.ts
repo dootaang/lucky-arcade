@@ -6,7 +6,7 @@ describe("frozen Temerosa ledger profiles", () => {
     const ids = TEMEROSA_NPC_GAMBLING_PROFILES.map((profile) => profile.id);
     expect(ids).toHaveLength(35);
     expect(new Set(ids).size).toBe(35);
-    expect(TEMEROSA_NPC_LEDGER_CONTRACT.version).toBe("npc-ledger/0.5");
+    expect(TEMEROSA_NPC_LEDGER_CONTRACT.version).toBe("npc-ledger/0.6");
     expect(TEMEROSA_NPC_LEDGER_CONTRACT.epochUtcDay).toBe(20_662);
     expect([...ids].sort()).toEqual([
       "adesha", "alger", "anna", "apollyon", "bacikal", "bche", "camille", "cicero", "cradle", "deokbae",

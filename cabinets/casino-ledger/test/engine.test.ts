@@ -17,7 +17,7 @@ const contract = TEMEROSA_NPC_LEDGER_CONTRACT;
 const profiles = TEMEROSA_NPC_GAMBLING_PROFILES;
 const openings = () => Object.fromEntries(profiles.map((profile) => [profile.id, profile.openingBalance]));
 
-describe("casino ledger 0.5 core", () => {
+describe("casino ledger 0.6 core", () => {
   it("repeats the same shared matches and exact closing for identical inputs", () => {
     const first = casinoDaySessions(profiles, 37, openings(), contract);
     expect(casinoDaySessions(profiles, 37, openings(), contract)).toEqual(first);
@@ -94,6 +94,18 @@ describe("casino ledger 0.5 core", () => {
     }
   },120_000);
 
+  it("keeps the production economy liquid without runaway inflation", () => {
+    const initial = Object.values(openings()).reduce((sum, balance) => sum + balance, 0);
+    let balances = openings();
+    for (let day = 0; day < 365; day += 1) balances = close(balances, casinoDaySessions(profiles, day, balances, contract));
+    const values = Object.values(balances).toSorted((left, right) => left - right);
+    const total = values.reduce((sum, balance) => sum + balance, 0);
+    expect(total).toBeGreaterThan(initial * .5);
+    expect(total).toBeLessThan(initial * 3);
+    expect(values[Math.floor(values.length / 2)]).toBeGreaterThanOrEqual(10);
+    expect(values.at(-1)! / total).toBeLessThan(.6);
+  },30_000);
+
   it("recovers a zero balance through free old maid before any paid table", () => {
     const zero={...openings(),katrinka:0};
     const sessions=casinoDaySessions(profiles,8,zero,contract).katrinka??[];
@@ -112,7 +124,7 @@ describe("casino ledger 0.5 core", () => {
     expect(npcBalanceAt(profile,fixedClock(minute),contract)).toEqual(original);
   });
 
-  it("returns opening balances before the v0.5 epoch",()=>{
+  it("returns opening balances before the v0.6 epoch",()=>{
     const profile=profiles[0]!;
     expect(npcBalanceAt(profile,fixedClock(contract.epochUtcDay*1_440-1),contract)).toEqual({balance:profile.openingBalance,today:[],dayIndex:0});
   });

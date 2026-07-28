@@ -53,7 +53,7 @@ const TRAITS: Readonly<Record<string, Readonly<FrozenTraits>>> = Object.freeze({
 });
 
 /**
- * Frozen npc-ledger/0.5 data. The former `target` values are retained only as
+ * Frozen npc-ledger/0.6 data. The former `target` values are retained only as
  * story-authored opening bankrolls. No outcome code may steer back to them.
  * interpretation; this module intentionally does not import another cabinet.
  */
@@ -96,7 +96,7 @@ export const TEMEROSA_NPC_GAMBLING_PROFILES: readonly NpcGamblingProfile[] = Obj
 ]);
 
 export const TEMEROSA_NPC_LEDGER_CONTRACT: NpcLedgerContract = Object.freeze({
-  version: "npc-ledger/0.5",
+  version: "npc-ledger/0.6",
   epochUtcDay: TEMEROSA_LEDGER_EPOCH_UTC_DAY,
   profiles: TEMEROSA_NPC_GAMBLING_PROFILES,
 });

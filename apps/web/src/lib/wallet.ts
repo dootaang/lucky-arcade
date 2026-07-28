@@ -4,7 +4,7 @@ import { grantCompletionPoints, readWallet } from "./database.ts";
 
 export const INITIAL_POINT_BALANCE = 0;
 export const COLLECTION_OPEN_COST = 12;
-export const OLD_MAID_RANK_REWARDS = Object.freeze({ 1: 10, 2: 5, 3: 3, 4: 1 } as const);
+export const OLD_MAID_RANK_REWARDS = Object.freeze({ 1: 60, 2: 30, 3: 15, 4: 5 } as const);
 
 export interface PointAwardResult { wallet: PointWalletSnapshot; amount: number; rank: number; }
 

@@ -676,9 +676,9 @@ test("plays and restores a complete Temerosa old maid table", async ({ page }, t
   expect(checkedSpeech).toBe(true);
   expect(checkedOfferReaction).toBe(true);
   const award = page.locator(".old-maid-award");
-  await expect(award).toHaveText(/^\+(10|5|3|1) P · [1-4]등 순위 보상$/);
+  await expect(award).toHaveText(/^\+(60|30|15|5) P · [1-4]등 순위 보상$/);
   const awardMatch = /\+(\d+) P · (\d)등/.exec(await award.innerText());
-  expect(Number(awardMatch?.[1])).toBe(({ 1: 10, 2: 5, 3: 3, 4: 1 } as Record<number, number>)[Number(awardMatch?.[2])]);
+  expect(Number(awardMatch?.[1])).toBe(({ 1: 60, 2: 30, 3: 15, 4: 5 } as Record<number, number>)[Number(awardMatch?.[2])]);
   await expect(page.getByText("자동 저장됨")).toBeVisible();
   await page.goto("/");
   await expect(page.getByRole("region", { name: "이어하기" })).toContainText("대국 완료");
@@ -714,7 +714,7 @@ test("keeps direct play free and offers an optional self prediction", async ({ p
   const start = page.getByRole("button", { name: "시작", exact: true });
   if (await start.isDisabled()) await page.getByRole("button", { name: "무작위 선택", exact: true }).click();
   await expect(start).toBeEnabled();
-  await expect(page.getByText("순위 보상 · 1등 10 P · 2등 5 P · 3등 3 P · 패배 1 P")).toBeVisible();
+  await expect(page.getByText("순위 보상 · 1등 60 P · 2등 30 P · 3등 15 P · 4등 5 P")).toBeVisible();
   await page.getByRole("button", { name: "선택 베팅 열기" }).click();
   await expect(page.getByRole("button", { name: "나", exact: true })).toHaveClass(/selected/);
   await page.getByRole("button", { name: "베팅하고 시작" }).click();

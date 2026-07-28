@@ -12,6 +12,8 @@ import { recentNpcActivitiesAt } from "./engine.ts";
 
 const ROUND_CONTRACT = "npc-live-rounds/0.4";
 
+export type NpcMatchSettlementTone = "gain" | "loss" | "flat" | "mixed" | "reward";
+
 export function npcVisitRounds(interval: NpcPresenceInterval, _profile: NpcGamblingProfile): readonly NpcRoundSettlement[] {
   const absoluteDay = Math.floor(interval.startedAtUtcSecond/86_400);
   return Object.freeze(interval.sessions.map((session)=>settlement(interval.npcId,absoluteDay*86_400+session.secondOfDay,session)));
@@ -43,6 +45,17 @@ export function groupNpcRoundSettlements(entries: readonly NpcRoundSettlement[])
     participantIds:values[0]!.participantIds,
     entries:Object.freeze(values.toSorted((a,b)=>b.delta-a.delta||compareText(a.npcId,b.npcId))),
   })).toSorted((a,b)=>b.utcSecond-a.utcSecond||compareText(a.matchId,b.matchId)));
+}
+
+/** A match is not painted as a win merely because its highest-paid participant sorts first. */
+export function npcMatchSettlementTone(settlement: NpcMatchSettlement): NpcMatchSettlementTone {
+  if (settlement.tableId === "temerosa-old-maid") return "reward";
+  const hasGain = settlement.entries.some((entry) => entry.delta > 0);
+  const hasLoss = settlement.entries.some((entry) => entry.delta < 0);
+  if (hasGain && hasLoss) return "mixed";
+  if (hasGain) return "gain";
+  if (hasLoss) return "loss";
+  return "flat";
 }
 
 export function npcLiveBalancesAt(

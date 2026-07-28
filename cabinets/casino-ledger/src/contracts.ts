@@ -35,7 +35,7 @@ export interface NpcTableWeight {
 export interface NpcGamblingProfile {
   id: string;
   name: string;
-  /** Story-authored bankroll at the v0.4 epoch. It is not a target. */
+  /** Story-authored bankroll at the current contract epoch. It is not a target. */
   openingBalance: number;
   /** @deprecated v0.4 compatibility alias. Never use as an outcome target. */
   target: number;
@@ -98,7 +98,7 @@ export interface NpcSession {
 }
 
 export interface NpcLedgerContract {
-  version: "npc-ledger/0.5";
+  version: "npc-ledger/0.6";
   epochUtcDay: number;
   profiles: readonly NpcGamblingProfile[];
 }

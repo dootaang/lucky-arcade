@@ -230,8 +230,8 @@ function createMatchDrafts(visit: NpcVisit, dayIndex: number, contract: NpcLedge
 
 function settleFreeOldMaid(plan: MatchDraft, profiles: readonly NpcGamblingProfile[], balances: Record<string,number>, output: Record<string,NpcSession[]>, rng: XorShift32): void {
   const ranked = profiles.map((profile) => ({ profile, score: profile.skills.oldMaid + (rng.next()-.5)*.72 })).sort((a,b) => b.score-a.score || compareText(a.profile.id,b.profile.id));
-  const rewards = ranked.length >= 4 ? [10,5,3,1] : ranked.length === 3 ? [10,5,3] : ranked.length === 2 ? [10,5] : [5];
-  ranked.forEach(({profile}, index) => addSession(profile.id, plan, 0, 0, rewards[index]!, `rank-${index+1}`, "old-maid-rank-reward/0.1", balances, output));
+  const rewards = ranked.length >= 4 ? [60,30,15,5] : ranked.length === 3 ? [60,30,15] : ranked.length === 2 ? [60,30] : [15];
+  ranked.forEach(({profile}, index) => addSession(profile.id, plan, 0, 0, rewards[index]!, `rank-${index+1}`, "old-maid-rank-reward/0.2", balances, output));
 }
 
 function settlePvp(plan: MatchDraft, tableId: "temerosa-match-pairs"|"indian-poker", profiles: readonly NpcGamblingProfile[], balances: Record<string,number>, output: Record<string,NpcSession[]>, stake: Exclude<NpcStake,0>, multiplier: WagerMultiplier, rng: XorShift32): void {
@@ -342,7 +342,7 @@ function normalizedUtcSecond(clock:CasinoClock):number {
 }
 function compareText(a:string,b:string):number{return a<b?-1:a>b?1:0;}
 function validateDay(profiles:readonly NpcGamblingProfile[],dayIndex:number,openings:Readonly<Record<string,number>>,contract:NpcLedgerContract):void {
-  if(contract.version!=="npc-ledger/0.5"||!Number.isSafeInteger(contract.epochUtcDay)||!Number.isSafeInteger(dayIndex)||dayIndex<0)throw new Error("npc_ledger_invalid_contract");
+  if(contract.version!=="npc-ledger/0.6"||!Number.isSafeInteger(contract.epochUtcDay)||!Number.isSafeInteger(dayIndex)||dayIndex<0)throw new Error("npc_ledger_invalid_contract");
   if(profiles.length===0||new Set(profiles.map((p)=>p.id)).size!==profiles.length||profiles.some((profile)=>!contract.profiles.some((entry)=>entry.id===profile.id)))throw new Error("npc_ledger_invalid_profiles");
   for(const profile of profiles){
     if(!profile.id||!profile.name||!Number.isSafeInteger(profile.openingBalance)||profile.openingBalance<=0)throw new Error("npc_ledger_invalid_profile");

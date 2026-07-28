@@ -97,7 +97,7 @@ if (!checkedArrival) {
 
 ### 함께 확인한 것
 
-- `arcade.spec.ts:500` `toHaveText(/^\+(10|5|3|1) P · [1-4]등 순위 보상$/)` — 카운트업이 숫자를
+- `arcade.spec.ts:500` `toHaveText(/^\+(60|30|15|5) P · [1-4]등 순위 보상$/)` — 카운트업이 숫자를
   `<span>`으로 감싸도 `textContent`가 유지되어 통과했다.
 - 컨페티는 `prefers-reduced-motion`에서 뜨지 않으며 감축 모션 E2E에 영향을 주지 않았다.
 - 새 Vite 서버로 전체 E2E를 실행해 추가된 package export가 정상 해석되는 것을 확인했다.
