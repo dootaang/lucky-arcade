@@ -127,7 +127,12 @@ export default function MatchPairsView({ onExit }: { onExit(): void }) {
       if (next.mode === "play") {
         if (!next.wagerId) throw new Error("match_pairs_wager_missing");
         const receipt = (await listWagers(SESSION)).find((candidate) => candidate.wagerId === next.wagerId); if (!receipt) throw new Error("match_pairs_wager_receipt_missing");
-        setBalance((await settleWager({ wagerId: next.wagerId, settlementSequence: next.sequence, resultKey: matchPairsResultHash(next), creditAmount: leveragedCredit(next, receipt) })).wallet.balance;
+        setBalance((await settleWager({
+          wagerId: next.wagerId,
+          settlementSequence: next.sequence,
+          resultKey: matchPairsResultHash(next),
+          creditAmount: leveragedCredit(next, receipt),
+        })).wallet.balance);
         await recordMatch(next, opponents, null);
       } else {
         const prediction = (await listPredictions()).find((candidate) => candidate.outcomeKey === predictionOutcomeKey(next) && candidate.status === "reserved");

@@ -61,7 +61,7 @@ function speechEvents(previous: MatchPairsState, next: MatchPairsState): Array<{
   if (remaining === 1 && isCpuActor(next, next.currentTurn)) return [{ actor: next.currentTurn, event: "last-pair" }];
   const previousLeader = leadingActor(previous), nextLeader = leadingActor(next);
   if (nextLeader && nextLeader !== previousLeader) {
-    const follower = nextLeader === "player" ? "npc" : "player";
+    const follower: MatchPairsActor = nextLeader === "player" ? "npc" : "player";
     return [
       ...(isCpuActor(next, nextLeader) ? [{ actor: nextLeader, event: "ahead" as const }] : []),
       ...(isCpuActor(next, follower) ? [{ actor: follower, event: "behind" as const }] : []),

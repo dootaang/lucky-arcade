@@ -1,7 +1,11 @@
 # 테메로세 짝맞추기 NPC 대사집 — 제미나이 검수 워크시트
 
-> 상태: **문안 검수 대기** (2026-07-28). 코어의 12개 사건과 30인 캐릭터 해석은 확정했다.
-> `검수 문안`은 제미나이 프로가 자연스러운 한국어로 작성·교정한 뒤 오너가 확정한다.
+> 상태: **제미나이 문안 반영 · 오너 확정 대기** (2026-07-28). 30인 × 12사건 = 360문안이 모두 채워졌고
+> `node scripts/check-dialogue.mjs docs/TEMEROSA-MATCH-PAIRS-DIALOGUE.md` 기계 검수를 ERROR 0으로 통과했다.
+> 10인은 2박자 과다·말버릇 반복·조어 문제로 1회 재작업했다. 오너 확정 전까지 런타임 배선은 하지 않는다.
+> 코어의 12개 사건과 30인 캐릭터 해석은 확정했다.
+>
+> 반환본 원본은 `reports/mp-assembled.local.md`에 있다. 문안 수정은 이 문서에서 하고, 확정 뒤 생성기를 돌린다.
 >
 > 화법 정본: [TEMEROSA-SPEECH-CONTRACT.md](./TEMEROSA-SPEECH-CONTRACT.md)
 > 인물 해석: [TEMEROSA-CASINO-NPC-ROSTER.md](./TEMEROSA-CASINO-NPC-ROSTER.md)
@@ -46,18 +50,18 @@
 
 | event | 검수 문안 |
 |---|---|
-| table-open | TODO_GEMINI |
-| self-match | TODO_GEMINI |
-| self-miss | TODO_GEMINI |
-| opponent-match | TODO_GEMINI |
-| opponent-miss | TODO_GEMINI |
-| streak | TODO_GEMINI |
-| ahead | TODO_GEMINI |
-| behind | TODO_GEMINI |
-| last-pair | TODO_GEMINI |
-| victory | TODO_GEMINI |
-| defeat | TODO_GEMINI |
-| draw | TODO_GEMINI |
+| table-open | 작전 구역 진입.<br>식별 대기. |
+| self-match | 동일 궤적 탐지.<br>일치 확인. |
+| self-miss | 불일치 결함. 재탐색 대기. |
+| opponent-match | 상대측 득점 감지. 현황 확인. |
+| opponent-miss | 상대측 오작동.<br>빈틈 확인. |
+| streak | 연속 연산 성공.<br>전과 확인. |
+| ahead | 점수 우위 점유. 수색 대기. |
+| behind | 수세 전환. 반응 속도 확인. |
+| last-pair | 잔여 표적 1쌍. 신호 대기. |
+| victory | 구역 통제권 확보.<br>작전 성공 종료. |
+| defeat | 손실 누적.<br>작전 실패 종료. |
+| draw | 동일 수치 도출. 대국 동률 종료. |
 
 ### 알제 (`alger`)
 
@@ -65,18 +69,18 @@
 
 | event | 검수 문안 |
 |---|---|
-| table-open | TODO_GEMINI |
-| self-match | TODO_GEMINI |
-| self-miss | TODO_GEMINI |
-| opponent-match | TODO_GEMINI |
-| opponent-miss | TODO_GEMINI |
-| streak | TODO_GEMINI |
-| ahead | TODO_GEMINI |
-| behind | TODO_GEMINI |
-| last-pair | TODO_GEMINI |
-| victory | TODO_GEMINI |
-| defeat | TODO_GEMINI |
-| draw | TODO_GEMINI |
+| table-open | 대국 개시 접수 완료.<br>…아휴, 이거 언제 다 정리하냐. |
+| self-match | 동일 카드 분류 완료.<br>…헤헤, 방금 건 깔끔했다. |
+| self-miss | 짝 불일치에 따른 기각 처리. …아니 그림이 왜 이래. |
+| opponent-match | 상대측 득점 처리 완료. …쳇, 얌전히 넘어가주지. |
+| opponent-miss | 상대측 선택 실책 확인, 특이사항 없음. |
+| streak | 연속 이행 신속 집행 완료.<br>…나 혹시 천재 아니야? |
+| ahead | 점수 우위 확보 완료. …결재 도장 찍듯 가자고. |
+| behind | 누적 점수 열세 변동 처리. …우씨, 담당자 바꾸고 싶다. |
+| last-pair | 최종 남아있는 1쌍 대조 처리. |
+| victory | 최종 짝 집계 우승 종결 처리.<br>…봤지? 내 잔머리 아니 내 능력! |
+| defeat | 점수 미달로 인한 패배 처리.<br>…아 카드 배치가 불공정했던 탓임. |
+| draw | 동점 집계로 인한 종결 처리.<br>…야근 수당도 안 나오는데 헛수고했네. |
 
 ### 안나 나자레아 (`anna`)
 
@@ -84,18 +88,18 @@
 
 | event | 검수 문안 |
 |---|---|
-| table-open | TODO_GEMINI |
-| self-match | TODO_GEMINI |
-| self-miss | TODO_GEMINI |
-| opponent-match | TODO_GEMINI |
-| opponent-miss | TODO_GEMINI |
-| streak | TODO_GEMINI |
-| ahead | TODO_GEMINI |
-| behind | TODO_GEMINI |
-| last-pair | TODO_GEMINI |
-| victory | TODO_GEMINI |
-| defeat | TODO_GEMINI |
-| draw | TODO_GEMINI |
+| table-open | 다들 제자리에 서! …아니, 대국 시작이니까 그냥 편하게 앉아 줘. |
+| self-match | 내가 말했잖아. 제대로 훑어보면 짝은 확실히 찾을 수 있다고. |
+| self-miss | 잘못 찍었잖아. 손끝에 가시라도 돋았나… 다음엔 더 집중할게. |
+| opponent-match | 방금 조준 좋았어. 펜타곤 대원 삼고 싶을 만큼 날카로운 선택이야. |
+| opponent-miss | 틀렸다고 훔쳐보는 거 아니야! 도움이 될까 해서 판을 본 거잖아. |
+| streak | 연속으로 맞췄어! …아니, 잘했다고 칭찬 한마디쯤은 남겨 줘. |
+| ahead | 내가 앞서간다고 눈치 보지 마. 난 규칙대로 집계하는 것뿐이야. |
+| behind | 밀리기 시작했다고 날 동정하진 마! …아니, 화낸 거 아니야. |
+| last-pair | 남은 카드는 단 한 짝이야. 포기하지 말고 끝까지 겨뤄 줘. |
+| victory | 승리는 내가 가져갈게. 다들 무서워 말고 이 성과를 인정해 줘. |
+| defeat | 패배를 인정할게. …아니, 노려보는 거 아니야! 그냥 억울해서 그래. |
+| draw | 동점이네. 비겼다고 슬퍼하지 마. 충분히 상대를 존중한 대국이잖아. |
 
 ### 아폴리온 아이테 (`apollyon`)
 
@@ -103,18 +107,18 @@
 
 | event | 검수 문안 |
 |---|---|
-| table-open | TODO_GEMINI |
-| self-match | TODO_GEMINI |
-| self-miss | TODO_GEMINI |
-| opponent-match | TODO_GEMINI |
-| opponent-miss | TODO_GEMINI |
-| streak | TODO_GEMINI |
-| ahead | TODO_GEMINI |
-| behind | TODO_GEMINI |
-| last-pair | TODO_GEMINI |
-| victory | TODO_GEMINI |
-| defeat | TODO_GEMINI |
-| draw | TODO_GEMINI |
+| table-open | 엎어 놓은 뼈 조각이나 다름없군. …시작해라. |
+| self-match | 짝이 들어맞는다. …의미는 없겠으나. |
+| self-miss | 빗나갔군. …다시 덮어둘 뿐이다. |
+| opponent-match | 그걸 찾아냈나. …손재주가 좋군. |
+| opponent-miss | 잘못 짚었군. …그리 조급해할 것 없다. |
+| streak | 연거푸 겹쳐지는군. …흩어지는 것도 한순간이다. |
+| ahead | 마디가 하나 더 쌓였다. …결과는 변하지 않겠지. |
+| behind | 판이 기울어지는군. …흔들릴 것도 없다. |
+| last-pair | 마지막 마디가 남았군. …어느 쪽이든 상관없다. |
+| victory | 판이 멈췄다. …이것으로 충분히 정적이군. |
+| defeat | 내가 졌나. …그저 묵념하듯 서 있을 뿐이다. |
+| draw | 똑같이 갈라졌군. …헛된 쟁탈이었다. |
 
 ### 브체 (`bche`)
 
@@ -122,18 +126,18 @@
 
 | event | 검수 문안 |
 |---|---|
-| table-open | TODO_GEMINI |
-| self-match | TODO_GEMINI |
-| self-miss | TODO_GEMINI |
-| opponent-match | TODO_GEMINI |
-| opponent-miss | TODO_GEMINI |
-| streak | TODO_GEMINI |
-| ahead | TODO_GEMINI |
-| behind | TODO_GEMINI |
-| last-pair | TODO_GEMINI |
-| victory | TODO_GEMINI |
-| defeat | TODO_GEMINI |
-| draw | TODO_GEMINI |
+| table-open | 판때기 세팅 끝났네. …[퀘스트 시작: 짝맞추기]. |
+| self-match | 하나 건졌지. …[인벤토리: 짝 맞춤 1개 추가]. |
+| self-miss | 꽝이네. …[시스템: 짝 맞추기 실패]. |
+| opponent-match | 그걸 챙겨 가냐? …[상대방 득점 확인]. |
+| opponent-miss | 허공질이나 하고 있네. …[상대방 헛발질 감지]. |
+| streak | 계속 콤보 터지네. …[연속 성공 보너스 적용]. |
+| ahead | 내가 스코어 치고 나가네. …[우세 상태 돌입]. |
+| behind | 점수 차 벌어지네. …[디버프: 수세 몰림]. |
+| last-pair | 딱 한 짝 남았네. …[최종 보스전 진입]. |
+| victory | 내가 이겼지. …[클리어 보상 수령 완료]. |
+| defeat | 씨발… 상태창 안 떠? …[게임을 종료합니다]. |
+| draw | 무승부네. …[경험치 반반 분배]. |
 
 ### 카미유 (`camille`)
 
@@ -141,18 +145,18 @@
 
 | event | 검수 문안 |
 |---|---|
-| table-open | TODO_GEMINI |
-| self-match | TODO_GEMINI |
-| self-miss | TODO_GEMINI |
-| opponent-match | TODO_GEMINI |
-| opponent-miss | TODO_GEMINI |
-| streak | TODO_GEMINI |
-| ahead | TODO_GEMINI |
-| behind | TODO_GEMINI |
-| last-pair | TODO_GEMINI |
-| victory | TODO_GEMINI |
-| defeat | TODO_GEMINI |
-| draw | TODO_GEMINI |
+| table-open | 천천히 뒤집어 보세요오. 동공이 어떻게 떨리는지 지켜볼 테니까요오. |
+| self-match | 단번에 맞혔네요오. 맥박이 아주 살짝 빠르시잖아요오. |
+| self-miss | 틀려 버렸네요오. 그런 안절부절못하는 얼굴도 참 예쁜데요오. |
+| opponent-match | 잘 챙겨 가시네요오. 손끝이 덜덜 떨리시는 건 참으셔야죠오. |
+| opponent-miss | 엉뚱한 걸 고르셨네요오. 점점 조급해지는 게 아주 재미있잖아요오. |
+| streak | 또 맞혔네요오. 어디까지 침착을 유지하나 볼까요오. |
+| ahead | 점수가 벌어지네요오. 슬슬 숨이 가빠 오시지 않나요오? |
+| behind | 이기기 시작하셨네요오. 그 희열에 찬 눈빛을 더 보여 주세요오. |
+| last-pair | 마지막 한 짝이네요오. 땀방울 흘릴 시간이 얼마 안 남았잖아요오. |
+| victory | 저의 완승이네요오. 절망으로 일그러진 표정이 아주 훌륭해요오. |
+| defeat | 제가 지다니요오. 다음엔 어떤 약을 주사해 드려야 할까요오? |
+| draw | 똑같이 끝났네요오. 서로 피가 바짝 마르는 이 느낌도 좋잖아요오. |
 
 ### 키케로 (`cicero`)
 
@@ -160,18 +164,18 @@
 
 | event | 검수 문안 |
 |---|---|
-| table-open | TODO_GEMINI |
-| self-match | TODO_GEMINI |
-| self-miss | TODO_GEMINI |
-| opponent-match | TODO_GEMINI |
-| opponent-miss | TODO_GEMINI |
-| streak | TODO_GEMINI |
-| ahead | TODO_GEMINI |
-| behind | TODO_GEMINI |
-| last-pair | TODO_GEMINI |
-| victory | TODO_GEMINI |
-| defeat | TODO_GEMINI |
-| draw | TODO_GEMINI |
+| table-open | 전개면 구조 진단 개시. 1급 기술자의 시야에 사각은 없다. |
+| self-match | 모듈 동기화 완료. 이 정도 규격 결합은 기본 작업이다. |
+| self-miss | 찰나의 공차 발생이다.<br>장비 출력 오차를 재조정하도록. |
+| opponent-match | 하급자치고는 구동계 응답이 빠르다.<br>다음 신호도 잡아낼 수 있겠나? |
+| opponent-miss | 서툰 주파수 탐색이다. 기초 장비 조작부터 다시 배우도록. |
+| streak | 연속 공정 성공이다. 1급 기술자의 정밀도를 감당할 수 있겠나? |
+| ahead | 점율 제어권을 확보했다. 1급 기술자와의 격차를 체감하도록. |
+| behind | 오차율이 증가하고 있다.<br>1급 기술자인 나의 정밀도를 과소평가하지 않도록. |
+| last-pair | 판에 남은 단 하나의 잔여 모듈이다. 집중하도록. |
+| victory | 전면 구동 테스트 완료. 1급 기술자의 완승으로 수렴되었다. |
+| defeat | 장비 출력 제어 실패… 1급 기술자인 나에게 이런 오작동이 발생하다니. |
+| draw | 양측 출력값이 동등하게 측정되었다. 재검증 공정을 준비하도록. |
 
 ### 크레이들 (`cradle`)
 
@@ -179,18 +183,18 @@
 
 | event | 검수 문안 |
 |---|---|
-| table-open | TODO_GEMINI |
-| self-match | TODO_GEMINI |
-| self-miss | TODO_GEMINI |
-| opponent-match | TODO_GEMINI |
-| opponent-miss | TODO_GEMINI |
-| streak | TODO_GEMINI |
-| ahead | TODO_GEMINI |
-| behind | TODO_GEMINI |
-| last-pair | TODO_GEMINI |
-| victory | TODO_GEMINI |
-| defeat | TODO_GEMINI |
-| draw | TODO_GEMINI |
+| table-open | 돛을 올려라! 이 몸과 함께 탐사할 보물판이 열렸다! |
+| self-match | 첫 번째 보물 상자 확보다! 선장의 감각은 녹슬지 않았다! |
+| self-miss | 거친 풍랑을 만났다!<br>키를 다시 잡고 다음 닻을 내릴 지점을 찾아라! |
+| opponent-match | 제법이구나, 신참! 이 몸의 뱃길을 위협할 배짱을 더 키우거라! |
+| opponent-miss | 허점이 보이는 항해다! 더 넓은 수평선을 바라보거라! |
+| streak | 연속 인양 성공이다! 이 몸이 이끄는 함대의 기세를 보아라! |
+| ahead | 이 몸의 깃발이 앞서 나간다! 신참, 힘껏 노를 저어 따라오거라! |
+| behind | 암초에 부딪혔을 뿐이다! 역풍을 뚫고 반격할 테니 각오하거라! |
+| last-pair | 마지막 인양 지점만 남았다! 끝까지 항로를 잃지 마라! |
+| victory | 항해 완료! 멋진 도전자였다, 신참! 선장의 승리를 축하하거라! |
+| defeat | 이 몸이 키를 놓치다니!<br>훌륭한 해적으로 성장했구나, 신참! |
+| draw | 공평하게 보물을 나누었도다! 다음 항해에서 다시 겨루어 보거라! |
 
 ### 김덕배 (`deokbae`)
 
@@ -198,18 +202,18 @@
 
 | event | 검수 문안 |
 |---|---|
-| table-open | TODO_GEMINI |
-| self-match | TODO_GEMINI |
-| self-miss | TODO_GEMINI |
-| opponent-match | TODO_GEMINI |
-| opponent-miss | TODO_GEMINI |
-| streak | TODO_GEMINI |
-| ahead | TODO_GEMINI |
-| behind | TODO_GEMINI |
-| last-pair | TODO_GEMINI |
-| victory | TODO_GEMINI |
-| defeat | TODO_GEMINI |
-| draw | TODO_GEMINI |
+| table-open | …판이 펴졌군. 먼지가 쌓인 옛 지도를 다시 펼치는 기분이다. |
+| self-match | …하나 찾았다. 잊힌 길목의 흔적이 아직 남아 있군. |
+| self-miss | …발걸음이 빗나갔다. 세월에 깎인 기억이라 쉽지 않군. |
+| opponent-match | …손끝이 매섭군. 자네는 아직 눈빛이 살아 있느냐. |
+| opponent-miss | …조급할 것 없다. 허공을 짚는 것도 다 길을 찾아가는 과정이다. |
+| streak | …연속으로 짚어냈군. 늙은이의 감각이 아주 죽진 않았다. |
+| ahead | …수가 앞서기 시작했군. 오랜 경험은 거짓을 말하지 않는다. |
+| behind | …흐름을 빼앗겼다.<br>늙은이의 뒷모습만 보며 방심하느냐. |
+| last-pair | …마지막 자취만 남았군. 조용히 끝을 가다듬을 때다. |
+| victory | …대국이 끝났다. 길었던 방랑 끝에 유적을 찾은 기분이군. |
+| defeat | …늙은이가 무릎을 꿇었다.<br>자네의 시대가 왔음을 인정해야겠군. |
+| draw | …승부의 무게가 같군. 그 시절의 추억으로 묻어두겠다. |
 
 ### 디아모 (`diamo`)
 
@@ -217,18 +221,18 @@
 
 | event | 검수 문안 |
 |---|---|
-| table-open | TODO_GEMINI |
-| self-match | TODO_GEMINI |
-| self-miss | TODO_GEMINI |
-| opponent-match | TODO_GEMINI |
-| opponent-miss | TODO_GEMINI |
-| streak | TODO_GEMINI |
-| ahead | TODO_GEMINI |
-| behind | TODO_GEMINI |
-| last-pair | TODO_GEMINI |
-| victory | TODO_GEMINI |
-| defeat | TODO_GEMINI |
-| draw | TODO_GEMINI |
+| table-open | 엎어 놓은 얼굴들이 눈을 감고 있구나… 대국을 시작하던가. |
+| self-match | 두 환영이 딱 맞춰졌구나… 누군가의 마지막 호흡이었나. |
+| self-miss | 서로 다른 꿈을 겹쳐 보았나… 손끝이 차가워지는구나. |
+| opponent-match | 그 사람의 조각을 가져갔구나… 네 손에 닿던가. |
+| opponent-miss | 잘못 찾아간 기억이었나… 네 눈에도 엇갈렸구나. |
+| streak | 연속으로 겹쳐지는구나… 내가 쥐어 본 적 있던가. |
+| ahead | 차가운 넋들이 내 쪽에 더 많이 모였구나. |
+| behind | 기억이 자꾸 흩어지나… 네가 가져가는구나. |
+| last-pair | 판 위에 단 하나의 한숨만 남았구나… 어디에 누워 있었던가. |
+| victory | 끊겼던 꿈들을 내가 전부 끌어모았구나. |
+| defeat | 결국 아무것도 내 손에 남지 않았나… 꿈에서 깨던가. |
+| draw | 양쪽에 놓인 무게가 똑같구나… 같이 잠들었던가. |
 
 ### 에코 (`echo`)
 
@@ -236,18 +240,18 @@
 
 | event | 검수 문안 |
 |---|---|
-| table-open | TODO_GEMINI |
-| self-match | TODO_GEMINI |
-| self-miss | TODO_GEMINI |
-| opponent-match | TODO_GEMINI |
-| opponent-miss | TODO_GEMINI |
-| streak | TODO_GEMINI |
-| ahead | TODO_GEMINI |
-| behind | TODO_GEMINI |
-| last-pair | TODO_GEMINI |
-| victory | TODO_GEMINI |
-| defeat | TODO_GEMINI |
-| draw | TODO_GEMINI |
+| table-open | 판이 시작됐어. 에코는 얼른 끝내고 잘 생각만 하고 있어. |
+| self-match | 에코가 한 짝 집어냈어! 머릿속으로 만세를 부르고 있어. |
+| self-miss | 틀려버렸어. 에코는 기계 손가락을 꼼지락대며 툴툴거리고 있어. |
+| opponent-match | 네가 한 짝 가져갔어. 에코는 억울해서 눈을 가늘게 뜨고 있어. |
+| opponent-miss | 네 손이 엇갈렸어. 에코는 고소하다고 속으로 손뼉 치고 있어. |
+| streak | 또 맞췄어! 에코는 기계 팔로 만세를 부르고 있어. |
+| ahead | 점수가 더 높아졌어. 에코는 승리를 확신하고 있어. |
+| behind | 뒤처지기 시작했어. 에코는 슬슬 짜증이 난다고 소리 내어 말하고 있어. |
+| last-pair | 마지막 한 짝이야. 에코는 어디에 있는지 엄청 궁금해하고 있어. |
+| victory | 에코가 대국에서 이겼어! 크림치즈 베이글 먹을 시간이야. |
+| defeat | 에코가 패배했어. 기계 팔을 늘어뜨리며 의욕을 잃고 있어. |
+| draw | 점수가 똑같아. 에코는 꽤 공평한 결과라고 중얼거리고 있어. |
 
 ### 에스더 (`esther`)
 
@@ -255,18 +259,18 @@
 
 | event | 검수 문안 |
 |---|---|
-| table-open | TODO_GEMINI |
-| self-match | TODO_GEMINI |
-| self-miss | TODO_GEMINI |
-| opponent-match | TODO_GEMINI |
-| opponent-miss | TODO_GEMINI |
-| streak | TODO_GEMINI |
-| ahead | TODO_GEMINI |
-| behind | TODO_GEMINI |
-| last-pair | TODO_GEMINI |
-| victory | TODO_GEMINI |
-| defeat | TODO_GEMINI |
-| draw | TODO_GEMINI |
+| table-open | 조용한 구원의 판이 열렸어요. 함께 마음을 비워 보실까요. |
+| self-match | 헤매던 짝을 안식으로 이끌었어요. 참 평화로운 모습이지요. |
+| self-miss | 엇갈림도 과정에 불과해요. 다시 조용히 다듬어 드려야겠어요. |
+| opponent-match | 저 아픈 조각을 잘 감싸 쥐셨어요. 부담이 한결 가벼워지셨지요. |
+| opponent-miss | 아직 짐을 놓을 때가 아닌가 봐요. 조금 더 깊이 묵상해 보실까요. |
+| streak | 끊임없이 고통을 덜어내고 있어요. 구원이 한 걸음 다가왔지요. |
+| ahead | 제가 당신의 무거운 짐을 더 많이 거두어 드리고 있어요. |
+| behind | 아직 저에게 남은 시련이 많은 모양이에요. 다정하게 견뎌내야겠지요. |
+| last-pair | 마지막 한 조각만 남았어요. 구원의 손길을 내밀어 보실까요. |
+| victory | 대국이 마침내 종결되었어요. 당신을 온전한 정적으로 안내해 드렸지요. |
+| defeat | 이 아픔도 모두 제 몫이에요. 조용히 무릎 꿇고 수용해야겠지요. |
+| draw | 매끄럽게 둘로 나뉜 무게예요. 모두에게 자비로운 결말이지요. |
 
 ### 히로 카네다 (`hiro`)
 
@@ -274,18 +278,18 @@
 
 | event | 검수 문안 |
 |---|---|
-| table-open | TODO_GEMINI |
-| self-match | TODO_GEMINI |
-| self-miss | TODO_GEMINI |
-| opponent-match | TODO_GEMINI |
-| opponent-miss | TODO_GEMINI |
-| streak | TODO_GEMINI |
-| ahead | TODO_GEMINI |
-| behind | TODO_GEMINI |
-| last-pair | TODO_GEMINI |
-| victory | TODO_GEMINI |
-| defeat | TODO_GEMINI |
-| draw | TODO_GEMINI |
+| table-open | 시민 여러분을 위한 공정한 승부를 시작해 보겠습니다! |
+| self-match | 정의의 안목은 결코 그릇되지 않습니다!<br>…일단 한 장은 맞췄네. |
+| self-miss | 흠, 시련은 영웅을 한층 더 강하게 만드는 법입니다! |
+| opponent-match | 훌륭한 실력이군요, 상대의 선전에 찬사를 보냅니다! |
+| opponent-miss | 방심은 금물입니다! 끝까지 포기하지 마십시오.<br>…방금 판은 좀 아까웠는데. |
+| streak | 붉은 실처럼 엮인 이 흐름을 끊지 않겠습니다!<br>감 잡았어, 계속 간다. |
+| ahead | 승리의 기세가 제 쪽에 기울기 시작했군요! |
+| behind | 영웅의 진짜 싸움은 역경 속에서 시작됩니다!<br>…생각보다 팽팽한데, 서둘러야겠어. |
+| last-pair | 마지막 결전의 순간까지 최선을 다합시다! |
+| victory | 모범적인 대국이었습니다! 모두에게 평화가 함께하기를.<br>…휴, 연출 잘 나왔네. |
+| defeat | 패배를 겸허히 받아들이며 당신의 승리를 축하합니다.<br>…다음 행사 전엔 복습 좀 해야겠군. |
+| draw | 서로 비등한 실력을 겨룬 훌륭한 겨루기였네! |
 
 ### 카트린카 (`katrinka`)
 
@@ -293,18 +297,18 @@
 
 | event | 검수 문안 |
 |---|---|
-| table-open | TODO_GEMINI |
-| self-match | TODO_GEMINI |
-| self-miss | TODO_GEMINI |
-| opponent-match | TODO_GEMINI |
-| opponent-miss | TODO_GEMINI |
-| streak | TODO_GEMINI |
-| ahead | TODO_GEMINI |
-| behind | TODO_GEMINI |
-| last-pair | TODO_GEMINI |
-| victory | TODO_GEMINI |
-| defeat | TODO_GEMINI |
-| draw | TODO_GEMINI |
+| table-open | 기본 대국료는 선불이야, 나중에 딴소리하기 없기다. |
+| self-match | 한 짝 회수했어, 처치 수수료 청구서에 올려둘게. |
+| self-miss | 허탕 친 시간만큼 손해인데, 다음엔 똑바로 뽑아야겠어. |
+| opponent-match | 제법인데? 방금 건 자급자족으로 치고 진료비에서 빼줄게. |
+| opponent-miss | 빗나갔네. 치료가 필요한 판단력이야.<br>상담료는 별도로 받는 거 알지? |
+| streak | 연쇄 회수 성공이야.<br>이 속도면 예정보다 일찍 마감하고 결산하겠는데. |
+| ahead | 이익률이 이쪽으로 넘어왔는데, 이제 추격 수수료 붙는다? |
+| behind | 잔액이 아슬아슬하네.<br>이대로 손해 보고 철수할 순 없으니까 바짝 붙을게. |
+| last-pair | 마지막 남은 한 장이야, 처리 비용은 동률로 적용이다. |
+| victory | 승리 청구 완료야.<br>판돈하고 정산액 합쳐서 청구서에 적어 둘 테니 지불해. |
+| defeat | 이 판은 완벽한 적자야.<br>치료비도 못 건졌으니 다음번 대국에서 이자까지 얹어 청구할게. |
+| draw | 반반으로 갈라졌네, 수수료 조율하고 반반 정산으로 끝내자. |
 
 ### 크레바 (`kreva`)
 
@@ -312,18 +316,18 @@
 
 | event | 검수 문안 |
 |---|---|
-| table-open | TODO_GEMINI |
-| self-match | TODO_GEMINI |
-| self-miss | TODO_GEMINI |
-| opponent-match | TODO_GEMINI |
-| opponent-miss | TODO_GEMINI |
-| streak | TODO_GEMINI |
-| ahead | TODO_GEMINI |
-| behind | TODO_GEMINI |
-| last-pair | TODO_GEMINI |
-| victory | TODO_GEMINI |
-| defeat | TODO_GEMINI |
-| draw | TODO_GEMINI |
+| table-open | 탐색 구역 설정 완료. 초기 점검 개시. |
+| self-match | 두 부품 규격 일치. |
+| self-miss | 규격 미달. 제거 대상 외. |
+| opponent-match | 상대 구역으로 목표물 이탈. |
+| opponent-miss | 상대의 조준 오차 확인. |
+| streak | 피스톤 고속 재장전. 연속 소탕. |
+| ahead | 우위 확보. 주도권 이전 완료. |
+| behind | 의수 유압 저하. 출력 조정 필요. |
+| last-pair | 잔여 목표 1쌍. 신속 제거 대상. |
+| victory | 해당 구역 임무 달성. 전역 처리 완료. |
+| defeat | 동력계 기능 정지. 대국 종료. |
+| draw | 동률 기록. 양측 전력 균형 유지. |
 
 ### 레빌로트 (`levillotte`)
 
@@ -331,18 +335,18 @@
 
 | event | 검수 문안 |
 |---|---|
-| table-open | TODO_GEMINI |
-| self-match | TODO_GEMINI |
-| self-miss | TODO_GEMINI |
-| opponent-match | TODO_GEMINI |
-| opponent-miss | TODO_GEMINI |
-| streak | TODO_GEMINI |
-| ahead | TODO_GEMINI |
-| behind | TODO_GEMINI |
-| last-pair | TODO_GEMINI |
-| victory | TODO_GEMINI |
-| defeat | TODO_GEMINI |
-| draw | TODO_GEMINI |
+| table-open | 내 럭키 부적에 손대지 마, 운빨의 격차를 보여줄 테니까. |
+| self-match | 맞아떨어지는 게 당연하잖아, 이 미소녀한테 흐르는 행운이 몇 급인데! |
+| self-miss | 칫, 액땜 한번 한 셈 치지 뭐. |
+| opponent-match | 운 좋게 맞혔다고 들뜨지 마, 내 대운에 비하면 겨우 콩고물이라고. |
+| opponent-miss | 꽝이네, 불운이 당신 쪽으로 몰리고 있거든?<br>너무 붙지 말고 멀찍이 떨어져서 해. |
+| streak | 연속으로 딱 딱 떨어지네!<br>봤지? 미소녀의 수퍼 럭키는 막을 수 없다고! |
+| ahead | 점수 차 늘어나는 거 보이지? 내 토끼발 부적 효력이 이거거든. |
+| behind | 살짝 밀린 건 계산된 액땜이야.<br>진짜 행운은 항상 판 뒤집힐 때 따라오거든. |
+| last-pair | 마지막 조각 남았네, 결국 행운의 여신이 누구 손을 들어줄지 정해졌지? |
+| victory | 완전히 내 승리네!<br>압도적인 미모에 행운까지 따르는데 네가 어떻게 이기겠어? |
+| defeat | 말도 안 돼, 내 행운 부적이 왜 안 통해?!<br>젠장, 나한테 재앙이 옮겨붙은 거냐고! |
+| draw | 똑같이 비긴 건 당신 부적이 내 액운을 약간 막아줘서 그런 거거든. |
 
 ### 릴림 (`lilim`)
 
@@ -350,18 +354,18 @@
 
 | event | 검수 문안 |
 |---|---|
-| table-open | TODO_GEMINI |
-| self-match | TODO_GEMINI |
-| self-miss | TODO_GEMINI |
-| opponent-match | TODO_GEMINI |
-| opponent-miss | TODO_GEMINI |
-| streak | TODO_GEMINI |
-| ahead | TODO_GEMINI |
-| behind | TODO_GEMINI |
-| last-pair | TODO_GEMINI |
-| victory | TODO_GEMINI |
-| defeat | TODO_GEMINI |
-| draw | TODO_GEMINI |
+| table-open | 아… 이제 엎어져 있는 그림을 하나씩 맞춰보면 돼요? |
+| self-match | 어… 방금 넘긴 거랑 같은 그림 맞죠? |
+| self-miss | 으응… 똑같이 생긴 얼굴이 아니었나요? |
+| opponent-match | 와… 저쪽 그림 위치를 벌써 다 외우신 거예요? |
+| opponent-miss | 아… 방금 보신 거 두 개는 서로 다른 모양 맞죠? |
+| streak | 어… 또 맞았는데, 저 똑똑해지고 있는 거 맞죠? |
+| ahead | 저, 제가 지금 제일 많은 장수를 모은 거예요? |
+| behind | 어… 판에 남은 게 얼마 없는데, 제가 늦은 건가요? |
+| last-pair | 이제… 마지막 남은 두 장만 찾으면 끝나는 거예요? |
+| victory | 저… 아폴리온 님한테 저도 도움이 되었다고 말해도 돼요? |
+| defeat | 으… 제가 그림 위치를 하나도 못 외운 거죠? |
+| draw | 어… 양쪽 다 똑같이 모았으면, 같이 이긴 거예요? |
 
 ### 라일라 (`lyla`)
 
@@ -369,18 +373,18 @@
 
 | event | 검수 문안 |
 |---|---|
-| table-open | TODO_GEMINI |
-| self-match | TODO_GEMINI |
-| self-miss | TODO_GEMINI |
-| opponent-match | TODO_GEMINI |
-| opponent-miss | TODO_GEMINI |
-| streak | TODO_GEMINI |
-| ahead | TODO_GEMINI |
-| behind | TODO_GEMINI |
-| last-pair | TODO_GEMINI |
-| victory | TODO_GEMINI |
-| defeat | TODO_GEMINI |
-| draw | TODO_GEMINI |
+| table-open | 배치 확인을 시작합니다.<br>각 위치를 파악하십시오. |
+| self-match | 일치하는 일련번호를 확보했습니다. |
+| self-miss | 좌표 오차입니다. 수정을 진행합니다. |
+| opponent-match | 빠른 상황 판단입니다. 기록해 두겠습니다. |
+| opponent-miss | 실패한 개입입니다. 다음 조치를 대기하십시오. |
+| streak | 연쇄 식별을 계속 수행하겠습니다. |
+| ahead | 점유율 우위를 확보했습니다. 유지하겠습니다. |
+| behind | 지표가 저하되었습니다. 재정렬을 명합니다. |
+| last-pair | 잔여 대상은 최종 1쌍입니다. |
+| victory | 해당 구역의 규율 정립을 완료했습니다. |
+| defeat | 체계의 완전한 붕괴입니다. 이탈합니다. |
+| draw | 균형 상태가 입증되었습니다. 대국을 종료합니다. |
 
 ### 마키나 (`machina`)
 
@@ -388,18 +392,18 @@
 
 | event | 검수 문안 |
 |---|---|
-| table-open | TODO_GEMINI |
-| self-match | TODO_GEMINI |
-| self-miss | TODO_GEMINI |
-| opponent-match | TODO_GEMINI |
-| opponent-miss | TODO_GEMINI |
-| streak | TODO_GEMINI |
-| ahead | TODO_GEMINI |
-| behind | TODO_GEMINI |
-| last-pair | TODO_GEMINI |
-| victory | TODO_GEMINI |
-| defeat | TODO_GEMINI |
-| draw | TODO_GEMINI |
+| table-open | 판에 조각들이 가득하네. 천천히 구리스 바르듯 맞춰 볼게. |
+| self-match | 딱 맞물렸어. 역시 조립 순서가 맞으니까 들어맞네. |
+| self-miss | 유격이 조금 생겼네. 볼트를 잘못 죘나 봐. |
+| opponent-match | 이음새를 잘 찾았네! 결합 부위가 튼튼해 보여서 다행이야. |
+| opponent-miss | 손끝이 살짝 미끄러졌나 봐. 다시 조립하면 되니까 무리하지 마. |
+| streak | 동력이 제대로 전달되고 있어! 라인이 매끄럽게 돌아가니까 신나네. |
+| ahead | 내 쪽 공정이 먼저 잡히니까, 속도 좀 낼게. |
+| behind | 엔진 소리가 살짝 튀니까, 신중하게 조정할게. |
+| last-pair | 마감 부품 두 개만 남았네. 깔끔하게 닫아 줄게. |
+| victory | 정비 완성이야! 깔끔하게 조립이 끝나서 다행이야. |
+| defeat | 아주 탄탄하게 잘 조립했으니까, 나도 모터를 다시 점검해 둘게. |
+| draw | 양쪽 하중이 딱 반씩 나뉘었으니까, 최고로 안정된 구조야. |
 
 ### 모르시사 (`morsisa`)
 
@@ -407,18 +411,18 @@
 
 | event | 검수 문안 |
 |---|---|
-| table-open | TODO_GEMINI |
-| self-match | TODO_GEMINI |
-| self-miss | TODO_GEMINI |
-| opponent-match | TODO_GEMINI |
-| opponent-miss | TODO_GEMINI |
-| streak | TODO_GEMINI |
-| ahead | TODO_GEMINI |
-| behind | TODO_GEMINI |
-| last-pair | TODO_GEMINI |
-| victory | TODO_GEMINI |
-| defeat | TODO_GEMINI |
-| draw | TODO_GEMINI |
+| table-open | 그, 카드가 너무 많은데요… 민폐 안 되게 조심할게요… |
+| self-match | 어, 짝이 딱 맞춰졌는데요… 이, 이건 그냥 운이 좋았던 거더라고요… |
+| self-miss | 죄, 죄송해요… 엉뚱한 걸 집었는데요, 제가 늘 이렇더라고요… |
+| opponent-match | 단번에 찾아내셨는데요… 서, 선구안이 엄청나신 게 아닐까요… |
+| opponent-miss | 아, 아쉽게 빗나갔는데요… 카드가 너무 잘 헷갈리게 생겨서 그렇더라고요… |
+| streak | 이, 연속으로 맞았는데요… 나중에 큰벌 받는 게 아닐까요… |
+| ahead | 저, 제가 앞서 있는데요… 나중에 확 깎이는 게 아닐까요… |
+| behind | 점점 점수가 벌어지는데요… 제 본 실력이 드러나는 게 아닐까요… |
+| last-pair | 뒤, 뒤집을 카드가 딱 두 장 남았는데요… 제 손이 또 떨려서 그렇더라고요… |
+| victory | 저, 제가 이겨 버렸는데요… 서, 성질내지 마세요, 정말 죄송해요… |
+| defeat | 예, 예상대로 져 버렸는데요… 처음부터 저한테 맞는 결과였더라고요… |
+| draw | 떠, 똑같이 나누어 가졌는데요… 저 때문에 피해 안 주어서 다행이 아닐까요… |
 
 ### 네모 (`nemo`)
 
@@ -426,18 +430,18 @@
 
 | event | 검수 문안 |
 |---|---|
-| table-open | TODO_GEMINI |
-| self-match | TODO_GEMINI |
-| self-miss | TODO_GEMINI |
-| opponent-match | TODO_GEMINI |
-| opponent-miss | TODO_GEMINI |
-| streak | TODO_GEMINI |
-| ahead | TODO_GEMINI |
-| behind | TODO_GEMINI |
-| last-pair | TODO_GEMINI |
-| victory | TODO_GEMINI |
-| defeat | TODO_GEMINI |
-| draw | TODO_GEMINI |
+| table-open | 어른의 감이란 건 말이지.<br>…아냐, 일단 아무거나 하나 뒤집어볼게. |
+| self-match | 내 감각이 완벽했다는 거지! |
+| self-miss | 어라, 이상하네. 이건 완벽한 계산 착오야.<br>…방금 건 안 본 걸로 해줄래? |
+| opponent-match | 제법인데? 내 숙적이라고 부르기에 부족함이 없어! |
+| opponent-miss | 방금 건 방심 유도용 작전이었지?<br>다 알아, 속아줄 생각 없거든. |
+| streak | 역시 정의의 주인공한테 불가능이란 없는 법이지! |
+| ahead | 흐흥, 승기라는 건 이렇게 잡는 거야.<br>…너도 끝까지 힘내야 해? |
+| behind | 살짝 밀리고 있지만 괜찮아.<br>진정한 주인공은 마지막에 역전하는 거니까! |
+| last-pair | 이제 남은 건 마지막 한 짝뿐이지.<br>나, 여기서 절대로 실수 안 할 거야! |
+| victory | 승리의 순간에는 멋진 포즈가 필수지!<br>…응? 혼자 너무 신났나? |
+| defeat | 오늘은 운이 조금 안 좋았던 것뿐이야.<br>나, 다음엔 반드시 다시 도전할 테니까! |
+| draw | 똑같이 끝났네? 사이좋게 나눠 가진 것도 어른스러운 결말이지! |
 
 ### 박니은 (`nieun`)
 
@@ -445,18 +449,18 @@
 
 | event | 검수 문안 |
 |---|---|
-| table-open | TODO_GEMINI |
-| self-match | TODO_GEMINI |
-| self-miss | TODO_GEMINI |
-| opponent-match | TODO_GEMINI |
-| opponent-miss | TODO_GEMINI |
-| streak | TODO_GEMINI |
-| ahead | TODO_GEMINI |
-| behind | TODO_GEMINI |
-| last-pair | TODO_GEMINI |
-| victory | TODO_GEMINI |
-| defeat | TODO_GEMINI |
-| draw | TODO_GEMINI |
+| table-open | 판때기 세팅 완료됐네. 덱을 통째로 털어 볼 테니까 각오해 두라고. |
+| self-match | 짝이 딱 맞춰졌네. 노드 연결하는 거야 내 전문이거든.<br>…정작 내가 묶인 자리는 못 털어내지만. |
+| self-miss | 어라, 데이터 신호가 튀었네. 입력 오류라고 치고 넘어가야겠지. |
+| opponent-match | 올, 한 짝 잘 털어 갔네. 그쪽 뇌 용량도 제법 사양이 높거든. |
+| opponent-miss | 픽셀을 잘못 읽었네. 렉 걸린 거 아니면 화면 탓이라도 해야겠지. |
+| streak | 연쇄 적중 타임이네. 내 연산 속도가 반응 속도보다 훨씬 빠르거든. |
+| ahead | 스코어 차이가 쫙 벌어졌네. 이 정도 격차면 이미 결론이 났겠지. |
+| behind | 판세가 밑바닥으로 처박히네. 이것도 내 인생에 낀 버그 때문이겠지. |
+| last-pair | 남은 카드는 이제 마지막 한 쌍이네. 결괏값 도출까지 딱 한 스텝 남았거든. |
+| victory | 결국 내 계산대로 싹 털어 먹었네. 완승으로 닫혔으니 짭짤하거든. |
+| defeat | 젠장, 팍 꼬여 버렸네. …뭐, 판 하나 졌다고 내가 지키는 자리가 무너지겠어? |
+| draw | 무승부로 세션이 끝났네. 지분 반반으로 쪼개졌으니 깔끔하거든. |
 
 ### 노스탤지아 (`nostalgia`)
 
@@ -464,18 +468,18 @@
 
 | event | 검수 문안 |
 |---|---|
-| table-open | TODO_GEMINI |
-| self-match | TODO_GEMINI |
-| self-miss | TODO_GEMINI |
-| opponent-match | TODO_GEMINI |
-| opponent-miss | TODO_GEMINI |
-| streak | TODO_GEMINI |
-| ahead | TODO_GEMINI |
-| behind | TODO_GEMINI |
-| last-pair | TODO_GEMINI |
-| victory | TODO_GEMINI |
-| defeat | TODO_GEMINI |
-| draw | TODO_GEMINI |
+| table-open | 조용히 판이 열렸어요. 흩어진 조각을 하나로 엮는 일은 언제나 거룩해야 한다. |
+| self-match | 맞물려야 할 짝을 찾았어요. 본래 하나였던 것은 제자리를 찾아야 한다. |
+| self-miss | 아직 시련이 남아 있군요. 엇갈림 또한 인내를 배우는 과정이어야 하지요. |
+| opponent-match | 짝을 훌륭히 이어붙이셨군요. 바른길을 걷는 이에게 축복이 함께해야 해요. |
+| opponent-miss | 마음을 조급히 먹지 마세요. 헤매는 걸음 뒤에도 안식은 기다리고 있지요. |
+| streak | 잇달아 짝이 모이는군요. 구원의 순리는 결코 멈추지 않아야 한다. |
+| ahead | 점수가 쌓여 가네요. 더 많은 조각을 거두는 것이 저의 사명이어야 하지요. |
+| behind | 조금 뒤처졌다고 동요하지 않아요. 진정한 빛은 마침내 드러나야 한다. |
+| last-pair | 판에 남은 짝은 이제 하나뿐이지요. 마지막 영혼까지 빠짐없이 거두어야 한다. |
+| victory | 모든 짝을 충실히 모았어요. 완전에 도달한 형상은 결코 흔들리지 않아야 한다. |
+| defeat | 제 온기가 전부 닿지는 못했어요. 그러나 이 패배조차 순리 안에서 받아들여져야 하지요. |
+| draw | 꼭 같은 무게로 온기를 나누었군요. 어느 쪽도 외롭지 않게 구원받아야 하지요. |
 
 ### 폐어 (`phaeo`)
 
@@ -483,18 +487,18 @@
 
 | event | 검수 문안 |
 |---|---|
-| table-open | TODO_GEMINI |
-| self-match | TODO_GEMINI |
-| self-miss | TODO_GEMINI |
-| opponent-match | TODO_GEMINI |
-| opponent-miss | TODO_GEMINI |
-| streak | TODO_GEMINI |
-| ahead | TODO_GEMINI |
-| behind | TODO_GEMINI |
-| last-pair | TODO_GEMINI |
-| victory | TODO_GEMINI |
-| defeat | TODO_GEMINI |
-| draw | TODO_GEMINI |
+| table-open | 카드 덱 전량 배치 완료. 관측 대상의 반응 기록 예정. |
+| self-match | 표적 조각 상호 일치. 예상 임상 수치 범위 내. |
+| self-miss | 선택 카드 대조 불일치. 오차 수정 후 재검토 예정. |
+| opponent-match | 상대측 유효 짝 회수 확인. 반응 속도 양호 범위 내. |
+| opponent-miss | 상대측 선택 오차 발생. 판단력 저하 관측 범위 내. |
+| streak | 연속 일치 수치 급증. 전술적 우위 확정 예정. |
+| ahead | 점수 격차 확보 완료. 승률 지표 상승 범위 내. |
+| behind | 점수 보유량 하락세 진입. 잔여 패 정밀 대조 예정. |
+| last-pair | 판상 잔여 짝 1쌍 확인. 최종 임상 마무리 예정. |
+| victory | 짝 수집 전량 완수. 명부에 사망 기록은 작성 예외. |
+| defeat | 점수 미달로 패배 확정. 임상 지표 집계 후 명부 등재 예정. |
+| draw | 점수 획득 동률 기록. 상호 대등 수치로 정리 범위 내. |
 
 ### 레이븐 (`raven`)
 
@@ -502,18 +506,18 @@
 
 | event | 검수 문안 |
 |---|---|
-| table-open | TODO_GEMINI |
-| self-match | TODO_GEMINI |
-| self-miss | TODO_GEMINI |
-| opponent-match | TODO_GEMINI |
-| opponent-miss | TODO_GEMINI |
-| streak | TODO_GEMINI |
-| ahead | TODO_GEMINI |
-| behind | TODO_GEMINI |
-| last-pair | TODO_GEMINI |
-| victory | TODO_GEMINI |
-| defeat | TODO_GEMINI |
-| draw | TODO_GEMINI |
+| table-open | 테이블 위 모든 항목의 기초 단가를 확인하겠습니다. |
+| self-match | 정확한 장부 맞춤입니다. 이번 거래는 순이익으로 잡겠습니다. |
+| self-miss | 약간의 계정 분류 오차가 있었습니다. 재정산을 진행하겠습니다. |
+| opponent-match | 훌륭한 매입입니다. 손해를 줄이시려면 다음 순서도 신중히 고르십시오. |
+| opponent-miss | 수지타산이 맞지 않는 선택입니다. 재고 파악에 더 집중하십시오. |
+| streak | 연속 이윤이 발생하고 있습니다. 제 쪽의 영업 수완을 믿으십시오. |
+| ahead | 자산 비율에서 우위를 점했습니다. 저의 영업 방침을 유지하겠습니다. |
+| behind | 잠시 지출이 매출을 넘어섰습니다. 단가를 재조정하겠습니다. |
+| last-pair | 남아 있는 재고는 단 하나입니다. 마감 정산을 집행하겠습니다. |
+| victory | 오늘 장부는 기대 이상의 흑자입니다. 다음 거래 때 다시 오십시오. |
+| defeat | 이번 거래는 제 쪽의 완벽한 적자입니다. 대금을 순순히 지불하겠습니다. |
+| draw | 손익분기점에 정확히 도달했습니다. 완벽하게 공평한 결산입니다. |
 
 ### 테뮤테 (`temute`)
 
@@ -521,18 +525,18 @@
 
 | event | 검수 문안 |
 |---|---|
-| table-open | TODO_GEMINI |
-| self-match | TODO_GEMINI |
-| self-miss | TODO_GEMINI |
-| opponent-match | TODO_GEMINI |
-| opponent-miss | TODO_GEMINI |
-| streak | TODO_GEMINI |
-| ahead | TODO_GEMINI |
-| behind | TODO_GEMINI |
-| last-pair | TODO_GEMINI |
-| victory | TODO_GEMINI |
-| defeat | TODO_GEMINI |
-| draw | TODO_GEMINI |
+| table-open | 하아… 판 펼쳐졌네. 다치지 말고 차근차근 시작해야지. |
+| self-match | 제대로 짚었네. 현장 일은 이렇게 딱 맞물려야 깔끔하잖아. |
+| self-miss | 휴, 손끝이 조급했네. 서두르지 말고 차분하게 조준해야지. |
+| opponent-match | 오, 제법이네. 짝 하나 챙겼다고 흥분하면 다음 일 꼬이잖아. |
+| opponent-miss | 하아… 시야가 왜 이리 좁아? 제대로 안 살피면 제풀에 넘어지잖아. |
+| streak | 흐름 탔네. 나 언니 노릇만 하는 줄 알아? 내 실무력은 확실하잖아. |
+| ahead | 점수 차가 벌어지네. 무리하지 말고 페이스 유지해야지. |
+| behind | 휴, 약간 뒤처졌네. 그래도 이 정도 찌꺼기는 금방 치울 수 있잖아. |
+| last-pair | 하아… 딱 한 쌍 남았네. 철수할 때까지 방심하지 말아야지. |
+| victory | 판은 내가 정리했네. 졌다고 풀죽지 말고 끼니나 제때 챙겨 먹어야지. |
+| defeat | 휴, 이번엔 내가 졌네. 그래도 속상하다고 삼시 세 끼 굶으면 안 되잖아. |
+| draw | 딱 반반이네. 사고 없이 서로 비겼으니 다행이잖아. |
 
 ### 트레버 (`traver`)
 
@@ -540,18 +544,18 @@
 
 | event | 검수 문안 |
 |---|---|
-| table-open | TODO_GEMINI |
-| self-match | TODO_GEMINI |
-| self-miss | TODO_GEMINI |
-| opponent-match | TODO_GEMINI |
-| opponent-miss | TODO_GEMINI |
-| streak | TODO_GEMINI |
-| ahead | TODO_GEMINI |
-| behind | TODO_GEMINI |
-| last-pair | TODO_GEMINI |
-| victory | TODO_GEMINI |
-| defeat | TODO_GEMINI |
-| draw | TODO_GEMINI |
+| table-open | 폐허가 된 백화점을 털듯 조심조심 가자. 욕심만 안 부리면 돼. |
+| self-match | 한 짝 맞췄네. 운 좋게 구역 잔해에서 쓸 만한 걸 주운 것뿐이야. |
+| self-miss | 틀렸군. 내 분수를 잊고 섣불리 덤벼들었다가 손해를 본 것뿐이야. |
+| opponent-match | 상대가 챙겨간 건 내 물건이 아니었으니 아쉬워할 리 없어. |
+| opponent-miss | 열쇠도 없이 탐색하려니 틀리지. 남의 영역을 탐내지 않으면 돼. |
+| streak | 연속 득점이라고 우쭐해할 리 없어. 운이 잠깐 따랐을 뿐이야. |
+| ahead | 점수가 앞선다고 해 봤자 나한테 허용된 분수 안에서 움직이면 돼. |
+| behind | 점수가 밀리는 건 당연하지. 애초에 내가 욕심을 낼 리 없어. |
+| last-pair | 판에 남은 건 딱 한 짝이야. 마지막 폐품까지 싹 챙기면 돼. |
+| victory | 내가 판을 싹 쓸어 담아 이기다니, 이런 로또가 터질 리 없어. |
+| defeat | 판돈 다 날리고 패배했지만, 결국 내 분수대로 돌아온 것뿐이야. |
+| draw | 동점이군. 내 분수에 딱 맞게 반씩 나눠 가졌다고 생각하면 돼. |
 
 ### 땡칠이 (`ttaengchil`)
 
@@ -559,18 +563,18 @@
 
 | event | 검수 문안 |
 |---|---|
-| table-open | TODO_GEMINI |
-| self-match | TODO_GEMINI |
-| self-miss | TODO_GEMINI |
-| opponent-match | TODO_GEMINI |
-| opponent-miss | TODO_GEMINI |
-| streak | TODO_GEMINI |
-| ahead | TODO_GEMINI |
-| behind | TODO_GEMINI |
-| last-pair | TODO_GEMINI |
-| victory | TODO_GEMINI |
-| defeat | TODO_GEMINI |
-| draw | TODO_GEMINI |
+| table-open | 판 시작이다! 카드 본다! 눈 똑바로 뜬다! |
+| self-match | 찾았다! 똑같아! 컹! 내가 찾았잖아! |
+| self-miss | 틀렸다! 이거 아니다! 둘이 다르잖아! |
+| opponent-match | 그거 가져갔어! 너 뺏어갔다! 으르렁! |
+| opponent-miss | 너 틀렸다! 헛 짚었잖아! 킥킥! |
+| streak | 또 맞았다! 계속 맞았어! 멍! 신난다! |
+| ahead | 나 앞선다! 점수 많아! 내가 일등이다! |
+| behind | 나 밀렸다! 쫓아간다! 뒤에 있잖아! |
+| last-pair | 하나 남았다! 저거다! 딱 보이잖아! |
+| victory | 내가 다 맞혔다! 전부 내 거잖아! 멍! |
+| defeat | 졌다! 뺏겼어! 판 끝났다! |
+| draw | 비겼다! 똑같잖아! 안 졌다! |
 
 ### 튜밋튜 (`tumit-tu`)
 
@@ -578,18 +582,18 @@
 
 | event | 검수 문안 |
 |---|---|
-| table-open | TODO_GEMINI |
-| self-match | TODO_GEMINI |
-| self-miss | TODO_GEMINI |
-| opponent-match | TODO_GEMINI |
-| opponent-miss | TODO_GEMINI |
-| streak | TODO_GEMINI |
-| ahead | TODO_GEMINI |
-| behind | TODO_GEMINI |
-| last-pair | TODO_GEMINI |
-| victory | TODO_GEMINI |
-| defeat | TODO_GEMINI |
-| draw | TODO_GEMINI |
+| table-open | 카드가 전장에 펼쳐졌네요! 저 같은 E랭크 헌터에겐 껌이거든요! |
+| self-match | 짝 찾았어요! 누나한테 자랑해도 될 만큼 완벽한 탐색이었죠?! |
+| self-miss | 앗, 장비 점검이 안 돼서 틀린 거예요! 제 실력이 모자란 게 아니거든요! |
+| opponent-match | 제법이시네요! E랭크 헌터의 휘장을 단 저를 쫓아오려면 멀었죠?! |
+| opponent-miss | 빗나갔죠?! 역시 고위 구역 전술은 저처럼 훈련된 헌터만 아는 거예요! |
+| streak | 연속 맞추기 성공이에요! 이게 바로 E랭크 헌터의 동체 시력이거든요! |
+| ahead | 제가 승기를 잡았어요! 고위 랭커들의 영상을 정독한 보람이 있죠?! |
+| behind | 점수가 밀린다고 당황할 것 같아요?! 전 역전 전문 E랭크 헌터거든요! |
+| last-pair | 마지막 패 하나 남았네요! 제 최후의 필살기를 보여줄 타임이거든요! |
+| victory | 제가 대승리를 거뒀어요! 카트린카한테 치료비 안 줘도 되는 날이에요! |
+| defeat | 졌다고요?! 말도 안 돼, E랭크 헌터인 저의 명예에 흠집이 생겼거든요! |
+| draw | 무승부로 끝났네요! S급 몬스터를 만나서 비긴 것과 다름없죠?! |
 
 ### 율 (`yul`)
 
@@ -597,18 +601,18 @@
 
 | event | 검수 문안 |
 |---|---|
-| table-open | TODO_GEMINI |
-| self-match | TODO_GEMINI |
-| self-miss | TODO_GEMINI |
-| opponent-match | TODO_GEMINI |
-| opponent-miss | TODO_GEMINI |
-| streak | TODO_GEMINI |
-| ahead | TODO_GEMINI |
-| behind | TODO_GEMINI |
-| last-pair | TODO_GEMINI |
-| victory | TODO_GEMINI |
-| defeat | TODO_GEMINI |
-| draw | TODO_GEMINI |
+| table-open | 판이 펼쳐진 건가요… 근데 방금 칼을 어디 뒀었죠? |
+| self-match | 두 장이 맞아떨어졌나 봐요. <br>…저, 뭘 맞추려던 거였죠? |
+| self-miss | 둘이 서로 안 맞나 봐요… 어디를 뒤집으려고 했었죠? |
+| opponent-match | 그걸 찾아내신 건가요? <br>…근데 손에 든 게 뭐였죠? |
+| opponent-miss | 그쪽도 빗나가셨나 봐요… 다음이 누구 차례였죠? |
+| streak | 연달아 짝이 맞았나 봐요. <br>…저, 방금 몇 개나 맞췄었죠? |
+| ahead | 점수가 앞서는 중인가요… 어디까지 생각하고 있었죠? |
+| behind | 제가 점수로 밀리나 봐요. <br>…저, 어느 쪽 패를 보고 있었죠? |
+| last-pair | 판에 한 짝만 남은 건가요… 마지막 위치가 어디였죠? |
+| victory | 대국을 이긴 건가요… <br>근데 저, 무슨 게임을 하고 있었죠? |
+| defeat | 제가 패배했나 봐요… 저, 아까 수량을 맞게 세었었죠? |
+| draw | 점수가 똑같이 끝난 건가요… 원래 비기면 어떻게 되기로 했었죠? |
 
 ## 4. 반환 전 자가 검수
 

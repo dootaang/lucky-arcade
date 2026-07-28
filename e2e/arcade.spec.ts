@@ -227,7 +227,7 @@ test("plays, wagers, records, and restores the public image-only match-pairs tab
       await expect(page.locator(".match-pairs-card.is-matched")).toHaveCount(2);
     }
   }
-  await expect(page.locator(".match-pairs-result")).toContainText("승리했습니다");
+  await expect(page.locator(".match-pairs-result")).toContainText("나의 승리");
   await expect(page.locator(".match-pairs-result")).toContainText("상대 전적 · 1승 0패");
   const persisted = await page.evaluate(async () => {
     const database = await new Function("return import('/src/lib/database.ts')")();
@@ -241,7 +241,7 @@ test("plays, wagers, records, and restores the public image-only match-pairs tab
   await page.goto("/");
   await expect(page.getByRole("region", { name: "이어하기" })).toContainText("테메로세 카지노 · 짝맞추기");
   await page.getByRole("button", { name: "짝맞추기 이어하기", exact: true }).click();
-  await expect(page.locator(".match-pairs-result")).toContainText("승리했습니다");
+  await expect(page.locator(".match-pairs-result")).toContainText("나의 승리");
   expect((await page.evaluate(async () => (await new Function("return import('/src/lib/database.ts')")()).readWallet())).balance).toBe(persisted.wallet.balance);
 });
 
