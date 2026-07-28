@@ -1,6 +1,6 @@
 import type { MatchPairsFace } from "@lucky-arcade/match-pairs";
 
-export const TEMEROSA_MATCH_PAIRS_PACK_VERSION = "temerosa-match-pairs/0.2" as const;
+export const TEMEROSA_MATCH_PAIRS_PACK_VERSION = "temerosa-match-pairs/0.3" as const;
 
 // Owner-approved static allowlist. Runtime selection may only choose from this
 // list; names and character ids are evidence and are never rendered to players.

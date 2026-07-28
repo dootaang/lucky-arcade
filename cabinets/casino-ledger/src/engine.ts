@@ -215,11 +215,11 @@ function settlementCandidates(tableId: NpcSession["tableId"], stake: NpcStake, l
   ));
   if (tableId === "temerosa-match-pairs") {
     return [
-      ...leverage(stake, 0, "loss", "match-pairs-paytable/0.2", 5),
-      ...leverage(stake, stake, "draw", "match-pairs-paytable/0.2", 1),
-      ...leverage(stake, Math.round(stake * 1.5), "win-1.5x", "match-pairs-paytable/0.2", 3),
-      ...leverage(stake, stake * 2, "win-2x", "match-pairs-paytable/0.2", 2),
-      ...leverage(stake, Math.round(stake * 2.5), "win-2.5x", "match-pairs-paytable/0.2", 1),
+      ...leverage(stake, 0, "loss", "match-pairs-paytable/0.3", 5),
+      ...leverage(stake, stake, "draw", "match-pairs-paytable/0.3", 1),
+      ...leverage(stake, Math.round(stake * 1.5), "win-1.5x", "match-pairs-paytable/0.3", 3),
+      ...leverage(stake, stake * 2, "win-2x", "match-pairs-paytable/0.3", 2),
+      ...leverage(stake, Math.round(stake * 2.5), "win-2.5x", "match-pairs-paytable/0.3", 1),
     ];
   }
   if (tableId === "indian-poker") {

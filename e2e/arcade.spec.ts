@@ -218,7 +218,7 @@ test("plays, wagers, records, and restores the public image-only match-pairs tab
     if (pair === 0) {
       const pending = await page.evaluate(async () => {
         const database = await new Function("return import('/src/lib/database.ts')")();
-        return { wallet: await database.readWallet(), wager: (await database.listGameWagers("temerosa-match-pairs:versus-1"))[0] };
+        return { wallet: await database.readWallet(), wager: (await database.listGameWagers("temerosa-match-pairs:versus-2"))[0] };
       });
       expect(pending.wallet.balance).toBe(17);
       expect(pending.wager).toMatchObject({ status: "reserved", stake: 10, reservedAmount: 20 });
@@ -231,9 +231,9 @@ test("plays, wagers, records, and restores the public image-only match-pairs tab
   await expect(page.locator(".match-pairs-result")).toContainText("상대 전적 · 1승 0패");
   const persisted = await page.evaluate(async () => {
     const database = await new Function("return import('/src/lib/database.ts')")();
-    return { wallet: await database.readWallet(), wagers: await database.listGameWagers("temerosa-match-pairs:versus-1"), records: await database.listMatchRecordsForSession("temerosa-match-pairs:versus-1", 10) };
+    return { wallet: await database.readWallet(), wagers: await database.listGameWagers("temerosa-match-pairs:versus-2"), records: await database.listMatchRecordsForSession("temerosa-match-pairs:versus-2", 10) };
   });
-  expect([30, 40, 50]).toContain(persisted.wagers[0]?.settlementCredit);
+  expect([26, 36, 46]).toContain(persisted.wagers[0]?.settlementCredit);
   expect(persisted.wallet.balance).toBe(37 - 20 + persisted.wagers[0].settlementCredit);
   expect(persisted.wagers[0]).toMatchObject({ cabinetId: "temerosa-match-pairs", stake: 10, reservedAmount: 20, status: "settled" });
   expect(persisted.records).toHaveLength(1);

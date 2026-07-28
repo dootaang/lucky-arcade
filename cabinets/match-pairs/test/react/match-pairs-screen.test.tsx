@@ -18,9 +18,10 @@ const faces: MatchPairsFace[] = Array.from({ length: 10 }, (_, index) => ({
 const assets = Object.fromEntries(faces.map((face, index) => [face.assetId, `/images/neutral-${index}.webp`]));
 const opponent: MatchPairsOpponent = {
   id: "npc", name: "NPC", portraits: { neutral: "npc-neutral", pleased: "npc-pleased", tense: "npc-tense" },
-  despairPortrait: "npc-despair", memoryCapacity: 6, recallAccuracy: 0.8, memoryRetention: 0.91, consistency: 0.72, winCreditMultiplier: 2,
+  despairPortrait: "npc-despair", memoryCapacity: 6, observationRate: 0.76, recallAccuracy: 0.8, memoryRetention: 0.91,
+  consistency: 0.72, searchStyle: "mixed", streakComposure: 0.84, difficultyTier: 2, winCreditMultiplier: 2,
 };
-const opponents = [opponent];
+const opponents = [opponent, { ...opponent, id: "npc-2", name: "NPC 2", portraits: { neutral: "npc-neutral", pleased: "npc-pleased", tense: "npc-tense" } }];
 const allAssets = { ...assets, "npc-neutral": "/images/npc-neutral.webp", "npc-pleased": "/images/npc-pleased.webp", "npc-tense": "/images/npc-tense.webp", "npc-despair": "/images/npc-despair.webp" };
 
 describe("match pairs screen markup", () => {
@@ -38,12 +39,12 @@ describe("match pairs screen markup", () => {
       initialDifficulty={difficulty}
     />);
     expect(markup.match(/class="match-pairs-card"/g) ?? []).toHaveLength(cardCount);
-    expect(markup.match(/<img/g)).toHaveLength(cardCount + 2);
+    expect(markup.match(/<img/g)).toHaveLength(cardCount + 3);
     expect(markup).toContain('alt=""');
     expect(markup).toContain('aria-label="A1 카드 뒤집기"');
     expect(markup).toContain(`aria-label="${lastCoordinate} 카드 뒤집기"`);
     expect(markup).toContain("10 P · 2배로 시작");
-    expect(markup).toContain("승리 시 40 P 반환");
+    expect(markup).toContain("승리 시 35 P 반환");
     expect(markup).not.toContain("화면에 나오면 안 되는 인물");
     expect(markup).not.toContain("title=");
   });
@@ -59,7 +60,7 @@ describe("match pairs screen markup", () => {
       sessionId="session"
       initialState={complete}
     />);
-    expect(markup).toContain("승리했습니다");
+    expect(markup).toContain("나의 승리");
     expect(markup).toContain(`나 ${complete.claims.player.length}짝`);
     expect(markup).not.toContain("화면에 나오면 안 되는 인물");
     expect(markup).not.toContain("표정");

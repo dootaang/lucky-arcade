@@ -158,8 +158,8 @@ function neutralCycleFor(session: NpcSession, openingBalance: number, maximum: n
   if (stake === 0) return Object.freeze([]);
   const multiplier = session.reservedAmount / stake;
   if (session.tableId === "temerosa-match-pairs") return Object.freeze([
-    round(session.reservedAmount, 0, "loss", "match-pairs-paytable/0.2"),
-    round(session.reservedAmount, stake * 2 * multiplier, "win-2x", "match-pairs-paytable/0.2"),
+    round(session.reservedAmount, 0, "loss", "match-pairs-paytable/0.3"),
+    round(session.reservedAmount, stake * 2 * multiplier, "win-2x", "match-pairs-paytable/0.3"),
   ]);
   if (session.tableId === "indian-poker") return Object.freeze([
     round(session.reservedAmount, 0, "chips-0", "temerosa-indian-poker-paytable/0.3"),
