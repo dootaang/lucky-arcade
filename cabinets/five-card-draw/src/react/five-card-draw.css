@@ -1,0 +1,73 @@
+.five-card-draw {
+  --fcd-felt: #123c31;
+  --fcd-gold: #e0bd68;
+  display: grid;
+  gap: 1.25rem;
+  padding: clamp(1rem, 3vw, 2rem);
+  color: #f9f3df;
+  background: radial-gradient(circle at 50% 20%, #1e5c49, var(--fcd-felt) 60%);
+  border: 1px solid color-mix(in srgb, var(--fcd-gold), transparent 45%);
+  border-radius: 1rem;
+}
+
+.five-card-draw h2,
+.five-card-draw h3,
+.five-card-draw p {
+  margin: 0;
+}
+
+.five-card-draw__eyebrow {
+  color: var(--fcd-gold);
+  font-size: 0.72rem;
+  letter-spacing: 0.2em;
+}
+
+.five-card-draw__hand {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.five-card-draw__cards {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(3.25rem, 7rem));
+  gap: clamp(0.25rem, 1vw, 0.75rem);
+}
+
+.five-card-draw__card-button {
+  min-width: 0;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: translate 120ms ease, filter 120ms ease;
+}
+
+.five-card-draw__card-button[data-selected="true"] {
+  translate: 0 -0.75rem;
+  filter: drop-shadow(0 0 0.45rem var(--fcd-gold));
+}
+
+.five-card-draw__card-button:focus-visible {
+  outline: 3px solid var(--fcd-gold);
+  outline-offset: 3px;
+}
+
+.five-card-draw__showdown,
+.five-card-draw__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.75rem 1.5rem;
+}
+
+.five-card-draw__actions button {
+  padding: 0.7rem 1.1rem;
+  color: #1d1708;
+  font: inherit;
+  font-weight: 700;
+  background: var(--fcd-gold);
+  border: 0;
+  border-radius: 999px;
+  cursor: pointer;
+}

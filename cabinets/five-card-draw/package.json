@@ -1,0 +1,23 @@
+{
+  "name": "@lucky-arcade/five-card-draw",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./react": "./src/react/five-card-draw-screen.tsx"
+  },
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@lucky-arcade/card-table": "workspace:*",
+    "@lucky-arcade/engine": "workspace:*",
+    "@lucky-arcade/ui": "workspace:*",
+    "react": "19.2.8"
+  },
+  "devDependencies": {
+    "@types/react": "19.2.17"
+  }
+}

@@ -225,6 +225,25 @@ importers:
         specifier: 19.2.17
         version: 19.2.17
 
+  cabinets/five-card-draw:
+    dependencies:
+      '@lucky-arcade/card-table':
+        specifier: workspace:*
+        version: link:../../packages/card-table
+      '@lucky-arcade/engine':
+        specifier: workspace:*
+        version: link:../../packages/engine
+      '@lucky-arcade/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
+      react:
+        specifier: 19.2.8
+        version: 19.2.8
+    devDependencies:
+      '@types/react':
+        specifier: 19.2.17
+        version: 19.2.17
+
   cabinets/gfl-ember:
     dependencies:
       '@lucky-arcade/cabinet-sdk':
