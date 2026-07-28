@@ -1,6 +1,6 @@
 import { resultHash, XorShift32 } from "@lucky-arcade/engine";
-import { CASINO_CARD_PACK_VERSION, CASINO_CARD_STATE_CONTRACT, CASINO_CARDS_VERSION, type CasinoCardAction, type CasinoCardGameId, type CasinoCardOutcome, type CasinoCardStake, type CasinoCardState, type CasinoSeatId } from "./contracts.ts";
-import { bestPokerHand, blackjackValue, cardById, comparePokerHands, rankValue, shuffledDeck } from "./deck.ts";
+import { CASINO_CARD_PACK_VERSION, CASINO_CARD_STATE_CONTRACT, CASINO_CARDS_VERSION, type CasinoCardAction, type CasinoCardGameId, type CasinoCardOutcome, type CasinoCardStake, type CasinoCardState, type CasinoSeatId, type HoldemCpuRead, type OneCardCpuChoice, type OneCardCpuRead } from "./contracts.ts";
+import { RANKS, bestPokerHand, blackjackValue, cardById, comparePokerHands, rankValue, shuffledDeck } from "./deck.ts";
 
 const SEATS: readonly CasinoSeatId[] = ["player", "cpu-1", "cpu-2", "cpu-3"];
 
@@ -32,7 +32,7 @@ function startGame(state: CasinoCardState, seed: string, stake: CasinoCardStake,
   if (state.gameId === "blackjack") {
     const hands = { ...base.hands, player: [base.deck[0]!, base.deck[2]!], "cpu-1": [base.deck[1]!, base.deck[3]!] };
     const dealt = { ...base, hands, cursor: 4, message: "카드를 더 받을지 멈출지 고르세요." };
-    return blackjackValue(hands.player) === 21 ? settleBlackjack(dealt) : dealt;
+    return blackjackValue(hands.player) === 21 || blackjackValue(hands["cpu-1"]) === 21 ? settleBlackjack(dealt) : dealt;
   }
   if (state.gameId === "doubt") return dealDoubt(base, 1);
   if (state.gameId === "one-card") {
@@ -66,10 +66,16 @@ function reduceBlackjack(state: CasinoCardState, action: CasinoCardAction): Casi
   return settleBlackjack({ ...state, sequence: state.sequence + 1 });
 }
 function settleBlackjack(state: CasinoCardState): CasinoCardState {
+  const initialPlayer = blackjackValue(state.hands.player), initialDealer = blackjackValue(state.hands["cpu-1"]);
+  const playerNatural = state.hands.player.length === 2 && initialPlayer === 21;
+  const dealerNatural = state.hands["cpu-1"].length === 2 && initialDealer === 21;
+  if (playerNatural && dealerNatural) return complete(state, "push", state.stake ?? 0, "양쪽 모두 블랙잭입니다.");
+  if (playerNatural) return complete(state, "win", Math.floor((state.stake ?? 0) * 2.5), "블랙잭입니다.");
+  if (dealerNatural) return complete(state, "loss", 0, "딜러가 블랙잭입니다.");
   let cursor = state.cursor, dealer = [...state.hands["cpu-1"]]; while (blackjackValue(dealer) < 17) dealer.push(state.deck[cursor++]!);
-  const hands = { ...state.hands, "cpu-1": dealer }, player = blackjackValue(hands.player), house = blackjackValue(dealer), natural = hands.player.length === 2 && player === 21;
+  const hands = { ...state.hands, "cpu-1": dealer }, player = blackjackValue(hands.player), house = blackjackValue(dealer);
   if (player > 21) return complete({ ...state, hands, cursor }, "loss", 0, "21을 넘었습니다.");
-  if (house > 21 || player > house) return complete({ ...state, hands, cursor }, "win", natural ? Math.floor((state.stake ?? 0) * 2.5) : (state.stake ?? 0) * 2, natural ? "블랙잭입니다." : "하우스를 이겼습니다.");
+  if (house > 21 || player > house) return complete({ ...state, hands, cursor }, "win", (state.stake ?? 0) * 2, "하우스를 이겼습니다.");
   if (player === house) return complete({ ...state, hands, cursor }, "push", state.stake ?? 0, "무승부로 판돈을 돌려받습니다.");
   return complete({ ...state, hands, cursor }, "loss", 0, "하우스의 수가 더 높습니다.");
 }
@@ -77,14 +83,14 @@ function settleBlackjack(state: CasinoCardState): CasinoCardState {
 function dealDoubt(state: CasinoCardState, round: number): CasinoCardState {
   const hiddenCard = state.deck[state.cursor] ?? null; assert(hiddenCard, "doubt_deck_empty");
   const actual = cardById(hiddenCard).rank, rng = new XorShift32(`${state.seed}:doubt:${round}`), truthful = rng.nextUint32() % 100 < 55;
-  const falseRank = cardById(state.deck[(state.cursor + 7 + (rng.nextUint32() % 17)) % state.deck.length]!).rank;
-  const claim = truthful ? actual : falseRank === actual ? cardById(state.deck[(state.cursor + 19) % state.deck.length]!).rank : falseRank;
+  const falseRanks = RANKS.filter((rank) => rank !== actual);
+  const claim = truthful ? actual : falseRanks[rng.nextUint32() % falseRanks.length]!;
   const tellTruth = rng.nextUint32() % 100 < 68, tell = (tellTruth ? truthful : !truthful) ? "pleased" : "tense";
   return { ...state, status: "playing", hiddenCard, lastReveal: null, claim, tell, round, cursor: state.cursor + 1, message: `워어즈가 “${rankLabel(claim)}입니다”라고 선언했습니다.` };
 }
 function reduceDoubt(state: CasinoCardState, action: CasinoCardAction): CasinoCardState {
   if (action.type === "next_round") { assert(state.status === "round-result", "doubt_next_invalid"); return state.round >= 5 ? settleDoubt({ ...state, sequence: state.sequence + 1 }) : dealDoubt({ ...state, sequence: state.sequence + 1 }, state.round + 1); }
-  assert(action.type === "answer" && state.hiddenCard && state.claim, "doubt_answer_invalid");
+  assert(state.status === "playing" && action.type === "answer" && state.hiddenCard && state.claim, "doubt_answer_invalid");
   const truthful = cardById(state.hiddenCard).rank === state.claim, correct = action.answer === (truthful ? "trust" : "doubt"), score = state.score + (correct ? 1 : -1);
   return { ...state, sequence: state.sequence + 1, status: "round-result", score, lastReveal: state.hiddenCard, message: correct ? "표정을 정확히 읽었습니다." : "상대의 속임수에 걸렸습니다." };
 }
@@ -92,52 +98,66 @@ function settleDoubt(state: CasinoCardState): CasinoCardState { return state.sco
 
 function reduceOneCard(state: CasinoCardState, action: CasinoCardAction): CasinoCardState {
   assert(state.currentSeat === "player", "one_card_not_player_turn");
-  let next = state;
+  let next = state, progressed = false;
   if (action.type === "play_card") {
     assert(state.hands.player.includes(action.cardId) && canPlay(action.cardId, topDiscard(state)), "one_card_play_invalid");
     const hands = { ...state.hands, player: state.hands.player.filter((id) => id !== action.cardId) };
     next = { ...state, sequence: state.sequence + 1, hands, discard: [...state.discard, action.cardId] };
+    progressed = true;
     if (hands.player.length === 0) return complete(next, "win", (state.stake ?? 0) * 2, "손을 먼저 비웠습니다.");
   } else {
     assert(action.type === "draw_card" && !state.hands.player.some((id) => canPlay(id, topDiscard(state))), "one_card_draw_invalid");
     next = drawForSeat({ ...state, sequence: state.sequence + 1 }, "player");
+    progressed = next.hands.player.length > state.hands.player.length;
   }
-  return runCpuOneCard({ ...next, currentSeat: "cpu-1" });
+  return runCpuOneCard({ ...next, currentSeat: "cpu-1" }, progressed);
 }
-function runCpuOneCard(input: CasinoCardState): CasinoCardState {
-  let state = input;
+function runCpuOneCard(input: CasinoCardState, initialProgress: boolean): CasinoCardState {
+  let state = input, progressed = initialProgress;
   for (const seat of ["cpu-1", "cpu-2", "cpu-3"] as const) {
-    const legal = state.hands[seat].filter((id) => canPlay(id, topDiscard(state))).sort();
-    if (legal[0]) {
-      const hands = { ...state.hands, [seat]: state.hands[seat].filter((id) => id !== legal[0]) };
-      state = { ...state, hands, discard: [...state.discard, legal[0]], currentSeat: seat };
+    const choice = chooseOneCardCpuAction({ hand: state.hands[seat], topCard: topDiscard(state) });
+    if (choice.type === "play") {
+      const hands = { ...state.hands, [seat]: state.hands[seat].filter((id) => id !== choice.cardId) };
+      state = { ...state, hands, discard: [...state.discard, choice.cardId], currentSeat: seat };
+      progressed = true;
       if (hands[seat].length === 0) return complete(state, "loss", 0, `${seatName(seat)}가 먼저 손을 비웠습니다.`);
-    } else state = drawForSeat(state, seat);
+    } else {
+      const before = state.hands[seat].length;
+      state = drawForSeat(state, seat);
+      progressed ||= state.hands[seat].length > before;
+    }
   }
+  if (!progressed) return complete(state, "push", state.stake ?? 0, "낼 카드가 없어 무승부로 판돈을 돌려받습니다.");
   return { ...state, currentSeat: "player", message: "당신의 차례입니다." };
 }
 function drawForSeat(input: CasinoCardState, seat: CasinoSeatId): CasinoCardState {
   let state = input; if (state.cursor >= state.deck.length) state = recycleOneCardDeck(state);
-  const card = state.deck[state.cursor]; assert(card, "one_card_deck_empty");
+  const card = state.deck[state.cursor]; if (!card) return state;
   return { ...state, cursor: state.cursor + 1, hands: { ...state.hands, [seat]: [...state.hands[seat], card] } };
 }
-function recycleOneCardDeck(state: CasinoCardState): CasinoCardState { const top = topDiscard(state), recycled = state.discard.slice(0, -1).reverse(); assert(recycled.length > 0, "one_card_recycle_empty"); return { ...state, deck: recycled, cursor: 0, discard: [top] }; }
+function recycleOneCardDeck(state: CasinoCardState): CasinoCardState { const top = topDiscard(state), recycled = state.discard.slice(0, -1).reverse(); return recycled.length > 0 ? { ...state, deck: recycled, cursor: 0, discard: [top] } : state; }
 function topDiscard(state: CasinoCardState): string { const card = state.discard[state.discard.length - 1]; assert(card, "one_card_discard_empty"); return card; }
 function canPlay(cardId: string, topId: string): boolean { const card = cardById(cardId), top = cardById(topId); return card.suit === top.suit || card.rank === top.rank; }
+
+export function chooseOneCardCpuAction(read: OneCardCpuRead): OneCardCpuChoice {
+  const cardId = [...read.hand].filter((id) => canPlay(id, read.topCard)).sort()[0];
+  return cardId ? { type: "play", cardId } : { type: "draw" };
+}
 
 function reduceHoldem(state: CasinoCardState, action: CasinoCardAction): CasinoCardState {
   assert(action.type === "poker", "holdem_action_invalid");
   if (action.action === "fold") return complete({ ...state, sequence: state.sequence + 1 }, "loss", state.reservedAmount - state.committed, "폴드했습니다. 쓰지 않은 판돈은 돌아옵니다.");
   const unit = state.stake ?? 0, cost = action.action === "raise" ? unit * 2 : unit, committed = Math.min(state.reservedAmount, state.committed + cost);
   const round = state.round + 1, communityVisible = round === 1 ? 3 : Math.min(5, round + 2), folded = { ...state.folded };
-  for (const seat of ["cpu-1", "cpu-2", "cpu-3"] as const) if (!folded[seat]) folded[seat] = cpuFoldsHoldem(state, seat, communityVisible, round, action.action);
+  for (const seat of ["cpu-1", "cpu-2", "cpu-3"] as const) if (!folded[seat]) folded[seat] = holdemCpuFolds({ seed: state.seed, seatId: seat, holeCards: state.hands[seat], visibleCommunity: state.community.slice(0, state.communityVisible), round, playerAction: action.action });
   const next = { ...state, sequence: state.sequence + 1, committed, round, communityVisible, folded, message: round === 1 ? "플롭이 열렸습니다." : round === 2 ? "턴 카드가 열렸습니다." : "리버 카드가 열렸습니다." };
   return round >= 3 || committed >= state.reservedAmount ? settleHoldem(next) : next;
 }
-function cpuFoldsHoldem(state: CasinoCardState, seat: CasinoSeatId, visible: number, round: number, playerAction: "call" | "raise"): boolean {
-  const cards = [...state.hands[seat], ...state.community.slice(0, visible)], high = Math.max(...cards.map(rankValue)), pair = new Set(cards.map((id) => cardById(id).rank)).size < cards.length;
-  const strength = (pair ? 35 : 0) + high * 3 + visible * 2, threshold = (playerAction === "raise" ? 58 : 42) + round * 2;
-  const noise = new XorShift32(`${state.seed}:holdem:${round}:${seat}`).nextUint32() % 31;
+export function holdemCpuFolds(read: HoldemCpuRead): boolean {
+  assert(read.holeCards.length === 2 && read.visibleCommunity.length <= 5, "holdem_cpu_read_invalid");
+  const cards = [...read.holeCards, ...read.visibleCommunity], high = Math.max(...cards.map(rankValue)), pair = new Set(cards.map((id) => cardById(id).rank)).size < cards.length;
+  const strength = (pair ? 35 : 0) + high * 3 + read.visibleCommunity.length * 2, threshold = (read.playerAction === "raise" ? 58 : 42) + read.round * 2;
+  const noise = new XorShift32(`${read.seed}:holdem:${read.round}:${read.seatId}`).nextUint32() % 31;
   return strength + noise < threshold;
 }
 function settleHoldem(state: CasinoCardState): CasinoCardState {

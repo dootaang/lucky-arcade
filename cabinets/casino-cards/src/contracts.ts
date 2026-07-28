@@ -59,6 +59,24 @@ export type CasinoCardAction =
 
 export interface PokerHandValue { category: number; kickers: number[]; label: string; }
 
+/** The complete information available to one Hold'em CPU decision. */
+export interface HoldemCpuRead {
+  readonly seed: string;
+  readonly seatId: Exclude<CasinoSeatId, "player">;
+  readonly holeCards: readonly string[];
+  readonly visibleCommunity: readonly string[];
+  readonly round: number;
+  readonly playerAction: "call" | "raise";
+}
+
+/** A one-card CPU sees its own hand and the public top card only. */
+export interface OneCardCpuRead {
+  readonly hand: readonly string[];
+  readonly topCard: string;
+}
+
+export type OneCardCpuChoice = { type: "play"; cardId: string } | { type: "draw" };
+
 export const CASINO_GAME_INFO: Readonly<Record<CasinoCardGameId, { title: string; description: string; minutes: { min: number; max: number }; maxExposure: number }>> = {
   "high-low": { title: "하이로우", description: "다음 카드가 더 높을지 낮을지 맞히고 배당을 쌓는 빠른 게임.", minutes: { min: 1, max: 2 }, maxExposure: 1 },
   blackjack: { title: "블랙잭", description: "21을 넘지 않게 카드를 받고 하우스보다 높은 수를 만든다.", minutes: { min: 1, max: 2 }, maxExposure: 1 },

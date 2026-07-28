@@ -31,6 +31,7 @@ export function blackjackValue(cards: readonly string[]): number {
 export function comparePokerHands(left: readonly string[], right: readonly string[]): number { return compareValues(bestPokerHand(left), bestPokerHand(right)); }
 export function bestPokerHand(cards: readonly string[]): PokerHandValue {
   if (cards.length < 5 || cards.length > 7) throw new Error("poker_hand_size_invalid");
+  if (new Set(cards).size !== cards.length) throw new Error("poker_card_duplicate");
   let best: PokerHandValue | null = null;
   for (const five of combinations(cards, 5)) { const value = evaluateFive(five); if (!best || compareValues(value, best) > 0) best = value; }
   return best as PokerHandValue;
