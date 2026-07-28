@@ -1,6 +1,6 @@
-export const CASINO_CARDS_VERSION = "casino-cards/0.1" as const;
-export const CASINO_CARD_STATE_CONTRACT = "casino-card-state/0.1" as const;
-export const CASINO_CARD_PACK_VERSION = "temerosa-casino-cards/0.1" as const;
+export const CASINO_CARDS_VERSION = "casino-cards/0.2" as const;
+export const CASINO_CARD_STATE_CONTRACT = "casino-card-state/0.2" as const;
+export const CASINO_CARD_PACK_VERSION = "temerosa-casino-cards/0.2" as const;
 export const CASINO_CARD_STAKES = [10, 50, 200] as const;
 
 export type CasinoCardGameId = "high-low" | "blackjack" | "doubt" | "one-card" | "texas-holdem";

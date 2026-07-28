@@ -60,6 +60,14 @@ describe("five-card draw game", () => {
     expect(fiveCardDrawPublicView(complete).npcHand).toEqual(complete.npcHand);
     expect(complete.result?.outcome).toMatch(/^(player-win|npc-win|tie)$/);
   });
+
+  it("keeps the action sequence monotonic across a completed reset", () => {
+    const playing = started("monotonic");
+    expect(() => reduceFiveCardDraw(playing, { type: "reset" })).toThrow("five_card_draw_reset_not_allowed");
+    const complete = reduceFiveCardDraw(playing, { type: "exchange", cardIds: [] });
+    const reset = reduceFiveCardDraw(complete, { type: "reset" });
+    expect(reset).toMatchObject({ phase: "ready", sequence: complete.sequence + 1 });
+  });
 });
 
 describe("deterministic NPC draw strategy", () => {

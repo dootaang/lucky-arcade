@@ -1,14 +1,15 @@
 import type { StandardCardId } from "@lucky-arcade/card-table";
+import { WAGER_MULTIPLIERS, type WagerMultiplier } from "@lucky-arcade/engine";
 
 export const VIDEO_POKER_VERSION = "video-poker/0.1" as const;
 export const VIDEO_POKER_STATE_CONTRACT = "video-poker-state/0.1" as const;
 export const TEMEROSA_VIDEO_POKER_PACK_VERSION = "temerosa-video-poker/0.1" as const;
 export const JACKS_OR_BETTER_TERMS_VERSION = "jacks-or-better-paytable/0.1" as const;
 export const VIDEO_POKER_STAKES = [10, 50, 200] as const;
-export const VIDEO_POKER_WAGER_MULTIPLIERS = [1, 2, 3, 4, 5] as const;
+export const VIDEO_POKER_WAGER_MULTIPLIERS = WAGER_MULTIPLIERS;
 
 export type VideoPokerStake = (typeof VIDEO_POKER_STAKES)[number];
-export type VideoPokerWagerMultiplier = (typeof VIDEO_POKER_WAGER_MULTIPLIERS)[number];
+export type VideoPokerWagerMultiplier = WagerMultiplier;
 export type VideoPokerStatus = "ready" | "holding" | "complete";
 export type JacksOrBetterCategory =
   | "royal-flush"

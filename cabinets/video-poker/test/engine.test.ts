@@ -55,6 +55,11 @@ describe("video poker engine", () => {
     const restarted = reduceVideoPoker(complete, { type: "restart" });
     expect(restarted).toMatchObject({ status: "ready", hand: [], wager: null, outcome: null });
   });
+
+  it("uses the shared casino leverage contract", () => {
+    const ready = createVideoPokerState();
+    expect(() => reduceVideoPoker(ready, { type: "deal", seed: "one-x", wager: { stake: 10, multiplier: 1 as never, wagerId: "invalid" } })).toThrow("video_poker_wager_invalid");
+  });
 });
 
 function deal(seed: string): VideoPokerState {

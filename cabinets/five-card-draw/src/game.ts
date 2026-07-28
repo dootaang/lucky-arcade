@@ -34,7 +34,10 @@ export function createFiveCardDrawState(context: FiveCardDrawContext): FiveCardD
 }
 
 export function reduceFiveCardDraw(state: FiveCardDrawState, action: FiveCardDrawAction): FiveCardDrawState {
-  if (action.type === "reset") return createFiveCardDrawState(state.context);
+  if (action.type === "reset") {
+    if (state.phase !== "complete") throw new Error("five_card_draw_reset_not_allowed");
+    return { ...createFiveCardDrawState(state.context), sequence: state.sequence + 1 };
+  }
   if (action.type === "start") return startMatch(state, action.seed);
   return exchangeCards(state, action.cardIds);
 }
