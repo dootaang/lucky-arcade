@@ -300,7 +300,7 @@ test("filters hidden RecentPlay records and ignores the retired query preview", 
   await expect(page.getByText("소녀전선: 잔불 작전")).toHaveCount(0);
 });
 
-test("plays, wagers, and restores the public five-round Indian poker table", async ({ page }, testInfo) => {
+test("selects, wagers, and restores a five-round Indian poker table while defaulting to seven", async ({ page }, testInfo) => {
   test.skip(testInfo.project.metadata.mobile === true);
   const browserErrors: string[] = [];
   page.on("pageerror", (error) => browserErrors.push(error.message));
@@ -308,6 +308,8 @@ test("plays, wagers, and restores the public five-round Indian poker table", asy
   await page.evaluate(() => new Promise<void>((resolve, reject) => { const opening = indexedDB.open("lucky-arcade", 7); opening.onerror = () => reject(opening.error); opening.onsuccess = () => { const db = opening.result, transaction = db.transaction("wallet", "readwrite"); transaction.objectStore("wallet").put({ contract: "wallet/0.1", id: "wallet", balance: 1_000, updatedAt: new Date().toISOString() }); transaction.onerror = () => reject(transaction.error); transaction.oncomplete = () => { db.close(); resolve(); }; }; }));
   await page.goto("/play/indian-poker");
   await expect(page.getByRole("heading", { name: "인디언 포커" })).toBeVisible();
+  await expect(page.getByRole("button", { name: /7라운드/ })).toHaveAttribute("aria-pressed", "true");
+  await page.getByRole("button", { name: "5라운드", exact: true }).click();
   await page.getByRole("button", { name: "시작", exact: true }).click();
   await expect(page.locator(".indian-poker-player").getByRole("img", { name: "보이지 않는 내 카드" })).toBeVisible();
   await takeSafeIndianPokerAction(page);
@@ -315,18 +317,28 @@ test("plays, wagers, and restores the public five-round Indian poker table", asy
   await page.getByRole("button", { name: "다음 라운드" }).click();
   await page.reload();
   await expect(page.getByText("2/5 라운드")).toBeVisible();
-  for (let round = 2; round <= 5; round += 1) {
+  for (let round = 2; round <= 5 && await page.locator(".indian-poker-result").count() === 0; round += 1) {
     await takeSafeIndianPokerAction(page);
-    await page.getByRole("button", { name: round === 5 ? "최종 결과" : "다음 라운드" }).click();
+    const next = page.getByRole("button", { name: "다음 라운드", exact: true });
+    const final = page.getByRole("button", { name: "최종 결과", exact: true });
+    if (await next.isVisible()) await next.click();
+    else await final.click();
   }
   await expect(page.locator(".indian-poker-result")).toBeVisible();
   expect(browserErrors).toEqual([]);
 });
 
 async function takeSafeIndianPokerAction(page: import("@playwright/test").Page): Promise<void> {
-  const check = page.getByRole("button", { name: "체크", exact: true });
-  if (await check.isVisible()) await check.click();
-  else await page.getByRole("button", { name: "콜 · 1칩", exact: true }).click();
+  const result = page.locator(".indian-poker-round-result");
+  for (let attempt = 0; attempt < 8; attempt += 1) {
+    if (await result.isVisible()) return;
+    const check = page.getByRole("button", { name: "체크", exact: true });
+    const call = page.getByRole("button", { name: /^콜 · [12]칩$/ });
+    if (await check.isVisible()) await check.click();
+    else if (await call.isVisible()) await call.click();
+    else await page.waitForTimeout(200);
+  }
+  await expect(result).toBeVisible();
 }
 
 test("replays one deterministic derby through all four rendering engines", async ({ page }) => {

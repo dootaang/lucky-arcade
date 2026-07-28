@@ -8,7 +8,8 @@ export interface IndianPokerNpcRead {
   round: number;
   playerChips: number;
   npcChips: number;
-  playerRaises: number;
+  pot: number;
+  playerBets: number;
   playerFolds: number;
 }
 
@@ -22,8 +23,9 @@ export function npcRead(state: IndianPokerState): IndianPokerNpcRead {
     round: state.round,
     playerChips: state.playerChips,
     npcChips: state.npcChips,
-    playerRaises: state.history.filter((round) => round.playerAction === "raise").length,
-    playerFolds: state.history.filter((round) => round.playerAction === "fold").length,
+    pot: state.pot,
+    playerBets: state.history.flatMap((round) => round.moves).filter((move) => move.seatId === "player" && move.kind === "bet").length,
+    playerFolds: state.history.flatMap((round) => round.moves).filter((move) => move.seatId === "player" && move.kind === "fold").length,
   };
 }
 

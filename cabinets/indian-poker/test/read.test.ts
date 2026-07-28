@@ -3,7 +3,7 @@ import { createIndianPokerState, npcRead, reduceIndianPoker, temerosaIndianPoker
 
 describe("indian poker legal NPC read", () => {
   it("contains the visible player card but never the NPC's own current card", () => {
-    const state = reduceIndianPoker(temerosaIndianPokerCartridge, createIndianPokerState(temerosaIndianPokerCartridge, "read"), { type: "start", seed: "read", stake: 10, wagerId: "wager" });
+    const state = reduceIndianPoker(temerosaIndianPokerCartridge, createIndianPokerState(temerosaIndianPokerCartridge, "read"), { type: "start", seed: "read", stake: 10, wagerId: "wager", roundCount: 7 });
     const read = npcRead(state);
     expect(read.visiblePlayerCardId).toBe(state.playerCardId);
     expect(read).not.toHaveProperty("npcCardId");
