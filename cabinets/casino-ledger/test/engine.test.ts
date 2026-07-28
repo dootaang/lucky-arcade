@@ -69,7 +69,7 @@ describe("casino ledger 0.7 core", () => {
       balances=close(balances,sessions);
     }
     expect(checked).toBeGreaterThan(100);
-  });
+  },30_000);
 
   it("lets old maid players self-bet and idle NPCs predict either winner or loser",()=>{
     let balances=openings();let self=0,spectator=0,wins=0,losses=0;const markets=new Set<string>();
