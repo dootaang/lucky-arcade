@@ -1,7 +1,7 @@
 /**
  * 집필 반환본을 워크시트의 자리표시자에 채워 넣는다.
  *
- *   node scripts/apply-dialogue-worksheet.mjs <worksheet.md> <returned.md> [--placeholder TODO_GEMINI]
+ *   node scripts/apply-dialogue-worksheet.mjs <worksheet.md> <returned.md> [--placeholder TODO_GEMINI] [--overwrite]
  *
  * 워크시트의 구조·해설·인물 순서는 건드리지 않고 자리표시자 칸만 교체한다.
  * 반환본에 없는 인물이나 사건이 있으면 채우지 않고 남긴 채 보고한다.
@@ -14,9 +14,11 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const [worksheetArg, returnedArg, ...rest] = process.argv.slice(2);
 const placeholderIndex = rest.indexOf("--placeholder");
 const PLACEHOLDER = placeholderIndex === -1 ? "TODO_GEMINI" : rest[placeholderIndex + 1];
+/** 재작업 반영용. 자리표시자가 아니라 이미 채워진 칸도 반환본 내용으로 교체한다. */
+const OVERWRITE = rest.includes("--overwrite");
 
 if (!worksheetArg || !returnedArg) {
-  process.stderr.write("usage: node scripts/apply-dialogue-worksheet.mjs <worksheet.md> <returned.md>\n");
+  process.stderr.write("usage: node scripts/apply-dialogue-worksheet.mjs <worksheet.md> <returned.md> [--placeholder TODO_GEMINI] [--overwrite]\n");
   process.exit(2);
 }
 
@@ -52,14 +54,18 @@ const out = lines.map((line) => {
     return line;
   }
   const row = /^\|\s*([a-z][a-z-]*)\s*\|\s*(.+?)\s*\|\s*$/.exec(line);
-  if (!characterId || !row || row[2].trim() !== PLACEHOLDER) return line;
+  if (!characterId || !row || row[1] === "event" || /^-+$/.test(row[2])) return line;
 
   const key = `${characterId}/${row[1]}`;
+  const isPlaceholder = row[2].trim() === PLACEHOLDER;
+  if (!isPlaceholder && !(OVERWRITE && returned.has(key))) return line;
+
   const text = returned.get(key);
   if (!text) {
     missing.push(key);
     return line;
   }
+  if (text === row[2].trim()) return line;
   filled += 1;
   return `| ${row[1]} | ${text} |`;
 });

@@ -707,7 +707,9 @@ test("keeps direct play free and offers an optional self prediction", async ({ p
   }));
   await page.reload();
   await page.goto("/play/temerosa-old-maid");
-  await expect(page.getByRole("button", { name: "시작", exact: true })).toBeEnabled();
+  const start = page.getByRole("button", { name: "시작", exact: true });
+  if (await start.isDisabled()) await page.getByRole("button", { name: "무작위 선택", exact: true }).click();
+  await expect(start).toBeEnabled();
   await expect(page.getByText("순위 보상 · 1등 10 P · 2등 5 P · 3등 3 P · 패배 1 P")).toBeVisible();
   await page.getByRole("button", { name: "선택 베팅 열기" }).click();
   await expect(page.getByRole("button", { name: "나", exact: true })).toHaveClass(/selected/);

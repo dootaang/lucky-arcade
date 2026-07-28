@@ -190,6 +190,87 @@ for (const [characterId, list] of byCharacter) {
   }
 }
 
+/*
+ * 인물 간 검사.
+ *
+ * 강제 실패로 만들지 않는다. 어휘장이 겹치는 것 자체는 죄가 아니고, 같은 사건에서
+ * 두 인물이 비슷하게 말할 수도 있다. 최종 판단은 사람의 캐릭터 검수다.
+ * 완전히 같은 문안만 위의 duplicate 검사가 ERROR로 잡고, 여기서는 경고만 낸다.
+ */
+
+/** 어느 인물이 말해도 이상하지 않은 게임 공용어. 겹쳐도 의미가 없다. */
+const SHARED_GAME_WORDS = new Set(["카드", "대국", "상대", "점수", "판에", "이번", "여기", "다음", "마지"]);
+
+/**
+ * 인물 전용으로 배정된 어휘. 다른 인물이 쓰면 캐릭터 구분이 무너진다.
+ * 정본 문서에서 전용으로 못 박을 때마다 여기에 추가한다.
+ */
+const RESERVED_VOCABULARY = [
+  [/장부|단가/, "raven", "레이븐의 거래·장부 어휘"],
+  [/1급 기술자/, "cicero", "키케로의 등급 자칭"],
+  [/E랭크/, "tumit-tu", "튜밋튜의 자칭 등급"],
+  [/분수/, "traver", "트레버의 자기억제 어휘"],
+  [/이 몸|신참/, "cradle", "크레이들의 선장 어휘"],
+];
+
+/**
+ * 낱말을 어간으로 거칠게 자른다. 한국어는 조사가 붙어 `대상`과 `대상은`이 다른 문자열이 되는데,
+ * 내용어 대다수가 두 음절이라 앞 두 음절만 취하면 조사·어미를 떼는 효과가 난다.
+ * 정밀한 형태소 분석이 아니라 경고 판정용 근사다.
+ */
+const tokenize = (text) => {
+  const words = text.replace(/<br>/g, " ").match(/[가-힣]{2,}|[A-Za-z]{2,}/g) || [];
+  return new Set(words.map((w) => (/[가-힣]/.test(w) ? w.slice(0, 2) : w.toLowerCase())).filter((w) => !SHARED_GAME_WORDS.has(w)));
+};
+
+const byEvent = new Map();
+for (const cell of cells) {
+  if (/TODO/i.test(cell.text)) continue;
+  if (!byEvent.has(cell.event)) byEvent.set(cell.event, []);
+  byEvent.get(cell.event).push(cell);
+
+  for (const [pattern, owner, label] of RESERVED_VOCABULARY) {
+    if (cell.characterId !== owner && pattern.test(cell.text)) {
+      report("WARN", "reserved-word", `${cell.characterId}/${cell.event}`, `${label}를 침범했다 (전용: ${owner})`);
+    }
+  }
+}
+
+/*
+ * 어휘의 희소성으로 판정한다. 서른 명이 두루 쓰는 낱말이 겹치는 건 우연이지만,
+ * 두세 명만 쓰는 특이한 낱말이 같은 사건에서 겹치면 두 인물의 사고방식이 구별되지 않는다는 뜻이다.
+ */
+const speakersOf = new Map();
+for (const cell of cells) {
+  if (/TODO/i.test(cell.text)) continue;
+  for (const word of tokenize(cell.text)) {
+    if (!speakersOf.has(word)) speakersOf.set(word, new Set());
+    speakersOf.get(word).add(cell.characterId);
+  }
+}
+const isDistinctive = (word) => {
+  const count = speakersOf.get(word)?.size ?? 0;
+  return count >= 2 && count <= 3;
+};
+
+/*
+ * 낱말 하나가 겹치는 것으로는 판정하지 않는다. 무승부에서 서른 명이 `나누다`를 쓰는 건
+ * 사건에 딸린 필연이지 결함이 아니다. 특이한 낱말이 둘 이상 겹칠 때에만 두 인물의
+ * 어휘장이 실제로 포개졌다고 본다.
+ */
+for (const [event, list] of byEvent) {
+  const tokens = list.map((cell) => tokenize(cell.text));
+  for (let i = 0; i < list.length; i += 1) {
+    for (let j = i + 1; j < list.length; j += 1) {
+      if (list[i].characterId === list[j].characterId) continue;
+      const distinctive = [...tokens[i]].filter((w) => tokens[j].has(w) && isDistinctive(w));
+      if (distinctive.length < 2) continue;
+      report("WARN", "cross-character", `${list[i].characterId}~${list[j].characterId}/${event}`,
+        `같은 사건에서 특이 어휘가 겹친다: ${distinctive.join(" ")}`);
+    }
+  }
+}
+
 // 교차 게임 재탕 — 기존 대사집과 8자 연속이 겹치면 재탕 의심.
 const priorShingles = new Map();
 for (const rel of PRIOR_WORKS) {
