@@ -15,6 +15,7 @@ const rules = new Map([
   ["cabinets/casino-ledger", ["@lucky-arcade/engine", "@lucky-arcade/ui/number-ticker", "@lucky-arcade/ui/holo-card"]],
   ["cabinets/match-pairs", ["@lucky-arcade/engine", "@lucky-arcade/ui/slide-highlight"]],
   ["cabinets/five-card-draw", ["@lucky-arcade/card-table", "@lucky-arcade/engine", "@lucky-arcade/ui/playing-card"]],
+  ["cabinets/video-poker", ["@lucky-arcade/cabinet-sdk", "@lucky-arcade/card-table", "@lucky-arcade/engine", "@lucky-arcade/ui/playing-card"]],
 ]);
 const domAllowed = ["/packages/ui/", "/apps/web/"];
 const failures = [];
