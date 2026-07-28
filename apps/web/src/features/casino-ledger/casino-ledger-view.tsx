@@ -56,7 +56,7 @@ export default function CasinoLedgerView({ userBalance, tables, onPlay }: { user
     const presences = casinoPresenceAt(TEMEROSA_NPC_GAMBLING_PROFILES, clock, TEMEROSA_NPC_LEDGER_CONTRACT);
     const settlements = recentNpcRoundSettlementsAt(TEMEROSA_NPC_GAMBLING_PROFILES, clock, TEMEROSA_NPC_LEDGER_CONTRACT, 64);
     const liveBalances = npcLiveBalancesAt(snapshot.balances, TEMEROSA_NPC_GAMBLING_PROFILES, presences, clock);
-    const playEvents = recentNpcPlayEventsAt(presences, clock, 512);
+    const playEvents = recentNpcPlayEventsAt(TEMEROSA_NPC_GAMBLING_PROFILES, clock, TEMEROSA_NPC_LEDGER_CONTRACT, 512);
     return <CasinoLedgerPanel
       npcBalances={liveBalances}
       npcSevenDayProfits={sevenDayProfits}

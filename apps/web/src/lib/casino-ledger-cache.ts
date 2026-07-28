@@ -6,10 +6,10 @@ import {
 } from "@lucky-arcade/casino-ledger";
 
 const MINUTES_PER_DAY = 1_440;
-const PREFIX = "npc-ledger/0.4:checkpoint:";
+const PREFIX = "npc-ledger/0.5:checkpoint:";
 
 export interface NpcLedgerCheckpoint {
-  contract: "npc-ledger/0.4";
+  contract: "npc-ledger/0.5";
   dayIndex: number;
   balances: Readonly<Record<string, number>>;
 }
@@ -71,12 +71,15 @@ export function npcBalancesAtWithCheckpoint(
     writeCheckpoint(storage, { contract: contract.version, dayIndex: completedDayIndex, balances: completed }, contract);
   }
 
-  const minuteOfDay = utcMinute - absoluteDay * MINUTES_PER_DAY;
+  const exactSecond = (clock as CasinoClock & { utcSecond?: () => number }).utcSecond?.();
+  const secondOfDay = exactSecond === undefined
+    ? (utcMinute - absoluteDay * MINUTES_PER_DAY) * 60 + 59
+    : exactSecond % 86_400;
   const daySessions = casinoDaySessions(contract.profiles, dayIndex, completed, contract);
   const balances: Record<string, number> = {};
   for (const profile of contract.profiles) {
     const elapsed = (daySessions[profile.id] ?? [])
-      .filter((session) => session.minuteOfDay <= minuteOfDay)
+      .filter((session) => session.secondOfDay <= secondOfDay)
       .reduce((sum, session) => sum + session.delta, 0);
     balances[profile.id] = completed[profile.id]! + elapsed;
   }

@@ -1,7 +1,8 @@
 import { XorShift32 } from "@lucky-arcade/engine";
-import type { CasinoPresentationClock, CasinoTableId, NpcPlayEvent, NpcPlayEventCode, NpcPresence } from "./contracts.ts";
+import { casinoDayPlan, completedDayBalances } from "./engine.ts";
+import type { CasinoPresentationClock, CasinoTableId, NpcGamblingProfile, NpcLedgerContract, NpcMatch, NpcPlayEvent, NpcPlayEventCode } from "./contracts.ts";
 
-const TAPE_VERSION = "npc-live-tape/0.1";
+const TAPE_VERSION = "npc-live-tape/0.2";
 const DEFAULT_LOOKBACK_SECONDS = 90;
 const ACTIONS = Object.freeze({
   "temerosa-old-maid": ["old-maid-draw", "old-maid-discard", "old-maid-reorder", "old-maid-watch"] as const,
@@ -9,56 +10,66 @@ const ACTIONS = Object.freeze({
   "temerosa-slot": ["slot-spin", "slot-reel-stop", "slot-line-check", "slot-reach"] as const,
   "indian-poker": ["poker-check", "poker-call", "poker-raise", "poker-read"] as const,
 }) satisfies Readonly<Record<CasinoTableId, readonly NpcPlayEventCode[]>>;
+const CADENCE = Object.freeze({
+  "temerosa-slot": [5,9],
+  "indian-poker": [14,24],
+  "temerosa-match-pairs": [16,28],
+  "temerosa-old-maid": [12,22],
+} as const);
 
-/**
- * Expands active, already-determined NPC sessions into a second-resolution tape.
- * These events are theatre only: settlement remains owned by npcDaySessions.
- */
+/** Every tape item belongs to a real v0.5 match. There are no ambient pseudo-actions. */
 export function recentNpcPlayEventsAt(
-  presences: readonly NpcPresence[],
+  profiles: readonly NpcGamblingProfile[],
   clock: CasinoPresentationClock,
+  contract: NpcLedgerContract,
   limit: number,
   lookbackSeconds = DEFAULT_LOOKBACK_SECONDS,
 ): readonly NpcPlayEvent[] {
-  if (!Number.isSafeInteger(limit) || limit < 0) throw new Error("npc_live_tape_invalid_limit");
-  if (!Number.isSafeInteger(lookbackSeconds) || lookbackSeconds < 1 || lookbackSeconds > 600) throw new Error("npc_live_tape_invalid_window");
-  if (limit === 0) return Object.freeze([]);
-  const now = clock.utcSecond();
-  if (!Number.isSafeInteger(now)) throw new Error("npc_live_tape_invalid_clock");
-  const lowerInclusive = now - lookbackSeconds + 1;
-  const events: NpcPlayEvent[] = [];
-
-  for (const presence of presences) {
-    const { session, tableId, startedAtUtcSecond, settlesAtUtcSecond } = presence;
-    if (!session || !tableId || startedAtUtcSecond === undefined || settlesAtUtcSecond === undefined) continue;
-    const lastActionSecond = Math.min(now, settlesAtUtcSecond - 1);
-    if (lastActionSecond < startedAtUtcSecond || now < startedAtUtcSecond) continue;
-    const prefix = `${TAPE_VERSION}:${presence.npcId}:${startedAtUtcSecond}:${tableId}`;
-    if (startedAtUtcSecond >= lowerInclusive) events.push(event(prefix, 0, presence.npcId, tableId, startedAtUtcSecond, "table-enter", session.stake));
-    const wagerSecond = startedAtUtcSecond + 1;
-    if (wagerSecond <= lastActionSecond && wagerSecond >= lowerInclusive) events.push(event(prefix, 1, presence.npcId, tableId, wagerSecond, "wager-placed", session.stake));
-    const actionCodes = ACTIONS[tableId];
-    const firstBucket = Math.max(1, Math.floor((lowerInclusive - startedAtUtcSecond) / 2));
-    const lastBucket = Math.floor((lastActionSecond - startedAtUtcSecond) / 2);
-    for (let bucket = firstBucket; bucket <= lastBucket; bucket += 1) {
-      const rng = new XorShift32(`${prefix}:action:${bucket}`);
-      const actionSecond = startedAtUtcSecond + bucket * 2 + Math.floor(rng.next() * 2);
-      if (actionSecond < lowerInclusive || actionSecond > lastActionSecond) continue;
-      const action = actionCodes[Math.floor(rng.next() * actionCodes.length)]!;
-      events.push(event(prefix, bucket + 2, presence.npcId, tableId, actionSecond, action, session.stake));
-    }
+  if (!Number.isSafeInteger(limit)||limit<0) throw new Error("npc_live_tape_invalid_limit");
+  if (!Number.isSafeInteger(lookbackSeconds)||lookbackSeconds<1||lookbackSeconds>600) throw new Error("npc_live_tape_invalid_window");
+  if(limit===0)return Object.freeze([]);
+  const now=clock.utcSecond();
+  if(!Number.isSafeInteger(now))throw new Error("npc_live_tape_invalid_clock");
+  const absoluteDay=Math.floor(now/86_400);
+  const dayIndex=absoluteDay-contract.epochUtcDay;
+  if(dayIndex<0)return Object.freeze([]);
+  const firstDay=Math.max(0,dayIndex-1);
+  let openings=firstDay===0?Object.freeze(Object.fromEntries(profiles.map((profile)=>[profile.id,profile.openingBalance]))):completedDayBalances(profiles,firstDay-1,contract);
+  const matches:Array<{match:NpcMatch;absoluteStart:number;absoluteSettle:number;firstInVisit:boolean}>=[];
+  for(let day=firstDay;day<=dayIndex;day+=1){
+    const plan=casinoDayPlan(profiles,day,openings,contract);
+    const firstByVisit=new Map<string,string>();
+    for(const match of plan.matches)if(!firstByVisit.has(match.visitId))firstByVisit.set(match.visitId,match.matchId);
+    const dayStart=(contract.epochUtcDay+day)*86_400;
+    for(const match of plan.matches)matches.push({match,absoluteStart:dayStart+match.startsAtSecondOfDay,absoluteSettle:dayStart+match.settlesAtSecondOfDay,firstInVisit:firstByVisit.get(match.visitId)===match.matchId});
+    openings=Object.freeze(Object.fromEntries(profiles.map((profile)=>[profile.id,openings[profile.id]!+(plan.sessions[profile.id]??[]).reduce((sum,session)=>sum+session.delta,0)])));
   }
-
-  events.sort((left, right) => right.utcSecond - left.utcSecond
-    || compareText(left.npcId, right.npcId)
-    || compareText(left.eventId, right.eventId));
-  return Object.freeze(events.slice(0, limit).map((value) => Object.freeze(value)));
+  const lower=now-lookbackSeconds+1;
+  const events:NpcPlayEvent[]=[];
+  for(const item of matches){
+    if(item.absoluteStart>now||item.absoluteSettle<lower)continue;
+    for(const npcId of item.match.participantIds)events.push(...eventsForParticipant(item.match,npcId,item.absoluteStart,item.absoluteSettle,item.firstInVisit,lower,now));
+  }
+  events.sort((a,b)=>b.utcSecond-a.utcSecond||compareText(a.matchId,b.matchId)||compareText(a.npcId,b.npcId)||compareText(a.eventId,b.eventId));
+  return Object.freeze(events.slice(0,limit));
 }
 
-function event(prefix: string, index: number, npcId: string, tableId: CasinoTableId, utcSecond: number, code: NpcPlayEventCode, stake: NpcPlayEvent["stake"]): NpcPlayEvent {
-  return Object.freeze({ eventId: `${prefix}:${index}:${utcSecond}`, npcId, tableId, utcSecond, code, stake });
+function eventsForParticipant(match:NpcMatch,npcId:string,start:number,settle:number,firstInVisit:boolean,lower:number,now:number):NpcPlayEvent[]{
+  const output:NpcPlayEvent[]=[];
+  const prefix=`${TAPE_VERSION}:${match.matchId}:${npcId}`;
+  if(firstInVisit&&start>=lower&&start<=now)output.push(event(prefix,0,match,npcId,start,"table-enter"));
+  if(match.stake>0&&start+1>=lower&&start+1<=now)output.push(event(prefix,1,match,npcId,start+1,"wager-placed"));
+  const [minimum,maximum]=CADENCE[match.tableId];
+  const rng=new XorShift32(`${prefix}:cadence`);
+  let second=start+randomInteger(3,Math.min(8,minimum),rng);
+  let index=2;
+  const codes=ACTIONS[match.tableId];
+  while(second<settle&&second<=now){
+    if(second>=lower){const code=codes[Math.floor(rng.next()*codes.length)]!;output.push(event(prefix,index,match,npcId,second,code));}
+    second+=randomInteger(minimum,maximum,rng);index+=1;
+  }
+  return output;
 }
-
-function compareText(left: string, right: string): number {
-  return left < right ? -1 : left > right ? 1 : 0;
-}
+function event(prefix:string,index:number,match:NpcMatch,npcId:string,utcSecond:number,code:NpcPlayEventCode):NpcPlayEvent{return Object.freeze({eventId:`${prefix}:${index}:${utcSecond}`,matchId:match.matchId,kind:"match-action",npcId,tableId:match.tableId,utcSecond,code,stake:match.stake});}
+function randomInteger(min:number,max:number,rng:XorShift32):number{return min+Math.floor(rng.next()*(max-min+1));}
+function compareText(a:string,b:string):number{return a<b?-1:a>b?1:0;}

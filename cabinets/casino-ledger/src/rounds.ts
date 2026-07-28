@@ -1,23 +1,20 @@
-import type { CasinoPresentationClock, NpcGamblingProfile, NpcLedgerContract, NpcPresence, NpcPresenceInterval, NpcRoundSettlement } from "./contracts.ts";
+import type {
+  CasinoPresentationClock,
+  NpcGamblingProfile,
+  NpcLedgerContract,
+  NpcMatchSettlement,
+  NpcPresence,
+  NpcPresenceInterval,
+  NpcRoundSettlement,
+  NpcSession,
+} from "./contracts.ts";
 import { recentNpcActivitiesAt } from "./engine.ts";
 
-const ROUND_CONTRACT = "npc-live-rounds/0.3";
+const ROUND_CONTRACT = "npc-live-rounds/0.4";
 
-/** In v0.4 a visit settlement is already a real game result; no neutral fake rounds are inserted. */
 export function npcVisitRounds(interval: NpcPresenceInterval, _profile: NpcGamblingProfile): readonly NpcRoundSettlement[] {
-  const session = interval.session;
-  return Object.freeze([Object.freeze({
-    roundId: `${ROUND_CONTRACT}:${session.matchId}:${interval.npcId}`,
-    npcId: interval.npcId,
-    tableId: session.tableId,
-    utcSecond: interval.settlesAtUtcSecond,
-    stake: session.stake,
-    reservedAmount: session.reservedAmount,
-    creditAmount: session.creditAmount,
-    delta: session.delta,
-    resultKind: session.resultKind,
-    termsVersion: session.termsVersion,
-  })]);
+  const absoluteDay = Math.floor(interval.startedAtUtcSecond/86_400);
+  return Object.freeze(interval.sessions.map((session)=>settlement(interval.npcId,absoluteDay*86_400+session.secondOfDay,session)));
 }
 
 export function recentNpcRoundSettlementsAt(
@@ -27,26 +24,27 @@ export function recentNpcRoundSettlementsAt(
   if (!Number.isSafeInteger(limit) || limit < 0 || !Number.isSafeInteger(lookbackSeconds) || lookbackSeconds <= 0) throw new Error("npc_rounds_invalid_limit");
   const now = clock.utcSecond();
   if (!Number.isSafeInteger(now)) throw new Error("npc_rounds_invalid_clock");
-  const activities = recentNpcActivitiesAt(profiles, clock, contract, Math.max(limit * 16, 256));
-  return Object.freeze(activities
-    .map(({ npcId, utcMinute, session }) => Object.freeze({
-      roundId: `${ROUND_CONTRACT}:${session.matchId}:${npcId}`,
-      npcId,
-      tableId: session.tableId,
-      utcSecond: utcMinute * 60,
-      stake: session.stake,
-      reservedAmount: session.reservedAmount,
-      creditAmount: session.creditAmount,
-      delta: session.delta,
-      resultKind: session.resultKind,
-      termsVersion: session.termsVersion,
-    }))
-    .filter((entry) => entry.utcSecond > now - lookbackSeconds && entry.utcSecond <= now)
-    .sort((a,b) => b.utcSecond-a.utcSecond || compareText(a.npcId,b.npcId) || compareText(a.roundId,b.roundId))
+  return Object.freeze(recentNpcActivitiesAt(profiles,clock,contract,Math.max(limit*8,256))
+    .map(({npcId,utcSecond,session})=>settlement(npcId,utcSecond,session))
+    .filter((entry)=>entry.utcSecond>now-lookbackSeconds&&entry.utcSecond<=now)
+    .sort((a,b)=>b.utcSecond-a.utcSecond||compareText(a.matchId,b.matchId)||compareText(a.npcId,b.npcId))
     .slice(0,limit));
 }
 
-/** Minute-resolution v0.4 balances already include every settled real round. */
+/** Groups zero-sum counterentries into the one match the player actually saw. */
+export function groupNpcRoundSettlements(entries: readonly NpcRoundSettlement[]): readonly NpcMatchSettlement[] {
+  const grouped = new Map<string,NpcRoundSettlement[]>();
+  for (const entry of entries) grouped.set(entry.matchId,[...(grouped.get(entry.matchId)??[]),entry]);
+  return Object.freeze([...grouped.entries()].map(([matchId,values])=>Object.freeze({
+    matchId,
+    visitId:values[0]!.visitId,
+    tableId:values[0]!.tableId,
+    utcSecond:Math.max(...values.map((entry)=>entry.utcSecond)),
+    participantIds:values[0]!.participantIds,
+    entries:Object.freeze(values.toSorted((a,b)=>b.delta-a.delta||compareText(a.npcId,b.npcId))),
+  })).toSorted((a,b)=>b.utcSecond-a.utcSecond||compareText(a.matchId,b.matchId)));
+}
+
 export function npcLiveBalancesAt(
   baseBalances: Readonly<Record<string,number>>, _profiles: readonly NpcGamblingProfile[],
   _presences: readonly NpcPresence[], clock: CasinoPresentationClock,
@@ -55,4 +53,13 @@ export function npcLiveBalancesAt(
   return Object.freeze({ ...baseBalances });
 }
 
+function settlement(npcId:string,utcSecond:number,session:NpcSession):NpcRoundSettlement {
+  return Object.freeze({
+    roundId:`${ROUND_CONTRACT}:${session.matchId}:${npcId}`,
+    matchId:session.matchId,visitId:session.visitId,participantIds:session.participantIds,
+    npcId,tableId:session.tableId,utcSecond,stake:session.stake,
+    reservedAmount:session.reservedAmount,creditAmount:session.creditAmount,delta:session.delta,
+    resultKind:session.resultKind,termsVersion:session.termsVersion,
+  });
+}
 function compareText(a:string,b:string):number{return a<b?-1:a>b?1:0;}

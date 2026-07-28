@@ -1,5 +1,5 @@
 import { describe,expect,it } from "vitest";
-import { casinoDaySessions,casinoPresenceAt,npcAvailability,npcPresenceIntervalsForDay,TEMEROSA_NPC_GAMBLING_PROFILES,TEMEROSA_NPC_LEDGER_CONTRACT,type CasinoPresentationClock } from "../src/index.ts";
+import { casinoDayPlan,casinoPresenceAt,npcAvailability,npcPresenceIntervalsForDay,TEMEROSA_NPC_GAMBLING_PROFILES,TEMEROSA_NPC_LEDGER_CONTRACT,type CasinoPresentationClock } from "../src/index.ts";
 
 const profiles=TEMEROSA_NPC_GAMBLING_PROFILES,contract=TEMEROSA_NPC_LEDGER_CONTRACT;
 
@@ -8,16 +8,16 @@ describe("casino floor presence",()=>{
 
   it("marks an active visit unavailable without exposing another result",()=>{
     const profile=profiles[0]!,opening=profile.openingBalance;const interval=npcPresenceIntervalsForDay(profile,0,opening,contract)[0]!;
-    const before=casinoPresenceAt([profile],fixedClock(interval.settlesAtUtcSecond-1),contract)[0]!;expect(before.phase).toBe("playing");expect(npcAvailability([before])[profile.id]?.available).toBe(false);
+    const before=casinoPresenceAt(profiles,fixedClock(interval.settlesAtUtcSecond-10),contract).find((presence)=>presence.npcId===profile.id)!;expect(["playing","settling"]).toContain(before.phase);expect(npcAvailability([before])[profile.id]?.available).toBe(false);
   });
 
   it("keeps at least four NPCs available across a one-year audit",()=>{
     let balances=Object.fromEntries(profiles.map((profile)=>[profile.id,profile.openingBalance]));
     for(let day=0;day<366;day++){
-      const sessions=casinoDaySessions(profiles,day,balances,contract);const events:Array<{second:number;delta:-1|1}>=[];
-      for(const profile of profiles){for(const interval of npcPresenceIntervalsForDay(profile,day,balances[profile.id]!,contract,Number.NEGATIVE_INFINITY,sessions[profile.id]))events.push({second:interval.startedAtUtcSecond,delta:1},{second:interval.availableAtUtcSecond,delta:-1});}
+      const plan=casinoDayPlan(profiles,day,balances,contract);const events:Array<{second:number;delta:-1|1}>=[];
+      for(const profile of profiles){for(const interval of npcPresenceIntervalsForDay(profile,day,balances[profile.id]!,contract,Number.NEGATIVE_INFINITY,plan))events.push({second:interval.startedAtUtcSecond,delta:1},{second:interval.availableAtUtcSecond,delta:-1});}
       events.sort((a,b)=>a.second-b.second||a.delta-b.delta);let busy=0;for(const event of events){busy+=event.delta;if(profiles.length-busy<4)throw new Error(`insufficient_available:${day}:${event.second}`);}
-      balances=Object.fromEntries(profiles.map((profile)=>[profile.id,balances[profile.id]!+(sessions[profile.id]??[]).reduce((sum,session)=>sum+session.delta,0)]));
+      balances=Object.fromEntries(profiles.map((profile)=>[profile.id,balances[profile.id]!+(plan.sessions[profile.id]??[]).reduce((sum,session)=>sum+session.delta,0)]));
     }
   },30_000);
 });

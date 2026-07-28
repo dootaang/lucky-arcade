@@ -82,7 +82,7 @@ test("loads the living ledger lazily and reuses the casino manifest in a game", 
   await expect(page.locator(".casino-ledger-board thead")).toContainText("잔고");
   await expect(page.locator(".casino-ledger-board tbody tr")).toHaveCount(6);
   await expect(page.getByRole("region", { name: "최근 정산" })).toBeVisible();
-  await expect(page.locator(".casino-ledger-settlements .ledger-settlement-line")).toHaveCount(5);
+  await expect(page.locator(".casino-ledger-settlements .ledger-settlement-line")).toHaveCount(8);
   expect(await page.locator(".ledger-settlement-line.is-gain, .ledger-settlement-line.is-loss").count()).toBeGreaterThan(0);
   await expect(page.locator(".ledger-settlement-line strong").first()).toHaveText(/▲ 획득|▼ 손실|— 변동 없음/);
   await expect(page.locator(".ledger-settlement-amount").first()).toHaveText(/[+−]?\d[\d,]* P/);

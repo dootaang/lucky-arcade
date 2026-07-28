@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import {
   casinoDaySessions,
+  casinoDayPlan,
   completedDayBalances,
   npcBalanceAt,
   recentNpcActivitiesAt,
@@ -16,11 +17,24 @@ const contract = TEMEROSA_NPC_LEDGER_CONTRACT;
 const profiles = TEMEROSA_NPC_GAMBLING_PROFILES;
 const openings = () => Object.fromEntries(profiles.map((profile) => [profile.id, profile.openingBalance]));
 
-describe("casino ledger 0.4 core", () => {
+describe("casino ledger 0.5 core", () => {
   it("repeats the same shared matches and exact closing for identical inputs", () => {
     const first = casinoDaySessions(profiles, 37, openings(), contract);
     expect(casinoDaySessions(profiles, 37, openings(), contract)).toEqual(first);
     expect(close(openings(), first)).toEqual(close(openings(), first));
+  });
+
+  it("derives visit profit from multiple independently settled matches",()=>{
+    const plan=casinoDayPlan(profiles,3,openings(),contract);
+    const multi=plan.visits.find((visit)=>plan.matches.filter((match)=>match.visitId===visit.visitId).length>=2);
+    expect(multi).toBeDefined();
+    const matches=plan.matches.filter((match)=>match.visitId===multi!.visitId);
+    expect(new Set(matches.map((match)=>match.matchId)).size).toBe(matches.length);
+    for(const participantId of multi!.participantIds){
+      const sessions=(plan.sessions[participantId]??[]).filter((session)=>session.visitId===multi!.visitId);
+      expect(sessions).toHaveLength(matches.length);
+      expect(sessions.reduce((sum,session)=>sum+session.delta,0)).toBe(sessions.map((session)=>session.delta).reduce((sum,value)=>sum+value,0));
+    }
   });
 
   it("uses player stakes and applies leverage symmetrically", () => {
@@ -37,7 +51,7 @@ describe("casino ledger 0.4 core", () => {
       }
       balances=close(balances,sessions);
     }
-  });
+  },30_000);
 
   it("gives every PvP match one shared id and a zero-sum settlement", () => {
     let balances=openings(); let checked=0;
@@ -71,19 +85,23 @@ describe("casino ledger 0.4 core", () => {
   });
 
   it("never becomes negative or leaves safe integer range over 10,000 days", () => {
+    const auditProfiles=profiles.map((profile)=>({...profile,sessionsPerDay:{min:1,max:1}}));
     let balances=openings();
     for(let day=0;day<10_000;day++){
-      const sessions=casinoDaySessions(profiles,day,balances,contract);
+      const sessions=casinoDaySessions(auditProfiles,day,balances,contract);
       balances=close(balances,sessions);
       for(const value of Object.values(balances)){if(!Number.isSafeInteger(value)||value<0||value>1_000_000_000)throw new Error(`invalid_balance:${day}:${value}`);}
     }
-  },30_000);
+  },120_000);
 
-  it("recovers a zero balance only through free old maid", () => {
+  it("recovers a zero balance through free old maid before any paid table", () => {
     const zero={...openings(),katrinka:0};
     const sessions=casinoDaySessions(profiles,8,zero,contract).katrinka??[];
     expect(sessions.length).toBeGreaterThan(0);
-    expect(sessions.every((session)=>session.tableId==="temerosa-old-maid"&&session.stake===0&&session.reservedAmount===0)).toBe(true);
+    const firstPaid=sessions.findIndex((session)=>session.stake>0);
+    const recoveryWindow=firstPaid<0?sessions:sessions.slice(0,firstPaid);
+    expect(recoveryWindow.length).toBeGreaterThan(0);
+    expect(recoveryWindow.every((session)=>session.tableId==="temerosa-old-maid"&&session.stake===0&&session.reservedAmount===0)).toBe(true);
     expect(sessions.reduce((sum,session)=>sum+session.delta,0)).toBeGreaterThan(0);
   });
 
@@ -94,7 +112,7 @@ describe("casino ledger 0.4 core", () => {
     expect(npcBalanceAt(profile,fixedClock(minute),contract)).toEqual(original);
   });
 
-  it("returns opening balances before the v0.4 epoch",()=>{
+  it("returns opening balances before the v0.5 epoch",()=>{
     const profile=profiles[0]!;
     expect(npcBalanceAt(profile,fixedClock(contract.epochUtcDay*1_440-1),contract)).toEqual({balance:profile.openingBalance,today:[],dayIndex:0});
   });

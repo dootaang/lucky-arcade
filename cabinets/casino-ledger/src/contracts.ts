@@ -57,9 +57,36 @@ export interface NpcGamblingProfile {
   activeHours: readonly NpcActiveWindow[];
 }
 
+export interface NpcVisit {
+  visitId: string;
+  tableId: CasinoTableId;
+  participantIds: readonly string[];
+  startedAtSecondOfDay: number;
+  endsAtSecondOfDay: number;
+}
+
+export interface NpcMatch {
+  matchId: string;
+  visitId: string;
+  tableId: CasinoTableId;
+  participantIds: readonly string[];
+  startsAtSecondOfDay: number;
+  settlesAtSecondOfDay: number;
+  stake: NpcStake;
+  multiplier: 1 | 2 | 3 | 4 | 5;
+}
+
+export interface CasinoDayPlan {
+  visits: readonly NpcVisit[];
+  matches: readonly NpcMatch[];
+  sessions: Readonly<Record<string, readonly NpcSession[]>>;
+}
+
 export interface NpcSession {
   matchId: string;
+  visitId: string;
   participantIds: readonly string[];
+  secondOfDay: number;
   minuteOfDay: number;
   tableId: CasinoTableId;
   stake: NpcStake;
@@ -71,7 +98,7 @@ export interface NpcSession {
 }
 
 export interface NpcLedgerContract {
-  version: "npc-ledger/0.4";
+  version: "npc-ledger/0.5";
   epochUtcDay: number;
   profiles: readonly NpcGamblingProfile[];
 }
@@ -84,6 +111,7 @@ export interface NpcBalanceSnapshot {
 
 export interface NpcActivity {
   npcId: string;
+  utcSecond: number;
   utcMinute: number;
   session: NpcSession;
 }
@@ -91,6 +119,9 @@ export interface NpcActivity {
 /** One real, player-scale result inside a longer NPC casino visit. */
 export interface NpcRoundSettlement {
   roundId: string;
+  matchId: string;
+  visitId: string;
+  participantIds: readonly string[];
   npcId: string;
   tableId: CasinoTableId;
   utcSecond: number;
@@ -100,6 +131,15 @@ export interface NpcRoundSettlement {
   delta: number;
   resultKind: string;
   termsVersion: string;
+}
+
+export interface NpcMatchSettlement {
+  matchId: string;
+  visitId: string;
+  tableId: CasinoTableId;
+  utcSecond: number;
+  participantIds: readonly string[];
+  entries: readonly NpcRoundSettlement[];
 }
 
 export type NpcPlayEventCode =
@@ -125,6 +165,8 @@ export type NpcPlayEventCode =
 /** Presentation-only activity. It never changes either ledger balance. */
 export interface NpcPlayEvent {
   eventId: string;
+  matchId: string;
+  kind: "match-action";
   npcId: string;
   tableId: CasinoTableId;
   utcSecond: number;
@@ -137,6 +179,8 @@ export interface NpcPresence {
   phase: NpcPresencePhase;
   tableId?: CasinoTableId;
   session?: NpcSession;
+  visitId?: string;
+  matchId?: string;
   openingBalance?: number;
   startedAtUtcSecond?: number;
   settlesAtUtcSecond?: number;
@@ -146,7 +190,9 @@ export interface NpcPresence {
 export interface NpcPresenceInterval {
   npcId: string;
   tableId: CasinoTableId;
-  session: NpcSession;
+  visit: NpcVisit;
+  sessions: readonly NpcSession[];
+  session?: NpcSession;
   openingBalance: number;
   startedAtUtcSecond: number;
   settlesAtUtcSecond: number;

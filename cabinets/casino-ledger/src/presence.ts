@@ -1,6 +1,6 @@
-import { XorShift32 } from "@lucky-arcade/engine";
-import { casinoDaySessions, completedDayBalances, npcDaySessions } from "./engine.ts";
+import { casinoDayPlan, completedDayBalances } from "./engine.ts";
 import type {
+  CasinoDayPlan,
   CasinoPresentationClock,
   NpcAvailability,
   NpcGamblingProfile,
@@ -9,53 +9,42 @@ import type {
   NpcPresenceInterval,
 } from "./contracts.ts";
 
-const MINUTES_PER_DAY = 1_440;
 const SECONDS_PER_DAY = 86_400;
 const APPROACH_SECONDS = 12;
 const SETTLE_SECONDS = 6;
 const LEAVE_SECONDS = 8;
-
-const DURATION_SECONDS = Object.freeze({
-  "temerosa-slot": [5_400, 7_200],
-  "indian-poker": [5_400, 7_200],
-  "temerosa-match-pairs": [5_400, 7_200],
-  "temerosa-old-maid": [3_900, 7_200],
-} as const);
 
 export function npcPresenceIntervalsForDay(
   profile: NpcGamblingProfile,
   dayIndex: number,
   openingBalance: number,
   contract: NpcLedgerContract,
-  previousAvailableAtUtcSecond = Number.NEGATIVE_INFINITY,
-  suppliedSessions?: readonly import("./contracts.ts").NpcSession[],
+  _previousAvailableAtUtcSecond = Number.NEGATIVE_INFINITY,
+  suppliedPlan?: CasinoDayPlan,
 ): readonly NpcPresenceInterval[] {
   const absoluteDay = contract.epochUtcDay + dayIndex;
-  let previousAvailableAt = previousAvailableAtUtcSecond;
-  let currentBalance = openingBalance;
-  const intervals = (suppliedSessions ?? npcDaySessions(profile, dayIndex, openingBalance, contract)).map((session) => {
-    const sessionOpeningBalance = currentBalance;
-    currentBalance += session.delta;
-    const settlesAtUtcSecond = absoluteDay * SECONDS_PER_DAY + session.minuteOfDay * 60;
-    const [minimum, maximum] = DURATION_SECONDS[session.tableId];
-    const rng = new XorShift32(`${contract.version}:${profile.id}:${dayIndex}:${session.minuteOfDay}:${session.tableId}:presence`);
-    const desiredDuration = minimum + Math.floor(rng.next() * (maximum - minimum + 1));
-    const latestStart = settlesAtUtcSecond - 15;
-    const startedAtUtcSecond = Math.min(latestStart, Math.max(settlesAtUtcSecond - desiredDuration, previousAvailableAt));
-    const availableAtUtcSecond = settlesAtUtcSecond + SETTLE_SECONDS + LEAVE_SECONDS;
-    previousAvailableAt = availableAtUtcSecond;
+  const plan = suppliedPlan ?? casinoDayPlan(
+    contract.profiles,
+    dayIndex,
+    Object.fromEntries(contract.profiles.map((entry) => [entry.id, entry.id === profile.id ? openingBalance : entry.openingBalance])),
+    contract,
+  );
+  const allSessions = plan.sessions[profile.id] ?? [];
+  return Object.freeze(plan.visits.filter((visit) => visit.participantIds.includes(profile.id)).map((visit) => {
+    const sessions = allSessions.filter((session) => session.visitId === visit.visitId);
+    const priorDelta = allSessions.filter((session) => session.secondOfDay < visit.startedAtSecondOfDay).reduce((sum,session)=>sum+session.delta,0);
     return Object.freeze({
-      profile,
       npcId: profile.id,
-      tableId: session.tableId,
-      session,
-      openingBalance: sessionOpeningBalance,
-      startedAtUtcSecond,
-      settlesAtUtcSecond,
-      availableAtUtcSecond,
+      tableId: visit.tableId,
+      visit,
+      sessions: Object.freeze(sessions),
+      ...(sessions[0] ? { session: sessions[0] } : {}),
+      openingBalance: openingBalance + priorDelta,
+      startedAtUtcSecond: absoluteDay*SECONDS_PER_DAY + visit.startedAtSecondOfDay,
+      settlesAtUtcSecond: absoluteDay*SECONDS_PER_DAY + visit.endsAtSecondOfDay,
+      availableAtUtcSecond: absoluteDay*SECONDS_PER_DAY + visit.endsAtSecondOfDay + SETTLE_SECONDS + LEAVE_SECONDS,
     });
-  });
-  return Object.freeze(intervals.map(({ profile: _profile, ...interval }) => Object.freeze(interval)));
+  }));
 }
 
 export function casinoPresenceAt(
@@ -68,51 +57,37 @@ export function casinoPresenceAt(
   const absoluteDay = Math.floor(now / SECONDS_PER_DAY);
   const dayIndex = absoluteDay - contract.epochUtcDay;
   if (dayIndex < 0) return Object.freeze(profiles.map((profile) => Object.freeze({ npcId: profile.id, phase: "idle" as const })));
-  const firstDay = Math.max(0, dayIndex - 1);
-  const lastDay = dayIndex + 1;
-  let dayOpenings = firstDay === 0
-    ? Object.freeze(Object.fromEntries(profiles.map((profile) => [profile.id, profile.openingBalance])))
-    : completedDayBalances(profiles, firstDay - 1, contract);
-  const dayData = new Map<number, { openings: Readonly<Record<string, number>>; sessions: Readonly<Record<string, readonly import("./contracts.ts").NpcSession[]>> }>();
-  for (let currentDay = firstDay; currentDay <= lastDay; currentDay += 1) {
-    const sessions = casinoDaySessions(profiles, currentDay, dayOpenings, contract);
-    dayData.set(currentDay, { openings: dayOpenings, sessions });
-    dayOpenings = Object.freeze(Object.fromEntries(profiles.map((profile) => [profile.id, dayOpenings[profile.id]! + (sessions[profile.id] ?? []).reduce((sum, session) => sum + session.delta, 0)])));
-  }
-  const output = profiles.map((profile) => {
-    let previousAvailableAt = Number.NEGATIVE_INFINITY;
-    if (firstDay > 0) {
-      const priorDay = firstDay - 1;
-      const priorOpenings = priorDay === 0
-        ? Object.freeze(Object.fromEntries(profiles.map((entry) => [entry.id, entry.openingBalance])))
-        : completedDayBalances(profiles, priorDay - 1, contract);
-      const priorSessions = casinoDaySessions(profiles, priorDay, priorOpenings, contract);
-      previousAvailableAt = npcPresenceIntervalsForDay(profile, priorDay, priorOpenings[profile.id]!, contract, Number.NEGATIVE_INFINITY, priorSessions[profile.id]).at(-1)?.availableAtUtcSecond
-        ?? previousAvailableAt;
-    }
-    const intervals: NpcPresenceInterval[] = [];
-    for (let currentDay = firstDay; currentDay <= lastDay; currentDay += 1) {
-      const data = dayData.get(currentDay)!;
-      const dayIntervals = npcPresenceIntervalsForDay(profile, currentDay, data.openings[profile.id]!, contract, previousAvailableAt, data.sessions[profile.id]);
-      intervals.push(...dayIntervals);
-      previousAvailableAt = dayIntervals.at(-1)?.availableAtUtcSecond ?? previousAvailableAt;
-    }
-    const active = intervals.find((interval) => now >= interval.startedAtUtcSecond && now < interval.availableAtUtcSecond);
+  const openings = dayIndex === 0
+    ? Object.freeze(Object.fromEntries(profiles.map((profile) => [profile.id,profile.openingBalance])))
+    : completedDayBalances(profiles,dayIndex-1,contract);
+  const today = casinoDayPlan(profiles,dayIndex,openings,contract);
+  const nextOpenings = Object.freeze(Object.fromEntries(profiles.map((profile)=>[profile.id,openings[profile.id]!+(today.sessions[profile.id]??[]).reduce((sum,session)=>sum+session.delta,0)])));
+  const tomorrow = casinoDayPlan(profiles,dayIndex+1,nextOpenings,contract);
+  return Object.freeze(profiles.map((profile) => {
+    const intervals = [
+      ...npcPresenceIntervalsForDay(profile,dayIndex,openings[profile.id]!,contract,Number.NEGATIVE_INFINITY,today),
+      ...npcPresenceIntervalsForDay(profile,dayIndex+1,nextOpenings[profile.id]!,contract,Number.NEGATIVE_INFINITY,tomorrow),
+    ];
+    const active = intervals.find((interval)=>now>=interval.startedAtUtcSecond&&now<interval.availableAtUtcSecond);
     if (!active) {
-      const next = intervals.find((interval) => interval.startedAtUtcSecond > now);
-      return Object.freeze({ npcId: profile.id, phase: "idle" as const, ...(next ? { startedAtUtcSecond: next.startedAtUtcSecond } : {}) });
+      const next=intervals.find((interval)=>interval.startedAtUtcSecond>now);
+      return Object.freeze({npcId:profile.id,phase:"idle" as const,...(next?{startedAtUtcSecond:next.startedAtUtcSecond}:{})});
     }
-    const phase = now < active.startedAtUtcSecond + APPROACH_SECONDS ? "approaching"
-      : now < active.settlesAtUtcSecond ? "playing"
-        : now < active.settlesAtUtcSecond + SETTLE_SECONDS ? "settling" : "leaving";
+    const currentSession = active.sessions.filter((session)=>absoluteDay*SECONDS_PER_DAY+session.secondOfDay<=now).at(-1)
+      ?? active.sessions.find((session)=>absoluteDay*SECONDS_PER_DAY+session.secondOfDay>now)
+      ?? active.session;
+    const lastSettledAt = active.sessions.filter((session)=>absoluteDay*SECONDS_PER_DAY+session.secondOfDay<=now).at(-1)?.secondOfDay;
+    const phase = now < active.startedAtUtcSecond+APPROACH_SECONDS ? "approaching"
+      : now >= active.settlesAtUtcSecond ? (now<active.settlesAtUtcSecond+SETTLE_SECONDS?"settling":"leaving")
+        : lastSettledAt !== undefined && now-(absoluteDay*SECONDS_PER_DAY+lastSettledAt)<SETTLE_SECONDS ? "settling" : "playing";
     return Object.freeze({
-      npcId: profile.id, phase, tableId: active.tableId, session: active.session,
-      openingBalance: active.openingBalance,
-      startedAtUtcSecond: active.startedAtUtcSecond, settlesAtUtcSecond: active.settlesAtUtcSecond,
-      availableAtUtcSecond: active.availableAtUtcSecond,
+      npcId:profile.id,phase,tableId:active.tableId,
+      ...(currentSession?{session:currentSession,matchId:currentSession.matchId}:{}),
+      visitId:active.visit.visitId,openingBalance:active.openingBalance,
+      startedAtUtcSecond:active.startedAtUtcSecond,settlesAtUtcSecond:active.settlesAtUtcSecond,
+      availableAtUtcSecond:active.availableAtUtcSecond,
     });
-  });
-  return Object.freeze(output);
+  }));
 }
 
 export function npcAvailability(presences: readonly NpcPresence[]): Readonly<Record<string, NpcAvailability>> {

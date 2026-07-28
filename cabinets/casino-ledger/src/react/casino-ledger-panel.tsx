@@ -2,7 +2,8 @@ import { NumberTicker } from "@lucky-arcade/ui/number-ticker";
 import { HoloFoil } from "@lucky-arcade/ui/holo-card";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { casinoLeaderboard } from "../presentation.ts";
-import type { CasinoTableId, NpcPlayEvent, NpcPlayEventCode, NpcPresence, NpcRoundSettlement } from "../contracts.ts";
+import { groupNpcRoundSettlements } from "../rounds.ts";
+import type { CasinoTableId, NpcMatchSettlement, NpcPlayEvent, NpcPlayEventCode, NpcPresence, NpcRoundSettlement } from "../contracts.ts";
 import { TEMEROSA_NPC_GAMBLING_PROFILES } from "../temerosa-profiles.ts";
 import "./casino-ledger-panel.css";
 
@@ -46,10 +47,11 @@ export default function CasinoLedgerPanel({
   const names = new Map(TEMEROSA_NPC_GAMBLING_PROFILES.map((profile) => [profile.id, profile.name]));
   const previousBalances = useRef(npcBalances);
   const [balanceMoves, setBalanceMoves] = useState<Readonly<Record<string, "rising" | "falling">>>({});
-  const allTape = useMemo(() => casinoTape(playEvents, settlements, currentUtcSecond), [currentUtcSecond, playEvents, settlements]);
+  const settlementGroups = useMemo(() => groupNpcRoundSettlements(settlements), [settlements]);
+  const allTape = useMemo(() => casinoTape(playEvents, settlementGroups, currentUtcSecond), [currentUtcSecond, playEvents, settlementGroups]);
   const tape = allTape.slice(0, 8);
   const lastMinuteCount = allTape.filter((event) => currentUtcSecond - event.utcSecond < 60).length;
-  const recentSettlements = settlements.slice(0, 5);
+  const recentSettlements = settlementGroups.slice(0, 8);
   const boardRef = useRef<HTMLTableSectionElement>(null);
   const inviteCount = presences.filter((presence) => presence.phase === "idle").length;
   const seatedCount = presences.length - inviteCount;
@@ -136,7 +138,7 @@ export default function CasinoLedgerPanel({
     </div>
     <section className="casino-ledger-settlements" aria-labelledby="settlement-heading">
       <div className="ledger-heading"><span id="settlement-heading">최근 정산</span><small>실제 잔고 변동</small></div>
-      <ol>{recentSettlements.map((settlement) => <li key={settlement.roundId}><SettlementLine settlement={settlement} name={names.get(settlement.npcId) ?? settlement.npcId} currentUtcSecond={currentUtcSecond} /></li>)}</ol>
+      <ol>{recentSettlements.map((settlement) => <li key={settlement.matchId}><SettlementLine settlement={settlement} names={names} currentUtcSecond={currentUtcSecond} /></li>)}</ol>
     </section>
     <div className="casino-ledger-activity">
       <div className="ledger-heading"><span><i className="ca-live" aria-hidden="true" /> LIVE PLAY TAPE</span><small>{lastMinuteCount} ACTIONS / 60s{clockSource === "device" ? " · 기기 시간" : ""}</small></div>
@@ -183,21 +185,26 @@ function TapeLine({ event, name, currentUtcSecond, newest = false }: { event: Ca
   </span>;
 }
 
-function SettlementLine({ settlement, name, currentUtcSecond }: { settlement: NpcRoundSettlement; name: string; currentUtcSecond: number }): React.ReactElement {
-  const delta = settlement.delta;
+function SettlementLine({ settlement, names, currentUtcSecond }: { settlement: NpcMatchSettlement; names: ReadonlyMap<string,string>; currentUtcSecond: number }): React.ReactElement {
+  const primary = settlement.entries[0]!;
+  const name = names.get(primary.npcId) ?? primary.npcId;
+  const delta = primary.delta;
   const direction = delta > 0 ? "gain" : delta < 0 ? "loss" : "flat";
   const directionLabel = delta > 0 ? "획득" : delta < 0 ? "손실" : "변동 없음";
   const symbol = delta > 0 ? "▲" : delta < 0 ? "▼" : "—";
   const age = Math.max(0, currentUtcSecond - settlement.utcSecond);
   const fresh = age < 15;
-  const leverage = settlement.stake === 0 ? null : settlement.reservedAmount / settlement.stake;
+  const leverage = primary.stake === 0 ? null : primary.reservedAmount / primary.stake;
+  const counterpart = settlement.entries.slice(1)
+    .map((entry) => `${names.get(entry.npcId) ?? entry.npcId} ${entry.delta > 0 ? "+" : ""}${entry.delta} P`)
+    .join(" · ");
   return <article
     className={`ledger-settlement-line is-${direction}${fresh ? " is-fresh" : ""}`}
     data-direction={direction}
     aria-label={`${name}, ${tableName(settlement.tableId)}, ${ageLabel(age)}, ${directionLabel} ${Math.abs(delta)} 포인트`}
   >
     <div><b>{name}</b><small>{ageLabel(age)}</small></div>
-    <span>{tableName(settlement.tableId)} · {settlementLabel(settlement)}{leverage === null ? "" : ` · ${leverage}배`}</span>
+    <span>{tableName(settlement.tableId)} · {settlementLabel(primary)}{leverage === null ? "" : ` · ${leverage}배`}{counterpart ? ` · ${counterpart}` : ""}</span>
     <strong><i aria-hidden="true">{symbol}</i> {directionLabel}</strong>
     <NumberTicker value={Math.abs(delta)} prefix={delta > 0 ? "+" : delta < 0 ? "−" : ""} suffix=" P" durationMs={650} className="ca-num ledger-settlement-amount" />
   </article>;
@@ -296,16 +303,20 @@ interface CasinoTapeEvent {
   delta?: number;
 }
 
-function casinoTape(playEvents: readonly NpcPlayEvent[], settlements: readonly NpcRoundSettlement[], currentUtcSecond: number): readonly CasinoTapeEvent[] {
+function casinoTape(playEvents: readonly NpcPlayEvent[], settlements: readonly NpcMatchSettlement[], currentUtcSecond: number): readonly CasinoTapeEvent[] {
   const play: CasinoTapeEvent[] = playEvents.map((event) => ({
     id: event.eventId, npcId: event.npcId, tableId: event.tableId, utcSecond: event.utcSecond,
     kind: "play", label: playEventLabel(event.code, event.stake), stake: event.stake,
   }));
-  const settlementEvents: CasinoTapeEvent[] = settlements.map((settlement) => ({
-    id: settlement.roundId,
-    npcId: settlement.npcId, tableId: settlement.tableId, utcSecond: settlement.utcSecond,
-    kind: "settlement", label: `${settlementLabel(settlement)}${settlement.stake === 0 ? "" : ` · ${settlement.reservedAmount / settlement.stake}배`} · ${settlement.delta > 0 ? "획득" : settlement.delta < 0 ? "손실" : "변동 없음"}`, stake: settlement.stake, delta: settlement.delta,
-  }));
+  const settlementEvents: CasinoTapeEvent[] = settlements.map((settlement) => {
+    const primary=settlement.entries[0]!;
+    return {
+      id:settlement.matchId,
+      npcId:primary.npcId,tableId:settlement.tableId,utcSecond:settlement.utcSecond,
+      kind:"settlement",label:`${settlementLabel(primary)}${primary.stake===0?"":` · ${primary.reservedAmount/primary.stake}배`} · ${primary.delta>0?"획득":primary.delta<0?"손실":"변동 없음"}`,
+      stake:primary.stake,delta:primary.delta,
+    };
+  });
   return [...play, ...settlementEvents]
     .filter((event) => event.utcSecond <= currentUtcSecond)
     .sort((left, right) => right.utcSecond - left.utcSecond || compareText(left.id, right.id));

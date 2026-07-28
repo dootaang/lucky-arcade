@@ -35,9 +35,9 @@ const TABLE_SETS: readonly (readonly NpcTableWeight[])[] = [
   ]),
 ];
 
-const LOW: NpcSessionRange = Object.freeze({ min: 3, max: 6 });
-const MEDIUM: NpcSessionRange = Object.freeze({ min: 5, max: 9 });
-const HIGH: NpcSessionRange = Object.freeze({ min: 8, max: 14 });
+const LOW: NpcSessionRange = Object.freeze({ min: 6, max: 9 });
+const MEDIUM: NpcSessionRange = Object.freeze({ min: 8, max: 12 });
+const HIGH: NpcSessionRange = Object.freeze({ min: 10, max: 14 });
 
 interface FrozenTraits { attention: number; bluff: number; oldMaid: number }
 
@@ -53,7 +53,7 @@ const TRAITS: Readonly<Record<string, Readonly<FrozenTraits>>> = Object.freeze({
 });
 
 /**
- * Frozen npc-ledger/0.4 data. The former `target` values are retained only as
+ * Frozen npc-ledger/0.5 data. The former `target` values are retained only as
  * story-authored opening bankrolls. No outcome code may steer back to them.
  * interpretation; this module intentionally does not import another cabinet.
  */
@@ -96,7 +96,7 @@ export const TEMEROSA_NPC_GAMBLING_PROFILES: readonly NpcGamblingProfile[] = Obj
 ]);
 
 export const TEMEROSA_NPC_LEDGER_CONTRACT: NpcLedgerContract = Object.freeze({
-  version: "npc-ledger/0.4",
+  version: "npc-ledger/0.5",
   epochUtcDay: TEMEROSA_LEDGER_EPOCH_UTC_DAY,
   profiles: TEMEROSA_NPC_GAMBLING_PROFILES,
 });
