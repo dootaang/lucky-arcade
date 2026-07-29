@@ -24,6 +24,7 @@ const DRAW_STAGGER_MS = 70;
 export interface FiveCardDrawOpponentView extends FiveCardDrawOpponent {
   portrait?: string;
   portraits?: Readonly<Record<FiveCardDrawTell, string>>;
+  detailPortraits?: Readonly<Record<FiveCardDrawTell, string>>;
 }
 export interface FiveCardDrawScreenProps {
   state:FiveCardDrawState;opponents:readonly FiveCardDrawOpponentView[];atlas:CourtAtlas;balance:number;busy:boolean;error:string;
@@ -39,6 +40,7 @@ export function FiveCardDrawScreen(props:FiveCardDrawScreenProps):ReactElement {
   const [selectedCards,setSelectedCards]=useState<Set<string>>(()=>new Set());
   const [shownBalance,setShownBalance]=useState(props.balance);
   const [inspectedSeat,setInspectedSeat]=useState<FiveCardDrawSeatId|null>(null);
+  const [inspectedPortrait,setInspectedPortrait]=useState<FiveCardDrawNpcSeatId|null>(null);
   const [speeches,setSpeeches]=useState<Partial<Record<FiveCardDrawNpcSeatId,FiveCardDrawLine>>>({});
   const previousSpeechState=useRef(props.state);
   const recentLineIds=useRef<string[]>([]);
@@ -82,14 +84,14 @@ export function FiveCardDrawScreen(props:FiveCardDrawScreenProps):ReactElement {
   },[props.state,props.lines]);
   useEffect(()=>()=>{for(const timer of speechTimers.current)window.clearTimeout(timer);props.onInteractionPause?.(false);},[]);
   useEffect(()=>{
-    if(inspectedSeat===null)return;
+    if(inspectedSeat===null&&inspectedPortrait===null)return;
     props.onInteractionPause?.(true);
     const previous=document.body.style.overflow;
     document.body.style.overflow="hidden";
-    const onKey=(event:KeyboardEvent)=>{if(event.key==="Escape")setInspectedSeat(null);};
+    const onKey=(event:KeyboardEvent)=>{if(event.key==="Escape"){setInspectedSeat(null);setInspectedPortrait(null);}};
     window.addEventListener("keydown",onKey);
     return ()=>{window.removeEventListener("keydown",onKey);document.body.style.overflow=previous;props.onInteractionPause?.(false);};
-  },[inspectedSeat,props.onInteractionPause]);
+  },[inspectedSeat,inspectedPortrait,props.onInteractionPause]);
 
   function changeCount(value:2|3|4):void {setPlayerCount(value);setSelectedIds((current)=>fillUnique(current,value-1,props.opponents));}
   function selectAt(index:number,id:string):void {setSelectedIds((current)=>{const next=[...current];next[index]=id;return fillUnique(next,playerCount-1,props.opponents);});}
@@ -120,11 +122,12 @@ export function FiveCardDrawScreen(props:FiveCardDrawScreenProps):ReactElement {
         const folded=state.foldedSeatIds.includes(seatId),open=revealed.has(seatId);
         const tell=npcTells[seatId]??"neutral";
         const portrait=view?.portraits?.[tell]??view?.portrait;
+        const detailPortrait=view?.detailPortraits?.[tell]??portrait;
         const value=open?state.result?.values[seatId]:undefined;
         const highlight=open?handHighlight(state.hands[seatId],value):null;
         return <article className={`draw-seat draw-seat-${slots[index]??"top"}${state.currentActorId===seatId?" is-active":""}${folded?" is-folded":""}${verdictVisible&&state.result?.winnerSeatIds.includes(seatId)?" is-winner":""}${event?.kind==="check"&&event.seatId===seatId?" is-checking":""}`} key={seatId} data-tell={tell} {...stageAnchor(`seat:${seatId}`)}>
           <ActionHalo active={state.currentActorId===seatId&&!folded}/>
-          <div className="draw-seat-title">{portrait?<img src={portrait} alt=""/>:<span>{opponent.name.slice(0,1)}</span>}<div><strong>{opponent.name}</strong><small>{seatStatus(state,seatId,event,verdictVisible,revealed.has(seatId))}</small></div><i className={`draw-tell draw-tell-${tell}`}>{tellLabel(tell)}</i></div>
+          <div className="draw-seat-title"><button className="draw-portrait-button" type="button" onClick={()=>{setInspectedSeat(null);setInspectedPortrait(seatId);}} aria-label={`${opponent.name} 감정 초상 크게 보기`}>{portrait?<img key={portrait} className="draw-portrait-image" src={portrait} alt=""/>:<span>{opponent.name.slice(0,1)}</span>}<i className={`draw-tell draw-tell-${tell}`}>{tellLabel(tell)}</i></button><div><strong>{opponent.name}</strong><small>{seatStatus(state,seatId,event,verdictVisible,revealed.has(seatId))}</small></div></div>
           {speeches[seatId]&&<SpeechBubble line={speeches[seatId]!}/>}
           <button className="draw-hand-inspect" type="button" disabled={folded||!settled} onClick={()=>setInspectedSeat(seatId)} aria-label={`${opponent.name}의 패 크게 보기`}>
           <CardFan className={`draw-cards compact${event?.kind==="fold"&&event.seatId===seatId?" is-mucking":""}${event?.kind==="stand-pat"&&event.seatId===seatId?" is-standing-pat":""}`} count={5} anchor={`hand:${seatId}`}>
@@ -179,6 +182,7 @@ export function FiveCardDrawScreen(props:FiveCardDrawScreenProps):ReactElement {
       <CardFlightLayer flights={flights}/>
     </section>
     {inspectedSeat&&<HandInspector seatId={inspectedSeat} state={state} opponents={props.opponents} atlas={props.atlas} revealed={revealed.has(inspectedSeat)} selectedCards={selectedCards} canSelect={inspectedSeat==="player"&&canSelectCards()} onToggle={toggle} onExchange={exchange} onClose={()=>setInspectedSeat(null)}/>}
+    {inspectedPortrait&&<PortraitInspector seatId={inspectedPortrait} state={state} opponents={props.opponents} tell={npcTells[inspectedPortrait]??"neutral"} onClose={()=>setInspectedPortrait(null)}/>}
   </main>;
 }
 
@@ -292,6 +296,15 @@ function HandInspector(props:{seatId:FiveCardDrawSeatId;state:FiveCardDrawState;
       {!showFaces&&<p className="draw-hidden-hand">쇼다운 전에는 상대의 카드 뒷면만 볼 수 있습니다.</p>}
       {props.canSelect&&<div className="draw-modal-actions"><small>최대 3장까지 고르세요.</small><button className="draw-primary" onClick={props.onExchange}>{props.selectedCards.size===0?"그대로 승부":`${props.selectedCards.size}장 교환`}</button></div>}
     </section>
+  </div>;
+}
+
+function PortraitInspector(props:{seatId:FiveCardDrawNpcSeatId;state:FiveCardDrawState;opponents:readonly FiveCardDrawOpponentView[];tell:FiveCardDrawTell;onClose():void;}):ReactElement {
+  const opponent=props.state.context.opponents[Number(props.seatId.slice(-1))-1];
+  const view=props.opponents.find((candidate)=>candidate.id===opponent?.id);
+  const portrait=view?.detailPortraits?.[props.tell]??view?.portraits?.[props.tell]??view?.portrait;
+  return <div className="draw-portrait-modal" role="dialog" aria-modal="true" aria-label={`${opponent?.name??"NPC"} 감정 초상`} onPointerDown={(event)=>{if(event.target===event.currentTarget)props.onClose();}}>
+    <section><button className="draw-icon-button" type="button" onClick={props.onClose} aria-label="닫기">×</button>{portrait?<img src={portrait} alt={`${opponent?.name??"NPC"} · ${tellLabel(props.tell)}`}/>:<div className="draw-portrait-fallback">{opponent?.name.slice(0,1)}</div>}<div><span className="draw-eyebrow">EMOTION PORTRAIT</span><h2>{opponent?.name}</h2><strong className={`draw-tell draw-tell-${props.tell}`}>{tellLabel(props.tell)}</strong></div></section>
   </div>;
 }
 function fillUnique(current:readonly string[],count:number,opponents:readonly FiveCardDrawOpponentView[]):string[]{const output=[...new Set(current.filter((id)=>opponents.some((opponent)=>opponent.id===id)))].slice(0,count);for(const opponent of opponents){if(output.length>=count)break;if(!output.includes(opponent.id))output.push(opponent.id);}return output;}

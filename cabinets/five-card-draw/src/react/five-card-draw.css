@@ -144,17 +144,36 @@
 .draw-seat.is-winner { border-color: var(--draw-gold); box-shadow: 0 0 1.6rem rgb(228 189 99 / 38%); }
 .draw-seat.is-checking { animation: draw-check-knock 300ms ease-out; }
 .draw-seat-title { display: flex; gap: 0.45rem; align-items: center; margin-bottom: 0.3rem; }
-.draw-seat-title > img,
-.draw-seat-title > span { width: 2.1rem; height: 2.1rem; flex: 0 0 auto; object-fit: cover; display: grid; place-items: center; background: #1d4638; border: 1px solid rgb(228 189 99 / 45%); border-radius: 50%; }
+.draw-portrait-button {
+  position: relative;
+  display: grid;
+  flex: 0 0 auto;
+  width: 4.9rem;
+  height: 6.55rem;
+  padding: 0;
+  overflow: hidden;
+  color: inherit;
+  background: #1d4638;
+  border: 1px solid rgb(228 189 99 / 45%);
+  border-radius: 0.62rem;
+  box-shadow: 0 0.35rem 0.8rem rgb(0 0 0 / 28%);
+  cursor: zoom-in;
+  place-items: center;
+}
+.draw-portrait-button > img,
+.draw-portrait-button > span { width: 100%; height: 100%; object-fit: cover; object-position: 50% 18%; display: grid; place-items: center; }
+.draw-portrait-button:focus-visible { outline: 2px solid var(--draw-gold); outline-offset: 0.18rem; }
+.draw-portrait-image { animation: draw-portrait-swap 180ms ease-out both; }
 .draw-seat-title div { display: grid; min-width: 0; }
 .draw-seat-title strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .draw-seat-title small { color: var(--draw-muted); }
 .draw-tell { margin-left: auto; padding: 0.12rem 0.38rem; color: var(--draw-muted); font-size: 0.64rem; font-style: normal; border: 1px solid rgb(184 197 194 / 24%); border-radius: 999px; }
+.draw-portrait-button .draw-tell { position: absolute; right: 0.22rem; bottom: 0.22rem; left: 0.22rem; margin: 0; text-align: center; background: rgb(4 14 11 / 86%); backdrop-filter: blur(3px); }
 .draw-tell-confident { color: #8fe7c3; border-color: rgb(84 214 164 / 42%); }
 .draw-tell-neutral { color: #f0d58f; border-color: rgb(228 189 99 / 38%); }
 .draw-tell-uneasy { color: #ffb0a8; border-color: rgb(242 112 102 / 42%); }
-.draw-seat[data-tell="confident"] > .draw-seat-title > img { box-shadow: 0 0 0.75rem rgb(84 214 164 / 28%); }
-.draw-seat[data-tell="uneasy"] > .draw-seat-title > img { box-shadow: 0 0 0.75rem rgb(242 112 102 / 28%); }
+.draw-seat[data-tell="confident"] .draw-portrait-button { box-shadow: 0 0 0.9rem rgb(84 214 164 / 38%); }
+.draw-seat[data-tell="uneasy"] .draw-portrait-button { box-shadow: 0 0 0.9rem rgb(242 112 102 / 38%); }
 
 /* 손패 */
 .draw-cards { --draw-card-w: clamp(2.4rem, 5.6vw, 4.2rem); min-height: calc(var(--draw-card-w) * 1.4); max-width: 100%; }
@@ -245,6 +264,39 @@ button.draw-modal-card { cursor: pointer; }
 .draw-hidden-hand { margin-top: 0.8rem !important; color: var(--draw-muted); text-align: center; }
 .draw-modal-actions { display: flex; align-items: center; justify-content: flex-end; gap: 0.7rem; margin-top: 0.9rem; color: var(--draw-muted); }
 
+.draw-portrait-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: grid;
+  padding: 1rem;
+  background: rgb(0 0 0 / 78%);
+  backdrop-filter: blur(9px);
+  place-items: center;
+}
+.draw-portrait-modal > section {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(12rem, 20rem) minmax(9rem, 1fr);
+  gap: clamp(1rem, 3vw, 2rem);
+  align-items: center;
+  width: min(40rem, 100%);
+  max-height: calc(100dvh - 2rem);
+  padding: clamp(0.75rem, 2.4vw, 1.25rem);
+  overflow: auto;
+  background: linear-gradient(145deg, #0c251c, #06120e);
+  border: 1px solid rgb(228 189 99 / 58%);
+  border-radius: 1rem;
+  box-shadow: 0 1.5rem 5rem rgb(0 0 0 / 66%);
+}
+.draw-portrait-modal img,
+.draw-portrait-fallback { width: 100%; aspect-ratio: 530 / 768; max-height: calc(100dvh - 4rem); object-fit: contain; object-position: 50% 18%; background: #1d4638; border: 1px solid rgb(228 189 99 / 42%); border-radius: 0.8rem; box-shadow: 0 0.8rem 2rem rgb(0 0 0 / 46%); }
+.draw-portrait-fallback { display: grid; color: var(--draw-gold); font-size: clamp(3rem, 12vw, 7rem); place-items: center; }
+.draw-portrait-modal > section > div:last-child { display: grid; justify-items: start; gap: 0.55rem; }
+.draw-portrait-modal h2 { font-size: clamp(1.35rem, 4vw, 2.15rem); }
+.draw-portrait-modal .draw-tell { margin: 0; font-size: 0.78rem; }
+.draw-portrait-modal .draw-icon-button { position: absolute; top: 0.65rem; right: 0.65rem; z-index: 2; background: rgb(4 14 11 / 82%); }
+
 /* 최상위 족보가 나오면 펠트 조명 자체가 바뀐다. */
 .draw-table:has(.ca-flourish[data-hand-tier="6"]),
 .draw-table:has(.ca-flourish[data-hand-tier="7"]) { --draw-felt-light: radial-gradient(ellipse at 50% 34%, rgb(228 189 99 / 26%), transparent 62%); }
@@ -254,6 +306,7 @@ button.draw-modal-card { cursor: pointer; }
 @keyframes draw-check-knock { 0% { transform: translateY(0); } 45% { transform: translateY(3px); } 100% { transform: translateY(0); } }
 @keyframes draw-stand-pat { 0% { filter: brightness(1); } 40% { filter: brightness(1.5) drop-shadow(0 0 0.7rem rgb(228 189 99 / 65%)); } 100% { filter: brightness(1); } }
 @keyframes draw-speech-in { from { opacity: 0; translate: 0 0.35rem; scale: 0.96; } }
+@keyframes draw-portrait-swap { from { opacity: 0.3; scale: 1.035; filter: brightness(1.35); } }
 
 @media (max-width: 900px) {
   .draw-table {
@@ -269,6 +322,9 @@ button.draw-modal-card { cursor: pointer; }
   .draw-seat-top,
   .draw-seat-left,
   .draw-seat-right { grid-area: auto; align-self: stretch; justify-self: stretch; width: auto; }
+  .draw-opponents .draw-seat-title { align-items: center; flex-direction: column; }
+  .draw-opponents .draw-seat-title > div { width: 100%; text-align: center; }
+  .draw-opponents .draw-portrait-button { width: 4rem; height: 5.35rem; }
   .draw-center { gap: 0.6rem; }
 }
 
@@ -278,8 +334,7 @@ button.draw-modal-card { cursor: pointer; }
   .draw-opponent-selects { grid-template-columns: 1fr; }
   .draw-start-actions { flex-direction: column; }
   .draw-seat { padding: 0.38rem; }
-  .draw-seat-title > img,
-  .draw-seat-title > span { width: 1.9rem; height: 1.9rem; }
+  .draw-opponents .draw-portrait-button { width: clamp(3.65rem, 18vw, 4.3rem); height: clamp(4.9rem, 24vw, 5.75rem); }
   .draw-seat-title strong { font-size: 0.78rem; }
   .draw-seat-title small { font-size: 0.65rem; }
   .draw-cards { --draw-card-w: clamp(3.1rem, 15.5vw, 4rem); }
@@ -292,6 +347,11 @@ button.draw-modal-card { cursor: pointer; }
   .draw-modal-cards { gap: 0.18rem; }
   .draw-modal-actions { align-items: stretch; flex-direction: column; }
   .draw-modal-actions .draw-primary { width: 100%; }
+  .draw-portrait-modal { padding: 0.5rem; }
+  .draw-portrait-modal > section { grid-template-columns: 1fr; justify-items: center; gap: 0.7rem; max-height: calc(100dvh - 1rem); padding: 0.7rem; }
+  .draw-portrait-modal img,
+  .draw-portrait-fallback { width: min(72vw, 20rem); max-height: calc(100dvh - 8.5rem); }
+  .draw-portrait-modal > section > div:last-child { justify-items: center; text-align: center; }
 }
 
 /* 모션을 줄이면 즉시 전환만 남는다. 큐도 speed 0으로 내려가 연출을 건너뛴다. */
@@ -305,7 +365,8 @@ button.draw-modal-card { cursor: pointer; }
   .draw-card.is-open,
   .draw-cards.is-standing-pat,
   .draw-seat.is-checking,
-  .draw-speech { animation: none; }
+  .draw-speech,
+  .draw-portrait-image { animation: none; }
   .draw-hand-card.is-selectable:hover,
   .draw-hand-card.is-selectable:focus-visible { rotate: none; }
 }

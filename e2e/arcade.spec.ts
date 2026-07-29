@@ -429,6 +429,18 @@ test("mobile five-card draw keeps four seats, the pot, and the player hand insid
   const skip = page.getByRole("button", { name: "연출 건너뛰기" });
   if (await skip.isVisible()) await skip.click();
   await expect(page.locator(".draw-opponents .draw-seat")).toHaveCount(3);
+  await expect(page.locator(".draw-opponents .draw-portrait-button")).toHaveCount(3);
+  const portraitSizes = await page.locator(".draw-opponents .draw-portrait-button").evaluateAll((portraits) => portraits.map((portrait) => {
+    const box = portrait.getBoundingClientRect();
+    return { width: box.width, height: box.height };
+  }));
+  expect(portraitSizes.every(({ width, height }) => width >= 56 && height >= 76)).toBe(true);
+  await page.locator(".draw-opponents .draw-portrait-button").first().click();
+  await expect(page.locator(".draw-portrait-modal[role=dialog]")).toBeVisible();
+  await expect(page.locator(".draw-portrait-modal img")).toBeVisible();
+  expect(await page.evaluate(() => document.body.style.overflow)).toBe("hidden");
+  await page.locator(".draw-portrait-modal").getByRole("button").click();
+  await expect(page.locator(".draw-portrait-modal")).toHaveCount(0);
   await expect(page.locator(".draw-center")).toBeVisible();
   await expect(page.locator(".draw-player .draw-hand-card")).toHaveCount(5);
   const inspectHand = page.getByRole("button", { name: "패 크게 보기", exact: true });

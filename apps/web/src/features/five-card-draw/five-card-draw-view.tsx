@@ -53,7 +53,10 @@ export default function FiveCardDrawView({ onExit }: { onExit(): void }) {
           if (!portrait) throw new Error(`five_card_draw_portrait_missing:${assetId}`);
           return [tell, portrait];
         })) as NonNullable<FiveCardDrawOpponentView["portraits"]>;
-        return { id: opponent.id, name: opponent.name, persona: opponent.persona, portraits };
+        const detailPortraits = Object.fromEntries(Object.entries(opponent.portraitAssetIds).map(([tell, assetId]) => [
+          tell, bundle.detailAssets[assetId] ?? bundle.assets[assetId],
+        ])) as NonNullable<FiveCardDrawOpponentView["detailPortraits"]>;
+        return { id: opponent.id, name: opponent.name, persona: opponent.persona, portraits, detailPortraits };
       });
       if (opponents.length !== 30) throw new Error(`five_card_draw_opponent_count:${opponents.length}`);
       const restored = readEnvelope(opponents) ?? freshEnvelope(opponents);
