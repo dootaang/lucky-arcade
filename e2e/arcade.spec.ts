@@ -405,7 +405,35 @@ test("guards the five-card draw admin preview and keeps its trial economy separa
   await expect(page.getByText("2,000 시험 P")).toBeVisible();
   await expect(page.getByRole("button", { name: "시험 대국 시작" })).toBeVisible();
   await page.getByRole("button", { name: "시험 대국 시작" }).click();
+  const landing = await page.locator('.ca-stage-flight[data-flight-to^="hand:npc-"]').first().evaluate(async (flight) => {
+    const targetName = flight.getAttribute("data-flight-to");
+    const target = targetName ? document.querySelector<HTMLElement>(`[data-stage-anchor="${targetName}"]`) : null;
+    const motion = flight.getAnimations()[0];
+    if (!target || !motion?.effect) throw new Error("five_card_draw_landing_probe_missing");
+    await motion.ready;
+    motion.pause();
+    const timing = motion.effect.getTiming();
+    const delay = Number(timing.delay ?? 0), duration = Number(timing.duration);
+    motion.currentTime = delay + duration * .999;
+    await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+    const moving = flight.getBoundingClientRect(), resting = target.getBoundingClientRect();
+    motion.play();
+    return {
+      centerX: Math.abs((moving.left + moving.width / 2) - (resting.left + resting.width / 2)),
+      centerY: Math.abs((moving.top + moving.height / 2) - (resting.top + resting.height / 2)),
+      width: Math.abs(moving.width - resting.width),
+    };
+  });
+  expect(landing.centerX).toBeLessThanOrEqual(2);
+  expect(landing.centerY).toBeLessThanOrEqual(2);
+  expect(landing.width).toBeLessThanOrEqual(3);
   await expect(page.getByText("1,930 시험 P")).toBeVisible();
+  const openingSpeech = page.locator(".draw-speech").first();
+  await expect(openingSpeech).toBeVisible({ timeout: 4_000 });
+  const openingLineId = await openingSpeech.getAttribute("data-line-id");
+  expect(openingLineId).toBeTruthy();
+  await page.waitForTimeout(2_600);
+  await expect(page.locator(`.draw-speech[data-line-id="${openingLineId}"]`)).toBeVisible();
   for (let turn = 0; turn < 12 && await page.locator(".draw-result").count() === 0; turn += 1) {
     const action = page.locator(".draw-actions button:visible").first();
     await expect(action).toBeVisible({ timeout: 4_000 });

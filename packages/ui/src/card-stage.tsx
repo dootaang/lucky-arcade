@@ -11,7 +11,15 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState, type CSSProp
  * `data-stage-root`를 붙인다. 비행 레이어는 루트 안에서만 앵커를 찾는다.
  */
 
-export interface StageRect { readonly left: number; readonly top: number; readonly width: number; readonly height: number }
+export interface StageRect {
+  readonly left: number;
+  readonly top: number;
+  readonly width: number;
+  readonly height: number;
+  /** CSS 회전 전 레이아웃 크기. 비행 카드의 크기 인계에만 사용한다. */
+  readonly layoutWidth?: number;
+  readonly layoutHeight?: number;
+}
 
 export function stageAnchor(name: string): { "data-stage-anchor": string } { return { "data-stage-anchor": name }; }
 
@@ -19,7 +27,7 @@ export function stageAnchorRect(root: HTMLElement | null, name: string): StageRe
   const element = root?.querySelector<HTMLElement>(`[data-stage-anchor="${name}"]`);
   if (!element) return null;
   const rect = element.getBoundingClientRect();
-  return { left: rect.left, top: rect.top, width: rect.width, height: rect.height };
+  return { left: rect.left, top: rect.top, width: rect.width, height: rect.height, layoutWidth: element.offsetWidth, layoutHeight: element.offsetHeight };
 }
 
 export function useReducedMotion(): boolean {
@@ -153,9 +161,16 @@ export interface StageFlight {
   readonly delay?: number;
   /** 도착 시 z축 회전(도). 좌석 방향감을 준다. */
   readonly spin?: number;
+  readonly spinFrom?: number;
+  /** 출발 슬롯의 실제 크기에 맞춰 비행 물체를 시작한다. */
+  readonly fitFromAnchor?: boolean;
+  /** 도착 슬롯의 실제 크기에 맞춰 비행 물체를 끝낸다. */
+  readonly fitToAnchor?: boolean;
   readonly scaleFrom?: number;
   readonly scaleTo?: number;
   readonly fadeOut?: boolean;
+  /** 도착 마지막 프레임에서 숨겨 정지 카드로 끊김 없이 인계한다. */
+  readonly handoff?: boolean;
   /** 도착 앵커 안에서의 상대 위치. 앵커 크기에 대한 비율이다. */
   readonly toOffset?: { readonly x: number; readonly y: number };
   readonly fromOffset?: { readonly x: number; readonly y: number };
@@ -186,26 +201,37 @@ function StageFlightItem({ flight }: { flight: StageFlight }) {
     const end = placement(to, bounds, width, height, flight.toOffset);
     const duration = Math.max(1, flight.duration);
     const delay = Math.max(0, flight.delay ?? 0);
+    const scaleFrom = flight.fitFromAnchor ? (from.layoutWidth ?? from.width) / width : flight.scaleFrom ?? 1;
+    const scaleTo = flight.fitToAnchor ? (to.layoutWidth ?? to.width) / width : flight.scaleTo ?? 1;
+    const endTransform = `translate3d(${end.x}px, ${end.y}px, 0) rotateZ(${flight.spin ?? 0}deg) scale(${scaleTo})`;
     const animations: Animation[] = [];
     try {
-      animations.push(node.animate([
-        { transform: `translate3d(${start.x}px, ${start.y}px, 0) rotateZ(0deg) scale(${flight.scaleFrom ?? 1})`, opacity: flight.delay ? 0 : 1, offset: 0 },
-        { transform: `translate3d(${start.x}px, ${start.y}px, 0) rotateZ(0deg) scale(${flight.scaleFrom ?? 1})`, opacity: 1, offset: 0.001 },
-        { transform: `translate3d(${end.x}px, ${end.y}px, 0) rotateZ(${flight.spin ?? 0}deg) scale(${flight.scaleTo ?? 1})`, opacity: flight.fadeOut ? 0.15 : 1, offset: 1 },
-      ], { duration, delay, easing: "cubic-bezier(.22,.72,.24,1)", fill: "both" }));
+      const startTransform = `translate3d(${start.x}px, ${start.y}px, 0) rotateZ(${flight.spinFrom ?? 0}deg) scale(${scaleFrom})`;
+      const keyframes: Keyframe[] = [
+        { transform: startTransform, opacity: flight.delay ? 0 : 1, offset: 0 },
+        { transform: startTransform, opacity: 1, offset: 0.001 },
+      ];
+      if (flight.handoff) keyframes.push(
+        { transform: endTransform, opacity: 1, offset: 0.999 },
+        { transform: endTransform, opacity: 0, offset: 1 },
+      );
+      else keyframes.push({ transform: endTransform, opacity: flight.fadeOut ? 0.15 : 1, offset: 1 });
+      animations.push(node.animate(keyframes, { duration, delay, easing: "cubic-bezier(.22,.72,.24,1)", fill: "both" }));
       const flip = flipRef.current;
       if (flip && flight.flip) {
         const facing = flight.faceUp === true;
+        const flipAt = Math.max(0, Math.min(0.95, flight.flipAt ?? 0.55));
+        const flipDuration = Math.max(1, Math.round(duration * Math.min(0.42, 1 - flipAt)));
         animations.push(flip.animate([
           { transform: `rotateY(${facing ? 180 : 0}deg)` },
           { transform: `rotateY(${facing ? 0 : 180}deg)` },
-        ], { duration: Math.round(duration * 0.42), delay: delay + Math.round(duration * (flight.flipAt ?? 0.55)), easing: "cubic-bezier(.4,0,.2,1)", fill: "both" }));
+        ], { duration: flipDuration, delay: delay + Math.round(duration * flipAt), easing: "cubic-bezier(.4,0,.2,1)", fill: "both" }));
       }
     } catch { /* 연출은 보조 수단이다. 실패해도 큐 타이머가 상태를 계속 진행시킨다. */ }
     return () => { for (const animation of animations) animation.cancel(); };
   }, [flight.id]);
 
-  return <div className={`ca-stage-flight ca-stage-flight-${flight.variant ?? "card"}`} ref={ref}>
+  return <div className={`ca-stage-flight ca-stage-flight-${flight.variant ?? "card"}`} ref={ref} data-flight-id={flight.id} data-flight-from={flight.from} data-flight-to={flight.to}>
     <div className="ca-stage-flip" ref={flipRef} data-face={flight.faceUp ? "front" : "back"}>
       <div className="ca-stage-side ca-stage-front">{flight.front}</div>
       <div className="ca-stage-side ca-stage-back">{flight.back ?? flight.front}</div>
@@ -255,9 +281,9 @@ export function CardFan({ children, count, spread = 1, anchor, className }: { ch
   return <div className={`ca-fan${className ? ` ${className}` : ""}`} {...(anchor ? stageAnchor(anchor) : {})} style={{ "--ca-fan-count": count, "--ca-fan-spread": spread } as CSSProperties}>{children}</div>;
 }
 
-export function CardFanItem({ index, count, children, style, className }: { index: number; count: number; children: ReactNode; style?: CSSProperties; className?: string }) {
+export function CardFanItem({ index, count, children, style, className, anchor }: { index: number; count: number; children: ReactNode; style?: CSSProperties; className?: string; anchor?: string }) {
   const middle = (count - 1) / 2;
-  return <div className={`ca-fan-item${className ? ` ${className}` : ""}`} style={{ "--ca-fan-index": index, "--ca-fan-offset": index - middle, ...style } as CSSProperties}>{children}</div>;
+  return <div className={`ca-fan-item${className ? ` ${className}` : ""}`} {...(anchor ? stageAnchor(anchor) : {})} style={{ "--ca-fan-index": index, "--ca-fan-offset": index - middle, ...style } as CSSProperties}>{children}</div>;
 }
 
 /**

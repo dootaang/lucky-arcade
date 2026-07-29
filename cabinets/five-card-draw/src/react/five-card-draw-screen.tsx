@@ -44,7 +44,9 @@ export function FiveCardDrawScreen(props:FiveCardDrawScreenProps):ReactElement {
   const [speeches,setSpeeches]=useState<Partial<Record<FiveCardDrawNpcSeatId,FiveCardDrawLine>>>({});
   const previousSpeechState=useRef(props.state);
   const recentLineIds=useRef<string[]>([]);
-  const speechTimers=useRef<number[]>([]);
+  const speechShowTimers=useRef<Partial<Record<FiveCardDrawNpcSeatId,number>>>({});
+  const speechHideTimers=useRef<Partial<Record<FiveCardDrawNpcSeatId,number>>>({});
+  const speechEndsAt=useRef<Partial<Record<FiveCardDrawNpcSeatId,number>>>({});
   const reducedMotion=useReducedMotion();
   const queue=usePresentationQueue(props.state,planFiveCardDrawStage,reducedMotion?0:1);
   const state=queue.display,event=queue.event;
@@ -66,32 +68,51 @@ export function FiveCardDrawScreen(props:FiveCardDrawScreenProps):ReactElement {
   useEffect(()=>{setSelectedCards(new Set());},[state.phase,state.currentActorId]);
   useEffect(()=>{if(settled)setShownBalance(props.balance);},[props.balance,settled]);
   useEffect(()=>{
+    props.onInteractionPause?.(queue.busy||inspectedSeat!==null||inspectedPortrait!==null);
+    return ()=>props.onInteractionPause?.(false);
+  },[queue.busy,inspectedSeat,inspectedPortrait,props.onInteractionPause]);
+  useEffect(()=>{
     const previous=previousSpeechState.current;
     previousSpeechState.current=props.state;
     if(previous===props.state)return;
     const selected=selectFiveCardDrawSpeeches(previous,props.state,props.lines??[],recentLineIds.current);
-    // 결과 대사는 쇼다운 카드 공개보다 먼저 승패를 누설하면 안 된다.
-    const outcomeDelay=selected.some((speech)=>speech.line.event.startsWith("showdown-"))
-      ?620+props.state.activeSeatIds.length*240:0;
+    const baseDelay=speechStartDelay(previous,props.state,selected);
     for(const [index,speech] of selected.entries()){
+      const previousShow=speechShowTimers.current[speech.seatId];
+      if(previousShow!==undefined)window.clearTimeout(previousShow);
+      const requestedDelay=baseDelay+index*650;
+      const afterCurrent=Math.max(0,(speechEndsAt.current[speech.seatId]??0)-Date.now()+180);
       const show=window.setTimeout(()=>{
+        delete speechShowTimers.current[speech.seatId];
+        const previousHide=speechHideTimers.current[speech.seatId];
+        if(previousHide!==undefined)window.clearTimeout(previousHide);
         setSpeeches((current)=>({...current,[speech.seatId]:speech.line}));
         recentLineIds.current=[...recentLineIds.current.slice(-11),speech.line.id];
-      },outcomeDelay+index*400);
-      const hide=window.setTimeout(()=>setSpeeches((current)=>{const next={...current};delete next[speech.seatId];return next;}),outcomeDelay+index*400+(speech.line.text.length>1?3_400:2_400));
-      speechTimers.current.push(show,hide);
+        const duration=speechDuration(speech.line);
+        speechEndsAt.current[speech.seatId]=Date.now()+duration;
+        const hide=window.setTimeout(()=>setSpeeches((current)=>{
+          delete speechHideTimers.current[speech.seatId];
+          delete speechEndsAt.current[speech.seatId];
+          if(current[speech.seatId]?.id!==speech.line.id)return current;
+          const next={...current};delete next[speech.seatId];return next;
+        }),duration);
+        speechHideTimers.current[speech.seatId]=hide;
+      },Math.max(requestedDelay,afterCurrent));
+      speechShowTimers.current[speech.seatId]=show;
     }
   },[props.state,props.lines]);
-  useEffect(()=>()=>{for(const timer of speechTimers.current)window.clearTimeout(timer);props.onInteractionPause?.(false);},[]);
+  useEffect(()=>()=>{
+    for(const timer of Object.values(speechShowTimers.current))if(timer!==undefined)window.clearTimeout(timer);
+    for(const timer of Object.values(speechHideTimers.current))if(timer!==undefined)window.clearTimeout(timer);
+  },[]);
   useEffect(()=>{
     if(inspectedSeat===null&&inspectedPortrait===null)return;
-    props.onInteractionPause?.(true);
     const previous=document.body.style.overflow;
     document.body.style.overflow="hidden";
     const onKey=(event:KeyboardEvent)=>{if(event.key==="Escape"){setInspectedSeat(null);setInspectedPortrait(null);}};
     window.addEventListener("keydown",onKey);
-    return ()=>{window.removeEventListener("keydown",onKey);document.body.style.overflow=previous;props.onInteractionPause?.(false);};
-  },[inspectedSeat,inspectedPortrait,props.onInteractionPause]);
+    return ()=>{window.removeEventListener("keydown",onKey);document.body.style.overflow=previous;};
+  },[inspectedSeat,inspectedPortrait]);
 
   function changeCount(value:2|3|4):void {setPlayerCount(value);setSelectedIds((current)=>fillUnique(current,value-1,props.opponents));}
   function selectAt(index:number,id:string):void {setSelectedIds((current)=>{const next=[...current];next[index]=id;return fillUnique(next,playerCount-1,props.opponents);});}
@@ -132,7 +153,7 @@ export function FiveCardDrawScreen(props:FiveCardDrawScreenProps):ReactElement {
           <button className="draw-hand-inspect" type="button" disabled={folded||!settled} onClick={()=>setInspectedSeat(seatId)} aria-label={`${opponent.name}의 패 크게 보기`}>
           <CardFan className={`draw-cards compact${event?.kind==="fold"&&event.seatId===seatId?" is-mucking":""}${event?.kind==="stand-pat"&&event.seatId===seatId?" is-standing-pat":""}`} count={5} anchor={`hand:${seatId}`}>
             {/* 폴드한 패는 muck으로 던져진 뒤 좌석에서 사라진다. 끝까지 공개하지 않는다. */}
-            {folded?null:state.hands[seatId].map((card,cardIndex)=><CardFanItem key={`${seatId}-${cardIndex}`} index={cardIndex} count={5} className={cardClassName(card,open,highlight,arrivals,event)} {...arrivalStyle(card,arrivals)}>
+            {folded?null:state.hands[seatId].map((card,cardIndex)=><CardFanItem key={`${seatId}-${cardIndex}`} index={cardIndex} count={5} anchor={handSlotAnchor(seatId,cardIndex)} className={cardClassName(card,open,highlight,arrivals,event)} {...arrivalStyle(card,arrivals)}>
               {open?<StandardPlayingCard id={card} atlas={props.atlas}/>:<PlayingCardBack/>}
             </CardFanItem>)}
           </CardFan>
@@ -155,7 +176,7 @@ export function FiveCardDrawScreen(props:FiveCardDrawScreenProps):ReactElement {
         <div className="draw-seat-title"><span>나</span><div><strong>플레이어</strong><small>{seatStatus(state,"player",event,verdictVisible,revealed.has("player"))}</small></div></div>
         <CardFan className={`draw-cards${event?.kind==="fold"&&event.seatId==="player"?" is-mucking":""}${event?.kind==="stand-pat"&&event.seatId==="player"?" is-standing-pat":""}`} count={5} anchor="hand:player">
           {(state.foldedSeatIds.includes("player")?[]:state.hands.player).map((card,cardIndex)=>{
-            return <CardFanItem key={card} index={cardIndex} count={5} className={cardClassName(card,false,playerHighlight,arrivals,event)} {...arrivalStyle(card,arrivals)}>
+            return <CardFanItem key={card} index={cardIndex} count={5} anchor={handSlotAnchor("player",cardIndex)} className={cardClassName(card,false,playerHighlight,arrivals,event)} {...arrivalStyle(card,arrivals)}>
               <button aria-disabled={!settled} aria-pressed={selectedCards.has(card)} aria-label={`${standardCardLabel(card)}, ${cardIndex+1}번째 카드${selectedCards.has(card)?", 교환 선택됨":""}`} className={`draw-hand-card${canSelectCards()?" is-selectable":""}${props.beginner&&canSelectCards()&&guide?.discardCardIds.includes(card)?" is-recommended":""}`} onClick={()=>canSelectCards()?toggle(card):settled&&setInspectedSeat("player")}>
                 <StandardPlayingCard id={card} atlas={props.atlas} decorative/>
                 {selectedCards.has(card)&&<span>교환</span>}
@@ -193,25 +214,23 @@ function buildFlights(event:DrawStageEvent|null,atlas:CourtAtlas):readonly Stage
   const back=<PlayingCardBack/>;
   const face=(id:StandardCardId):ReactNode=><StandardPlayingCard id={id} atlas={atlas} decorative/>;
   if(event.kind==="deal")return event.cards.map((card,index)=>({
-    id:`${event.token}:deal:${card.cardId}`,from:"deck",to:`hand:${card.seatId}`,front:face(card.cardId),back,
-    faceUp:false,flip:card.seatId==="player",flipAt:0.72,duration:event.flightMs,delay:index*event.stagger,
-    spin:(card.slot-2)*2.4,scaleFrom:0.86,scaleTo:landingScale(card.seatId),toOffset:slotOffset(card.slot),
+    id:`${event.token}:deal:${card.cardId}`,from:"deck",to:handSlotAnchor(card.seatId,card.slot),front:face(card.cardId),back,
+    faceUp:false,flip:card.seatId==="player",flipAt:0.55,duration:event.flightMs,delay:index*event.stagger,
+    spin:(card.slot-2)*2.4,scaleFrom:0.86,fitToAnchor:true,handoff:true,
   }));
   if(event.kind==="draw")return event.cards.map((card,index)=>({
-    id:`${event.token}:draw:${card}`,from:"deck",to:`hand:${event.seatId}`,front:face(card),back,
-    faceUp:false,flip:event.faceUp,flipAt:0.7,duration:DRAW_FLIGHT_MS,delay:index*DRAW_STAGGER_MS,
-    spin:(event.slots[index]??2)-2,scaleFrom:0.88,scaleTo:landingScale(event.seatId),toOffset:slotOffset(event.slots[index]??2),
+    id:`${event.token}:draw:${card}`,from:"deck",to:handSlotAnchor(event.seatId,event.slots[index]??2),front:face(card),back,
+    faceUp:false,flip:event.faceUp,flipAt:0.55,duration:DRAW_FLIGHT_MS,delay:index*DRAW_STAGGER_MS,
+    spin:((event.slots[index]??2)-2)*2.4,scaleFrom:0.88,fitToAnchor:true,handoff:true,
   }));
   // 버린 패와 폴드한 패는 끝까지 뒷면이다. 상대에게 공짜 정보를 주지 않는다.
   if(event.kind==="discard")return event.cards.map((card,index)=>({
-    id:`${event.token}:muck:${card}`,from:`hand:${event.seatId}`,to:"muck",front:back,back,
-    faceUp:false,duration:280,delay:index*60,spin:-14+index*9,scaleTo:0.9,fadeOut:true,
-    fromOffset:slotOffset(event.slots[index]??2),
+    id:`${event.token}:muck:${card}`,from:handSlotAnchor(event.seatId,event.slots[index]??2),to:"muck",front:back,back,
+    faceUp:false,duration:280,delay:index*60,spinFrom:((event.slots[index]??2)-2)*2.4,spin:-14+index*9,fitFromAnchor:true,scaleTo:0.9,fadeOut:true,
   }));
   if(event.kind==="fold")return event.cards.map((card,index)=>({
-    id:`${event.token}:fold:${card}`,from:`hand:${event.seatId}`,to:"muck",front:back,back,
-    faceUp:false,duration:360,delay:index*34,spin:-18+index*8,scaleTo:0.88,fadeOut:true,
-    fromOffset:slotOffset(index),
+    id:`${event.token}:fold:${card}`,from:handSlotAnchor(event.seatId,index),to:"muck",front:back,back,
+    faceUp:false,duration:360,delay:index*34,spinFrom:(index-2)*2.4,spin:-18+index*8,fitFromAnchor:true,scaleTo:0.88,fadeOut:true,
   }));
   if(event.kind==="chips")return Array.from({length:Math.min(4,Math.max(1,event.units))},(_,index)=>({
     id:`${event.token}:chip:${index}`,from:`seat:${event.seatId}`,to:"pot",front:<span className="draw-chip"/>,
@@ -225,15 +244,13 @@ function buildFlights(event:DrawStageEvent|null,atlas:CourtAtlas):readonly Stage
   return [];
 }
 
-/** 손패 앵커는 다섯 장 전체를 덮는다. 슬롯 중심은 그 폭의 1/5 간격에 놓인다. */
-function slotOffset(slot:number):{x:number;y:number}{return {x:(slot-2)/5,y:0};}
-/** 플레이어 손패가 상대 좌석보다 크다. 비행 카드는 도착 크기에 맞춰 내려앉는다. */
-function landingScale(seatId:FiveCardDrawSeatId):number{return seatId==="player"?1.32:0.84;}
+/** 비행 카드가 실제 부채꼴 카드 슬롯의 좌표와 크기를 직접 측정하도록 슬롯별 앵커를 만든다. */
+function handSlotAnchor(seatId:FiveCardDrawSeatId,slot:number):string{return `hand:${seatId}:slot:${slot}`;}
 
 /** 딜과 교환으로 도착하는 카드는 비행이 내려앉는 순간에 맞춰 자리에 나타난다. */
 function arrivalDelays(event:DrawStageEvent|null):ReadonlyMap<string,number>|null {
-  if(event?.kind==="deal")return new Map(event.cards.map((card,index)=>[card.cardId,Math.round(index*event.stagger+event.flightMs*0.72)]));
-  if(event?.kind==="draw")return new Map(event.cards.map((card,index)=>[card,Math.round(index*DRAW_STAGGER_MS+DRAW_FLIGHT_MS*0.72)]));
+  if(event?.kind==="deal")return new Map(event.cards.map((card,index)=>[card.cardId,index*event.stagger+event.flightMs]));
+  if(event?.kind==="draw")return new Map(event.cards.map((card,index)=>[card,index*DRAW_STAGGER_MS+DRAW_FLIGHT_MS]));
   return null;
 }
 
@@ -284,7 +301,27 @@ function standardCardLabel(card:StandardCardId):string {
 
 function tellLabel(tell:FiveCardDrawTell):string{return tell==="confident"?"만족":tell==="uneasy"?"긴장":"여유로움";}
 
-function SpeechBubble({line}:{line:FiveCardDrawLine}):ReactElement{return <div className="draw-speech" aria-hidden="true">{line.text.map((beat,index)=><span key={index}>{beat}</span>)}</div>;}
+function SpeechBubble({line}:{line:FiveCardDrawLine}):ReactElement{return <div className="draw-speech" data-line-id={line.id} aria-hidden="true">{line.text.map((beat,index)=><span key={index}>{beat}</span>)}</div>;}
+
+function speechStartDelay(previous:FiveCardDrawState,next:FiveCardDrawState,selected:readonly {line:FiveCardDrawLine}[]):number {
+  if(selected.length===0)return 0;
+  const steps=planFiveCardDrawStage(previous,next);
+  if(previous.phase==="ready"){
+    const deal=steps.find((step)=>step.event.kind==="deal")?.event;
+    return deal?.kind==="deal"?(deal.cards.length-1)*deal.stagger+deal.flightMs+140:0;
+  }
+  if(selected.some(({line})=>line.event.startsWith("showdown-"))){
+    const verdictIndex=steps.findIndex((step)=>step.event.kind==="verdict");
+    return verdictIndex<0?0:steps.slice(0,verdictIndex).reduce((total,step)=>total+step.duration,0);
+  }
+  return 0;
+}
+
+function speechDuration(line:FiveCardDrawLine):number {
+  const characters=line.text.join("").replace(/\s/g,"").length;
+  const minimum=line.event.startsWith("showdown-")?6_000:line.text.length>1?5_500:4_200;
+  return Math.min(7_000,Math.max(minimum,1_200+characters*85+(line.text.length-1)*700));
+}
 
 function HandInspector(props:{seatId:FiveCardDrawSeatId;state:FiveCardDrawState;opponents:readonly FiveCardDrawOpponentView[];atlas:CourtAtlas;revealed:boolean;selectedCards:Set<string>;canSelect:boolean;onToggle(card:string):void;onExchange():void;onClose():void;}):ReactElement {
   const folded=props.state.foldedSeatIds.includes(props.seatId);
