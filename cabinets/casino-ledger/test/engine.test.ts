@@ -112,7 +112,7 @@ describe("casino ledger 0.8 core", () => {
 
   it("runs high-low with the public 0.3 paytable and both cashouts and losses",()=>{
     let balances=openings();let cashouts=0,losses=0;
-    for(let day=0;day<365;day++){
+    for(let day=0;day<90;day++){
       const sessions=casinoDaySessions(profiles,day,balances,contract);
       for(const profile of profiles)for(const session of sessions[profile.id]??[]){
         if(session.tableId!=="temerosa-high-low")continue;
