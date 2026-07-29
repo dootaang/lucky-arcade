@@ -419,6 +419,27 @@ test("guards the five-card draw admin preview and keeps its trial economy separa
   expect(databaseWallet.balance).not.toBe(1_000);
 });
 
+test("mobile five-card draw keeps four seats, the pot, and the player hand inside the viewport", async ({ page }, testInfo) => {
+  test.skip(testInfo.project.metadata.mobile !== true);
+  await page.goto("/preview/temerosa-five-card-draw");
+  await page.evaluate(() => sessionStorage.setItem("lucky-arcade:admin-preview:temerosa-five-card-draw", "6b767bbc518ec7f3dcb0ec8ec30539a7a3e7cef27d495272ea203fff0f598f34"));
+  await page.reload();
+  await page.getByRole("button", { name: "4인" }).click();
+  await page.getByRole("button", { name: "시험 대국 시작" }).click();
+  const skip = page.getByRole("button", { name: "연출 건너뛰기" });
+  if (await skip.isVisible()) await skip.click();
+  await expect(page.locator(".draw-opponents .draw-seat")).toHaveCount(3);
+  await expect(page.locator(".draw-center")).toBeVisible();
+  await expect(page.locator(".draw-player .draw-hand-card")).toHaveCount(5);
+  const layout = await page.locator(".draw-table").evaluate((table) => {
+    const box = table.getBoundingClientRect();
+    return { left: box.left, right: box.right, viewport: window.innerWidth, scrollWidth: document.documentElement.scrollWidth };
+  });
+  expect(layout.left).toBeGreaterThanOrEqual(0);
+  expect(layout.right).toBeLessThanOrEqual(layout.viewport + 1);
+  expect(layout.scrollWidth).toBeLessThanOrEqual(layout.viewport + 1);
+});
+
 test("filters hidden RecentPlay records and ignores the retired query preview", async ({ page }) => {
   await page.goto("/?privateCabinets=1");
   await expect(page.locator(".venue-card")).toHaveCount(1);

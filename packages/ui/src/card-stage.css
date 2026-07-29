@@ -1,0 +1,168 @@
+/* 펠트 테이블 공용 표현 계층. 게임별 배치는 각 캐비닛이 소유하고, 이 파일은
+   카드·칩의 움직임과 등급별 연출만 담는다. 애니메이션은 transform과 opacity만
+   쓴다. 크기는 --ca-card-w / --ca-card-h 로 캐비닛이 정한다. */
+
+[data-stage-root] {
+  --ca-card-w: clamp(2.6rem, 6vw, 5.4rem);
+  --ca-card-h: calc(var(--ca-card-w) * 1.4);
+  --ca-stage-gold: #e4bd63;
+  position: relative;
+  perspective: 1400px;
+}
+
+.ca-stage-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 40;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.ca-stage-flight {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: var(--ca-card-w);
+  height: var(--ca-card-h);
+  perspective: 900px;
+  will-change: transform, opacity;
+}
+.ca-stage-flight-chip { width: calc(var(--ca-card-w) * 0.42); height: calc(var(--ca-card-w) * 0.42); perspective: none; }
+
+.ca-stage-flip { position: relative; width: 100%; height: 100%; transform-style: preserve-3d; }
+.ca-stage-flip[data-face="front"] { transform: rotateY(180deg); }
+.ca-stage-side { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; filter: drop-shadow(0 0.4rem 0.7rem rgb(0 0 0 / 45%)); }
+.ca-stage-front { transform: rotateY(180deg); }
+.ca-stage-side > * { width: 100%; height: 100%; }
+
+/* 덱 슈 · muck 더미 · 팟 */
+.ca-deck,
+.ca-muck { display: grid; gap: 0.25rem; justify-items: center; }
+.ca-deck small,
+.ca-muck small { color: rgb(255 255 255 / 55%); font-size: 0.6rem; letter-spacing: 0.08em; white-space: nowrap; }
+
+.ca-deck-body {
+  width: var(--ca-card-w);
+  height: var(--ca-card-h);
+  border: 1px solid rgb(255 255 255 / 22%);
+  border-radius: calc(var(--ca-card-w) * 0.09);
+  background:
+    repeating-linear-gradient(45deg, rgb(255 255 255 / 6%) 0 4px, transparent 4px 8px),
+    linear-gradient(160deg, #7c1d1d, #43100f 62%, #2a0a0a);
+  box-shadow: 2px 2px 0 rgb(0 0 0 / 35%), 4px 4px 0 rgb(0 0 0 / 25%), 0 0.6rem 1.4rem rgb(0 0 0 / 42%);
+}
+
+.ca-muck-body {
+  --ca-muck-depth: 0;
+  width: var(--ca-card-w);
+  height: var(--ca-card-h);
+  border: 1px dashed rgb(255 255 255 / 20%);
+  border-radius: calc(var(--ca-card-w) * 0.09);
+  background: rgb(0 0 0 / 26%);
+  box-shadow:
+    calc(var(--ca-muck-depth) * 0.7px) calc(var(--ca-muck-depth) * -0.7px) 0 rgb(20 12 8 / 55%),
+    calc(var(--ca-muck-depth) * 1.4px) calc(var(--ca-muck-depth) * -1.4px) 0 rgb(14 8 5 / 45%);
+  transition: box-shadow 220ms ease;
+}
+.ca-muck[data-empty] .ca-muck-body { box-shadow: none; }
+
+.ca-pot { position: relative; display: grid; gap: 0.15rem; justify-items: center; }
+.ca-pot-chips { display: grid; height: calc(var(--ca-card-w) * 0.5); place-items: end center; }
+.ca-pot-chips i {
+  --ca-chip-index: 0;
+  grid-area: 1 / 1;
+  width: calc(var(--ca-card-w) * 0.44);
+  height: calc(var(--ca-card-w) * 0.13);
+  border: 1px solid rgb(0 0 0 / 45%);
+  border-radius: 999px;
+  background: linear-gradient(180deg, #f0d089, #b3792c 55%, #6d440f);
+  translate: 0 calc(var(--ca-chip-index) * -0.11 * var(--ca-card-w));
+  animation: ca-chip-land 260ms cubic-bezier(.2,.8,.2,1) backwards;
+}
+.ca-pot[data-pulse="raise"]::after {
+  position: absolute;
+  inset: -18%;
+  border-radius: 999px;
+  background: radial-gradient(circle, color-mix(in srgb, var(--ca-stage-gold) 45%, transparent), transparent 68%);
+  content: "";
+  animation: ca-pot-flash 420ms ease-out forwards;
+  pointer-events: none;
+}
+
+/* 현재 차례 조명 */
+.ca-halo { position: absolute; inset: -2px; border-radius: inherit; opacity: 0; transition: opacity 180ms ease; pointer-events: none; }
+.ca-halo[data-active] {
+  opacity: 1;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ca-stage-gold) 70%, transparent), 0 0 1.4rem color-mix(in srgb, var(--ca-stage-gold) 32%, transparent);
+  animation: ca-halo-pulse 1.8s ease-in-out infinite;
+}
+
+/* 좌석별 부채꼴 */
+.ca-fan { --ca-fan-count: 5; --ca-fan-spread: 1; display: flex; justify-content: center; align-items: flex-end; }
+.ca-fan-item {
+  --ca-fan-offset: 0;
+  flex: 0 0 auto;
+  transform-origin: 50% 130%;
+  rotate: calc(var(--ca-fan-offset) * 2.4deg * var(--ca-fan-spread));
+  /* 제곱을 쓰면 abs() 없이도 가운데가 낮고 양끝이 올라오는 부채꼴 호가 나온다. */
+  translate: 0 calc(var(--ca-fan-offset) * var(--ca-fan-offset) * 0.022 * var(--ca-card-h));
+  transition: rotate 200ms ease, translate 200ms ease;
+}
+
+/* 족보 공개 */
+.ca-hand-reveal { display: grid; justify-items: center; gap: 0.1rem; animation: ca-reveal-rise 320ms cubic-bezier(.2,.8,.2,1) both; }
+.ca-hand-reveal strong { color: var(--ca-stage-gold); font-size: clamp(0.8rem, 2vw, 1.05rem); letter-spacing: -0.01em; text-shadow: 0 0.1rem 0.5rem rgb(0 0 0 / 85%); }
+.ca-hand-reveal small { color: rgb(255 255 255 / 62%); font-size: 0.66rem; }
+.ca-hand-reveal[data-hand-tier="3"] strong,
+.ca-hand-reveal[data-hand-tier="4"] strong { text-shadow: 0 0 0.9rem color-mix(in srgb, var(--ca-stage-gold) 60%, transparent); }
+.ca-hand-reveal[data-hand-tier="5"] strong,
+.ca-hand-reveal[data-hand-tier="6"] strong,
+.ca-hand-reveal[data-hand-tier="7"] strong {
+  font-size: clamp(1rem, 3.2vw, 1.6rem);
+  background: linear-gradient(100deg, #8a6112 0%, #f6d68d 32%, #fff4d8 48%, #f3bd55 64%, #8a6112 100%);
+  background-clip: text;
+  background-size: 260% 100%;
+  color: transparent;
+  animation: ca-reveal-rise 320ms cubic-bezier(.2,.8,.2,1) both, ca-gold-sweep 1.6s ease-in-out 320ms;
+  text-shadow: none;
+}
+
+/* 테이블 전체 연출: 6등급 조명 전환, 7등급 금빛 카드 비 */
+.ca-flourish { position: absolute; inset: 0; z-index: 45; overflow: hidden; pointer-events: none; }
+.ca-flourish[data-hand-tier="6"] { background: radial-gradient(circle at 50% 40%, color-mix(in srgb, var(--ca-stage-gold) 22%, transparent), transparent 62%); animation: ca-table-light 1.4s ease-out both; }
+.ca-flourish[data-hand-tier="7"] { background: radial-gradient(circle at 50% 40%, color-mix(in srgb, var(--ca-stage-gold) 28%, transparent), transparent 66%); animation: ca-table-light 2s ease-out both; }
+.ca-flourish i {
+  --ca-rain-index: 0;
+  position: absolute;
+  top: -14%;
+  left: calc(var(--ca-rain-index) * 7% + 2%);
+  width: calc(var(--ca-card-w) * 0.34);
+  height: calc(var(--ca-card-w) * 0.48);
+  border: 1px solid rgb(255 244 216 / 65%);
+  border-radius: 3px;
+  background: linear-gradient(150deg, #fff3d2, #e8bd60 60%, #a4741f);
+  animation: ca-card-rain 1.5s cubic-bezier(.3,.1,.6,1) both;
+  animation-delay: calc(var(--ca-rain-index) * 74ms);
+}
+
+@keyframes ca-chip-land { from { translate: 0 calc(var(--ca-chip-index) * -0.11 * var(--ca-card-w) - 0.6rem); opacity: 0; } }
+@keyframes ca-pot-flash { from { opacity: 0.9; scale: 0.6; } to { opacity: 0; scale: 1.35; } }
+@keyframes ca-halo-pulse { 0%, 100% { filter: brightness(1); } 50% { filter: brightness(1.35); } }
+@keyframes ca-reveal-rise { from { opacity: 0; translate: 0 0.5rem; } }
+@keyframes ca-gold-sweep { from { background-position: 100% 50%; } to { background-position: 0% 50%; } }
+@keyframes ca-table-light { 0% { opacity: 0; } 22% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes ca-card-rain { from { translate: 0 0; rotate: -12deg; opacity: 0; } 12% { opacity: 1; } to { translate: 0 130vh; rotate: 220deg; opacity: 0.15; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .ca-pot-chips i,
+  .ca-hand-reveal,
+  .ca-hand-reveal[data-hand-tier="5"] strong,
+  .ca-hand-reveal[data-hand-tier="6"] strong,
+  .ca-hand-reveal[data-hand-tier="7"] strong,
+  .ca-halo[data-active],
+  .ca-flourish,
+  .ca-flourish i { animation: none; }
+  .ca-flourish { display: none; }
+  .ca-fan-item { transition: none; }
+  .ca-pot[data-pulse="raise"]::after { animation: none; opacity: 0; }
+}

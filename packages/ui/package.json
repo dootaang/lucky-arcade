@@ -6,6 +6,8 @@
   "exports": {
     ".": "./src/index.tsx",
     "./playing-card": "./src/playing-card.tsx",
+    "./card-stage": "./src/card-stage.tsx",
+    "./card-stage.css": "./src/card-stage.css",
     "./tokens.css": "./src/tokens.css",
     "./casino.css": "./src/casino.css",
     "./number-ticker": "./src/number-ticker.tsx",

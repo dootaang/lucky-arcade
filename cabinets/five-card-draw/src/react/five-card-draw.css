@@ -42,7 +42,7 @@
 .draw-primary { padding: 0.65rem 1.1rem; color: #151005; background: var(--draw-gold); }
 .draw-secondary { padding: 0.65rem 1rem; background: rgb(5 17 13 / 72%); }
 .draw-danger { padding: 0.65rem 1rem; color: #fff2ee; background: #6f2924; }
-button:disabled { cursor: not-allowed; opacity: 0.42; }
+.draw-poker-shell button:disabled { cursor: not-allowed; opacity: 0.42; }
 
 .draw-poker-lobby { overflow: auto; }
 .draw-setup {
@@ -74,67 +74,177 @@ button:disabled { cursor: not-allowed; opacity: 0.42; }
 .draw-start-actions { display: flex; justify-content: flex-end; gap: 0.6rem; }
 .draw-error { padding: 0.75rem; color: #ffd7cf; background: #581f1d; border-radius: 0.6rem; }
 
+/* ─────────────────────── 테이블 ───────────────────────
+   좌석은 도둑잡기와 같은 문법을 따른다. 상단·좌·우 NPC, 중앙에 덱·팟·버린
+   패, 하단이 플레이어. 카드 비행은 @lucky-arcade/ui/card-stage가 맡고 이
+   파일은 자리와 상태 표시만 정한다. */
+
 .draw-table {
+  --ca-card-w: clamp(2.4rem, 6vw, 4.6rem);
+  --draw-felt-light: transparent;
   position: relative;
   display: grid;
-  grid-template-areas: "opponents" "pot" "player" "coach" "actions";
-  gap: clamp(0.6rem, 1.5vw, 1rem);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 2.1fr) minmax(0, 1fr);
+  grid-template-areas:
+    ".         seat-top    ."
+    "seat-left center      seat-right"
+    "player    player      player"
+    "coach     coach       coach"
+    "actions   actions     actions";
+  gap: clamp(0.35rem, 1vw, 0.7rem);
   width: min(74rem, 100%);
-  min-height: min(42rem, calc(100dvh - 6.5rem));
+  min-height: min(34rem, calc(100dvh - 7rem));
   margin: auto;
-  padding: clamp(0.8rem, 2vw, 1.4rem);
-  background: radial-gradient(ellipse at center, #24654f, #103a2c 66%, #08231a);
+  padding: clamp(0.6rem, 1.5vw, 1rem);
+  background:
+    var(--draw-felt-light),
+    repeating-linear-gradient(45deg, rgb(255 255 255 / 1.6%) 0 2px, transparent 2px 4px),
+    radial-gradient(ellipse at center, #24654f, #103a2c 66%, #08231a);
   border: clamp(0.35rem, 1vw, 0.75rem) solid #422d1d;
   border-radius: clamp(1rem, 5vw, 5rem);
-  box-shadow: inset 0 0 0 2px rgb(228 189 99 / 35%), 0 1rem 3rem rgb(0 0 0 / 32%);
+  box-shadow: inset 0 0 0 2px rgb(228 189 99 / 35%), inset 0 0 6rem rgb(0 0 0 / 42%), 0 1rem 3rem rgb(0 0 0 / 32%);
+  transition: background 420ms ease;
 }
-.draw-pot { grid-area: pot; align-self: center; justify-self: center; display: grid; gap: 0.1rem; min-width: 8rem; padding: 0.5rem 1rem; text-align: center; background: rgb(4 16 12 / 74%); border: 1px solid rgb(228 189 99 / 45%); border-radius: 999px; }
-.draw-pot span,
-.draw-pot small { color: var(--draw-muted); }
-.draw-opponents { grid-area: opponents; display: grid; grid-template-columns: repeat(var(--draw-count, 3), minmax(0, 1fr)); gap: 0.65rem; }
-.draw-opponents.count-1 { --draw-count: 1; max-width: 24rem; width: 100%; justify-self: center; }
-.draw-opponents.count-2 { --draw-count: 2; }
-.draw-opponents.count-3 { --draw-count: 3; }
-.draw-seat { min-width: 0; padding: 0.6rem; background: rgb(4 18 13 / 68%); border: 1px solid rgb(255 255 255 / 13%); border-radius: 0.85rem; transition: border-color 160ms ease, box-shadow 160ms ease, opacity 160ms ease; }
-.draw-seat.is-active { border-color: var(--draw-gold); box-shadow: 0 0 1rem rgb(228 189 99 / 22%); }
-.draw-seat.is-folded { opacity: 0.46; }
-.draw-seat-title { display: flex; gap: 0.5rem; align-items: center; margin-bottom: 0.45rem; }
+.draw-table[data-busy] { cursor: progress; }
+
+.draw-opponents { display: contents; }
+.draw-seat-top { grid-area: seat-top; justify-self: center; width: min(24rem, 100%); }
+.draw-seat-left { grid-area: seat-left; align-self: center; }
+.draw-seat-right { grid-area: seat-right; align-self: center; }
+.draw-center { grid-area: center; align-self: center; justify-self: center; display: flex; align-items: center; gap: clamp(0.6rem, 2vw, 1.6rem); }
+
+.draw-seat {
+  position: relative;
+  min-width: 0;
+  padding: 0.45rem 0.5rem;
+  background: rgb(4 18 13 / 68%);
+  border: 1px solid rgb(255 255 255 / 13%);
+  border-radius: 0.85rem;
+  transition: border-color 160ms ease, box-shadow 160ms ease, opacity 200ms ease, filter 260ms ease;
+}
+.draw-seat.is-active { border-color: var(--draw-gold); }
+.draw-seat.is-folded { opacity: 0.46; filter: saturate(0.35); }
+.draw-seat.is-folded::after {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: 5;
+  padding: 0.1rem 0.5rem;
+  color: #ffd9cf;
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.18em;
+  background: rgb(111 41 36 / 88%);
+  border: 1px solid rgb(255 190 175 / 55%);
+  border-radius: 0.3rem;
+  content: "FOLD";
+  transform: translate(-50%, -50%) rotate(-11deg);
+  pointer-events: none;
+}
+.draw-seat.is-winner { border-color: var(--draw-gold); box-shadow: 0 0 1.6rem rgb(228 189 99 / 38%); }
+.draw-seat.is-checking { animation: draw-check-knock 300ms ease-out; }
+.draw-seat-title { display: flex; gap: 0.45rem; align-items: center; margin-bottom: 0.3rem; }
 .draw-seat-title > img,
-.draw-seat-title > span { width: 2.5rem; height: 2.5rem; flex: 0 0 auto; object-fit: cover; display: grid; place-items: center; background: #1d4638; border: 1px solid rgb(228 189 99 / 45%); border-radius: 50%; }
+.draw-seat-title > span { width: 2.1rem; height: 2.1rem; flex: 0 0 auto; object-fit: cover; display: grid; place-items: center; background: #1d4638; border: 1px solid rgb(228 189 99 / 45%); border-radius: 50%; }
 .draw-seat-title div { display: grid; min-width: 0; }
 .draw-seat-title strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .draw-seat-title small { color: var(--draw-muted); }
-.draw-cards { display: grid; grid-template-columns: repeat(5, minmax(0, 7.4rem)); justify-content: center; gap: clamp(0.2rem, 0.75vw, 0.55rem); }
-.draw-cards.compact { grid-template-columns: repeat(5, minmax(1.8rem, 4.6rem)); }
-.draw-cards > button { position: relative; min-width: 0; padding: 0; background: transparent; border: 0; cursor: pointer; transition: translate 140ms ease, filter 140ms ease; }
-.draw-cards > button[aria-pressed="true"] { translate: 0 -0.7rem; filter: drop-shadow(0 0 0.5rem var(--draw-gold)); }
-.draw-cards > button > span { position: absolute; right: 4%; bottom: 4%; left: 4%; padding: 0.15rem; color: #171006; font-size: 0.68rem; font-weight: 900; text-align: center; background: var(--draw-gold); border-radius: 0.3rem; }
+
+/* 손패 */
+.draw-cards { --draw-card-w: clamp(2.4rem, 5.6vw, 4.2rem); min-height: calc(var(--draw-card-w) * 1.4); max-width: 100%; }
+.draw-cards.compact { --draw-card-w: clamp(1.4rem, 3.2vw, 2.7rem); }
+/* 좌석 폭이 좁아지면 카드도 같이 줄어든다. 다섯 장은 언제나 패널 안에 머문다. */
+.draw-cards .ca-fan-item { width: min(var(--draw-card-w), calc((100% - 0.6rem) / 5)); }
+.draw-cards .ca-fan-item + .ca-fan-item { margin-left: clamp(0.1rem, 0.4vw, 0.3rem); }
+.draw-cards.is-mucking .ca-fan-item { opacity: 0; transition: opacity 120ms ease; }
+.draw-cards.is-standing-pat { animation: draw-stand-pat 420ms ease-out; }
+
+.draw-card { transition: filter 180ms ease, opacity 160ms ease; }
+.draw-card.is-leaving { opacity: 0; }
+.draw-card.is-arriving { animation: draw-arrive 180ms ease-out var(--draw-arrival-delay, 0ms) both; }
+.draw-card.is-open { animation: draw-flip-in 340ms cubic-bezier(.2,.8,.2,1) both; animation-delay: calc(var(--ca-fan-index, 0) * 44ms); }
+.draw-card.is-primary { filter: drop-shadow(0 0 0.34rem var(--draw-gold)) drop-shadow(0 0 0.9rem rgb(228 189 99 / 45%)); }
+.draw-card.is-kicker { filter: drop-shadow(0 0 0.2rem rgb(210 218 226 / 55%)); opacity: 0.86; }
+
+.draw-hand-card { position: relative; display: block; width: 100%; padding: 0; background: transparent; border: 0; cursor: default; transform-style: preserve-3d; transition: translate 160ms ease, rotate 160ms ease, filter 160ms ease; }
+.draw-hand-card.is-selectable { cursor: pointer; translate: 0 -0.2rem; }
+.draw-hand-card.is-selectable:hover,
+.draw-hand-card.is-selectable:focus-visible { translate: 0 -0.7rem; rotate: x 12deg; filter: drop-shadow(0 0.7rem 0.8rem rgb(0 0 0 / 55%)); }
+.draw-hand-card.is-recommended { filter: drop-shadow(0 0 0.5rem rgb(140 220 255 / 55%)); }
+.draw-hand-card[aria-pressed="true"] { translate: 0 -1rem; filter: drop-shadow(0 0 0.5rem var(--draw-gold)); }
+.draw-hand-card > span { position: absolute; right: 4%; bottom: 4%; left: 4%; padding: 0.15rem; color: #171006; font-size: 0.68rem; font-weight: 900; text-align: center; background: var(--draw-gold); border-radius: 0.3rem; }
+
+/* 중앙 · 덱 · 팟 · muck */
+.draw-center .ca-pot { min-width: 7rem; padding: 0.4rem 0.9rem; text-align: center; background: rgb(4 16 12 / 74%); border: 1px solid rgb(228 189 99 / 45%); border-radius: 1.2rem; }
+.draw-center .ca-pot span,
+.draw-center .ca-pot small { color: var(--draw-muted); font-size: 0.7rem; }
+.draw-center .ca-pot strong { font-size: clamp(0.9rem, 2.4vw, 1.25rem); }
+.draw-chip { display: block; width: 100%; height: 100%; background: radial-gradient(circle at 34% 30%, #ffe6ae, #d09c3a 46%, #6d440f); border: 1px solid rgb(0 0 0 / 45%); border-radius: 50%; box-shadow: 0 0.2rem 0.4rem rgb(0 0 0 / 45%); }
+
 .draw-player { grid-area: player; align-self: end; justify-self: center; width: min(48rem, 100%); }
 .draw-opponent-hint { margin-top: 0.35rem !important; color: var(--draw-muted); font-size: 0.72rem; text-align: center; }
-.draw-coach { grid-area: coach; display: grid; gap: 0.35rem; width: min(48rem, 100%); justify-self: center; padding: 0.8rem; background: #f3ead6; color: #231c12; border-radius: 0.8rem; }
+.draw-coach { grid-area: coach; display: grid; gap: 0.2rem; width: min(48rem, 100%); justify-self: center; padding: 0.5rem 0.7rem; background: #f3ead6; color: #231c12; border-radius: 0.7rem; font-size: 0.78rem; }
+.draw-coach h2 { font-size: 0.92rem; }
 .draw-coach strong { color: #5d4314; }
-.draw-coach button { justify-self: start; min-height: 2.2rem; padding: 0.35rem 0.7rem; color: #241b0d; background: #e4bd63; }
-.draw-actions { grid-area: actions; display: flex; flex-wrap: wrap; justify-content: center; gap: 0.55rem; }
+.draw-coach button { justify-self: start; min-height: 2rem; padding: 0.25rem 0.6rem; font-size: 0.76rem; color: #241b0d; background: #e4bd63; }
+.draw-actions { grid-area: actions; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 0.55rem; }
+.draw-skip { min-height: 2.2rem; padding: 0.35rem 0.8rem; font-size: 0.76rem; opacity: 0.8; }
 .draw-action-guide { flex-basis: 100%; color: var(--draw-muted); font-size: 0.78rem; text-align: center; }
 .draw-result { display: grid; min-width: min(24rem, 100%); padding: 0.75rem 1rem; text-align: center; background: #07130f; border: 1px solid rgb(228 189 99 / 45%); border-radius: 0.75rem; }
+.draw-result em { margin-top: 0.2rem; color: var(--draw-muted); font-size: 0.7rem; font-style: normal; }
+
+/* 최상위 족보가 나오면 펠트 조명 자체가 바뀐다. */
+.draw-table:has(.ca-flourish[data-hand-tier="6"]),
+.draw-table:has(.ca-flourish[data-hand-tier="7"]) { --draw-felt-light: radial-gradient(ellipse at 50% 34%, rgb(228 189 99 / 26%), transparent 62%); }
+
+@keyframes draw-arrive { from { opacity: 0; scale: 0.94; } }
+@keyframes draw-flip-in { from { opacity: 0.25; transform: perspective(900px) rotateY(-92deg); } to { opacity: 1; transform: perspective(900px) rotateY(0); } }
+@keyframes draw-check-knock { 0% { transform: translateY(0); } 45% { transform: translateY(3px); } 100% { transform: translateY(0); } }
+@keyframes draw-stand-pat { 0% { filter: brightness(1); } 40% { filter: brightness(1.5) drop-shadow(0 0 0.7rem rgb(228 189 99 / 65%)); } 100% { filter: brightness(1); } }
+
+@media (max-width: 900px) {
+  .draw-table {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: "opponents" "center" "player" "coach" "actions";
+    min-height: auto;
+    border-radius: 1.2rem;
+  }
+  .draw-opponents { grid-area: opponents; display: grid; grid-template-columns: repeat(var(--draw-count, 3), minmax(0, 1fr)); gap: 0.4rem; }
+  .draw-table.count-1 .draw-opponents { --draw-count: 1; width: min(22rem, 100%); justify-self: center; }
+  .draw-table.count-2 .draw-opponents { --draw-count: 2; }
+  .draw-table.count-3 .draw-opponents { --draw-count: 3; }
+  .draw-seat-top,
+  .draw-seat-left,
+  .draw-seat-right { grid-area: auto; align-self: stretch; justify-self: stretch; width: auto; }
+  .draw-center { gap: 0.6rem; }
+}
 
 @media (max-width: 720px) {
   .draw-poker-shell > header { grid-template-columns: auto 1fr; }
   .draw-poker-shell > header > strong { grid-column: 2; }
   .draw-opponent-selects { grid-template-columns: 1fr; }
   .draw-start-actions { flex-direction: column; }
-  .draw-table { min-height: auto; border-radius: 1.2rem; }
-  .draw-opponents { gap: 0.35rem; }
   .draw-seat { padding: 0.38rem; }
   .draw-seat-title > img,
   .draw-seat-title > span { width: 1.9rem; height: 1.9rem; }
   .draw-seat-title strong { font-size: 0.78rem; }
   .draw-seat-title small { font-size: 0.65rem; }
-  .draw-cards { gap: 0.18rem; }
-  .draw-cards.compact { grid-template-columns: repeat(5, minmax(1.15rem, 2.9rem)); }
+  .draw-cards.compact { --draw-card-w: clamp(1.1rem, 6vw, 2.6rem); }
+  .draw-cards .ca-fan-item + .ca-fan-item { margin-left: 0.08rem; }
+  .draw-center .ca-pot { min-width: 5.6rem; padding: 0.3rem 0.6rem; }
 }
 
+/* 모션을 줄이면 즉시 전환만 남는다. 큐도 speed 0으로 내려가 연출을 건너뛴다. */
 @media (prefers-reduced-motion: reduce) {
   .draw-seat,
-  .draw-cards > button { transition: none; }
+  .draw-card,
+  .draw-hand-card,
+  .draw-cards .ca-fan-item,
+  .draw-table { transition: none; }
+  .draw-card.is-arriving,
+  .draw-card.is-open,
+  .draw-cards.is-standing-pat,
+  .draw-seat.is-checking { animation: none; }
+  .draw-hand-card.is-selectable:hover,
+  .draw-hand-card.is-selectable:focus-visible { rotate: none; }
 }
