@@ -1,6 +1,6 @@
 {
   "name": "@lucky-arcade/five-card-draw",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "type": "module",
   "exports": {
@@ -15,6 +15,7 @@
     "@lucky-arcade/card-table": "workspace:*",
     "@lucky-arcade/engine": "workspace:*",
     "@lucky-arcade/ui": "workspace:*",
+    "@tabler/icons-react": "3.45.0",
     "react": "19.2.8"
   },
   "devDependencies": {

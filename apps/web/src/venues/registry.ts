@@ -25,7 +25,7 @@ export interface VenueManifest {
   tables: readonly VenueTableManifest[];
 }
 
-export type VenueTableStatus = "open" | "preparing";
+export type VenueTableStatus = "open" | "preparing" | "admin-preview";
 
 export interface VenueTableManifest {
   cabinetId: string;
@@ -59,6 +59,7 @@ const venues: readonly VenueManifest[] = [
       { cabinetId: "temerosa-doubt", status: "preparing" },
       { cabinetId: "temerosa-one-card", status: "preparing" },
       { cabinetId: "temerosa-texas-holdem", status: "preparing" },
+      { cabinetId: "temerosa-five-card-draw", status: "admin-preview" },
     ],
   },
 ] as const;

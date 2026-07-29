@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { StandardCardId } from "@lucky-arcade/card-table";
+import { STANDARD_CARD_DECK, type StandardCardId } from "@lucky-arcade/card-table";
 import { comparePokerHands, evaluatePokerHand } from "../src/index.ts";
 
 const hand = (...cards: StandardCardId[]): StandardCardId[] => cards;
@@ -28,4 +28,24 @@ describe("poker hand evaluation", () => {
     const kings = evaluatePokerHand(hand("hearts-k", "diamonds-k", "clubs-q", "spades-j", "hearts-9"));
     expect(comparePokerHands(aces, kings)).toBe(1);
   });
+
+  it("classifies all 2,598,960 five-card combinations with the canonical distribution", () => {
+    const counts = new Map<string, number>();
+    const deck = STANDARD_CARD_DECK.map((card) => card.id);
+    for (let a = 0; a < 48; a += 1) for (let b = a + 1; b < 49; b += 1) for (let c = b + 1; c < 50; c += 1) for (let d = c + 1; d < 51; d += 1) for (let e = d + 1; e < 52; e += 1) {
+      const category = evaluatePokerHand([deck[a]!, deck[b]!, deck[c]!, deck[d]!, deck[e]!]).category;
+      counts.set(category, (counts.get(category) ?? 0) + 1);
+    }
+    expect(Object.fromEntries(counts)).toEqual({
+      "four-of-a-kind": 624,
+      "full-house": 3_744,
+      "three-of-a-kind": 54_912,
+      "two-pair": 123_552,
+      "one-pair": 1_098_240,
+      "straight-flush": 40,
+      "straight": 10_200,
+      "flush": 5_108,
+      "high-card": 1_302_540,
+    });
+  }, 30_000);
 });

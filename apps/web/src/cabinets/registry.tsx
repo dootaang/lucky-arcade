@@ -17,6 +17,16 @@ type CabinetView = LazyExoticComponent<ComponentType<CabinetViewContext>>;
 
 const registrations: readonly WebCabinetRegistration[] = [
   {
+    manifest: {
+      id: "temerosa-five-card-draw", version: "temerosa-five-card-draw/0.2", title: "파이브 카드 드로 포커",
+      description: "카드 5장을 교환하고 두 번의 베팅으로 승부하는 정통 드로 포커.", requiredCapabilities: [],
+      sessionKind: "repeat", launchKind: "built-in", resumeLabel: "드로 포커 시험 계속하기", estimatedMinutes: { min: 3, max: 8 },
+      entry: "wager", wagerTiers: [10, 50, 200],
+    },
+    openingRank: null, badge: "관리자 시험 테이블",
+    load: async () => { const module = await import("../features/five-card-draw/five-card-draw-view.tsx"); return { default: module.default }; },
+  },
+  {
     manifest: { id: "temerosa-high-low", version: "casino-cards/0.3", title: "하이로우", description: "워어즈가 펼치는 다음 카드가 더 높을지 낮을지 맞히고 배당을 쌓는다.", requiredCapabilities: [], sessionKind: "instant", launchKind: "built-in", resumeLabel: "하이로우로 돌아가기", estimatedMinutes: { min: 1, max: 2 }, entry: "wager", wagerTiers: [10, 50, 200] },
     openingRank: null, badge: "빠른 테이블", load: async () => { const module = await import("../features/casino-cards/casino-card-view.tsx"); return { default: ({ onExit }) => <module.default gameId="high-low" onExit={onExit} /> }; },
   },

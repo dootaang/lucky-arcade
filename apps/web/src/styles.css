@@ -86,3 +86,38 @@ html[data-theme="light"] { color-scheme:light; --canvas:#f5f4ef; --surface:#fff;
 @media(max-width:700px){.venue-active .table-card.coming-soon{grid-template-columns:1fr auto;min-height:72px}.venue-active .table-card.coming-soon .table-group{grid-column:1;grid-row:1}.venue-active .table-card.coming-soon h3{grid-column:1;grid-row:2}.venue-active .table-card.coming-soon strong{grid-column:2;grid-row:1/3}.venue-active .table-card.coming-soon .table-suit{font-size:48px}}
 
 .derby-shell{min-height:100dvh;padding:18px clamp(12px,3vw,42px) 60px;background:radial-gradient(circle at 78% -8%,#233b57,transparent 32%),linear-gradient(155deg,#050b12,#0a121b 58%,#15120b);color:#edf6fb}.derby-topbar{display:grid;max-width:1380px;grid-template-columns:auto 1fr auto;align-items:center;gap:14px;margin:0 auto 18px}.derby-topbar span{color:#7190a3;font-size:.62rem;letter-spacing:.14em}.derby-topbar h1{margin:4px 0;font-size:clamp(1.25rem,3vw,1.85rem)}.derby-compare{display:flex;min-height:46px;align-items:center;gap:8px;border:1px solid #ffca62;border-radius:13px;padding:0 16px;background:#ffca62;color:#181109;font-weight:900;cursor:pointer}.derby-compare:disabled{opacity:.55}.derby-dashboard{display:grid;max-width:1380px;grid-template-columns:minmax(0,1fr) 270px;gap:14px;margin:auto}.derby-engine-tabs{display:grid;grid-column:1/-1;grid-template-columns:repeat(4,1fr);gap:8px}.derby-engine-tabs button{display:grid;min-height:60px;gap:3px;border:1px solid #223947;border-radius:13px;padding:10px 14px;background:#0b1720;color:#d4e3e9;cursor:pointer;text-align:left}.derby-engine-tabs button.active{border-color:#59deb2;background:#10282a;box-shadow:inset 0 -3px #59deb2}.derby-engine-tabs small{color:#73909d}.derby-stage-wrap{min-width:0;overflow:hidden;border:1px solid #223f4e;border-radius:20px;background:#071119;box-shadow:0 24px 80px #0008}.derby-status{display:flex;min-height:52px;align-items:center;gap:10px;padding:0 14px;border-bottom:1px solid #223f4e;color:#6f8b99;font-size:.7rem}.derby-status svg{color:#59deb2}.derby-status strong{margin-right:auto;color:#dce9ed;font-size:.82rem}.derby-status span{font-family:ui-monospace,monospace}.derby-stage{display:grid;aspect-ratio:16/9;place-items:center;overflow:hidden}.derby-stage canvas{display:block!important;width:100%!important;height:100%!important;object-fit:contain}.derby-scoreboard{border:1px solid #223f4e;border-radius:20px;padding:16px;background:#0a151d}.derby-score-title{display:flex;align-items:center;gap:10px;margin-bottom:10px}.derby-score-title svg{color:#ffca62}.derby-score-title div{display:grid}.derby-score-title span{color:#78909c;font-size:.65rem}.derby-scoreboard ol{display:grid;gap:5px;margin:0;padding:0;list-style:none}.derby-scoreboard li{display:grid;grid-template-columns:28px 1fr;align-items:center;border-radius:9px;padding:6px;background:#101f28}.derby-scoreboard li>b{color:#ffca62;text-align:center}.derby-scoreboard li>span{display:grid;font-weight:800}.derby-scoreboard li small{color:#76909b;font-size:.62rem;font-weight:500}.derby-scoreboard>button{display:flex;width:100%;min-height:42px;align-items:center;justify-content:center;gap:7px;margin-top:12px;border:1px solid #2b4b59;border-radius:10px;background:#10222c;color:#dbe9ed;cursor:pointer}.derby-report{display:grid;grid-column:1/-1;grid-template-columns:280px 1fr;gap:18px;border:1px solid #223f4e;border-radius:20px;padding:18px;background:#09141c}.derby-report>div:first-child>span{color:#59deb2;font-size:.66rem;font-weight:800;letter-spacing:.12em}.derby-report h2{margin:.35rem 0}.derby-report p{margin:0;color:#78909c;font-size:.78rem;line-height:1.5}.derby-metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.derby-metrics article{display:grid;gap:4px;border:1px solid #203743;border-radius:12px;padding:11px;background:#0e1c24}.derby-metrics article.winner{border-color:#ffca62;box-shadow:inset 0 0 20px #ffca6211}.derby-metrics article span,.derby-metrics article small{color:#7e949e;font-size:.65rem}.derby-metrics article small{margin-top:3px;color:#59deb2}@media(max-width:900px){.derby-dashboard{grid-template-columns:1fr}.derby-scoreboard{display:grid;grid-template-columns:auto 1fr;gap:12px}.derby-scoreboard ol{grid-column:1/-1;grid-template-columns:repeat(4,1fr)}.derby-scoreboard>button{margin:0}.derby-report{grid-template-columns:1fr}.derby-metrics{grid-template-columns:repeat(2,1fr)}}@media(max-width:600px){.derby-topbar{grid-template-columns:auto 1fr}.derby-compare{grid-column:1/-1;justify-content:center}.derby-engine-tabs{grid-template-columns:repeat(2,1fr)}.derby-status{flex-wrap:wrap;padding:8px 12px}.derby-status strong{width:calc(100% - 34px);margin:0}.derby-scoreboard{display:block}.derby-scoreboard ol{grid-template-columns:repeat(2,1fr);margin:10px 0}.derby-metrics{grid-template-columns:1fr 1fr}}
+/* The preview gate is deliberately visually distinct from public casino play. */
+.admin-preview-gate {
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  color: #f8f0dc;
+  background: radial-gradient(circle at 50% 15%, #24483a, #080e0c 62%);
+}
+
+.admin-preview-gate form {
+  display: grid;
+  gap: 0.85rem;
+  width: min(29rem, 100%);
+  padding: clamp(1.25rem, 4vw, 2rem);
+  background: #101713;
+  border: 1px solid rgb(225 187 94 / 54%);
+  border-radius: 1rem;
+  box-shadow: 0 2rem 5rem rgb(0 0 0 / 45%);
+}
+
+.admin-preview-gate form > svg { color: #e1bb5e; }
+.admin-preview-gate h1,
+.admin-preview-gate p { margin: 0; }
+.admin-preview-gate label { display: grid; gap: 0.35rem; font-weight: 750; }
+.admin-preview-gate input { min-height: 2.9rem; padding: 0.6rem 0.75rem; color: #fff7e6; background: #070c0a; border: 1px solid #72623c; border-radius: 0.55rem; font: inherit; }
+.admin-preview-gate form > div { display: flex; justify-content: flex-end; gap: 0.55rem; }
+.admin-preview-gate button,
+.admin-preview-entry { min-height: 2.55rem; padding: 0.55rem 0.85rem; border: 1px solid rgb(225 187 94 / 55%); border-radius: 0.55rem; font: inherit; font-weight: 800; cursor: pointer; }
+.admin-preview-gate button[type="submit"],
+.admin-preview-entry { color: #171106; background: #e1bb5e; }
+.admin-preview-gate button[type="button"] { color: #f8f0dc; background: transparent; }
+.admin-preview-gate small { color: #aaa393; line-height: 1.45; }
+.admin-preview-error { padding: 0.6rem; color: #ffd7d0; background: #5a211f; border-radius: 0.5rem; }
+.admin-preview-entry { position: relative; z-index: 1; margin-top: 0.45rem; }

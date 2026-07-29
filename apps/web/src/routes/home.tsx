@@ -96,7 +96,7 @@ export function Home({ privatePreview = false }: { privatePreview?: boolean }) {
 
       {recentPlay && recentCabinet && <section className="resume-hero" aria-label="이어하기"><div className="resume-icon"><IconClockPlay /></div><div><span className="eyebrow">최근 플레이 · {timeAgo(recentPlay.updatedAt)}</span><h2>{recentVenue ? `${recentVenue.title} · ${recentCabinet.manifest.title.replace("테메로세 ", "")}` : recentPlay.title}</h2><p>{recentPlay.progressLabel} · 저장된 자리로 바로 돌아갑니다.</p></div><button onClick={() => { const card = recentPlay.cardFingerprint ? cards.find((item) => item.fingerprint === recentPlay.cardFingerprint) : undefined; if (card) setSelected(card); openCabinet(recentPlay.cabinetId); }}><IconPlayerPlay /> {recentCabinet.manifest.resumeLabel}</button></section>}
 
-      {privatePreview ? <DeveloperLobby cards={cards} selected={selected} onImported={imported} onSelect={setSelected} onPlay={openCabinet} /> : venueId ? venue ? <VenueFloor venue={venue} balance={balance} onPlay={openCabinet} /> : <NotFound onLobby={() => navigate("/")} /> : <VenueLobby onEnter={(id) => navigate(`/venues/${id}`)} />}
+      {privatePreview ? <DeveloperLobby cards={cards} selected={selected} onImported={imported} onSelect={setSelected} onPlay={openCabinet} /> : venueId ? venue ? <VenueFloor venue={venue} balance={balance} onPlay={openCabinet} onPreview={(id) => navigate(`/preview/${encodeURIComponent(id)}`)} /> : <NotFound onLobby={() => navigate("/")} /> : <VenueLobby onEnter={(id) => navigate(`/venues/${id}`)} />}
     </main>
   </div>;
 }
@@ -115,15 +115,15 @@ const plannedTables = [
 ] as const;
 
 /** A suit stamped on each table, so a bare card still reads as a casino table. */
-const TABLE_SUITS: Record<string, string> = { "temerosa-old-maid": "♠", "temerosa-match-pairs": "♥", "temerosa-slot": "♦", "indian-poker": "♦", "temerosa-high-low": "♠", "temerosa-blackjack": "♣", "temerosa-doubt": "♦", "temerosa-one-card": "♥", "temerosa-texas-holdem": "♠", "관전석": "♠", "알제의 교환소": "♦" };
+const TABLE_SUITS: Record<string, string> = { "temerosa-old-maid": "♠", "temerosa-match-pairs": "♥", "temerosa-slot": "♦", "indian-poker": "♦", "temerosa-high-low": "♠", "temerosa-blackjack": "♣", "temerosa-doubt": "♦", "temerosa-one-card": "♥", "temerosa-texas-holdem": "♠", "temerosa-five-card-draw": "♣", "관전석": "♠", "알제의 교환소": "♦" };
 
-function VenueFloor({ venue, balance, onPlay }: { venue: VenueManifest; balance: number; onPlay(id: string): void }) {
+function VenueFloor({ venue, balance, onPlay, onPreview }: { venue: VenueManifest; balance: number; onPlay(id: string): void; onPreview(id: string): void }) {
   const tables = venue.tables.flatMap((table) => {
     const entry = getCabinetRegistration(table.cabinetId, true);
     return entry ? [{ entry, status: table.status }] : [];
   });
   const playable = tables.filter((table) => table.status === "open");
-  const preparing = tables.filter((table) => table.status === "preparing");
+  const preparing = tables.filter((table) => table.status !== "open");
   return <section className="casino-floor" aria-labelledby="floor-heading">
     <span className="floor-backdrop ca-tableau" aria-hidden="true" />
     <span className="ca-spotlight" aria-hidden="true" />
@@ -137,11 +137,12 @@ function VenueFloor({ venue, balance, onPlay }: { venue: VenueManifest; balance:
     }))} /></Suspense>
     <div className="table-grid">
       <p className="table-locked-divider ca-label" aria-hidden="true">개장 준비 중</p>
-      {preparing.map(({ entry }) => <article className="table-card coming-soon" key={entry.manifest.id}>
+      {preparing.map(({ entry, status }) => <article className="table-card coming-soon" key={entry.manifest.id}>
         <span className="table-suit" aria-hidden="true">{TABLE_SUITS[entry.manifest.id] ?? "♠"}</span>
         <span className="table-group ca-label">게임 테이블</span>
         <h3 className="ca-serif">{entry.manifest.title.replace("테메로세 ", "")}</h3>
         <strong>개장 준비 중</strong>
+        {status === "admin-preview" && <button className="admin-preview-entry" onClick={() => onPreview(entry.manifest.id)}>관리자 시험 입장</button>}
       </article>)}
       {plannedTables.map((table) => <article className="table-card coming-soon" key={table.group}>
         <span className="table-suit" aria-hidden="true">{TABLE_SUITS[table.title] ?? "♣"}</span>

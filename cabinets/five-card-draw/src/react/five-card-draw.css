@@ -1,73 +1,140 @@
-.five-card-draw {
-  --fcd-felt: #123c31;
-  --fcd-gold: #e0bd68;
+.draw-poker-shell {
+  --draw-gold: #e4bd63;
+  --draw-ink: #f8f1de;
+  --draw-muted: #bcb29e;
+  min-height: 100%;
+  padding: clamp(0.75rem, 2.4vw, 1.75rem);
+  color: var(--draw-ink);
+  background:
+    radial-gradient(circle at 50% 30%, rgb(33 100 78 / 72%), transparent 48%),
+    linear-gradient(145deg, #07150f, #102a20 52%, #07110d);
+}
+
+.draw-poker-shell > header {
   display: grid;
-  gap: 1.25rem;
-  padding: clamp(1rem, 3vw, 2rem);
-  color: #f9f3df;
-  background: radial-gradient(circle at 50% 20%, #1e5c49, var(--fcd-felt) 60%);
-  border: 1px solid color-mix(in srgb, var(--fcd-gold), transparent 45%);
-  border-radius: 1rem;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 0.9rem;
+  width: min(74rem, 100%);
+  margin: 0 auto 1rem;
 }
 
-.five-card-draw h2,
-.five-card-draw h3,
-.five-card-draw p {
-  margin: 0;
-}
-
-.five-card-draw__eyebrow {
-  color: var(--fcd-gold);
-  font-size: 0.72rem;
-  letter-spacing: 0.2em;
-}
-
-.five-card-draw__hand {
-  display: grid;
-  gap: 0.5rem;
-}
-
-.five-card-draw__cards {
-  display: grid;
-  grid-template-columns: repeat(5, minmax(3.25rem, 7rem));
-  gap: clamp(0.25rem, 1vw, 0.75rem);
-}
-
-.five-card-draw__card-button {
-  min-width: 0;
-  padding: 0;
-  background: transparent;
-  border: 0;
-  border-radius: 0.5rem;
-  cursor: pointer;
-  transition: translate 120ms ease, filter 120ms ease;
-}
-
-.five-card-draw__card-button[data-selected="true"] {
-  translate: 0 -0.75rem;
-  filter: drop-shadow(0 0 0.45rem var(--fcd-gold));
-}
-
-.five-card-draw__card-button:focus-visible {
-  outline: 3px solid var(--fcd-gold);
-  outline-offset: 3px;
-}
-
-.five-card-draw__showdown,
-.five-card-draw__actions {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 0.75rem 1.5rem;
-}
-
-.five-card-draw__actions button {
-  padding: 0.7rem 1.1rem;
-  color: #1d1708;
+.draw-poker-shell h1,
+.draw-poker-shell h2,
+.draw-poker-shell p { margin: 0; }
+.draw-poker-shell h1 { font-size: clamp(1.25rem, 3vw, 2rem); }
+.draw-eyebrow { color: var(--draw-gold); font-size: 0.68rem; letter-spacing: 0.14em; }
+.draw-icon-button,
+.draw-primary,
+.draw-secondary,
+.draw-danger,
+.draw-segmented button,
+.draw-coach button {
+  min-height: 2.75rem;
+  color: inherit;
   font: inherit;
-  font-weight: 700;
-  background: var(--fcd-gold);
-  border: 0;
-  border-radius: 999px;
+  font-weight: 800;
+  border: 1px solid rgb(228 189 99 / 48%);
+  border-radius: 0.65rem;
   cursor: pointer;
+}
+.draw-icon-button { display: grid; width: 2.75rem; padding: 0; place-items: center; background: #07130f; }
+.draw-primary { padding: 0.65rem 1.1rem; color: #151005; background: var(--draw-gold); }
+.draw-secondary { padding: 0.65rem 1rem; background: rgb(5 17 13 / 72%); }
+.draw-danger { padding: 0.65rem 1rem; color: #fff2ee; background: #6f2924; }
+button:disabled { cursor: not-allowed; opacity: 0.42; }
+
+.draw-poker-lobby { overflow: auto; }
+.draw-setup {
+  display: grid;
+  gap: 1rem;
+  width: min(48rem, 100%);
+  margin: 0 auto;
+  padding: clamp(1rem, 3vw, 1.75rem);
+  background: rgb(4 15 11 / 78%);
+  border: 1px solid rgb(228 189 99 / 38%);
+  border-radius: 1.1rem;
+  box-shadow: 0 1.5rem 5rem rgb(0 0 0 / 35%);
+}
+.draw-setup fieldset { min-width: 0; margin: 0; padding: 0.8rem; border: 1px solid rgb(255 255 255 / 12%); border-radius: 0.8rem; }
+.draw-setup legend { padding: 0 0.35rem; color: var(--draw-gold); font-weight: 800; }
+.draw-rules { display: flex; gap: 0.9rem; align-items: flex-start; }
+.draw-rules svg { flex: 0 0 auto; color: var(--draw-gold); }
+.draw-rules p,
+.draw-setup small { color: var(--draw-muted); line-height: 1.55; }
+.draw-segmented { display: flex; gap: 0.45rem; flex-wrap: wrap; margin-bottom: 0.4rem; }
+.draw-segmented button { min-width: 4.5rem; padding: 0.55rem 0.8rem; background: #10261e; }
+.draw-segmented button[aria-pressed="true"] { color: #181006; background: var(--draw-gold); }
+.draw-opponent-selects { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.6rem; margin-bottom: 0.65rem; }
+.draw-opponent-selects label { display: grid; gap: 0.3rem; color: var(--draw-muted); font-size: 0.78rem; }
+.draw-opponent-selects select { width: 100%; min-height: 2.6rem; padding: 0.45rem; color: var(--draw-ink); background: #07130f; border: 1px solid #5f5b4b; border-radius: 0.5rem; }
+.draw-guide-toggle { display: flex; gap: 0.75rem; align-items: center; padding: 0.8rem; background: rgb(228 189 99 / 8%); border-radius: 0.75rem; cursor: pointer; }
+.draw-guide-toggle span { display: grid; gap: 0.15rem; }
+.draw-guide-toggle small { display: block; }
+.draw-start-actions { display: flex; justify-content: flex-end; gap: 0.6rem; }
+.draw-error { padding: 0.75rem; color: #ffd7cf; background: #581f1d; border-radius: 0.6rem; }
+
+.draw-table {
+  position: relative;
+  display: grid;
+  grid-template-areas: "opponents" "pot" "player" "coach" "actions";
+  gap: clamp(0.6rem, 1.5vw, 1rem);
+  width: min(74rem, 100%);
+  min-height: min(42rem, calc(100dvh - 6.5rem));
+  margin: auto;
+  padding: clamp(0.8rem, 2vw, 1.4rem);
+  background: radial-gradient(ellipse at center, #24654f, #103a2c 66%, #08231a);
+  border: clamp(0.35rem, 1vw, 0.75rem) solid #422d1d;
+  border-radius: clamp(1rem, 5vw, 5rem);
+  box-shadow: inset 0 0 0 2px rgb(228 189 99 / 35%), 0 1rem 3rem rgb(0 0 0 / 32%);
+}
+.draw-pot { grid-area: pot; align-self: center; justify-self: center; display: grid; gap: 0.1rem; min-width: 8rem; padding: 0.5rem 1rem; text-align: center; background: rgb(4 16 12 / 74%); border: 1px solid rgb(228 189 99 / 45%); border-radius: 999px; }
+.draw-pot span,
+.draw-pot small { color: var(--draw-muted); }
+.draw-opponents { grid-area: opponents; display: grid; grid-template-columns: repeat(var(--draw-count, 3), minmax(0, 1fr)); gap: 0.65rem; }
+.draw-opponents.count-1 { --draw-count: 1; max-width: 24rem; width: 100%; justify-self: center; }
+.draw-opponents.count-2 { --draw-count: 2; }
+.draw-opponents.count-3 { --draw-count: 3; }
+.draw-seat { min-width: 0; padding: 0.6rem; background: rgb(4 18 13 / 68%); border: 1px solid rgb(255 255 255 / 13%); border-radius: 0.85rem; transition: border-color 160ms ease, box-shadow 160ms ease, opacity 160ms ease; }
+.draw-seat.is-active { border-color: var(--draw-gold); box-shadow: 0 0 1rem rgb(228 189 99 / 22%); }
+.draw-seat.is-folded { opacity: 0.46; }
+.draw-seat-title { display: flex; gap: 0.5rem; align-items: center; margin-bottom: 0.45rem; }
+.draw-seat-title > img,
+.draw-seat-title > span { width: 2.5rem; height: 2.5rem; flex: 0 0 auto; object-fit: cover; display: grid; place-items: center; background: #1d4638; border: 1px solid rgb(228 189 99 / 45%); border-radius: 50%; }
+.draw-seat-title div { display: grid; min-width: 0; }
+.draw-seat-title strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.draw-seat-title small { color: var(--draw-muted); }
+.draw-cards { display: grid; grid-template-columns: repeat(5, minmax(0, 7.4rem)); justify-content: center; gap: clamp(0.2rem, 0.75vw, 0.55rem); }
+.draw-cards.compact { grid-template-columns: repeat(5, minmax(1.8rem, 4.6rem)); }
+.draw-cards > button { position: relative; min-width: 0; padding: 0; background: transparent; border: 0; cursor: pointer; transition: translate 140ms ease, filter 140ms ease; }
+.draw-cards > button[aria-pressed="true"] { translate: 0 -0.7rem; filter: drop-shadow(0 0 0.5rem var(--draw-gold)); }
+.draw-cards > button > span { position: absolute; right: 4%; bottom: 4%; left: 4%; padding: 0.15rem; color: #171006; font-size: 0.68rem; font-weight: 900; text-align: center; background: var(--draw-gold); border-radius: 0.3rem; }
+.draw-player { grid-area: player; align-self: end; justify-self: center; width: min(48rem, 100%); }
+.draw-opponent-hint { margin-top: 0.35rem !important; color: var(--draw-muted); font-size: 0.72rem; text-align: center; }
+.draw-coach { grid-area: coach; display: grid; gap: 0.35rem; width: min(48rem, 100%); justify-self: center; padding: 0.8rem; background: #f3ead6; color: #231c12; border-radius: 0.8rem; }
+.draw-coach strong { color: #5d4314; }
+.draw-coach button { justify-self: start; min-height: 2.2rem; padding: 0.35rem 0.7rem; color: #241b0d; background: #e4bd63; }
+.draw-actions { grid-area: actions; display: flex; flex-wrap: wrap; justify-content: center; gap: 0.55rem; }
+.draw-action-guide { flex-basis: 100%; color: var(--draw-muted); font-size: 0.78rem; text-align: center; }
+.draw-result { display: grid; min-width: min(24rem, 100%); padding: 0.75rem 1rem; text-align: center; background: #07130f; border: 1px solid rgb(228 189 99 / 45%); border-radius: 0.75rem; }
+
+@media (max-width: 720px) {
+  .draw-poker-shell > header { grid-template-columns: auto 1fr; }
+  .draw-poker-shell > header > strong { grid-column: 2; }
+  .draw-opponent-selects { grid-template-columns: 1fr; }
+  .draw-start-actions { flex-direction: column; }
+  .draw-table { min-height: auto; border-radius: 1.2rem; }
+  .draw-opponents { gap: 0.35rem; }
+  .draw-seat { padding: 0.38rem; }
+  .draw-seat-title > img,
+  .draw-seat-title > span { width: 1.9rem; height: 1.9rem; }
+  .draw-seat-title strong { font-size: 0.78rem; }
+  .draw-seat-title small { font-size: 0.65rem; }
+  .draw-cards { gap: 0.18rem; }
+  .draw-cards.compact { grid-template-columns: repeat(5, minmax(1.15rem, 2.9rem)); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .draw-seat,
+  .draw-cards > button { transition: none; }
 }

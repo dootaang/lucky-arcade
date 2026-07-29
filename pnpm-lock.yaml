@@ -88,6 +88,9 @@ importers:
       '@lucky-arcade/favorite-cup':
         specifier: workspace:*
         version: link:../../cabinets/favorite-cup
+      '@lucky-arcade/five-card-draw':
+        specifier: workspace:*
+        version: link:../../cabinets/five-card-draw
       '@lucky-arcade/gfl-ember':
         specifier: workspace:*
         version: link:../../cabinets/gfl-ember
@@ -236,6 +239,9 @@ importers:
       '@lucky-arcade/ui':
         specifier: workspace:*
         version: link:../../packages/ui
+      '@tabler/icons-react':
+        specifier: 3.45.0
+        version: 3.45.0(react@19.2.8)
       react:
         specifier: 19.2.8
         version: 19.2.8

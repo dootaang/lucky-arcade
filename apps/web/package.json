@@ -18,6 +18,7 @@
     "@lucky-arcade/engine": "workspace:*",
     "@lucky-arcade/extract": "workspace:*",
     "@lucky-arcade/favorite-cup": "workspace:*",
+    "@lucky-arcade/five-card-draw": "workspace:*",
     "@lucky-arcade/gfl-ember": "workspace:*",
     "@lucky-arcade/indian-poker": "workspace:*",
     "@lucky-arcade/lore-circuit": "workspace:*",

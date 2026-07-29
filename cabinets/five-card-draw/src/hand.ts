@@ -2,15 +2,15 @@ import { standardCardById, standardRankValue, type StandardCardId } from "@lucky
 import type { PokerHandValue } from "./contracts.ts";
 
 const LABELS = [
-  "High card",
-  "One pair",
-  "Two pair",
-  "Three of a kind",
-  "Straight",
-  "Flush",
-  "Full house",
-  "Four of a kind",
-  "Straight flush",
+  "하이 카드",
+  "원 페어",
+  "투 페어",
+  "트리플",
+  "스트레이트",
+  "플러시",
+  "풀 하우스",
+  "포카드",
+  "스트레이트 플러시",
 ] as const;
 
 export function evaluatePokerHand(hand: readonly StandardCardId[]): PokerHandValue {
@@ -80,6 +80,6 @@ function value(categoryRank: number, kickers: readonly number[]): PokerHandValue
     category: category[categoryRank] as PokerHandValue["category"],
     categoryRank,
     kickers,
-    label: LABELS[categoryRank] as string,
+    label: categoryRank === 8 && kickers[0] === 14 ? "로열 플러시" : LABELS[categoryRank] as string,
   };
 }

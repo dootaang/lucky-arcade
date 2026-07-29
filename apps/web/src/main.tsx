@@ -3,6 +3,7 @@ import { createRoot } from "react-dom/client";
 import { createBrowserRouter, RouterProvider } from "react-router";
 import { Home } from "./routes/home.tsx";
 import { CabinetRoute } from "./routes/cabinet-route.tsx";
+import { AdminPreviewRoute } from "./routes/admin-preview-route.tsx";
 import "@lucky-arcade/ui/tokens.css";
 import "@lucky-arcade/ui/casino.css";
 import "./styles.css";
@@ -11,6 +12,7 @@ const router = createBrowserRouter([
   { path: "/", Component: Home },
   { path: "/venues/:venueId", Component: Home },
   { path: "/play/:cabinetId", Component: CabinetRoute },
+  { path: "/preview/:cabinetId", Component: AdminPreviewRoute },
   {
     path: "/review/temerosa",
     lazy: async () => {

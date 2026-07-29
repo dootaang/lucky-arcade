@@ -17,6 +17,7 @@ describe("Venue registry", () => {
     expect(getPublicVenue("temerosa-casino")?.tables.filter((table) => table.status === "preparing").map((table) => table.cabinetId)).toEqual([
       "temerosa-blackjack", "temerosa-doubt", "temerosa-one-card", "temerosa-texas-holdem",
     ]);
+    expect(getPublicVenue("temerosa-casino")?.tables.filter((table) => table.status === "admin-preview").map((table) => table.cabinetId)).toEqual(["temerosa-five-card-draw"]);
     expect(getVenueForCabinet("gfl-favorite-cup")).toBeUndefined();
   });
 

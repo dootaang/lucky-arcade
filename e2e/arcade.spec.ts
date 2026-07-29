@@ -82,8 +82,8 @@ test("opens the sole public Venue with five open tables and four announced table
   await expect(page.locator(".table-card.playable").filter({ hasText: "슬롯 777" })).toContainText("10 P부터");
   await expect(page.locator(".table-card.playable").filter({ hasText: "하이로우" })).toContainText("10 P부터");
   await expect(page.locator(".table-card.coming-soon").filter({ hasText: "텍사스 홀덤" })).toContainText("개장 준비 중");
-  await expect(page.locator(".table-card.coming-soon")).toHaveCount(6);
-  await expect(page.locator(".table-card.coming-soon button")).toHaveCount(0);
+  await expect(page.locator(".table-card.coming-soon")).toHaveCount(7);
+  await expect(page.locator(".table-card.coming-soon").filter({ hasText: "파이브 카드 드로 포커" }).getByRole("button", { name: "관리자 시험 입장" })).toBeVisible();
   await page.locator(".table-card.playable").filter({ hasText: "도둑잡기" }).getByRole("button", { name: "시작", exact: true }).click();
   await expect(page.getByRole("heading", { name: "도둑잡기", exact: true })).toBeVisible();
 });
@@ -385,11 +385,38 @@ test("blocks hidden cabinets at direct public URLs", async ({ page }) => {
 });
 
 test("keeps announced casino tables visible but blocks their direct URLs", async ({ page }) => {
-  for (const cabinet of ["temerosa-blackjack", "temerosa-doubt", "temerosa-one-card", "temerosa-texas-holdem"]) {
+  for (const cabinet of ["temerosa-blackjack", "temerosa-doubt", "temerosa-one-card", "temerosa-texas-holdem", "temerosa-five-card-draw"]) {
     await page.goto(`/play/${cabinet}`);
     await expect(page.getByRole("heading", { name: "개장 준비 중입니다." })).toBeVisible();
     await expect(page.getByRole("button", { name: "카지노로 돌아가기" })).toBeVisible();
   }
+});
+
+test("guards the five-card draw admin preview and keeps its trial economy separate", async ({ page }, testInfo) => {
+  test.skip(testInfo.project.metadata.mobile === true);
+  await page.goto("/preview/temerosa-five-card-draw");
+  await expect(page.getByRole("heading", { name: "파이브 카드 드로 포커" })).toBeVisible();
+  await page.getByLabel("관리자 비밀번호").fill("wrong-password");
+  await page.getByRole("button", { name: "시험 입장" }).click();
+  await expect(page.getByRole("alert")).toContainText("맞지 않습니다");
+  await page.evaluate(() => sessionStorage.setItem("lucky-arcade:admin-preview:temerosa-five-card-draw", "6b767bbc518ec7f3dcb0ec8ec30539a7a3e7cef27d495272ea203fff0f598f34"));
+  await page.reload();
+  await expect(page.getByRole("heading", { name: "파이브 카드 드로 포커" })).toBeVisible();
+  await expect(page.getByText("1,000 시험 P")).toBeVisible();
+  await expect(page.getByRole("button", { name: "시험 대국 시작" })).toBeVisible();
+  await page.getByRole("button", { name: "시험 대국 시작" }).click();
+  await expect(page.getByText("950 시험 P")).toBeVisible();
+  for (let turn = 0; turn < 12 && await page.locator(".draw-result").count() === 0; turn += 1) {
+    const action = page.locator(".draw-actions button:visible").first();
+    await expect(action).toBeVisible({ timeout: 4_000 });
+    await action.click();
+  }
+  await expect(page.locator(".draw-result")).toBeVisible();
+  const preview = await page.evaluate(() => JSON.parse(localStorage.getItem("temerosa-five-card-draw-preview/0.1:envelope") ?? "null"));
+  expect(preview.settledResultIds).toHaveLength(1);
+  expect(preview.balance).toBeGreaterThanOrEqual(950);
+  const databaseWallet = await page.evaluate(async () => (await new Function("return import('/src/lib/wallet.ts')")()).readWallet());
+  expect(databaseWallet.balance).not.toBe(1_000);
 });
 
 test("filters hidden RecentPlay records and ignores the retired query preview", async ({ page }) => {
