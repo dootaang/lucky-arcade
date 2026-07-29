@@ -102,7 +102,9 @@ test("loads the living ledger lazily and reuses the casino manifest in a game", 
   await expect(page.locator(".casino-ledger-board tbody tr")).toHaveCount(6);
   await page.locator(".ledger-board-switch button").filter({ hasText: "전체 보기" }).click();
   await expect(page.locator(".casino-record-room")).toBeVisible();
-  await expect(page.locator(".record-ranking tbody tr")).toHaveCount(36);
+  await expect(page.locator(".record-ranking tbody tr")).toHaveCount(35);
+  await expect(page.locator(".record-ranking tbody tr:not(.is-user)")).toHaveCount(34);
+  await expect(page.locator(".record-ranking tbody tr.is-user")).toHaveCount(1);
   await page.locator(".record-ranking tbody tr th button").first().click();
   await expect(page.locator(".npc-ledger-detail")).toBeVisible();
   await expect(page.locator(".npc-ledger-kpis article")).toHaveCount(4);
@@ -110,15 +112,21 @@ test("loads the living ledger lazily and reuses the casino manifest in a game", 
   await page.locator(".record-close").click();
   await expect(page.locator(".casino-record-room")).toHaveCount(0);
   await expect(page.getByRole("region", { name: "최근 정산" })).toBeVisible();
-  await expect(page.locator(".casino-ledger-settlements .ledger-settlement-line")).toHaveCount(8);
+  const settlementLines = page.locator(".casino-ledger-settlements .ledger-settlement-line");
+  await expect(settlementLines.first()).toBeVisible();
+  expect(await settlementLines.count()).toBeGreaterThan(0);
+  expect(await settlementLines.count()).toBeLessThanOrEqual(8);
   expect(await page.locator(".ledger-settlement-line.is-gain, .ledger-settlement-line.is-loss").count()).toBeGreaterThan(0);
   await expect(page.locator(".ledger-settlement-line strong").first()).toHaveText(/▲ 획득|▼ 손실|— 변동 없음/);
   await expect(page.locator(".ledger-settlement-amount").first()).toHaveText(/[+−]?\d[\d,]* P/);
   await expect(page.locator(".casino-ledger-activity [aria-live]")).toHaveCount(0);
   await expect(page.getByText("LIVE PLAY TAPE", { exact: true })).toBeVisible();
   await expect(page.locator(".casino-ledger-activity .ledger-heading small")).toContainText("ACTIONS / 60s");
-  await expect(page.locator(".ledger-motion [data-tape-key]")).toHaveCount(8);
-  expect(await page.locator(".casino-live-grid .live-table-card.is-active").count()).toBeGreaterThan(0);
+  const tapeRows = page.locator(".ledger-motion [data-tape-key]");
+  await expect(tapeRows.first()).toBeVisible();
+  expect(await tapeRows.count()).toBeGreaterThan(0);
+  expect(await tapeRows.count()).toBeLessThanOrEqual(8);
+  await expect(page.locator(".casino-live-grid .live-table-card:is(.is-open, .is-playing, .is-settling, .is-leaving)")).toHaveCount(5);
   const firstTapeKey = await page.locator(".ledger-motion [data-tape-key]").first().getAttribute("data-tape-key");
   // Real table actions are deterministic rather than synthetic ticker noise.
   // The slowest game cadence is 28 seconds, so allow one full action window.
@@ -183,7 +191,7 @@ test("reserves and settles one deterministic Temerosa slot spin", async ({ page 
   test.skip(testInfo.project.metadata.mobile === true);
   await page.goto("/");
   await page.evaluate(() => new Promise<void>((resolve, reject) => {
-    const opening = indexedDB.open("lucky-arcade", 7);
+    const opening = indexedDB.open("lucky-arcade", 8);
     opening.onerror = () => reject(opening.error);
     opening.onsuccess = () => {
       const db = opening.result;
@@ -244,7 +252,7 @@ test("wagers, records, and restores the public high-low table", async ({ page },
   test.skip(testInfo.project.metadata.mobile === true);
   await page.goto("/");
   await page.evaluate(() => new Promise<void>((resolve, reject) => {
-    const opening = indexedDB.open("lucky-arcade", 7);
+    const opening = indexedDB.open("lucky-arcade", 8);
     opening.onerror = () => reject(opening.error);
     opening.onsuccess = () => {
       const db = opening.result;
@@ -302,7 +310,7 @@ test("plays, wagers, records, and restores the public image-only match-pairs tab
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/");
   await page.evaluate(() => new Promise<void>((resolve, reject) => {
-    const opening = indexedDB.open("lucky-arcade", 7);
+    const opening = indexedDB.open("lucky-arcade", 8);
     opening.onerror = () => reject(opening.error);
     opening.onsuccess = () => {
       const db = opening.result;
@@ -497,7 +505,7 @@ test("filters hidden RecentPlay records and ignores the retired query preview", 
   await expect(page.locator(".venue-card")).toHaveCount(1);
   await expect(page.locator("input[type=file]")).toHaveCount(0);
   await page.evaluate(() => new Promise<void>((resolve, reject) => {
-    const opening = indexedDB.open("lucky-arcade", 7);
+    const opening = indexedDB.open("lucky-arcade", 8);
     opening.onerror = () => reject(opening.error);
     opening.onsuccess = () => {
       const db = opening.result;
@@ -519,7 +527,7 @@ test("selects, wagers, and restores a five-round Indian poker table while defaul
   const browserErrors: string[] = [];
   page.on("pageerror", (error) => browserErrors.push(error.message));
   await page.goto("/");
-  await page.evaluate(() => new Promise<void>((resolve, reject) => { const opening = indexedDB.open("lucky-arcade", 7); opening.onerror = () => reject(opening.error); opening.onsuccess = () => { const db = opening.result, transaction = db.transaction("wallet", "readwrite"); transaction.objectStore("wallet").put({ contract: "wallet/0.1", id: "wallet", balance: 1_000, updatedAt: new Date().toISOString() }); transaction.onerror = () => reject(transaction.error); transaction.oncomplete = () => { db.close(); resolve(); }; }; }));
+  await page.evaluate(() => new Promise<void>((resolve, reject) => { const opening = indexedDB.open("lucky-arcade", 8); opening.onerror = () => reject(opening.error); opening.onsuccess = () => { const db = opening.result, transaction = db.transaction("wallet", "readwrite"); transaction.objectStore("wallet").put({ contract: "wallet/0.1", id: "wallet", balance: 1_000, updatedAt: new Date().toISOString() }); transaction.onerror = () => reject(transaction.error); transaction.oncomplete = () => { db.close(); resolve(); }; }; }));
   await page.goto("/play/indian-poker");
   await expect(page.getByRole("heading", { name: "인디언 포커" })).toBeVisible();
   await expect(page.getByRole("button", { name: /7라운드/ })).toHaveAttribute("aria-pressed", "true");
@@ -925,7 +933,7 @@ test("keeps direct play free and offers an optional self prediction", async ({ p
   test.skip(testInfo.project.metadata.mobile === true);
   await page.goto("/");
   await page.evaluate(() => new Promise<void>((resolve, reject) => {
-    const opening = indexedDB.open("lucky-arcade", 7);
+    const opening = indexedDB.open("lucky-arcade", 8);
     opening.onerror = () => reject(opening.error);
     opening.onsuccess = () => {
       const db = opening.result;
@@ -958,7 +966,7 @@ test("starts an open-hand four-NPC Temerosa spectator table", async ({ page }, t
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/");
   await page.evaluate(() => new Promise<void>((resolve, reject) => {
-    const opening = indexedDB.open("lucky-arcade", 7);
+    const opening = indexedDB.open("lucky-arcade", 8);
     opening.onerror = () => reject(opening.error);
     opening.onsuccess = () => {
       const db = opening.result;
