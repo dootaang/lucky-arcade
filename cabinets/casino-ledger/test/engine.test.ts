@@ -196,6 +196,17 @@ describe("casino ledger 0.8 core", () => {
     expect(rollingNpcProfitAt(profiles,clock,contract,7)).toEqual(rollingNpcProfitAt(profiles,clock,contract,7));
   });
 
+  it("keeps completed profit analytics continuous across the v0.7 to v0.8 rebase",()=>{
+    const second=contract.epochUtcDay*86_400;
+    const clock:CasinoClock&{utcSecond():number}={utcMinute:()=>Math.floor(second/60),utcSecond:()=>second};
+    const profit=rollingNpcProfitAt(profiles,clock,contract,7);
+    expect(profit.lyla).toBe(300);
+    expect(profit.pale).toBe(15_200);
+    expect(profit.alger).toBe(0);
+    expect(contract.profitHistory).toHaveLength(1);
+    expect(contract.profitHistory[0]!.utcDay).toBe(contract.epochUtcDay-1);
+  });
+
   it("produces identical full and checkpoint-assisted balances",()=>{
     const full=completedDayBalances(profiles,20,contract);const checkpoint=completedDayBalances(profiles,12,contract);
     expect(completedDayBalances(profiles,20,contract,checkpoint,12)).toEqual(full);

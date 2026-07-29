@@ -77,7 +77,7 @@ test("loads the living ledger lazily and reuses the casino manifest in a game", 
   });
   await page.goto("/venues/temerosa-casino");
   await expect(page.locator(".casino-ledger-board caption")).toContainText("명예의 전당");
-  await expect(page.getByRole("button", { name: "7일 손익" })).toHaveAttribute("aria-pressed", "true");
+  await expect(page.getByRole("button", { name: /^(오늘 손익|최근 \d+일 손익|7일 손익)$/ })).toHaveAttribute("aria-pressed", "true");
   await page.getByRole("button", { name: "잔고", exact: true }).click();
   await expect(page.getByRole("button", { name: "잔고", exact: true })).toHaveAttribute("aria-pressed", "true");
   await expect(page.locator(".casino-ledger-board thead")).toContainText("잔고");

@@ -127,6 +127,11 @@ export interface NpcLedgerContract {
   version: "npc-ledger/0.8";
   epochUtcDay: number;
   profiles: readonly NpcGamblingProfile[];
+  /**
+   * Completed daily profits carried across a contract rebase. These are
+   * presentation analytics only: they never seed balances or game outcomes.
+   */
+  profitHistory: readonly Readonly<{ utcDay: number; profits: Readonly<Record<string, number>> }>[];
 }
 
 export interface NpcBalanceSnapshot {

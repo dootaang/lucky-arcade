@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { completedDayBalances, TEMEROSA_NPC_LEDGER_CONTRACT, type CasinoClock } from "@lucky-arcade/casino-ledger";
-import { npcBalancesAtWithCheckpoint, readLatestCheckpoint, writeCheckpoint } from "./casino-ledger-cache.ts";
+import { npcBalancesAtWithCheckpoint, npcRollingProfitPeriodAtWithCheckpoint, readLatestCheckpoint, writeCheckpoint } from "./casino-ledger-cache.ts";
 
 describe("casino ledger checkpoint adapter", () => {
   it("matches a full calculation after saving and reusing a checkpoint", () => {
@@ -28,6 +28,16 @@ describe("casino ledger checkpoint adapter", () => {
       writeCheckpoint(storage, { contract: contract.version, dayIndex, balances: completedDayBalances(contract.profiles, dayIndex, contract) }, contract);
     }
     expect(storage.keys().sort()).toEqual(["npc-ledger/0.8:checkpoint:1", "npc-ledger/0.8:checkpoint:2", "npc-ledger/0.8:checkpoint:3"]);
+  });
+
+  it("reports the honest covered period and includes the frozen pre-rebase close", () => {
+    const contract = TEMEROSA_NPC_LEDGER_CONTRACT;
+    const clock = fixedClock(contract.epochUtcDay * 1_440);
+    const current = npcBalancesAtWithCheckpoint(clock, contract, new MemoryStorage());
+    const period = npcRollingProfitPeriodAtWithCheckpoint(clock, contract, current.balances, 7, new MemoryStorage());
+    expect(period).toMatchObject({ startUtcDay: contract.epochUtcDay - 1, coveredDays: 2 });
+    expect(period.profits.lyla).toBe(300);
+    expect(period.profits.pale).toBe(15_200);
   });
 });
 

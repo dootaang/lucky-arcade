@@ -20,6 +20,47 @@ export interface CachedNpcBalances {
   checkpointDayIndex: number;
 }
 
+export interface NpcRollingProfitPeriod {
+  startUtcDay: number;
+  coveredDays: number;
+  profits: Readonly<Record<string, number>>;
+}
+
+export function npcRollingProfitPeriodAtWithCheckpoint(
+  clock: CasinoClock,
+  contract: NpcLedgerContract,
+  currentBalances: Readonly<Record<string, number>>,
+  days = 7,
+  storage: StorageLike | undefined = browserStorage(),
+): NpcRollingProfitPeriod {
+  if (!Number.isSafeInteger(days) || days < 1) throw new Error("npc_ledger_invalid_period");
+  const absoluteDay = Math.floor(clock.utcMinute() / MINUTES_PER_DAY);
+  const earliestHistoryDay = contract.profitHistory[0]?.utcDay ?? contract.epochUtcDay;
+  if (absoluteDay < earliestHistoryDay) {
+    return { startUtcDay: absoluteDay, coveredDays: 0, profits: zeroProfits(contract) };
+  }
+  const startUtcDay = Math.max(earliestHistoryDay, absoluteDay - days + 1);
+  const profits: Record<string, number> = Object.fromEntries(contract.profiles.map((profile) => [profile.id, 0]));
+  for (const day of contract.profitHistory) {
+    if (day.utcDay < startUtcDay || day.utcDay >= contract.epochUtcDay) continue;
+    for (const profile of contract.profiles) profits[profile.id]! += day.profits[profile.id] ?? 0;
+  }
+
+  const currentStartUtcDay = Math.max(startUtcDay, contract.epochUtcDay);
+  if (currentStartUtcDay <= absoluteDay) {
+    const beforePeriodDay = currentStartUtcDay - contract.epochUtcDay - 1;
+    const checkpoint = storage && beforePeriodDay >= 0 ? readLatestCheckpoint(storage, beforePeriodDay, contract) : undefined;
+    const periodOpening = beforePeriodDay >= 0
+      ? completedDayBalances(contract.profiles, beforePeriodDay, contract, checkpoint?.balances, checkpoint?.dayIndex ?? -1)
+      : openings(contract);
+    if (storage && beforePeriodDay >= 0 && checkpoint?.dayIndex !== beforePeriodDay) {
+      writeCheckpoint(storage, { contract: contract.version, dayIndex: beforePeriodDay, balances: periodOpening }, contract);
+    }
+    for (const profile of contract.profiles) profits[profile.id]! += currentBalances[profile.id]! - periodOpening[profile.id]!;
+  }
+  return Object.freeze({ startUtcDay, coveredDays: absoluteDay - startUtcDay + 1, profits: Object.freeze(profits) });
+}
+
 export function npcRollingProfitsAtWithCheckpoint(
   clock: CasinoClock,
   contract: NpcLedgerContract,
@@ -27,17 +68,7 @@ export function npcRollingProfitsAtWithCheckpoint(
   days = 7,
   storage: StorageLike | undefined = browserStorage(),
 ): Readonly<Record<string, number>> {
-  if (!Number.isSafeInteger(days) || days < 1) throw new Error("npc_ledger_invalid_period");
-  const absoluteDay = Math.floor(clock.utcMinute() / MINUTES_PER_DAY);
-  const dayIndex = absoluteDay - contract.epochUtcDay;
-  if (dayIndex < 0) return Object.freeze(Object.fromEntries(contract.profiles.map((profile) => [profile.id, 0])));
-  const beforePeriodDay = dayIndex - days;
-  const checkpoint = storage && beforePeriodDay >= 0 ? readLatestCheckpoint(storage, beforePeriodDay, contract) : undefined;
-  const periodOpening = beforePeriodDay >= 0
-    ? completedDayBalances(contract.profiles, beforePeriodDay, contract, checkpoint?.balances, checkpoint?.dayIndex ?? -1)
-    : openings(contract);
-  if (storage && beforePeriodDay >= 0 && checkpoint?.dayIndex !== beforePeriodDay) writeCheckpoint(storage, { contract: contract.version, dayIndex: beforePeriodDay, balances: periodOpening }, contract);
-  return Object.freeze(Object.fromEntries(contract.profiles.map((profile) => [profile.id, currentBalances[profile.id]! - periodOpening[profile.id]!])));
+  return npcRollingProfitPeriodAtWithCheckpoint(clock, contract, currentBalances, days, storage).profits;
 }
 
 interface StorageLike {
@@ -134,6 +165,10 @@ function isCheckpoint(value: unknown, keyDay: number, maximumDayIndex: number, c
 
 function openings(contract: NpcLedgerContract): Readonly<Record<string, number>> {
   return Object.freeze(Object.fromEntries(contract.profiles.map((profile) => [profile.id, profile.openingBalance])));
+}
+
+function zeroProfits(contract: NpcLedgerContract): Readonly<Record<string, number>> {
+  return Object.freeze(Object.fromEntries(contract.profiles.map((profile) => [profile.id, 0])));
 }
 
 function ledgerKeys(storage: StorageLike): string[] {

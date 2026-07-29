@@ -115,6 +115,23 @@ describe.sequential("point wallet and spectator predictions", () => {
     expect(result.invalid).toBe("invalid_completion_reward");
   });
 
+  it("derives player period profit from realised rewards and wager receipts", async () => {
+    await seedWallet(page, 200);
+    const result = await page.evaluate(async () => {
+      const database = await new Function("return import('/src/lib/database.ts')")();
+      const since = Math.floor(Date.now() / 1_000) - 60;
+      await database.grantCompletionPoints({ sessionId: "period-grant", sequence: 1, cabinetId: "old-maid", spectated: false, amount: 30 });
+      await database.reserveSpectatorPrediction({ predictionId: "period-loss", outcomeKey: "period-loss", predictedCharacterId: "alice", stake: 10, multiplier: 2 });
+      await database.settleSpectatorPrediction({ predictionId: "period-loss", winningCharacterId: "bob" });
+      await database.reserveGameWager({ wagerId: "period-win", outcomeKey: "period-win", cabinetId: "slot", sessionId: "period-slot", termsVersion: "test/0.1", stake: 10, reservedAmount: 40 });
+      await database.settleGameWager({ wagerId: "period-win", settlementSequence: 1, resultKey: "win", creditAmount: 100 });
+      await database.reserveGameWager({ wagerId: "period-pending", outcomeKey: "period-pending", cabinetId: "slot", sessionId: "period-slot", termsVersion: "test/0.1", stake: 10, reservedAmount: 10 });
+      return { profit: await database.readPlayerCasinoProfitSince(since), future: await database.readPlayerCasinoProfitSince(since + 120) };
+    });
+    expect(result.profit).toBe(70);
+    expect(result.future).toBe(0);
+  });
+
   it("reserves valid stakes, supports multiple reservations, and never overdrafts", async () => {
     await seedWallet(page, 100);
     const result = await page.evaluate(async () => {

@@ -23,6 +23,14 @@ describe("casino leaderboard", () => {
     expect(board.filter((entry)=>entry.kind==="user")).toHaveLength(1);
   });
 
+  it("ranks the player by period profit instead of displaying the wallet balance",()=>{
+    const balances=Object.fromEntries(TEMEROSA_NPC_GAMBLING_PROFILES.map((profile)=>[profile.id,profile.openingBalance]));
+    const profits=Object.fromEntries(TEMEROSA_NPC_GAMBLING_PROFILES.map((profile)=>[profile.id,0]));
+    const board=casinoFullLeaderboard(TEMEROSA_NPC_GAMBLING_PROFILES,balances,99_999,profits,25);
+    expect(board[0]).toMatchObject({kind:"user",periodProfit:25,rank:1});
+    expect(board[0]!.balance).toBe(99_999);
+  });
+
   it("keeps table breakdown and receipt totals exactly reconciled",()=>{
     const values=[receipt("a","temerosa-slot",100),receipt("b","temerosa-slot",-50),receipt("c","temerosa-high-low",30)];
     const report=casinoNpcLedgerReport("lyla",values);

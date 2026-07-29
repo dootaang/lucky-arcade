@@ -52,6 +52,19 @@ const V08_OPENING_BALANCES: Readonly<Record<string, number>> = Object.freeze({
   diamo:40,yul:40,ttaengchil:30,nemo:290,lilim:50,"tumit-tu":30,morsisa:75,bche:45,
 });
 
+/**
+ * The final, completed npc-ledger/0.7 day. v0.8 rebased balances at the next
+ * UTC midnight, so this frozen delta is the exact analytics bridge across the
+ * contract boundary. Earlier contracts did not preserve a continuous close.
+ */
+const V07_FINAL_DAY_PROFITS: Readonly<Record<string, number>> = Object.freeze({
+  katrinka:-3965,raven:-2290,lyla:300,alger:0,kreva:-3230,phaeo:-3010,machina:6235,kano:-2595,
+  cicero:-2760,esther:5245,wares:-2225,nostalgia:-1425,pale:15200,apollyon:-2230,hiro:-80,cradle:-1700,
+  nieun:-2090,temute:510,deokbae:775,levillotte:-1970,riel:-1870,traver:-1520,adesha:-20,bacikal:-1410,
+  camille:2360,anna:-1475,echo:-1370,diamo:-1260,yul:-1160,ttaengchil:-970,nemo:-510,lilim:-600,
+  "tumit-tu":-420,morsisa:-225,bche:-155,
+});
+
 /** Transcribed gameplay traits. Kept local so another cabinet cannot rewrite history. */
 const TRAITS: Readonly<Record<string, Readonly<FrozenTraits>>> = Object.freeze({
   pale: t(.82,.72,.76), kano: t(.84,.38,.78), nemo: t(.58,.42,.46), bacikal: t(.84,.76,.72),
@@ -110,6 +123,9 @@ export const TEMEROSA_NPC_LEDGER_CONTRACT: NpcLedgerContract = Object.freeze({
   version: "npc-ledger/0.8",
   epochUtcDay: TEMEROSA_LEDGER_EPOCH_UTC_DAY,
   profiles: TEMEROSA_NPC_GAMBLING_PROFILES,
+  profitHistory: Object.freeze([
+    Object.freeze({ utcDay: TEMEROSA_LEDGER_EPOCH_UTC_DAY - 1, profits: V07_FINAL_DAY_PROFITS }),
+  ]),
 });
 
 function profile(

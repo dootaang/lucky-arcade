@@ -366,6 +366,35 @@ export async function listGameWagers(sessionId?: string): Promise<GameWagerRecei
   return records.filter((wager) => wager?.contract === "game-wager/0.1").sort((left, right) => right.createdAt.localeCompare(left.createdAt));
 }
 
+/**
+ * Realised casino profit for the player. Collection spending and unresolved
+ * reservations are deliberately excluded: this number is game performance,
+ * not a second rendering of the wallet balance.
+ */
+export async function readPlayerCasinoProfitSince(startUtcSecond: number): Promise<number> {
+  if (!Number.isSafeInteger(startUtcSecond) || startUtcSecond < 0) throw new Error("invalid_player_profit_period");
+  const start = new Date(startUtcSecond * 1_000).toISOString();
+  const db = await openDatabase(), transaction = db.transaction([STORES.grants, STORES.wagers, STORES.gameWagers], "readonly");
+  const [grants, storedPredictions, gameWagers] = await Promise.all([
+    request<PointGrant[]>(transaction.objectStore(STORES.grants).getAll()),
+    request<StoredSpectatorPrediction[]>(transaction.objectStore(STORES.wagers).getAll()),
+    request<GameWagerReceipt[]>(transaction.objectStore(STORES.gameWagers).getAll()),
+  ]);
+  await complete(transaction); db.close();
+  const completionProfit = grants.reduce((sum, grant) => grant.contract === "point-grant/0.1" && grant.updatedAt >= start ? sum + grant.amount : sum, 0);
+  const predictionProfit = storedPredictions.map(normalizePrediction).reduce((sum, prediction) =>
+    (prediction.status === "won" || prediction.status === "lost") && prediction.settledAt !== undefined && prediction.settledAt >= start
+      ? sum + prediction.settlementCredit - prediction.reservedAmount
+      : sum, 0);
+  const wagerProfit = gameWagers.reduce((sum, wager) =>
+    wager.contract === "game-wager/0.1" && (wager.status === "settled" || wager.status === "forfeited") && wager.settledAt !== undefined && wager.settledAt >= start
+      ? sum + wager.settlementCredit - wager.reservedAmount
+      : sum, 0);
+  const total = completionProfit + predictionProfit + wagerProfit;
+  if (!Number.isSafeInteger(total)) throw new Error("invalid_player_profit_total");
+  return total;
+}
+
 export async function readCollection(id: string): Promise<CollectionSnapshot> {
   const db = await openDatabase(), transaction = db.transaction(STORES.collection, "readonly");
   const stored = await request<CollectionSnapshot | undefined>(transaction.objectStore(STORES.collection).get(id));

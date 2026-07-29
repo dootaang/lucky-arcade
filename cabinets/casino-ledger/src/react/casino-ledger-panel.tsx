@@ -11,6 +11,8 @@ export interface CasinoLedgerPanelProps {
   npcBalances: Readonly<Record<string, number>>;
   npcSevenDayProfits: Readonly<Record<string, number>>;
   userBalance: number;
+  userSevenDayProfit: number;
+  profitPeriodDays: number;
   settlements: readonly NpcRoundSettlement[];
   playEvents: readonly NpcPlayEvent[];
   portraits: Readonly<Record<string, string>>;
@@ -34,6 +36,8 @@ export default function CasinoLedgerPanel({
   npcBalances,
   npcSevenDayProfits,
   userBalance,
+  userSevenDayProfit,
+  profitPeriodDays,
   settlements,
   playEvents,
   portraits,
@@ -48,9 +52,10 @@ export default function CasinoLedgerPanel({
   const [recordRoomOpen,setRecordRoomOpen]=useState(false);
   const [selectedNpcId,setSelectedNpcId]=useState<string>();
   const [recordDays,setRecordDays]=useState<0|1|7|30>(0);
-  const leaderboard = casinoLeaderboard(TEMEROSA_NPC_GAMBLING_PROFILES, npcBalances, userBalance, leaderboardMode === "profit" ? npcSevenDayProfits : undefined);
+  const profitLabel = profitPeriodDays >= 7 ? "7일 손익" : profitPeriodDays <= 1 ? "오늘 손익" : `최근 ${profitPeriodDays}일 손익`;
+  const leaderboard = casinoLeaderboard(TEMEROSA_NPC_GAMBLING_PROFILES, npcBalances, userBalance, leaderboardMode === "profit" ? npcSevenDayProfits : undefined, userSevenDayProfit);
   const names = new Map(TEMEROSA_NPC_GAMBLING_PROFILES.map((profile) => [profile.id, profile.name]));
-  const fullLeaderboard=casinoFullLeaderboard(TEMEROSA_NPC_GAMBLING_PROFILES,npcBalances,userBalance,leaderboardMode==="profit"?npcSevenDayProfits:undefined);
+  const fullLeaderboard=casinoFullLeaderboard(TEMEROSA_NPC_GAMBLING_PROFILES,npcBalances,userBalance,leaderboardMode==="profit"?npcSevenDayProfits:undefined,userSevenDayProfit);
   const currentMinute=Math.floor(currentUtcSecond/60);
   const selectedHistory=useMemo(()=>selectedNpcId?loadNpcHistory(selectedNpcId,recordDays):Object.freeze([]),[currentMinute,loadNpcHistory,recordDays,selectedNpcId]);
   const previousBalances = useRef(npcBalances);
@@ -64,7 +69,7 @@ export default function CasinoLedgerPanel({
   const inviteCount = presences.filter((presence) => presence.phase === "idle").length;
   const seatedCount = presences.length - inviteCount;
   /** Highest shown balance is the full bar. No absolute ceiling is invented. */
-  const topBalance = Math.max(1, ...leaderboard.map((entry) => Math.abs(leaderboardMode === "profit" && entry.kind === "npc" ? entry.periodProfit ?? 0 : entry.balance)));
+  const topBalance = Math.max(1, ...leaderboard.map((entry) => Math.abs(leaderboardMode === "profit" ? entry.periodProfit ?? 0 : entry.balance)));
   /** One backlit portrait per screen, picked by name so every client agrees. */
   const backlitNpcId = presences.filter((presence) => presence.phase === "settling")
     .map((presence) => presence.npcId).sort(compareText)[0];
@@ -127,20 +132,20 @@ export default function CasinoLedgerPanel({
     <div className="casino-ledger-board">
       <span className="ca-brackets" aria-hidden="true" />
       <table>
-        <caption className="ca-serif">명예의 전당 <span className="ledger-board-switch"><button aria-pressed={leaderboardMode === "profit"} onClick={() => setLeaderboardMode("profit")}>7일 손익</button><button aria-pressed={leaderboardMode === "balance"} onClick={() => setLeaderboardMode("balance")}>잔고</button><button onClick={()=>{setSelectedNpcId(undefined);setRecordRoomOpen(true);}}>전체 보기</button></span></caption>
-        <thead><tr><th scope="col">순위</th><th scope="col">이름</th><th scope="col">{leaderboardMode === "profit" ? "7일 손익" : "잔고"}</th></tr></thead>
+        <caption className="ca-serif">명예의 전당 <span className="ledger-board-switch"><button aria-pressed={leaderboardMode === "profit"} onClick={() => setLeaderboardMode("profit")}>{profitLabel}</button><button aria-pressed={leaderboardMode === "balance"} onClick={() => setLeaderboardMode("balance")}>잔고</button><button onClick={()=>{setSelectedNpcId(undefined);setRecordRoomOpen(true);}}>전체 보기</button></span></caption>
+        <thead><tr><th scope="col">순위</th><th scope="col">이름</th><th scope="col">{leaderboardMode === "profit" ? profitLabel : "잔고"}</th></tr></thead>
         <tbody ref={boardRef}>{leaderboard.map((entry) => <tr
           key={`${entry.kind}:${entry.id}`}
           {...(entry.kind === "npc" ? { "data-npc": entry.id } : {})}
           className={`${entry.kind === "user" ? "is-user" : ""}${entry.kind === "npc" && balanceMoves[entry.id] ? ` is-${balanceMoves[entry.id]}` : ""}`}
-          style={{ "--ledger-depth": `${(Math.abs(leaderboardMode === "profit" && entry.kind === "npc" ? entry.periodProfit ?? 0 : entry.balance) / topBalance * 100).toFixed(2)}%` } as React.CSSProperties}
+          style={{ "--ledger-depth": `${(Math.abs(leaderboardMode === "profit" ? entry.periodProfit ?? 0 : entry.balance) / topBalance * 100).toFixed(2)}%` } as React.CSSProperties}
         >
           <td className="ca-num">{entry.rank}</td>
           <th scope="row"><button className="ledger-person ledger-person-button" disabled={entry.kind!=="npc"} onClick={()=>{if(entry.kind!=="npc")return;setSelectedNpcId(entry.id);setRecordRoomOpen(true);}}>
             {entry.kind === "npc" && entry.rank <= 3 && <LedgerPortrait name={entry.name} src={portraits[entry.id]} crowned={entry.rank === 1} />}
             {entry.name}
           </button></th>
-          <td className="ca-num">{leaderboardMode === "profit" && entry.kind === "npc" ? <NumberTicker value={entry.periodProfit ?? 0} prefix={(entry.periodProfit ?? 0) > 0 ? "+" : ""} suffix=" P" durationMs={650} /> : <NumberTicker value={entry.balance} suffix=" P" durationMs={650} />}</td>
+          <td className="ca-num">{leaderboardMode === "profit" ? <NumberTicker value={entry.periodProfit ?? 0} prefix={(entry.periodProfit ?? 0) > 0 ? "+" : ""} suffix=" P" durationMs={650} /> : <NumberTicker value={entry.balance} suffix=" P" durationMs={650} />}</td>
         </tr>)}</tbody>
       </table>
     </div>
@@ -175,7 +180,7 @@ export default function CasinoLedgerPanel({
     })}
   </section>
   {recordRoomOpen&&<CasinoRecordRoom
-    leaderboard={fullLeaderboard} leaderboardMode={leaderboardMode} selectedNpcId={selectedNpcId}
+    leaderboard={fullLeaderboard} leaderboardMode={leaderboardMode} profitLabel={profitLabel} selectedNpcId={selectedNpcId}
     entries={selectedHistory} days={recordDays} names={names} portraits={portraits}
     onSelect={setSelectedNpcId} onDays={setRecordDays} onBack={()=>setSelectedNpcId(undefined)}
     onClose={()=>{setRecordRoomOpen(false);setSelectedNpcId(undefined);}}
@@ -183,8 +188,8 @@ export default function CasinoLedgerPanel({
   </>;
 }
 
-function CasinoRecordRoom({leaderboard,leaderboardMode,selectedNpcId,entries,days,names,portraits,onSelect,onDays,onBack,onClose}:{
-  leaderboard:readonly CasinoLeaderboardEntry[];leaderboardMode:"profit"|"balance";selectedNpcId:string|undefined;
+function CasinoRecordRoom({leaderboard,leaderboardMode,profitLabel,selectedNpcId,entries,days,names,portraits,onSelect,onDays,onBack,onClose}:{
+  leaderboard:readonly CasinoLeaderboardEntry[];leaderboardMode:"profit"|"balance";profitLabel:string;selectedNpcId:string|undefined;
   entries:readonly NpcRoundSettlement[];days:0|1|7|30;names:ReadonlyMap<string,string>;portraits:Readonly<Record<string,string>>;
   onSelect(id:string):void;onDays(days:0|1|7|30):void;onBack():void;onClose():void;
 }):React.ReactElement{
@@ -198,9 +203,9 @@ function CasinoRecordRoom({leaderboard,leaderboardMode,selectedNpcId,entries,day
   return <div className="casino-record-backdrop" onMouseDown={(event)=>{if(event.currentTarget===event.target)onClose();}}>
     <section className="casino-record-room" role="dialog" aria-modal="true" aria-labelledby="casino-record-title">
       <header><div>{selected?<button className="record-back" onClick={onBack}>← 전체 순위</button>:<span className="ca-label">CASINO ARCHIVE</span>}<h2 id="casino-record-title" className="ca-serif">{selected?`${selected.name}의 카지노 원장`:"명예의 전당 전체 순위"}</h2></div><button className="record-close" onClick={onClose} aria-label="기록실 닫기">×</button></header>
-      {!selected?<div className="record-ranking-wrap"><table className="record-ranking"><caption>{leaderboardMode==="profit"?"최근 7일 손익 순위":"현재 잔고 순위"}</caption><thead><tr><th>순위</th><th>이름</th><th>{leaderboardMode==="profit"?"7일 손익":"잔고"}</th></tr></thead><tbody>{leaderboard.map((entry)=><tr key={`${entry.kind}:${entry.id}`} className={entry.kind==="user"?"is-user":""}><td className="ca-num">{entry.rank}</td><th scope="row">{entry.kind==="npc"?<button onClick={()=>onSelect(entry.id)}><LedgerPortrait name={entry.name} src={portraits[entry.id]} crowned={entry.rank===1}/><span>{entry.name}</span></button>:entry.name}</th><td className="ca-num">{leaderboardMode==="profit"&&entry.kind==="npc"?signedPoints(entry.periodProfit??0):`${entry.balance} P`}</td></tr>)}</tbody></table></div>
+      {!selected?<div className="record-ranking-wrap"><table className="record-ranking"><caption>{leaderboardMode==="profit"?`${profitLabel} 순위`:"현재 잔고 순위"}</caption><thead><tr><th>순위</th><th>이름</th><th>{leaderboardMode==="profit"?profitLabel:"잔고"}</th></tr></thead><tbody>{leaderboard.map((entry)=><tr key={`${entry.kind}:${entry.id}`} className={entry.kind==="user"?"is-user":""}><td className="ca-num">{entry.rank}</td><th scope="row">{entry.kind==="npc"?<button onClick={()=>onSelect(entry.id)}><LedgerPortrait name={entry.name} src={portraits[entry.id]} crowned={entry.rank===1}/><span>{entry.name}</span></button>:entry.name}</th><td className="ca-num">{leaderboardMode==="profit"?signedPoints(entry.periodProfit??0):`${entry.balance} P`}</td></tr>)}</tbody></table></div>
       :report&&<div className="npc-ledger-detail">
-        <div className="npc-ledger-hero"><LedgerPortrait name={selected.name} src={portraits[selected.id]} crowned={selected.rank===1}/><div><span className="ca-label">{leaderboardMode==="profit"?"7일 손익":"잔고"} {selected.rank}위</span><strong>{selected.balance.toLocaleString("ko-KR")} P</strong></div><div className="record-periods" aria-label="조회 기간">{([1,7,30,0] as const).map((value)=><button key={value} aria-pressed={days===value} onClick={()=>onDays(value)}>{value===0?"전체":value===1?"24시간":`${value}일`}</button>)}</div></div>
+        <div className="npc-ledger-hero"><LedgerPortrait name={selected.name} src={portraits[selected.id]} crowned={selected.rank===1}/><div><span className="ca-label">{leaderboardMode==="profit"?profitLabel:"잔고"} {selected.rank}위</span><strong>{selected.balance.toLocaleString("ko-KR")} P</strong></div><div className="record-periods" aria-label="조회 기간">{([1,7,30,0] as const).map((value)=><button key={value} aria-pressed={days===value} onClick={()=>onDays(value)}>{value===0?"전체":value===1?"24시간":`${value}일`}</button>)}</div></div>
         <div className="npc-ledger-kpis"><article><span>순손익</span><strong className={report.net>0?"is-gain":report.net<0?"is-loss":""}>{signedPoints(report.net)}</strong></article><article><span>정산</span><strong>{report.settlements}건</strong><small>수익 {report.gains} · 손실 {report.losses}</small></article><article><span>최대 수익</span><strong className="is-gain">{signedPoints(report.largestGain)}</strong></article><article><span>최대 손실</span><strong className="is-loss">{signedPoints(report.largestLoss)}</strong></article></div>
         <LedgerTrend values={report.dailyNet}/>
         <section className="npc-table-breakdown"><h3>게임별 손익</h3><div>{report.byTable.map((item)=><button key={item.tableId} aria-pressed={tableFilter===item.tableId} onClick={()=>setTableFilter((current)=>current===item.tableId?"all":item.tableId)}><span>{tableName(item.tableId)}</span><small>{item.settlements}건 · 노출 {item.exposure.toLocaleString("ko-KR")} P</small><strong className={item.net>0?"is-gain":item.net<0?"is-loss":""}>{signedPoints(item.net)}</strong></button>)}</div></section>
