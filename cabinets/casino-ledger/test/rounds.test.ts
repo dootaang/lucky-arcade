@@ -1,5 +1,5 @@
 import { describe,expect,it } from "vitest";
-import { casinoDayPlan, casinoPresenceAt, groupNpcRoundSettlements, npcLiveBalancesAt, npcMatchSettlementTone, npcPresenceIntervalsForDay, npcVisitRounds, recentNpcRoundSettlementsAt, TEMEROSA_NPC_GAMBLING_PROFILES, TEMEROSA_NPC_LEDGER_CONTRACT, type CasinoPresentationClock } from "../src/index.ts";
+import { casinoDayPlan, casinoPresenceAt, groupNpcRoundSettlements, npcLiveBalancesAt, npcMatchSettlementEntriesByNpc, npcMatchSettlementTone, npcPresenceIntervalsForDay, npcVisitRounds, recentNpcRoundSettlementsAt, TEMEROSA_NPC_GAMBLING_PROFILES, TEMEROSA_NPC_LEDGER_CONTRACT, type CasinoPresentationClock, type NpcRoundSettlement } from "../src/index.ts";
 
 const profiles=TEMEROSA_NPC_GAMBLING_PROFILES,contract=TEMEROSA_NPC_LEDGER_CONTRACT;
 
@@ -39,6 +39,14 @@ describe("NPC real round settlements",()=>{
     expect(oldMaid).toBeDefined();
     expect(npcMatchSettlementTone(oldMaid!)).toBe(oldMaid!.entries.some((entry)=>entry.delta<0)?"mixed":"reward");
   });
+
+  it("splits a match into one tape group per NPC and keeps one NPC's receipt components together",()=>{
+    const lylaRank=receipt("rank","lyla",10),lylaPrediction=receipt("prediction","lyla",50),pale=receipt("loss","pale",-60);
+    const grouped=npcMatchSettlementEntriesByNpc({matchId:"match",visitId:"visit",tableId:"temerosa-old-maid",utcSecond:1_000,participantIds:["lyla","pale"],entries:[lylaRank,pale,lylaPrediction]});
+    expect(grouped).toHaveLength(2);
+    expect(grouped.map((entries)=>[entries[0]!.npcId,entries.reduce((sum,entry)=>sum+entry.delta,0)])).toEqual([["lyla",60],["pale",-60]]);
+  });
 });
 
 function fixedClock(second:number):CasinoPresentationClock{return{utcSecond:()=>second,utcMinute:()=>Math.floor(second/60)};}
+function receipt(roundId:string,npcId:string,delta:number):NpcRoundSettlement{return{roundId,matchId:"match",visitId:"visit",participantIds:["lyla","pale"],npcId,tableId:"temerosa-old-maid",utcSecond:1_000,stake:0,reservedAmount:0,creditAmount:delta,delta,resultKind:"rank-1",termsVersion:"test"};}

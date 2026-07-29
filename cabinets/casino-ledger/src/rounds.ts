@@ -55,6 +55,15 @@ export function groupNpcRoundSettlements(entries: readonly NpcRoundSettlement[])
   })).toSorted((a,b)=>b.utcSecond-a.utcSecond||compareText(a.matchId,b.matchId)));
 }
 
+/** Keeps one tape row per NPC while preserving multi-component receipts. */
+export function npcMatchSettlementEntriesByNpc(settlement: NpcMatchSettlement): readonly (readonly NpcRoundSettlement[])[] {
+  const grouped = new Map<string, NpcRoundSettlement[]>();
+  for (const entry of settlement.entries) grouped.set(entry.npcId, [...(grouped.get(entry.npcId) ?? []), entry]);
+  return Object.freeze([...grouped.entries()]
+    .sort(([left], [right]) => compareText(left, right))
+    .map(([, entries]) => Object.freeze(entries.toSorted((left, right) => compareText(left.roundId, right.roundId)))));
+}
+
 /** A match is not painted as a win merely because its highest-paid participant sorts first. */
 export function npcMatchSettlementTone(settlement: NpcMatchSettlement): NpcMatchSettlementTone {
   const hasGain = settlement.entries.some((entry) => entry.delta > 0);

@@ -3,7 +3,7 @@ import { HoloFoil } from "@lucky-arcade/ui/holo-card";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { casinoFullLeaderboard, casinoLeaderboard, casinoNpcLedgerReport, type CasinoLeaderboardEntry } from "../presentation.ts";
 import { formatCasinoKstTimestamp } from "../presentation-time.ts";
-import { groupNpcRoundSettlements, npcMatchSettlementTone, type NpcMatchSettlementTone } from "../rounds.ts";
+import { groupNpcRoundSettlements, npcMatchSettlementEntriesByNpc, type NpcMatchSettlementTone } from "../rounds.ts";
 import type { CasinoTableId, NpcMatchSettlement, NpcPlayEvent, NpcPlayEventCode, NpcPresence, NpcRoundSettlement } from "../contracts.ts";
 import { TEMEROSA_NPC_GAMBLING_PROFILES } from "../temerosa-profiles.ts";
 import "./casino-ledger-panel.css";
@@ -237,15 +237,14 @@ function LedgerPortrait({ name, src, crowned }: { name: string; src: string | un
 
 function TapeLine({ event, names, currentUtcSecond, newest = false }: { event: CasinoTapeEvent; names: ReadonlyMap<string,string>; currentUtcSecond: number; newest?: boolean }): React.ReactElement {
   const age = Math.max(0, currentUtcSecond - event.utcSecond);
-  const entries = event.settlement?.entries;
-  const name = entries ? [...new Set(entries.map((entry) => names.get(entry.npcId) ?? entry.npcId))].join(" · ") : names.get(event.npcId) ?? event.npcId;
+  const name = names.get(event.npcId) ?? event.npcId;
   const actionLabel = event.predictedNpcId
     ? `${names.get(event.predictedNpcId)??event.predictedNpcId} ${event.predictionMarket==="joker-holder"?"꼴찌":"우승"} 예측`
     : event.label;
   const directionClass = event.tone === "gain" ? " is-rising" : event.tone === "loss" ? " is-falling" : event.tone ? " is-balanced" : "";
   return <span data-tape-key={event.id} className={`ledger-activity-line is-${event.kind}${event.tone ? ` is-tone-${event.tone}` : ""}${directionClass}${newest ? " is-newest" : ""}`}>
-    <b>{name}</b><small>{ageLabel(age)}</small><span><i>{tableName(event.tableId)}</i> · {actionLabel}</span><strong className="ca-num">{entries
-      ? entries.map((entry) => <i className={entry.delta > 0 ? "is-gain" : entry.delta < 0 ? "is-loss" : "is-flat"} key={entry.roundId}>{signedPoints(entry.delta)}</i>)
+    <b>{name}</b><small>{ageLabel(age)}</small><span><i>{tableName(event.tableId)}</i> · {actionLabel}</span><strong className="ca-num">{event.delta !== undefined
+      ? signedPoints(event.delta)
       : event.stake === 0 ? "FREE" : `${event.stake} P${event.multiplier?` ×${event.multiplier}`:""}`}</strong>
   </span>;
 }
@@ -365,8 +364,8 @@ interface CasinoTapeEvent {
   kind: "play" | "settlement";
   label: string;
   stake: number;
+  delta?: number;
   tone?: NpcMatchSettlementTone;
-  settlement?: NpcMatchSettlement;
   predictedNpcId?: string;
   predictionMarket?: "first-place" | "joker-holder";
   multiplier?: number;
@@ -380,14 +379,20 @@ function casinoTape(playEvents: readonly NpcPlayEvent[], settlements: readonly N
     ...(event.predictionMarket?{predictionMarket:event.predictionMarket}:{}),
     ...(event.multiplier?{multiplier:event.multiplier}:{}),
   }));
-  const settlementEvents: CasinoTapeEvent[] = settlements.map((settlement) => {
-    const primary=settlement.entries[0]!;
-    return {
-      id:settlement.matchId,
-      npcId:primary.npcId,tableId:settlement.tableId,utcSecond:settlement.utcSecond,
-      kind:"settlement",label:`${settlementLabel(primary,names)}${primary.stake===0?"":` · ${primary.reservedAmount/primary.stake}배`}`,
-      stake:primary.stake,tone:npcMatchSettlementTone(settlement),settlement,
-    };
+  const settlementEvents: CasinoTapeEvent[] = settlements.flatMap((settlement) => {
+    return npcMatchSettlementEntriesByNpc(settlement).map((entries) => {
+      const npcId = entries[0]!.npcId;
+      const delta = entries.reduce((sum, entry) => sum + entry.delta, 0);
+      const wager = entries.find((entry) => entry.stake > 0) ?? entries[0]!;
+      const labels = [...new Set(entries.map((entry) => settlementLabel(entry, names)))];
+      const leverage = wager.stake === 0 ? "" : ` · ${wager.reservedAmount / wager.stake}배`;
+      return {
+        id:`settlement:${settlement.matchId}:${npcId}`,
+        npcId,tableId:settlement.tableId,utcSecond:settlement.utcSecond,
+        kind:"settlement",label:`${labels.join(" + ")}${leverage}`,
+        stake:wager.stake,delta,tone:delta>0?"gain":delta<0?"loss":"flat",
+      };
+    });
   });
   return [...play, ...settlementEvents]
     .filter((event) => event.utcSecond <= currentUtcSecond)
