@@ -2,6 +2,7 @@ import { shuffledStandardDeck, type StandardCardId } from "@lucky-arcade/card-ta
 import { resultHash } from "@lucky-arcade/engine";
 import {
   FIVE_CARD_DRAW_CONTRACT, FIVE_CARD_DRAW_MAX_EXPOSURE_UNITS, FIVE_CARD_DRAW_RULES_VERSION, FIVE_CARD_DRAW_STAKES,
+  FIVE_CARD_DRAW_STREET_CAP_UNITS,
   type FiveCardDrawAction, type FiveCardDrawBetAction, type FiveCardDrawBetRecord, type FiveCardDrawContext, type FiveCardDrawNpcSeatId,
   type FiveCardDrawOutcome, type FiveCardDrawPublicView, type FiveCardDrawResult, type FiveCardDrawSeatId, type FiveCardDrawStake, type FiveCardDrawState,
 } from "./contracts.ts";
@@ -63,9 +64,9 @@ export function fiveCardDrawNpcTells(state:FiveCardDrawState):FiveCardDrawPublic
 export function legalPlayerBetActions(state:FiveCardDrawState):readonly FiveCardDrawBetAction[] {
   if((state.phase!=="opening-bet"&&state.phase!=="closing-bet")||state.currentActorId!=="player")return [];
   const own=state.streetContributionsUnits.player,toCall=state.currentBetUnits-own;
-  if(toCall>0)return state.currentBetUnits===1?["fold","call","raise"]:["fold","call"];
+  if(toCall>0)return state.currentBetUnits<FIVE_CARD_DRAW_STREET_CAP_UNITS?["fold","call","raise"]:["fold","call"];
   if(state.currentBetUnits===0)return ["check","bet"];
-  return state.currentBetUnits===1?["check","raise"]:["check"];
+  return state.currentBetUnits<FIVE_CARD_DRAW_STREET_CAP_UNITS?["check","raise"]:["check"];
 }
 
 export function fiveCardDrawSettlementCredit(state:FiveCardDrawState):number {
@@ -111,8 +112,8 @@ function advanceNpc(state:FiveCardDrawState):FiveCardDrawState {
 
 function legalNpcAction(state:FiveCardDrawState,seatId:FiveCardDrawSeatId,preferred:FiveCardDrawBetAction):FiveCardDrawBetAction {
   const own=state.streetContributionsUnits[seatId],toCall=state.currentBetUnits-own;
-  const legal:FiveCardDrawBetAction[]=toCall>0?(state.currentBetUnits===1?["fold","call","raise"]:["fold","call"])
-    :state.currentBetUnits===0?["check","bet"]:state.currentBetUnits===1?["check","raise"]:["check"];
+  const legal:FiveCardDrawBetAction[]=toCall>0?(state.currentBetUnits<FIVE_CARD_DRAW_STREET_CAP_UNITS?["fold","call","raise"]:["fold","call"])
+    :state.currentBetUnits===0?["check","bet"]:state.currentBetUnits<FIVE_CARD_DRAW_STREET_CAP_UNITS?["check","raise"]:["check"];
   return legal.includes(preferred)?preferred:(toCall>0?"call":"check");
 }
 
@@ -123,8 +124,10 @@ function applyBet(state:FiveCardDrawState,seatId:FiveCardDrawSeatId,action:FiveC
   if(action==="fold"){
     active=active.filter((id)=>id!==seatId);folded.push(seatId);pending=pending.filter((id)=>id!==seatId);
   }else{
-    const target=action==="bet"?1:action==="raise"?2:action==="call"?currentBet:street[seatId];
-    if((action==="check"&&street[seatId]!==currentBet)||(action==="bet"&&currentBet!==0)||(action==="raise"&&currentBet!==1)||(action==="call"&&street[seatId]>=currentBet))throw new Error("five_card_draw_bet_action_invalid");
+    const target=action==="bet"?1:action==="raise"?currentBet+1:action==="call"?currentBet:street[seatId];
+    if((action==="check"&&street[seatId]!==currentBet)||(action==="bet"&&currentBet!==0)
+      ||(action==="raise"&&(currentBet<1||currentBet>=FIVE_CARD_DRAW_STREET_CAP_UNITS))
+      ||(action==="call"&&street[seatId]>=currentBet))throw new Error("five_card_draw_bet_action_invalid");
     amount=Math.max(0,target-street[seatId]);street[seatId]+=amount;total[seatId]+=amount;
     if(total[seatId]>FIVE_CARD_DRAW_MAX_EXPOSURE_UNITS)throw new Error("five_card_draw_exposure_exceeded");
     if(action==="bet"||action==="raise"){

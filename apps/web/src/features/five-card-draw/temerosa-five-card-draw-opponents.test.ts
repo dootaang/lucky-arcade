@@ -24,8 +24,9 @@ describe("Temerosa five-card draw opponents", () => {
 
   it("keeps all thirty personalities inside the approved raise-defense envelope", () => {
     const opponents = createTemerosaFiveCardDrawOpponents(manifest.assets);
+    const counterRates: number[] = [];
     const rates = opponents.map((opponent) => {
-      let folds = 0;
+      let folds = 0, counterRaises = 0;
       for (let index = 0; index < 1_000; index += 1) {
         const action = chooseNpcBetAction({
           seatId: "npc-1",
@@ -43,7 +44,9 @@ describe("Temerosa five-card draw opponents", () => {
           seed: `roster-action:${opponent.id}:${index}`,
         });
         if (action === "fold") folds += 1;
+        if (action === "raise") counterRaises += 1;
       }
+      counterRates.push(counterRaises / 1_000);
       return folds / 1_000;
     });
     const average = rates.reduce((sum, rate) => sum + rate, 0) / rates.length;
@@ -51,6 +54,11 @@ describe("Temerosa five-card draw opponents", () => {
     expect(average).toBeLessThan(.62);
     expect(Math.max(...rates) - Math.min(...rates)).toBeGreaterThan(.15);
     expect(Math.max(...rates)).toBeLessThan(.75);
+    const counterAverage = counterRates.reduce((sum, rate) => sum + rate, 0) / counterRates.length;
+    expect(counterAverage).toBeGreaterThan(.015);
+    expect(counterAverage).toBeLessThan(.07);
+    expect(Math.max(...counterRates) - Math.min(...counterRates)).toBeGreaterThan(.04);
+    expect(Math.max(...counterRates)).toBeLessThan(.12);
   });
 });
 

@@ -17,5 +17,6 @@ describe("five-card draw beginner guide", () => {
     expect(exchangeCountGuide(0)).toContain("수도");
     expect(exchangeCountGuide(3)).toContain("가능성");
     expect(betActionGuide("raise", 20)).toContain("손실도 커집니다");
+    expect(betActionGuide("raise", 20, true)).toContain("맞레이즈");
   });
 });

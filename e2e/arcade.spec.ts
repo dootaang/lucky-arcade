@@ -402,19 +402,19 @@ test("guards the five-card draw admin preview and keeps its trial economy separa
   await page.evaluate(() => sessionStorage.setItem("lucky-arcade:admin-preview:temerosa-five-card-draw", "6b767bbc518ec7f3dcb0ec8ec30539a7a3e7cef27d495272ea203fff0f598f34"));
   await page.reload();
   await expect(page.getByRole("heading", { name: "파이브 카드 드로 포커" })).toBeVisible();
-  await expect(page.getByText("1,000 시험 P")).toBeVisible();
+  await expect(page.getByText("2,000 시험 P")).toBeVisible();
   await expect(page.getByRole("button", { name: "시험 대국 시작" })).toBeVisible();
   await page.getByRole("button", { name: "시험 대국 시작" }).click();
-  await expect(page.getByText("950 시험 P")).toBeVisible();
+  await expect(page.getByText("1,930 시험 P")).toBeVisible();
   for (let turn = 0; turn < 12 && await page.locator(".draw-result").count() === 0; turn += 1) {
     const action = page.locator(".draw-actions button:visible").first();
     await expect(action).toBeVisible({ timeout: 4_000 });
     await action.click();
   }
   await expect(page.locator(".draw-result")).toBeVisible();
-  const preview = await page.evaluate(() => JSON.parse(localStorage.getItem("temerosa-five-card-draw-preview/0.1:envelope") ?? "null"));
+  const preview = await page.evaluate(() => JSON.parse(localStorage.getItem("temerosa-five-card-draw-preview/0.2:envelope") ?? "null"));
   expect(preview.settledResultIds).toHaveLength(1);
-  expect(preview.balance).toBeGreaterThanOrEqual(950);
+  expect(preview.balance).toBeGreaterThanOrEqual(1_930);
   const databaseWallet = await page.evaluate(async () => (await new Function("return import('/src/lib/wallet.ts')")()).readWallet());
   expect(databaseWallet.balance).not.toBe(1_000);
 });

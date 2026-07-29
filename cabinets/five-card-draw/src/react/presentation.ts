@@ -13,7 +13,7 @@ export interface DrawDealCard { readonly seatId: FiveCardDrawSeatId; readonly ca
 export type DrawStageEvent =
   | { readonly kind: "deal"; readonly token: string; readonly cards: readonly DrawDealCard[]; readonly stagger: number; readonly flightMs: number }
   | { readonly kind: "check"; readonly token: string; readonly seatId: FiveCardDrawSeatId }
-  | { readonly kind: "chips"; readonly token: string; readonly seatId: FiveCardDrawSeatId; readonly action: FiveCardDrawBetAction; readonly units: number; readonly hesitation: number }
+  | { readonly kind: "chips"; readonly token: string; readonly seatId: FiveCardDrawSeatId; readonly action: FiveCardDrawBetAction; readonly units: number; readonly hesitation: number; readonly counterRaise: boolean }
   | { readonly kind: "fold"; readonly token: string; readonly seatId: FiveCardDrawSeatId; readonly cards: readonly StandardCardId[] }
   | { readonly kind: "stand-pat"; readonly token: string; readonly seatId: FiveCardDrawSeatId }
   | { readonly kind: "discard"; readonly token: string; readonly seatId: FiveCardDrawSeatId; readonly cards: readonly StandardCardId[]; readonly slots: readonly number[]; readonly leaving: readonly StandardCardId[] }
@@ -60,7 +60,8 @@ export function planFiveCardDrawStage(previous: FiveCardDrawState, next: FiveCar
       steps.push({ event: { kind: "check", token, seatId }, duration: 300 });
     } else {
       const hesitation = hesitationFor(next, seatId);
-      steps.push({ event: { kind: "chips", token, seatId, action: action.action, units: Math.max(1, action.amountUnits), hesitation }, duration: hesitation + 380 });
+      steps.push({ event: { kind: "chips", token, seatId, action: action.action, units: Math.max(1, action.amountUnits), hesitation,
+        counterRaise: action.action === "raise" && previous.currentBetUnits === 2 }, duration: hesitation + 380 });
     }
   }
 

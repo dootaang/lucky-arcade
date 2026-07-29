@@ -75,6 +75,24 @@ describe("five-card draw NPC psychology", () => {
     expect(rate(cautious) - rate(aggressive)).toBeGreaterThan(.15);
   });
 
+  it("counter-raises selectively, more often when aggressive, and never beyond the cap", () => {
+    const aggressive: FiveCardDrawPersona = { ...MIDDLE, riskAppetite: .82, deceptionBias: .78, consistency: .42, tellStyle: "bluffer" };
+    const cautious: FiveCardDrawPersona = { ...MIDDLE, riskAppetite: .28, deceptionBias: .18, consistency: .86, tellStyle: "guarded" };
+    const counterRate = (persona: FiveCardDrawPersona) => Array.from({ length: 4_000 }, (_, index) => {
+      const base = observation(shuffledStandardDeck(`counter:${index}`).slice(0, 5), `counter:${index}`, persona);
+      return chooseNpcBetAction(base) === "raise" ? 1 : 0;
+    }).reduce<number>((sum, value) => sum + value, 0) / 4_000;
+    const ordinary = counterRate(MIDDLE);
+    expect(ordinary).toBeGreaterThan(.02);
+    expect(ordinary).toBeLessThan(.08);
+    expect(counterRate(aggressive) - counterRate(cautious)).toBeGreaterThan(.04);
+
+    for (let index = 0; index < 1_000; index += 1) {
+      const base = observation(shuffledStandardDeck(`cap:${index}`).slice(0, 5), `cap:${index}`);
+      expect(chooseNpcBetAction({ ...base, ownContributionUnits: 2, currentBetUnits: 3 })).not.toBe("raise");
+    }
+  });
+
   it("lets literal and suspicious readers move in opposite directions on ambiguous signals", () => {
     const hand = ["clubs-k", "diamonds-k", "hearts-2", "spades-7", "clubs-9"] as StandardCardId[];
     const foldRate = (signalTrust: number) => Array.from({ length: 2_000 }, (_, index) => {

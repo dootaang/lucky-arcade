@@ -64,6 +64,21 @@ describe("five-card draw presentation plan", () => {
     expect(fold.cards).toEqual(previous.hands["npc-1"]);
   });
 
+  it("marks the third fixed-limit unit as a counter-raise presentation", () => {
+    const previous = reduceFiveCardDraw(createFiveCardDrawState(context), { type: "start", seed: "counter-presentation", stake: 10 });
+    const next: FiveCardDrawState = {
+      ...previous,
+      sequence: previous.sequence + 1,
+      currentBetUnits: 3,
+      lastAction: { seatId: "npc-1", action: "raise", amountUnits: 2 },
+    };
+    const steps = planFiveCardDrawStage({ ...previous, currentBetUnits: 2 }, next);
+    const chips = steps[0]?.event;
+    expect(chips?.kind).toBe("chips");
+    if (chips?.kind !== "chips") throw new Error("counter_raise_event_missing");
+    expect(chips.counterRaise).toBe(true);
+  });
+
   it("reveals only showdown participants before the verdict and then awards the pot", () => {
     const finished = Array.from({ length: 50 }, (_, index) => complete(`showdown-${index}`)).find((state) => Object.keys(state.result?.hands ?? {}).length >= 2);
     if (!finished) throw new Error("showdown_seed_missing");

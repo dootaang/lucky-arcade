@@ -1,9 +1,10 @@
 import type { StandardCardId } from "@lucky-arcade/card-table";
 
-export const FIVE_CARD_DRAW_CONTRACT = "five-card-draw-state/0.3" as const;
-export const FIVE_CARD_DRAW_RULES_VERSION = "temerosa-five-card-draw/0.3" as const;
-export const FIVE_CARD_DRAW_TERMS_VERSION = "temerosa-five-card-draw-preview/0.1" as const;
-export const FIVE_CARD_DRAW_MAX_EXPOSURE_UNITS = 5 as const;
+export const FIVE_CARD_DRAW_CONTRACT = "five-card-draw-state/0.4" as const;
+export const FIVE_CARD_DRAW_RULES_VERSION = "temerosa-five-card-draw/0.4" as const;
+export const FIVE_CARD_DRAW_TERMS_VERSION = "temerosa-five-card-draw-preview/0.2" as const;
+export const FIVE_CARD_DRAW_STREET_CAP_UNITS = 3 as const;
+export const FIVE_CARD_DRAW_MAX_EXPOSURE_UNITS = 7 as const;
 export const FIVE_CARD_DRAW_STAKES = [10, 50, 200] as const;
 
 export type FiveCardDrawStake = (typeof FIVE_CARD_DRAW_STAKES)[number];

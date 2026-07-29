@@ -8,6 +8,7 @@ import type {
   NpcDrawDecision,
   NpcDrawObservation,
 } from "./contracts.ts";
+import { FIVE_CARD_DRAW_STREET_CAP_UNITS } from "./contracts.ts";
 import { evaluatePokerHand } from "./hand.ts";
 
 export function decideNpcDraw(observation: NpcDrawObservation): NpcDrawDecision {
@@ -33,7 +34,8 @@ export function chooseNpcBetAction(observation: NpcBetObservation): FiveCardDraw
   const read = publicReadAdjustment(observation);
   const plan = pokerPlan(observation.planSeed, observation.persona, strength);
   const toCall = observation.currentBetUnits - observation.ownContributionUnits;
-  const canRaise = observation.currentBetUnits === 1;
+  const canRaise = observation.currentBetUnits >= 1 && observation.currentBetUnits < FIVE_CARD_DRAW_STREET_CAP_UNITS;
+  const isCounterRaise = observation.currentBetUnits === FIVE_CARD_DRAW_STREET_CAP_UNITS - 1;
   const potOdds = toCall > 0 ? toCall / Math.max(1, observation.potUnits + toCall) : 0;
   const multiway = Math.max(0, observation.activeSeatCount - 2);
   const temperature = .065 + (1 - observation.persona.consistency) * .085;
@@ -49,8 +51,9 @@ export function chooseNpcBetAction(observation: NpcBetObservation): FiveCardDraw
     const foldWeight = Math.exp(clamp(-margin / temperature, -5, 5)) * foldSafety;
     const callWeight = Math.exp(clamp(margin / temperature, -5, 5));
     if (!canRaise) return weightedAction(["fold", "call"], [foldWeight, callWeight], observation.seed);
-    const raiseDrive = effective + observation.persona.riskAppetite * .13
-      + (plan === "bluff" ? observation.persona.deceptionBias * .12 : 0) - .64;
+    const raiseLine = isCounterRaise ? .75 : .64;
+    const raiseDrive = effective + observation.persona.riskAppetite * (isCounterRaise ? .1 : .13)
+      + (plan === "bluff" ? observation.persona.deceptionBias * (isCounterRaise ? .07 : .12) : 0) - raiseLine;
     const raiseWeight = Math.exp(clamp(raiseDrive / temperature, -5, 4));
     return weightedAction(["fold", "call", "raise"], [foldWeight, callWeight, raiseWeight], observation.seed);
   }
@@ -179,7 +182,8 @@ function validateDrawObservation(value:NpcDrawObservation):void {
 }
 function validateBetObservation(value:NpcBetObservation):void {
   if(value.hand.length!==5||new Set(value.hand).size!==5)throw new Error("five_card_draw_npc_hand_invalid");
-  if(value.currentBetUnits<0||value.currentBetUnits>2||value.ownContributionUnits<0||value.ownContributionUnits>2)throw new Error("five_card_draw_bet_observation_invalid");
+  if(value.currentBetUnits<0||value.currentBetUnits>FIVE_CARD_DRAW_STREET_CAP_UNITS
+    ||value.ownContributionUnits<0||value.ownContributionUnits>FIVE_CARD_DRAW_STREET_CAP_UNITS)throw new Error("five_card_draw_bet_observation_invalid");
   if(!Number.isInteger(value.potUnits)||value.potUnits<0||!value.planSeed)throw new Error("five_card_draw_bet_observation_invalid");
 }
 function clamp(value:number,min:number,max:number):number{return Math.max(min,Math.min(max,value));}

@@ -18,7 +18,7 @@ import { createTemerosaFiveCardDrawOpponents } from "./temerosa-five-card-draw-o
 
 const STORAGE_KEY = `${FIVE_CARD_DRAW_TERMS_VERSION}:envelope`;
 const BEGINNER_KEY = `${FIVE_CARD_DRAW_TERMS_VERSION}:beginner`;
-const INITIAL_BALANCE = 1_000;
+const INITIAL_BALANCE = 2_000;
 
 interface PreviewEnvelope {
   contract: typeof FIVE_CARD_DRAW_TERMS_VERSION;

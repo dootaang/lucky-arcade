@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { StandardCardId } from "@lucky-arcade/card-table";
 import {
   FIVE_CARD_DRAW_MAX_EXPOSURE_UNITS,
+  FIVE_CARD_DRAW_STREET_CAP_UNITS,
   createFiveCardDrawState,
   decideNpcDraw,
   fiveCardDrawPublicView,
@@ -33,7 +34,7 @@ function started(seed = "test-seed", opponentCount = 1): FiveCardDrawState {
   return reduceFiveCardDraw(createFiveCardDrawState(context(opponentCount)), { type: "start", seed, stake: 10 });
 }
 
-function autoplay(initial: FiveCardDrawState): FiveCardDrawState {
+function autoplay(initial: FiveCardDrawState, playerStrategy: "passive" | "aggressive" = "passive"): FiveCardDrawState {
   let state = initial;
   for (let guard = 0; guard < 100 && state.phase !== "complete"; guard += 1) {
     if (state.currentActorId !== "player") {
@@ -42,7 +43,9 @@ function autoplay(initial: FiveCardDrawState): FiveCardDrawState {
       state = reduceFiveCardDraw(state, { type: "exchange", cardIds: [] });
     } else {
       const actions = legalPlayerBetActions(state);
-      const action = actions.includes("check") ? "check" : actions.includes("call") ? "call" : actions[0];
+      const action = playerStrategy === "aggressive"
+        ? actions.includes("raise") ? "raise" : actions.includes("bet") ? "bet" : actions.includes("call") ? "call" : actions.includes("check") ? "check" : actions[0]
+        : actions.includes("check") ? "check" : actions.includes("call") ? "call" : actions[0];
       if (!action) throw new Error("missing_player_action");
       state = reduceFiveCardDraw(state, { type: "bet", action });
     }
@@ -100,6 +103,52 @@ describe("five-card draw game", () => {
     expect(Object.values(result.contributions).reduce((sum, value) => sum + value, 0)).toBe(result.pot);
     expect(Object.values(result.payouts).reduce((sum, value) => sum + value, 0)).toBe(result.pot);
     expect(result.playerCredit).toBe(FIVE_CARD_DRAW_MAX_EXPOSURE_UNITS * 10 - result.contributions.player + result.payouts.player);
+  });
+
+  it("allows one fixed-limit counter-raise and closes action at three street units", () => {
+    const base = started("counter-raise");
+    const facingRaise: FiveCardDrawState = {
+      ...base,
+      currentActorId: "player",
+      pendingSeatIds: ["player", "npc-1"],
+      currentBetUnits: 2,
+      streetContributionsUnits: { ...base.streetContributionsUnits, player: 1, "npc-1": 2 },
+      contributionsUnits: { ...base.contributionsUnits, player: 2, "npc-1": 3 },
+    };
+    expect(legalPlayerBetActions(facingRaise)).toEqual(["fold", "call", "raise"]);
+    const counterRaised = reduceFiveCardDraw(facingRaise, { type: "bet", action: "raise" });
+    expect(counterRaised.currentBetUnits).toBe(FIVE_CARD_DRAW_STREET_CAP_UNITS);
+    expect(counterRaised.streetContributionsUnits.player).toBe(3);
+    expect(counterRaised.lastAction).toEqual({ seatId: "player", action: "raise", amountUnits: 2 });
+
+    const facingCap: FiveCardDrawState = {
+      ...counterRaised,
+      currentActorId: "npc-1",
+      pendingSeatIds: ["npc-1"],
+      streetContributionsUnits: { ...counterRaised.streetContributionsUnits, "npc-1": 2 },
+    };
+    const playerAtCap: FiveCardDrawState = {
+      ...facingCap,
+      currentActorId: "player",
+      pendingSeatIds: ["player"],
+      streetContributionsUnits: { ...facingCap.streetContributionsUnits, player: 2 },
+    };
+    expect(legalPlayerBetActions(playerAtCap)).toEqual(["fold", "call"]);
+    expect(FIVE_CARD_DRAW_MAX_EXPOSURE_UNITS).toBe(1 + FIVE_CARD_DRAW_STREET_CAP_UNITS * 2);
+  });
+
+  it("produces visible but bounded counter-raises against an aggressive player", () => {
+    let tablesWithCounterRaise = 0;
+    const samples = 2_000;
+    for (let index = 0; index < samples; index += 1) {
+      const complete = autoplay(started(`counter-audit-${index}`, 3), "aggressive");
+      const raisesByPhase = (["opening-bet", "closing-bet"] as const).map((phase) => complete.betHistory.filter((entry) => entry.phase === phase && entry.action === "raise").length);
+      if (raisesByPhase.some((count) => count === 2)) tablesWithCounterRaise += 1;
+      expect(raisesByPhase.every((count) => count <= 2)).toBe(true);
+    }
+    const rate = tablesWithCounterRaise / samples;
+    expect(rate).toBeGreaterThan(.2);
+    expect(rate).toBeLessThan(.4);
   });
 
   it("rotates the dealer only after a completed hand", () => {

@@ -21,7 +21,7 @@ describe("public cabinet visibility", () => {
     expect(getCabinetRegistration("indian-poker")?.manifest.description).toContain("5·7라운드");
     expect(getCabinetRegistration("temerosa-texas-holdem")).toBeUndefined();
     expect(getCabinetRegistration("temerosa-five-card-draw")).toBeUndefined();
-    expect(getCabinetRegistration("temerosa-five-card-draw", true)?.manifest.version).toBe("temerosa-five-card-draw/0.3");
+    expect(getCabinetRegistration("temerosa-five-card-draw", true)?.manifest.version).toBe("temerosa-five-card-draw/0.4");
     for (const id of ["favorite-cup", "old-maid-card", "gfl-favorite-cup", "temerosa-margin", "lucky-derby-lab", "gfl-sprite-memory", "gfl-ember", "restoration-crew", "lore-circuit"]) {
       expect(getCabinetRegistration(id)).toBeUndefined();
     }

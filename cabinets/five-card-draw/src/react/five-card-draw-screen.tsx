@@ -133,7 +133,7 @@ export function FiveCardDrawScreen(props:FiveCardDrawScreenProps):ReactElement {
         {queue.busy&&<button className="draw-secondary draw-skip" onClick={queue.skip}>연출 건너뛰기</button>}
         {settled&&state.phase==="drawing"&&state.currentActorId==="player"&&<button className="draw-primary" onClick={exchange}>{selectedCards.size===0?"그대로 승부":`${selectedCards.size}장 교환`}</button>}
         {playerActions.map((action)=><button key={action} className={action==="fold"?"draw-danger":"draw-primary"} onClick={()=>props.onAction({type:"bet",action})}>{actionLabel(action,props.state)}</button>)}
-        {props.beginner&&playerActions.length>0&&<p className="draw-action-guide">{playerActions.map((action)=>betActionGuide(action,actionCost(action,props.state))).join(" · ")}</p>}
+        {props.beginner&&playerActions.length>0&&<p className="draw-action-guide">{playerActions.map((action)=>betActionGuide(action,actionCost(action,props.state),action==="raise"&&props.state.currentBetUnits===2)).join(" · ")}</p>}
         {settled&&state.phase==="complete"&&<><section className="draw-result"><strong>{resultLabel(state)}</strong><span>{showdownLabel(state)}</span><small>내 정산 크레딧 {state.result?.playerCredit.toLocaleString("ko-KR")} P</small>{state.foldedSeatIds.length>0&&<em>폴드한 패는 공개되지 않습니다.</em>}</section><button className="draw-primary" onClick={props.onReset}>다시하기</button></>}
         {props.error&&<p className="draw-error" role="alert">{props.error}</p>}
       </div>
@@ -223,7 +223,7 @@ function seatStatus(state:FiveCardDrawState,seatId:FiveCardDrawSeatId,event:Draw
     if(event.kind==="stand-pat")return "교환 없음";
     if(event.kind==="discard"||event.kind==="draw")return `${event.cards.length}장 교환`;
     if(event.kind==="check")return "체크";
-    if(event.kind==="chips")return event.action==="call"?"콜":event.action==="raise"?"레이즈":"베팅";
+    if(event.kind==="chips")return event.action==="call"?"콜":event.counterRaise?"맞레이즈":event.action==="raise"?"레이즈":"베팅";
   }
   if(state.phase==="complete"){
     if(!verdictVisible)return revealed?"패 공개":"공개 대기";
@@ -242,8 +242,8 @@ function standardCardLabel(card:StandardCardId):string {
 
 function tellLabel(tell:FiveCardDrawTell):string{return tell==="confident"?"여유":tell==="uneasy"?"긴장":"무표정";}
 function fillUnique(current:readonly string[],count:number,opponents:readonly FiveCardDrawOpponentView[]):string[]{const output=[...new Set(current.filter((id)=>opponents.some((opponent)=>opponent.id===id)))].slice(0,count);for(const opponent of opponents){if(output.length>=count)break;if(!output.includes(opponent.id))output.push(opponent.id);}return output;}
-function actionLabel(action:FiveCardDrawBetAction,state:FiveCardDrawState):string {const cost=actionCost(action,state);return action==="check"?"체크":action==="fold"?"폴드":`${action==="call"?"콜":action==="raise"?"레이즈":"베팅"} ${cost} P`;}
-function actionCost(action:FiveCardDrawBetAction,state:FiveCardDrawState):number {if(!state.baseStake)return 0;const own=state.streetContributionsUnits.player;const target=action==="bet"?1:action==="raise"?2:action==="call"?state.currentBetUnits:own;return Math.max(0,target-own)*state.baseStake;}
+function actionLabel(action:FiveCardDrawBetAction,state:FiveCardDrawState):string {const cost=actionCost(action,state);return action==="check"?"체크":action==="fold"?"폴드":`${action==="call"?"콜":action==="raise"&&state.currentBetUnits===2?"맞레이즈":action==="raise"?"레이즈":"베팅"} ${cost} P`;}
+function actionCost(action:FiveCardDrawBetAction,state:FiveCardDrawState):number {if(!state.baseStake)return 0;const own=state.streetContributionsUnits.player;const target=action==="bet"?1:action==="raise"?state.currentBetUnits+1:action==="call"?state.currentBetUnits:own;return Math.max(0,target-own)*state.baseStake;}
 function phaseLabel(state:FiveCardDrawState):string {return state.phase==="opening-bet"?"교환 전 베팅":state.phase==="drawing"?"카드 교환":state.phase==="closing-bet"?"교환 후 베팅":"쇼다운";}
 function resultLabel(state:FiveCardDrawState):string {return state.result?.outcome==="player-win"?"승리":state.result?.outcome==="tie"?"팟 분배":"패배";}
 function showdownLabel(state:FiveCardDrawState):string {const result=state.result;if(!result)return "";const player=result.values.player;const winners=result.winnerSeatIds.map((seat)=>seat==="player"?"플레이어":state.context.opponents[Number(seat.slice(-1))-1]?.name??seat);return `${player?`내 패 ${player.label} · `:""}${winners.join(", ")} 승리`;}

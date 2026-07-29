@@ -20,11 +20,11 @@ export function exchangeCountGuide(count:number):string {
   return "세 장을 교환했습니다. 원 페어를 남겼을 가능성이 있지만 허세나 변칙 선택일 수도 있습니다.";
 }
 
-export function betActionGuide(action:"check"|"bet"|"call"|"raise"|"fold",amount:number):string {
+export function betActionGuide(action:"check"|"bet"|"call"|"raise"|"fold",amount:number,counterRaise=false):string {
   if(action==="check")return "체크 · 추가 판돈 없이 차례를 넘깁니다.";
   if(action==="call")return `콜 ${amount} P · 상대가 건 금액에 맞추고 계속합니다.`;
   if(action==="bet")return `베팅 ${amount} P · 먼저 판돈을 걸어 상대의 반응을 봅니다.`;
-  if(action==="raise")return `레이즈 ${amount} P · 판돈을 더 올립니다. 상대를 압박하지만 손실도 커집니다.`;
+  if(action==="raise")return `${counterRaise?"맞레이즈":"레이즈"} ${amount} P · 판돈을 더 올립니다. 상대를 압박하지만 손실도 커집니다.`;
   return "폴드 · 이번 판을 포기하고 추가 손실을 막습니다.";
 }
 
