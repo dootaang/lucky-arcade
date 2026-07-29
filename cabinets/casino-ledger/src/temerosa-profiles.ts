@@ -6,7 +6,7 @@ import type {
   NpcTableWeight,
 } from "./contracts.ts";
 
-export const TEMEROSA_LEDGER_EPOCH_UTC_DAY = 20_664;
+export const TEMEROSA_LEDGER_EPOCH_KST_DAY = 20_664;
 
 const SHIFTS: readonly (readonly NpcActiveWindow[])[] = [
   Object.freeze([{ startMinute: 0, endMinute: 480, weight: 1 }]),
@@ -44,7 +44,7 @@ const HIGH: NpcSessionRange = Object.freeze({ min: 10, max: 14 });
 
 interface FrozenTraits { attention: number; bluff: number; oldMaid: number }
 
-/** npc-ledger/0.8 closing balances at 2026-07-30 00:00 UTC. Wares is archived as the house operator. */
+/** npc-ledger/0.8 closing balances carried into 2026-07-30 00:00 KST. Wares is the house operator. */
 const V09_OPENING_BALANCES: Readonly<Record<string, number>> = Object.freeze({
   katrinka:34,raven:445,lyla:35,alger:280,kreva:180,phaeo:70,machina:13725,kano:60,cicero:88,
   esther:18152,nostalgia:1340,pale:23490,apollyon:76,hiro:2400,cradle:1135,nieun:970,temute:335,
@@ -54,7 +54,7 @@ const V09_OPENING_BALANCES: Readonly<Record<string, number>> = Object.freeze({
 
 /**
  * The final, completed npc-ledger/0.7 day. v0.8 rebased balances at the next
- * UTC midnight, so this frozen delta is the exact analytics bridge across the
+ * KST midnight, so this frozen delta is the exact analytics bridge across the
  * contract boundary. Earlier contracts did not preserve a continuous close.
  */
 const V08_FINAL_DAY_PROFITS: Readonly<Record<string, number>> = Object.freeze({
@@ -77,7 +77,7 @@ const TRAITS: Readonly<Record<string, Readonly<FrozenTraits>>> = Object.freeze({
 });
 
 /**
- * Frozen npc-ledger/0.9 data. The former `target` values are retained only as
+ * Frozen npc-ledger/1.0 data. The former `target` values are retained only as
  * compatibility aliases. No outcome code may steer back to them.
  * interpretation; this module intentionally does not import another cabinet.
  */
@@ -119,11 +119,12 @@ export const TEMEROSA_NPC_GAMBLING_PROFILES: readonly NpcGamblingProfile[] = Obj
 ]);
 
 export const TEMEROSA_NPC_LEDGER_CONTRACT: NpcLedgerContract = Object.freeze({
-  version: "npc-ledger/0.9",
-  epochUtcDay: TEMEROSA_LEDGER_EPOCH_UTC_DAY,
+  version: "npc-ledger/1.0",
+  seedVersion: "npc-ledger/0.9",
+  epochKstDay: TEMEROSA_LEDGER_EPOCH_KST_DAY,
   profiles: TEMEROSA_NPC_GAMBLING_PROFILES,
   profitHistory: Object.freeze([
-    Object.freeze({ utcDay: TEMEROSA_LEDGER_EPOCH_UTC_DAY - 1, profits: V08_FINAL_DAY_PROFITS }),
+    Object.freeze({ kstDay: TEMEROSA_LEDGER_EPOCH_KST_DAY - 1, profits: V08_FINAL_DAY_PROFITS }),
   ]),
 });
 

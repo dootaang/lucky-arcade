@@ -1,5 +1,11 @@
 import { WAGER_MULTIPLIERS, XorShift32, type WagerMultiplier } from "@lucky-arcade/engine";
 import { NPC_INCOME_AMOUNTS } from "./economy.ts";
+import {
+  CASINO_SECONDS_PER_DAY,
+  casinoKstDayAtUtcSecond,
+  casinoSecondOfKstDayAtUtcSecond,
+  casinoUtcSecondAtKstDay,
+} from "./casino-time.ts";
 import type {
   CasinoClock,
   CasinoDayPlan,
@@ -17,7 +23,7 @@ import type {
 } from "./contracts.ts";
 
 const MINUTES_PER_DAY = 1_440;
-const SECONDS_PER_DAY = 86_400;
+const SECONDS_PER_DAY = CASINO_SECONDS_PER_DAY;
 const MAX_SAFE_BALANCE = 1_000_000_000;
 const PAID_STAKES = [10, 50, 200] as const;
 const HIGH_LOW_RETURN_MULTIPLIERS = [1.3, 1.9, 2.7, 4, 5.5] as const;
@@ -51,7 +57,7 @@ export function casinoDayPlan(
 ): CasinoDayPlan {
   validateDay(profiles, dayIndex, openingBalances, contract);
   validateBalanceEvents(balanceEvents, profiles);
-  const cacheKey=profiles===contract.profiles&&balanceEvents.length===0?`${contract.version}:${dayIndex}:${profiles.map((profile)=>openingBalances[profile.id]).join(",")}`:undefined;
+  const cacheKey=profiles===contract.profiles&&balanceEvents.length===0?`${contract.version}:${contract.seedVersion}:${dayIndex}:${profiles.map((profile)=>openingBalances[profile.id]).join(",")}`:undefined;
   const cached=cacheKey===undefined?undefined:DAY_PLAN_CACHE.get(cacheKey);
   if(cached){DAY_PLAN_CACHE.delete(cacheKey!);DAY_PLAN_CACHE.set(cacheKey!,cached);return cached;}
   const byId = new Map(profiles.map((profile) => [profile.id, profile]));
@@ -86,7 +92,7 @@ export function casinoDayPlan(
     }
     const participants = draft.participantIds.map((id) => byId.get(id)).filter((value): value is NpcGamblingProfile => Boolean(value));
     if (participants.length === 0) continue;
-    const rng = new XorShift32(`${contract.version}:${dayIndex}:${draft.matchId}:result`);
+    const rng = new XorShift32(`${contract.seedVersion}:${dayIndex}:${draft.matchId}:result`);
     for(const profile of participants){const key=`${draft.visitId}:${profile.id}`;if(!visitOpening.has(key))visitOpening.set(key,balances[profile.id]!);}
     if (draft.tableId === "temerosa-old-maid") {
       if (participants.length < 2 || !participants.every((profile) => policyAllowsPaid(profile, balances[profile.id]!, visitOpening.get(`${draft.visitId}:${profile.id}`)!,rng))) continue;
@@ -139,11 +145,11 @@ export function npcDaySessions(profile: NpcGamblingProfile, dayIndex: number, op
 
 export function npcBalanceAt(profile: NpcGamblingProfile, clock: CasinoClock, contract: NpcLedgerContract): NpcBalanceSnapshot {
   const nowSecond = normalizedUtcSecond(clock);
-  const absoluteDay = Math.floor(nowSecond / SECONDS_PER_DAY);
-  const dayIndex = absoluteDay - contract.epochUtcDay;
+  const absoluteDay = casinoKstDayAtUtcSecond(nowSecond);
+  const dayIndex = absoluteDay - contract.epochKstDay;
   if (dayIndex < 0) return { balance: profile.openingBalance, today: Object.freeze([]), dayIndex: 0 };
   const opening = dayIndex === 0 ? openingBalances(contract.profiles) : completedDayBalances(contract.profiles, dayIndex - 1, contract);
-  const secondOfDay = nowSecond - absoluteDay * SECONDS_PER_DAY;
+  const secondOfDay = casinoSecondOfKstDayAtUtcSecond(nowSecond);
   const today = (casinoDayPlan(contract.profiles, dayIndex, opening, contract).sessions[profile.id] ?? []).filter((session) => session.secondOfDay <= secondOfDay);
   return { balance: opening[profile.id]! + sumDeltas(today), today: Object.freeze(today), dayIndex };
 }
@@ -152,8 +158,8 @@ export function recentNpcActivitiesAt(profiles: readonly NpcGamblingProfile[], c
   if (!Number.isSafeInteger(limit) || limit < 0) throw new Error("npc_ledger_invalid_limit");
   if (limit === 0) return Object.freeze([]);
   const nowSecond = normalizedUtcSecond(clock);
-  const absoluteDay = Math.floor(nowSecond / SECONDS_PER_DAY);
-  const currentDayIndex = absoluteDay - contract.epochUtcDay;
+  const absoluteDay = casinoKstDayAtUtcSecond(nowSecond);
+  const currentDayIndex = absoluteDay - contract.epochKstDay;
   if (currentDayIndex < 0) return Object.freeze([]);
   const firstDay = Math.max(0, currentDayIndex - 1);
   let balances = firstDay === 0 ? openingBalances(profiles) : completedDayBalances(profiles, firstDay - 1, contract);
@@ -161,7 +167,7 @@ export function recentNpcActivitiesAt(profiles: readonly NpcGamblingProfile[], c
   for (let day = firstDay; day <= currentDayIndex; day += 1) {
     const plan = casinoDayPlan(profiles, day, balances, contract);
     for (const profile of profiles) for (const session of plan.sessions[profile.id] ?? []) {
-      const utcSecond = (contract.epochUtcDay + day) * SECONDS_PER_DAY + session.secondOfDay;
+      const utcSecond = casinoUtcSecondAtKstDay(contract.epochKstDay + day, session.secondOfDay);
       if (utcSecond > nowSecond - SECONDS_PER_DAY && utcSecond <= nowSecond && session.delta !== 0) {
         output.push({ npcId: profile.id, utcSecond, utcMinute: Math.floor(utcSecond / 60), session });
       }
@@ -179,17 +185,17 @@ export function npcActivitiesForAt(
   if (!profiles.some((profile) => profile.id === npcId)) throw new Error("npc_ledger_unknown_npc");
   if (!Number.isSafeInteger(days) || days < 0) throw new Error("npc_ledger_invalid_period");
   const nowSecond = normalizedUtcSecond(clock);
-  const absoluteDay = Math.floor(nowSecond / SECONDS_PER_DAY);
-  const currentDayIndex = absoluteDay - contract.epochUtcDay;
+  const absoluteDay = casinoKstDayAtUtcSecond(nowSecond);
+  const currentDayIndex = absoluteDay - contract.epochKstDay;
   if (currentDayIndex < 0) return Object.freeze([]);
-  const lower = days === 0 ? contract.epochUtcDay * SECONDS_PER_DAY : nowSecond - days * SECONDS_PER_DAY;
-  const firstDay = Math.max(0, Math.floor(lower / SECONDS_PER_DAY) - contract.epochUtcDay);
+  const lower = days === 0 ? casinoUtcSecondAtKstDay(contract.epochKstDay) : nowSecond - days * SECONDS_PER_DAY;
+  const firstDay = Math.max(0, casinoKstDayAtUtcSecond(lower) - contract.epochKstDay);
   let balances = firstDay === 0 ? openingBalances(profiles) : completedDayBalances(profiles, firstDay - 1, contract);
   const output: NpcActivity[] = [];
   for (let day = firstDay; day <= currentDayIndex; day += 1) {
     const plan = casinoDayPlan(profiles, day, balances, contract);
     for (const session of plan.sessions[npcId] ?? []) {
-      const utcSecond = (contract.epochUtcDay + day) * SECONDS_PER_DAY + session.secondOfDay;
+      const utcSecond = casinoUtcSecondAtKstDay(contract.epochKstDay + day, session.secondOfDay);
       if (utcSecond > lower && utcSecond <= nowSecond) output.push({ npcId, utcSecond, utcMinute: Math.floor(utcSecond / 60), session });
     }
     balances = addDay(balances, plan.sessions, profiles);
@@ -210,21 +216,21 @@ export function completedDayBalances(
 export function rollingNpcProfitAt(profiles: readonly NpcGamblingProfile[], clock: CasinoClock, contract: NpcLedgerContract, days = 7): Readonly<Record<string, number>> {
   if (!Number.isSafeInteger(days) || days < 1) throw new Error("npc_ledger_invalid_period");
   const nowSecond = normalizedUtcSecond(clock);
-  const absoluteDay = Math.floor(nowSecond / SECONDS_PER_DAY);
-  const dayIndex = absoluteDay - contract.epochUtcDay;
-  const earliestHistoryDay = contract.profitHistory[0]?.utcDay ?? contract.epochUtcDay;
+  const absoluteDay = casinoKstDayAtUtcSecond(nowSecond);
+  const dayIndex = absoluteDay - contract.epochKstDay;
+  const earliestHistoryDay = contract.profitHistory[0]?.kstDay ?? contract.epochKstDay;
   if (absoluteDay < earliestHistoryDay) return Object.freeze(Object.fromEntries(profiles.map((profile) => [profile.id, 0])));
-  const periodStartUtcDay = Math.max(earliestHistoryDay, absoluteDay - days + 1);
+  const periodStartKstDay = Math.max(earliestHistoryDay, absoluteDay - days + 1);
   const profits: Record<string, number> = Object.fromEntries(profiles.map((profile) => [profile.id, 0]));
   for (const history of contract.profitHistory) {
-    if (history.utcDay < periodStartUtcDay || history.utcDay > absoluteDay) continue;
+    if (history.kstDay < periodStartKstDay || history.kstDay > absoluteDay) continue;
     for (const profile of profiles) profits[profile.id]! += history.profits[profile.id] ?? 0;
   }
   if (dayIndex < 0) return Object.freeze(profits);
-  const periodStartDay = Math.max(0, periodStartUtcDay - contract.epochUtcDay);
+  const periodStartDay = Math.max(0, periodStartKstDay - contract.epochKstDay);
   const periodOpening = periodStartDay === 0 ? openingBalances(profiles) : completedDayBalances(profiles, periodStartDay - 1, contract);
   let current = periodOpening;
-  const secondOfDay = nowSecond - absoluteDay * SECONDS_PER_DAY;
+  const secondOfDay = casinoSecondOfKstDayAtUtcSecond(nowSecond);
   for (let day = periodStartDay; day <= dayIndex; day += 1) {
     const all = casinoDayPlan(profiles, day, current, contract).sessions;
     const elapsed = day === dayIndex
@@ -257,14 +263,14 @@ function createVisits(profiles: readonly NpcGamblingProfile[], dayIndex: number,
     const tableId = group.length < participantCount(originalTable) && originalTable !== "temerosa-old-maid" ? "temerosa-slot" : originalTable;
     const participants = tableId === "temerosa-slot" ? [group[0]!.npcId] : group.map((entry) => entry.npcId);
     if (tableId === "temerosa-old-maid" && participants.length < 2) participants.splice(0, participants.length, group[0]!.npcId);
-    const rng = new XorShift32(`${contract.version}:${dayIndex}:${visits.length}:${participants.join("+")}:visit`);
+    const rng = new XorShift32(`${contract.seedVersion}:${dayIndex}:${visits.length}:${participants.join("+")}:visit`);
     const start = Math.max(Math.round(averageSecond(group)), ...participants.map((id) => availableAt[id]! + 30));
     if (start > SECONDS_PER_DAY - 180) continue;
     const range = VISIT_SECONDS[tableId];
     const desiredEnd = start + randomInteger(range[0], range[1], rng);
     const end = Math.min(SECONDS_PER_DAY - 1, desiredEnd);
     if (end - start < 150) continue;
-    const visitId = `${contract.version}:${dayIndex}:visit:${visits.length}:${tableId}`;
+    const visitId = `${contract.seedVersion}:${dayIndex}:visit:${visits.length}:${tableId}`;
     const visit = Object.freeze({ visitId, tableId, participantIds: Object.freeze(participants.toSorted(compareText)), startedAtSecondOfDay: start, endsAtSecondOfDay: end });
     visits.push(visit);
     for (const id of participants) availableAt[id] = end + 30;
@@ -274,7 +280,7 @@ function createVisits(profiles: readonly NpcGamblingProfile[], dayIndex: number,
 
 function createIntents(profiles: readonly NpcGamblingProfile[], dayIndex: number, contract: NpcLedgerContract): VisitIntent[] {
   return profiles.flatMap((profile) => {
-    const prefix = `${contract.version}:${profile.id}:${dayIndex}`;
+    const prefix = `${contract.seedVersion}:${profile.id}:${dayIndex}`;
     const scheduleRng = new XorShift32(`${prefix}:schedule`);
     const tableRng = new XorShift32(`${prefix}:tables`);
     const count = randomInteger(profile.sessionsPerDay.min, profile.sessionsPerDay.max, scheduleRng);
@@ -283,7 +289,7 @@ function createIntents(profiles: readonly NpcGamblingProfile[], dayIndex: number
 }
 
 function createMatchDrafts(visit: NpcVisit, dayIndex: number, contract: NpcLedgerContract): readonly MatchDraft[] {
-  const rng = new XorShift32(`${contract.version}:${dayIndex}:${visit.visitId}:matches`);
+  const rng = new XorShift32(`${contract.seedVersion}:${dayIndex}:${visit.visitId}:matches`);
   const range = MATCH_SECONDS[visit.tableId];
   const output: MatchDraft[] = [];
   let starts = visit.startedAtSecondOfDay + randomInteger(12,24,rng);
@@ -469,7 +475,7 @@ function sessionSchedule(profile:NpcGamblingProfile,count:number,rng:XorShift32)
 }
 function weightedTable(profile:NpcGamblingProfile,rng:XorShift32):CasinoTableId { return profile.tables[drawWeightedIndex(profile.tables.map((entry)=>entry.weight),rng)]!.tableId; }
 function incomeSessionsForDay(profiles:readonly NpcGamblingProfile[],dayIndex:number,contract:NpcLedgerContract):Readonly<Record<string,NpcSession>> {
-  const absoluteDay=contract.epochUtcDay+dayIndex;
+  const absoluteDay=contract.epochKstDay+dayIndex;
   return Object.freeze(Object.fromEntries(profiles.flatMap((profile)=>{
     if(absoluteDay%profile.payCycleDays!==profile.paydayOffset)return [];
     const amount=NPC_INCOME_AMOUNTS[profile.incomeBand];
@@ -488,7 +494,7 @@ function normalizedUtcSecond(clock:CasinoClock):number {
 }
 function compareText(a:string,b:string):number{return a<b?-1:a>b?1:0;}
 function validateDay(profiles:readonly NpcGamblingProfile[],dayIndex:number,openings:Readonly<Record<string,number>>,contract:NpcLedgerContract):void {
-  if(contract.version!=="npc-ledger/0.9"||!Number.isSafeInteger(contract.epochUtcDay)||!Number.isSafeInteger(dayIndex)||dayIndex<0)throw new Error("npc_ledger_invalid_contract");
+  if(contract.version!=="npc-ledger/1.0"||contract.seedVersion!=="npc-ledger/0.9"||!Number.isSafeInteger(contract.epochKstDay)||!Number.isSafeInteger(dayIndex)||dayIndex<0)throw new Error("npc_ledger_invalid_contract");
   if(profiles.length===0||new Set(profiles.map((p)=>p.id)).size!==profiles.length||profiles.some((profile)=>!contract.profiles.some((entry)=>entry.id===profile.id)))throw new Error("npc_ledger_invalid_profiles");
   for(const profile of profiles){
     if(!profile.id||!profile.name||!Number.isSafeInteger(profile.openingBalance)||profile.openingBalance<=0)throw new Error("npc_ledger_invalid_profile");

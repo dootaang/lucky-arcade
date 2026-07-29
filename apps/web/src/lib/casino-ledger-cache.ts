@@ -1,15 +1,16 @@
 import {
   completedDayBalances,
   casinoDaySessions,
+  casinoKstDayAtUtcMinute,
+  casinoSecondOfKstDayAtUtcSecond,
   type CasinoClock,
   type NpcLedgerContract,
 } from "@lucky-arcade/casino-ledger";
 
-const MINUTES_PER_DAY = 1_440;
-const PREFIX = "npc-ledger/0.9:checkpoint:";
+const PREFIX = "npc-ledger/1.0:checkpoint:";
 
 export interface NpcLedgerCheckpoint {
-  contract: "npc-ledger/0.9";
+  contract: "npc-ledger/1.0";
   dayIndex: number;
   balances: Readonly<Record<string, number>>;
 }
@@ -21,7 +22,7 @@ export interface CachedNpcBalances {
 }
 
 export interface NpcRollingProfitPeriod {
-  startUtcDay: number;
+  startKstDay: number;
   coveredDays: number;
   profits: Readonly<Record<string, number>>;
 }
@@ -34,21 +35,21 @@ export function npcRollingProfitPeriodAtWithCheckpoint(
   storage: StorageLike | undefined = browserStorage(),
 ): NpcRollingProfitPeriod {
   if (!Number.isSafeInteger(days) || days < 1) throw new Error("npc_ledger_invalid_period");
-  const absoluteDay = Math.floor(clock.utcMinute() / MINUTES_PER_DAY);
-  const earliestHistoryDay = contract.profitHistory[0]?.utcDay ?? contract.epochUtcDay;
+  const absoluteDay = casinoKstDayAtUtcMinute(clock.utcMinute());
+  const earliestHistoryDay = contract.profitHistory[0]?.kstDay ?? contract.epochKstDay;
   if (absoluteDay < earliestHistoryDay) {
-    return { startUtcDay: absoluteDay, coveredDays: 0, profits: zeroProfits(contract) };
+    return { startKstDay: absoluteDay, coveredDays: 0, profits: zeroProfits(contract) };
   }
-  const startUtcDay = Math.max(earliestHistoryDay, absoluteDay - days + 1);
+  const startKstDay = Math.max(earliestHistoryDay, absoluteDay - days + 1);
   const profits: Record<string, number> = Object.fromEntries(contract.profiles.map((profile) => [profile.id, 0]));
   for (const day of contract.profitHistory) {
-    if (day.utcDay < startUtcDay || day.utcDay >= contract.epochUtcDay) continue;
+    if (day.kstDay < startKstDay || day.kstDay >= contract.epochKstDay) continue;
     for (const profile of contract.profiles) profits[profile.id]! += day.profits[profile.id] ?? 0;
   }
 
-  const currentStartUtcDay = Math.max(startUtcDay, contract.epochUtcDay);
-  if (currentStartUtcDay <= absoluteDay) {
-    const beforePeriodDay = currentStartUtcDay - contract.epochUtcDay - 1;
+  const currentStartKstDay = Math.max(startKstDay, contract.epochKstDay);
+  if (currentStartKstDay <= absoluteDay) {
+    const beforePeriodDay = currentStartKstDay - contract.epochKstDay - 1;
     const checkpoint = storage && beforePeriodDay >= 0 ? readLatestCheckpoint(storage, beforePeriodDay, contract) : undefined;
     const periodOpening = beforePeriodDay >= 0
       ? completedDayBalances(contract.profiles, beforePeriodDay, contract, checkpoint?.balances, checkpoint?.dayIndex ?? -1)
@@ -58,7 +59,7 @@ export function npcRollingProfitPeriodAtWithCheckpoint(
     }
     for (const profile of contract.profiles) profits[profile.id]! += currentBalances[profile.id]! - periodOpening[profile.id]!;
   }
-  return Object.freeze({ startUtcDay, coveredDays: absoluteDay - startUtcDay + 1, profits: Object.freeze(profits) });
+  return Object.freeze({ startKstDay, coveredDays: absoluteDay - startKstDay + 1, profits: Object.freeze(profits) });
 }
 
 export function npcRollingProfitsAtWithCheckpoint(
@@ -86,8 +87,8 @@ export function npcBalancesAtWithCheckpoint(
 ): CachedNpcBalances {
   const utcMinute = clock.utcMinute();
   if (!Number.isSafeInteger(utcMinute)) throw new Error("npc_ledger_invalid_clock");
-  const absoluteDay = Math.floor(utcMinute / MINUTES_PER_DAY);
-  const rawDayIndex = absoluteDay - contract.epochUtcDay;
+  const absoluteDay = casinoKstDayAtUtcMinute(utcMinute);
+  const rawDayIndex = absoluteDay - contract.epochKstDay;
   if (rawDayIndex < 0) {
     return { dayIndex: 0, balances: openings(contract), checkpointDayIndex: -1 };
   }
@@ -103,9 +104,7 @@ export function npcBalancesAtWithCheckpoint(
   }
 
   const exactSecond = (clock as CasinoClock & { utcSecond?: () => number }).utcSecond?.();
-  const secondOfDay = exactSecond === undefined
-    ? (utcMinute - absoluteDay * MINUTES_PER_DAY) * 60 + 59
-    : exactSecond % 86_400;
+  const secondOfDay = casinoSecondOfKstDayAtUtcSecond(exactSecond ?? utcMinute * 60 + 59);
   const daySessions = casinoDaySessions(contract.profiles, dayIndex, completed, contract);
   const balances: Record<string, number> = {};
   for (const profile of contract.profiles) {

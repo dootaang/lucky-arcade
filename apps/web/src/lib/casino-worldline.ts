@@ -1,7 +1,11 @@
 import {
   TEMEROSA_HOUSE_ACCOUNT_ID,
   TEMEROSA_HOUSE_OPENING_CAPITAL,
+  CASINO_SECONDS_PER_DAY,
   casinoDaySessions,
+  casinoKstDayAtUtcSecond,
+  casinoSecondOfKstDayAtUtcSecond,
+  casinoUtcSecondAtKstDay,
   isHouseTable,
   type CasinoPresentationClock,
   type CasinoTransaction,
@@ -12,7 +16,7 @@ import {
   type NpcSession,
 } from "@lucky-arcade/casino-ledger";
 
-const DAY_SECONDS = 86_400;
+const DAY_SECONDS = CASINO_SECONDS_PER_DAY;
 const OPERATIONS_SECOND = 23 * 3_600;
 
 export interface PersonalCasinoWorldline {
@@ -32,8 +36,8 @@ export function personalCasinoWorldlineAt(
 ): PersonalCasinoWorldline {
   const now = clock.utcSecond();
   if (!Number.isSafeInteger(now)) throw new Error("casino_worldline_invalid_clock");
-  const absoluteDay = Math.floor(now / DAY_SECONDS);
-  const finalDayIndex = absoluteDay - contract.epochUtcDay;
+  const absoluteDay = casinoKstDayAtUtcSecond(now);
+  const finalDayIndex = absoluteDay - contract.epochKstDay;
   const balances: Record<string, number> = Object.fromEntries(profiles.map((profile) => [profile.id, profile.openingBalance]));
   if (finalDayIndex < 0) return freezeWorldline(0, balances, [], TEMEROSA_HOUSE_OPENING_CAPITAL, 0, 0);
   const transactionDays = transactionsByDay(transactions, contract, now);
@@ -43,8 +47,8 @@ export function personalCasinoWorldlineAt(
   let houseOperatingExpenses = 0;
 
   for (let dayIndex = 0; dayIndex <= finalDayIndex; dayIndex += 1) {
-    const dayStart = (contract.epochUtcDay + dayIndex) * DAY_SECONDS;
-    const cutoff = dayIndex === finalDayIndex ? now - dayStart : DAY_SECONDS - 1;
+    const dayStart = casinoUtcSecondAtKstDay(contract.epochKstDay + dayIndex);
+    const cutoff = dayIndex === finalDayIndex ? casinoSecondOfKstDayAtUtcSecond(now) : DAY_SECONDS - 1;
     const dayTransactions = transactionDays.get(dayIndex) ?? [];
     const balanceEvents = npcEvents(dayTransactions, dayStart);
     const sessions = casinoDaySessions(profiles, dayIndex, balances, contract, balanceEvents);
@@ -59,7 +63,7 @@ export function personalCasinoWorldlineAt(
     for (const event of balanceEvents) if (event.secondOfDay <= cutoff) balances[event.npcId]! += event.delta;
     for (const [npcId, balance] of Object.entries(balances)) if (!Number.isSafeInteger(balance) || balance < 0) throw new Error(`casino_worldline_invalid_balance:${npcId}`);
 
-    const house = applyHouseDay(houseBalance, contract.epochUtcDay + dayIndex, cutoff, sessions, dayTransactions, dayStart);
+    const house = applyHouseDay(houseBalance, contract.epochKstDay + dayIndex, cutoff, sessions, dayTransactions, dayStart);
     houseBalance = house.balance;
     houseGamingProfit += house.gamingProfit;
     houseOperatingExpenses += house.operatingExpenses;
@@ -72,7 +76,7 @@ function transactionsByDay(transactions:readonly CasinoTransaction[],contract:Np
   const output=new Map<number,CasinoTransaction[]>();
   for(const transaction of transactions){
     if(transaction.occurredAtCasinoSecond>now)continue;
-    const dayIndex=Math.floor(transaction.occurredAtCasinoSecond/DAY_SECONDS)-contract.epochUtcDay;
+    const dayIndex=casinoKstDayAtUtcSecond(transaction.occurredAtCasinoSecond)-contract.epochKstDay;
     if(dayIndex<0)continue;
     output.set(dayIndex,[...(output.get(dayIndex)??[]),transaction]);
   }

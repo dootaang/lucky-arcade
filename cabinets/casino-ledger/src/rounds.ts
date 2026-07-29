@@ -9,14 +9,15 @@ import type {
   NpcSession,
 } from "./contracts.ts";
 import { npcActivitiesForAt, recentNpcActivitiesAt } from "./engine.ts";
+import { casinoKstDayAtUtcSecond, casinoUtcSecondAtKstDay } from "./casino-time.ts";
 
 const ROUND_CONTRACT = "npc-live-rounds/0.5";
 
 export type NpcMatchSettlementTone = "gain" | "loss" | "flat" | "mixed" | "reward";
 
 export function npcVisitRounds(interval: NpcPresenceInterval, _profile: NpcGamblingProfile): readonly NpcRoundSettlement[] {
-  const absoluteDay = Math.floor(interval.startedAtUtcSecond/86_400);
-  return Object.freeze(interval.sessions.flatMap((session)=>settlements(interval.npcId,absoluteDay*86_400+session.secondOfDay,session)));
+  const kstDay = casinoKstDayAtUtcSecond(interval.startedAtUtcSecond);
+  return Object.freeze(interval.sessions.flatMap((session)=>settlements(interval.npcId,casinoUtcSecondAtKstDay(kstDay,session.secondOfDay),session)));
 }
 
 export function recentNpcRoundSettlementsAt(

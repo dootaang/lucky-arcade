@@ -142,14 +142,17 @@ export interface NpcSession {
 }
 
 export interface NpcLedgerContract {
-  version: "npc-ledger/0.9";
-  epochUtcDay: number;
+  version: "npc-ledger/1.0";
+  /** Frozen deterministic seed domain; changing calendar boundaries must not reroll history. */
+  seedVersion: "npc-ledger/0.9";
+  /** First casino calendar day, counted at KST midnight. */
+  epochKstDay: number;
   profiles: readonly NpcGamblingProfile[];
   /**
    * Completed daily profits carried across a contract rebase. These are
    * presentation analytics only: they never seed balances or game outcomes.
    */
-  profitHistory: readonly Readonly<{ utcDay: number; profits: Readonly<Record<string, number>> }>[];
+  profitHistory: readonly Readonly<{ kstDay: number; profits: Readonly<Record<string, number>> }>[];
 }
 
 export interface NpcBalanceSnapshot {

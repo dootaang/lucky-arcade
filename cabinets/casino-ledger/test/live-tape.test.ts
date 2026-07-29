@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   casinoDayPlan,
+  casinoUtcSecondAtKstDay,
   casinoPresenceAt,
   recentNpcPlayEventsAt,
   TEMEROSA_NPC_GAMBLING_PROFILES,
@@ -58,7 +59,7 @@ describe("casino live play tape", () => {
     let match:ReturnType<typeof casinoDayPlan>["matches"][number]|undefined,day=0;
     for(;day<30&&!match;day++)match=casinoDayPlan(TEMEROSA_NPC_GAMBLING_PROFILES,day,openings,contract).matches.find((entry)=>entry.tableId==="temerosa-old-maid"&&entry.stake>0);
     expect(match).toBeDefined();
-    const second=(contract.epochUtcDay+day-1)*86_400+match!.startsAtSecondOfDay+1;
+    const second=casinoUtcSecondAtKstDay(contract.epochKstDay+day-1,match!.startsAtSecondOfDay+1);
     const events=recentNpcPlayEventsAt(TEMEROSA_NPC_GAMBLING_PROFILES,fixedClock(second),contract,200).filter((entry)=>entry.matchId===match!.matchId);
     expect(events.filter((entry)=>entry.code==="wager-placed")).toHaveLength(match!.participantIds.length);
     expect(events.some((entry)=>entry.code==="prediction-wager-placed")).toBe(false);
@@ -66,7 +67,7 @@ describe("casino live play tape", () => {
 });
 
 function firstTapeSecond(): number {
-  const dayStart = contract.epochUtcDay * 86_400;
+  const dayStart = casinoUtcSecondAtKstDay(contract.epochKstDay);
   for (let second = dayStart; second < dayStart + 86_400; second += 5) {
     const clock = fixedClock(second);
     if (recentNpcPlayEventsAt(TEMEROSA_NPC_GAMBLING_PROFILES,clock,contract,10).length>0) return second;

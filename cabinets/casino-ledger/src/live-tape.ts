@@ -1,5 +1,6 @@
 import { XorShift32 } from "@lucky-arcade/engine";
 import { casinoDayPlan, completedDayBalances } from "./engine.ts";
+import { casinoKstDayAtUtcSecond, casinoUtcSecondAtKstDay } from "./casino-time.ts";
 import type { CasinoPresentationClock, CasinoTableId, NpcGamblingProfile, NpcLedgerContract, NpcMatch, NpcPlayEvent, NpcPlayEventCode, NpcPredictionWager } from "./contracts.ts";
 
 const TAPE_VERSION = "npc-live-tape/0.4";
@@ -32,8 +33,8 @@ export function recentNpcPlayEventsAt(
   if(limit===0)return Object.freeze([]);
   const now=clock.utcSecond();
   if(!Number.isSafeInteger(now))throw new Error("npc_live_tape_invalid_clock");
-  const absoluteDay=Math.floor(now/86_400);
-  const dayIndex=absoluteDay-contract.epochUtcDay;
+  const absoluteDay=casinoKstDayAtUtcSecond(now);
+  const dayIndex=absoluteDay-contract.epochKstDay;
   if(dayIndex<0)return Object.freeze([]);
   const firstDay=Math.max(0,dayIndex-1);
   let openings=firstDay===0?Object.freeze(Object.fromEntries(profiles.map((profile)=>[profile.id,profile.openingBalance]))):completedDayBalances(profiles,firstDay-1,contract);
@@ -43,7 +44,7 @@ export function recentNpcPlayEventsAt(
     const plan=casinoDayPlan(profiles,day,openings,contract);
     const firstByVisit=new Map<string,string>();
     for(const match of plan.matches)if(!firstByVisit.has(match.visitId))firstByVisit.set(match.visitId,match.matchId);
-    const dayStart=(contract.epochUtcDay+day)*86_400;
+    const dayStart=casinoUtcSecondAtKstDay(contract.epochKstDay+day);
     for(const match of plan.matches)matches.push({match,absoluteStart:dayStart+match.startsAtSecondOfDay,absoluteSettle:dayStart+match.settlesAtSecondOfDay,firstInVisit:firstByVisit.get(match.visitId)===match.matchId});
     for(const prediction of plan.predictions)predictions.push({prediction,absolutePlaced:dayStart+prediction.placedAtSecondOfDay});
     openings=Object.freeze(Object.fromEntries(profiles.map((profile)=>[profile.id,openings[profile.id]!+(plan.sessions[profile.id]??[]).reduce((sum,session)=>sum+session.delta,0)])));

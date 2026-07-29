@@ -245,7 +245,7 @@ function CasinoRecordRoom({leaderboard,leaderboardMode,profitLabel,selectedNpcId
   </div>;
 }
 
-function LedgerTrend({values}:{values:readonly Readonly<{utcDay:number;net:number}>[]}):React.ReactElement{
+function LedgerTrend({values}:{values:readonly Readonly<{kstDay:number;net:number}>[]}):React.ReactElement{
   if(values.length===0)return <section className="ledger-trend is-empty"><span>이 기간에는 정산 기록이 없습니다.</span></section>;
   let cursor=0;const points=values.map((entry)=>{cursor+=entry.net;return cursor;});
   const minimum=Math.min(0,...points),maximum=Math.max(0,...points),span=Math.max(1,maximum-minimum);

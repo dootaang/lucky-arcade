@@ -1,5 +1,7 @@
 import {
   TEMEROSA_HOUSE_ACCOUNT_ID,
+  casinoKstDayAtUtcMinute,
+  casinoUtcSecondAtKstDay,
   casinoPresenceAt,
   npcLiveBalancesAt,
   npcSessionSettlements,
@@ -43,9 +45,9 @@ export default function CasinoLedgerView({ userBalance, tables, onPlay }: { user
   }, []);
 
   const clock = useMemo(() => loaded ? casinoClockFromSample(stabilizeCasinoClockSample(loaded.sample)) : undefined, [loaded]);
-  const absoluteUtcDay = clock ? Math.floor(clock.utcMinute() / 1_440) : undefined;
-  const earliestProfitDay = TEMEROSA_NPC_LEDGER_CONTRACT.profitHistory[0]?.utcDay ?? TEMEROSA_NPC_LEDGER_CONTRACT.epochUtcDay;
-  const profitStartUtcDay = absoluteUtcDay === undefined ? undefined : Math.max(earliestProfitDay, absoluteUtcDay - 6);
+  const absoluteKstDay = clock ? casinoKstDayAtUtcMinute(clock.utcMinute()) : undefined;
+  const earliestProfitDay = TEMEROSA_NPC_LEDGER_CONTRACT.profitHistory[0]?.kstDay ?? TEMEROSA_NPC_LEDGER_CONTRACT.epochKstDay;
+  const profitStartKstDay = absoluteKstDay === undefined ? undefined : Math.max(earliestProfitDay, absoluteKstDay - 6);
   const journalSettlements = useMemo(() => casinoJournalSettlements(journal), [journal]);
   const loadNpcHistory=useCallback((npcId:string,days:number):readonly NpcRoundSettlement[]=>{
     if(!clock)return Object.freeze([]);
@@ -57,11 +59,11 @@ export default function CasinoLedgerView({ userBalance, tables, onPlay }: { user
     return Object.freeze([...autonomous,...local].toSorted((left,right)=>right.utcSecond-left.utcSecond||left.roundId.localeCompare(right.roundId)));
   },[clock,journal,journalSettlements]);
   useEffect(() => {
-    if (profitStartUtcDay === undefined) return;
+    if (profitStartKstDay === undefined) return;
     let alive = true;
-    void readPlayerCasinoProfitSince(profitStartUtcDay * 86_400).then((profit) => { if (alive) setUserPeriodProfit(profit); }).catch(() => { if (alive) setUserPeriodProfit(0); });
+    void readPlayerCasinoProfitSince(casinoUtcSecondAtKstDay(profitStartKstDay)).then((profit) => { if (alive) setUserPeriodProfit(profit); }).catch(() => { if (alive) setUserPeriodProfit(0); });
     return () => { alive = false; };
-  }, [profitStartUtcDay, userBalance]);
+  }, [profitStartKstDay, userBalance]);
   useEffect(() => {
     let alive = true;
     void listCasinoTransactions().then((transactions) => { if (alive) setJournal(transactions); }).catch(() => { if (alive) setJournal([]); });
@@ -89,9 +91,10 @@ export default function CasinoLedgerView({ userBalance, tables, onPlay }: { user
   try {
     const currentUtcSecond = clock.utcSecond();
     const worldline = personalCasinoWorldlineAt(TEMEROSA_NPC_GAMBLING_PROFILES, clock, TEMEROSA_NPC_LEDGER_CONTRACT, journal);
-    const periodStartSecond = (profitStartUtcDay ?? absoluteUtcDay ?? 0) * 86_400;
-    const carriedProfits = TEMEROSA_NPC_LEDGER_CONTRACT.profitHistory.filter((entry)=>entry.utcDay*86_400>=periodStartSecond);
-    const profitPeriod = { coveredDays: Math.max(1,Math.min(7,(absoluteUtcDay??TEMEROSA_NPC_LEDGER_CONTRACT.epochUtcDay)-(profitStartUtcDay??TEMEROSA_NPC_LEDGER_CONTRACT.epochUtcDay)+1)), profits: Object.freeze(Object.fromEntries(TEMEROSA_NPC_GAMBLING_PROFILES.map((profile) => [profile.id, worldline.activities.filter((entry)=>entry.npcId===profile.id&&entry.utcSecond>=periodStartSecond).reduce((sum,entry)=>sum+entry.session.delta,0)+journalSettlements.filter((entry) => entry.npcId === profile.id && entry.utcSecond >= periodStartSecond).reduce((sum, entry) => sum + entry.delta, 0)+carriedProfits.reduce((sum,entry)=>sum+(entry.profits[profile.id]??0),0)]))) };
+    const periodStartDay = profitStartKstDay ?? absoluteKstDay ?? TEMEROSA_NPC_LEDGER_CONTRACT.epochKstDay;
+    const periodStartSecond = casinoUtcSecondAtKstDay(periodStartDay);
+    const carriedProfits = TEMEROSA_NPC_LEDGER_CONTRACT.profitHistory.filter((entry)=>entry.kstDay>=periodStartDay);
+    const profitPeriod = { coveredDays: Math.max(1,Math.min(7,(absoluteKstDay??TEMEROSA_NPC_LEDGER_CONTRACT.epochKstDay)-periodStartDay+1)), profits: Object.freeze(Object.fromEntries(TEMEROSA_NPC_GAMBLING_PROFILES.map((profile) => [profile.id, worldline.activities.filter((entry)=>entry.npcId===profile.id&&entry.utcSecond>=periodStartSecond).reduce((sum,entry)=>sum+entry.session.delta,0)+journalSettlements.filter((entry) => entry.npcId === profile.id && entry.utcSecond >= periodStartSecond).reduce((sum, entry) => sum + entry.delta, 0)+carriedProfits.reduce((sum,entry)=>sum+(entry.profits[profile.id]??0),0)]))) };
     const presences = casinoPresenceAt(TEMEROSA_NPC_GAMBLING_PROFILES, clock, TEMEROSA_NPC_LEDGER_CONTRACT);
     const canonicalSettlements = withHouseCounterparties(worldline.activities.filter((entry)=>entry.utcSecond>currentUtcSecond-3_600).flatMap((entry)=>npcSessionSettlements(entry.npcId,entry.utcSecond,entry.session)));
     const settlements = Object.freeze([...canonicalSettlements, ...journalSettlements].filter((entry) => entry.utcSecond <= currentUtcSecond).toSorted((left,right)=>right.utcSecond-left.utcSecond||left.roundId.localeCompare(right.roundId)).slice(0,128));

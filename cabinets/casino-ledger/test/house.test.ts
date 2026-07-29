@@ -1,5 +1,5 @@
 import { describe,expect,it } from "vitest";
-import { casinoDaySessions, houseBalanceAt, houseGamingDelta, TEMEROSA_HOUSE_OPENING_CAPITAL, TEMEROSA_NPC_GAMBLING_PROFILES, TEMEROSA_NPC_LEDGER_CONTRACT, withHouseCounterparties, type CasinoPresentationClock, type NpcRoundSettlement } from "../src/index.ts";
+import { casinoDaySessions, casinoUtcSecondAtKstDay, houseBalanceAt, houseGamingDelta, TEMEROSA_HOUSE_OPENING_CAPITAL, TEMEROSA_NPC_GAMBLING_PROFILES, TEMEROSA_NPC_LEDGER_CONTRACT, withHouseCounterparties, type CasinoPresentationClock, type NpcRoundSettlement } from "../src/index.ts";
 
 const profiles=TEMEROSA_NPC_GAMBLING_PROFILES,contract=TEMEROSA_NPC_LEDGER_CONTRACT;
 
@@ -12,7 +12,7 @@ describe("finite Temerosa house",()=>{
   });
 
   it("opens with finite capital and remains solvent in the first year",()=>{
-    const final=houseBalanceAt(profiles,fixedClock((contract.epochUtcDay+365)*86_400-1),contract);
+    const final=houseBalanceAt(profiles,fixedClock(casinoUtcSecondAtKstDay(contract.epochKstDay+365)-1),contract);
     expect(final.balance).toBeGreaterThan(0);
     expect(final.gamingProfit).toBeGreaterThan(0);
     expect(final.operatingExpenses).toBeGreaterThan(0);

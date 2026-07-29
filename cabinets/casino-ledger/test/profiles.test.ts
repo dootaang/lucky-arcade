@@ -7,8 +7,9 @@ describe("frozen Temerosa ledger profiles", () => {
     expect(ids).toHaveLength(34);
     expect(new Set(ids).size).toBe(34);
     expect(ids).not.toContain("wares");
-    expect(TEMEROSA_NPC_LEDGER_CONTRACT.version).toBe("npc-ledger/0.9");
-    expect(TEMEROSA_NPC_LEDGER_CONTRACT.epochUtcDay).toBe(20_664);
+    expect(TEMEROSA_NPC_LEDGER_CONTRACT.version).toBe("npc-ledger/1.0");
+    expect(TEMEROSA_NPC_LEDGER_CONTRACT.seedVersion).toBe("npc-ledger/0.9");
+    expect(TEMEROSA_NPC_LEDGER_CONTRACT.epochKstDay).toBe(20_664);
     expect([...ids].sort()).toEqual([
       "adesha", "alger", "anna", "apollyon", "bacikal", "bche", "camille", "cicero", "cradle", "deokbae",
       "diamo", "echo", "esther", "hiro", "kano", "katrinka", "kreva", "levillotte", "lilim", "lyla",
@@ -28,7 +29,7 @@ describe("frozen Temerosa ledger profiles", () => {
     const contract = TEMEROSA_NPC_LEDGER_CONTRACT;
     const ids = contract.profiles.map((profile) => profile.id).sort();
     expect(contract.profitHistory.length).toBeLessThanOrEqual(6);
-    expect(contract.profitHistory.map((entry) => entry.utcDay)).toEqual([contract.epochUtcDay - 1]);
+    expect(contract.profitHistory.map((entry) => entry.kstDay)).toEqual([contract.epochKstDay - 1]);
     for (const entry of contract.profitHistory) {
       expect(Object.keys(entry.profits).sort()).toEqual(ids);
       expect(Object.values(entry.profits).every(Number.isSafeInteger)).toBe(true);
@@ -43,7 +44,7 @@ describe("frozen Temerosa ledger profiles", () => {
     expect(levillotte.maxExposureRatio).toBeGreaterThan(traver.maxExposureRatio);
   });
 
-  it("uses three balanced UTC operating shifts and only open economy tables", () => {
+  it("uses three balanced KST operating shifts and only open economy tables", () => {
     const shifts = TEMEROSA_NPC_GAMBLING_PROFILES.map((profile) => profile.activeHours[0]!.startMinute);
     expect(shifts.filter((start) => start === 0)).toHaveLength(12);
     expect(shifts.filter((start) => start === 480)).toHaveLength(11);

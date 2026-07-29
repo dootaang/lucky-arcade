@@ -1,8 +1,7 @@
 import type { CasinoClock, CasinoLedgerSourceId, CasinoTableId, NpcGamblingProfile, NpcLedgerContract, NpcRoundSettlement, NpcSession } from "./contracts.ts";
 import { casinoDaySessions } from "./engine.ts";
+import { casinoKstDayAtUtcSecond, casinoSecondOfKstDayAtUtcSecond } from "./casino-time.ts";
 import { TEMEROSA_HOUSE_ACCOUNT_ID, TEMEROSA_HOUSE_OPENING_CAPITAL } from "./economy.ts";
-
-const SECONDS_PER_DAY = 86_400;
 
 export interface HouseBalanceSnapshot {
   accountId: typeof TEMEROSA_HOUSE_ACCOUNT_ID;
@@ -20,8 +19,8 @@ export function isHouseTable(tableId: CasinoLedgerSourceId): tableId is Extract<
 
 export function houseBalanceAt(profiles: readonly NpcGamblingProfile[], clock: CasinoClock, contract: NpcLedgerContract): HouseBalanceSnapshot {
   const nowSecond = normalizedUtcSecond(clock);
-  const absoluteDay = Math.floor(nowSecond / SECONDS_PER_DAY);
-  const finalDayIndex = absoluteDay - contract.epochUtcDay;
+  const absoluteDay = casinoKstDayAtUtcSecond(nowSecond);
+  const finalDayIndex = absoluteDay - contract.epochKstDay;
   if (finalDayIndex < 0) return snapshot(TEMEROSA_HOUSE_OPENING_CAPITAL,0,0,0);
   let npcBalances = Object.fromEntries(profiles.map((profile)=>[profile.id,profile.openingBalance]));
   let balance = TEMEROSA_HOUSE_OPENING_CAPITAL;
@@ -29,14 +28,14 @@ export function houseBalanceAt(profiles: readonly NpcGamblingProfile[], clock: C
   let operatingExpenses = 0;
   for (let dayIndex=0;dayIndex<=finalDayIndex;dayIndex+=1) {
     const sessions=casinoDaySessions(profiles,dayIndex,npcBalances,contract);
-    const secondLimit=dayIndex===finalDayIndex?nowSecond-absoluteDay*SECONDS_PER_DAY:SECONDS_PER_DAY-1;
+    const secondLimit=dayIndex===finalDayIndex?casinoSecondOfKstDayAtUtcSecond(nowSecond):86_399;
     let dayProfit=0;
     for(const profile of profiles)for(const session of sessions[profile.id]??[]){
       if(session.secondOfDay<=secondLimit&&isHouseTable(session.tableId))dayProfit-=session.delta;
     }
     balance+=dayProfit;gamingProfit+=dayProfit;
-    const utcDay=contract.epochUtcDay+dayIndex;
-    if(utcDay%7===0&&secondLimit>=23*3_600&&balance>TEMEROSA_HOUSE_OPENING_CAPITAL){
+    const kstDay=contract.epochKstDay+dayIndex;
+    if(kstDay%7===0&&secondLimit>=23*3_600&&balance>TEMEROSA_HOUSE_OPENING_CAPITAL){
       const expense=Math.floor((balance-TEMEROSA_HOUSE_OPENING_CAPITAL)*.25);
       balance-=expense;operatingExpenses+=expense;
     }

@@ -1,5 +1,5 @@
 import { describe,expect,it } from "vitest";
-import { casinoDayPlan, casinoPresenceAt, groupNpcRoundSettlements, npcLiveBalancesAt, npcMatchSettlementEntriesByNpc, npcMatchSettlementTone, npcPresenceIntervalsForDay, npcVisitRounds, recentNpcRoundSettlementsAt, TEMEROSA_NPC_GAMBLING_PROFILES, TEMEROSA_NPC_LEDGER_CONTRACT, type CasinoPresentationClock, type NpcRoundSettlement } from "../src/index.ts";
+import { casinoDayPlan, casinoPresenceAt, casinoUtcSecondAtKstDay, groupNpcRoundSettlements, npcLiveBalancesAt, npcMatchSettlementEntriesByNpc, npcMatchSettlementTone, npcPresenceIntervalsForDay, npcVisitRounds, recentNpcRoundSettlementsAt, TEMEROSA_NPC_GAMBLING_PROFILES, TEMEROSA_NPC_LEDGER_CONTRACT, type CasinoPresentationClock, type NpcRoundSettlement } from "../src/index.ts";
 
 const profiles=TEMEROSA_NPC_GAMBLING_PROFILES,contract=TEMEROSA_NPC_LEDGER_CONTRACT;
 
@@ -17,13 +17,13 @@ describe("NPC real round settlements",()=>{
   });
 
   it("does not add presentation-only balance changes",()=>{
-    const profile=profiles[0]!;const base={ [profile.id]:profile.openingBalance };const clock=fixedClock(contract.epochUtcDay*86_400+40_000);
+    const profile=profiles[0]!;const base={ [profile.id]:profile.openingBalance };const clock=fixedClock(casinoUtcSecondAtKstDay(contract.epochKstDay,40_000));
     const presences=casinoPresenceAt([profile],clock,contract);
     expect(npcLiveBalancesAt(base,[profile],presences,clock)).toEqual(base);
   });
 
   it("returns deterministic recent real settlements across midnight",()=>{
-    const now=(contract.epochUtcDay+2)*86_400+300;const first=recentNpcRoundSettlementsAt(profiles,fixedClock(now),contract,100,3_600);
+    const now=casinoUtcSecondAtKstDay(contract.epochKstDay+2,300);const first=recentNpcRoundSettlementsAt(profiles,fixedClock(now),contract,100,3_600);
     expect(recentNpcRoundSettlementsAt(profiles,fixedClock(now),contract,100,3_600)).toEqual(first);
     expect(first.every((round)=>round.utcSecond<=now&&round.utcSecond>now-3_600)).toBe(true);
     for(const group of groupNpcRoundSettlements(first))expect(new Set(group.entries.map((entry)=>entry.matchId))).toEqual(new Set([group.matchId]));

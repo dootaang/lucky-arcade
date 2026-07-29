@@ -3,6 +3,7 @@ import {
   TEMEROSA_NPC_LEDGER_CONTRACT,
   createCasinoTransaction,
   createCollectionPurchaseTransaction,
+  casinoUtcSecondAtKstDay,
   type CasinoPresentationClock,
 } from "@lucky-arcade/casino-ledger";
 import { describe, expect, it } from "vitest";
@@ -10,7 +11,7 @@ import { personalCasinoWorldlineAt } from "./casino-worldline.ts";
 
 describe("personal casino world line", () => {
   it("replays local NPC and house postings on top of the deterministic day", () => {
-    const second = (TEMEROSA_NPC_LEDGER_CONTRACT.epochUtcDay + 1) * 86_400 - 1;
+    const second = casinoUtcSecondAtKstDay(TEMEROSA_NPC_LEDGER_CONTRACT.epochKstDay + 1) - 1;
     const clock = fixedClock(second);
     const baseline = personalCasinoWorldlineAt(TEMEROSA_NPC_GAMBLING_PROFILES, clock, TEMEROSA_NPC_LEDGER_CONTRACT, []);
     const npcTransfer = createCasinoTransaction({

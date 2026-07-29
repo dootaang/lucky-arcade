@@ -1,4 +1,8 @@
 import { casinoDayPlan, completedDayBalances } from "./engine.ts";
+import {
+  casinoKstDayAtUtcSecond,
+  casinoUtcSecondAtKstDay,
+} from "./casino-time.ts";
 import type {
   CasinoDayPlan,
   CasinoPresentationClock,
@@ -9,7 +13,6 @@ import type {
   NpcPresenceInterval,
 } from "./contracts.ts";
 
-const SECONDS_PER_DAY = 86_400;
 const APPROACH_SECONDS = 12;
 const SETTLE_SECONDS = 6;
 const LEAVE_SECONDS = 8;
@@ -22,7 +25,8 @@ export function npcPresenceIntervalsForDay(
   _previousAvailableAtUtcSecond = Number.NEGATIVE_INFINITY,
   suppliedPlan?: CasinoDayPlan,
 ): readonly NpcPresenceInterval[] {
-  const absoluteDay = contract.epochUtcDay + dayIndex;
+  const absoluteDay = contract.epochKstDay + dayIndex;
+  const dayStart = casinoUtcSecondAtKstDay(absoluteDay);
   const plan = suppliedPlan ?? casinoDayPlan(
     contract.profiles,
     dayIndex,
@@ -40,9 +44,9 @@ export function npcPresenceIntervalsForDay(
       sessions: Object.freeze(sessions),
       ...(sessions[0] ? { session: sessions[0] } : {}),
       openingBalance: openingBalance + priorDelta,
-      startedAtUtcSecond: absoluteDay*SECONDS_PER_DAY + visit.startedAtSecondOfDay,
-      settlesAtUtcSecond: absoluteDay*SECONDS_PER_DAY + visit.endsAtSecondOfDay,
-      availableAtUtcSecond: absoluteDay*SECONDS_PER_DAY + visit.endsAtSecondOfDay + SETTLE_SECONDS + LEAVE_SECONDS,
+      startedAtUtcSecond: dayStart + visit.startedAtSecondOfDay,
+      settlesAtUtcSecond: dayStart + visit.endsAtSecondOfDay,
+      availableAtUtcSecond: dayStart + visit.endsAtSecondOfDay + SETTLE_SECONDS + LEAVE_SECONDS,
       role: "playing" as const,
     });
   });
@@ -57,9 +61,9 @@ export function npcPresenceIntervalsForDay(
     return Object.freeze({
       npcId:profile.id,tableId:"temerosa-old-maid" as const,visit,sessions:Object.freeze(sessions),
       ...(sessions[0]?{session:sessions[0]}:{}),openingBalance:openingBalance+priorDelta,
-      startedAtUtcSecond:absoluteDay*SECONDS_PER_DAY+startedAtSecondOfDay,
-      settlesAtUtcSecond:absoluteDay*SECONDS_PER_DAY+prediction.settlesAtSecondOfDay,
-      availableAtUtcSecond:absoluteDay*SECONDS_PER_DAY+prediction.settlesAtSecondOfDay+SETTLE_SECONDS+LEAVE_SECONDS,
+      startedAtUtcSecond:dayStart+startedAtSecondOfDay,
+      settlesAtUtcSecond:dayStart+prediction.settlesAtSecondOfDay,
+      availableAtUtcSecond:dayStart+prediction.settlesAtSecondOfDay+SETTLE_SECONDS+LEAVE_SECONDS,
       role:"spectating" as const,
     });
   });
@@ -73,8 +77,8 @@ export function casinoPresenceAt(
 ): readonly NpcPresence[] {
   const now = clock.utcSecond();
   if (!Number.isSafeInteger(now)) throw new Error("npc_presence_invalid_clock");
-  const absoluteDay = Math.floor(now / SECONDS_PER_DAY);
-  const dayIndex = absoluteDay - contract.epochUtcDay;
+  const absoluteDay = casinoKstDayAtUtcSecond(now);
+  const dayIndex = absoluteDay - contract.epochKstDay;
   if (dayIndex < 0) return Object.freeze(profiles.map((profile) => Object.freeze({ npcId: profile.id, phase: "idle" as const })));
   const openings = dayIndex === 0
     ? Object.freeze(Object.fromEntries(profiles.map((profile) => [profile.id,profile.openingBalance])))
@@ -92,7 +96,7 @@ export function casinoPresenceAt(
       const next=intervals.find((interval)=>interval.startedAtUtcSecond>now);
       return Object.freeze({npcId:profile.id,phase:"idle" as const,...(next?{startedAtUtcSecond:next.startedAtUtcSecond}:{})});
     }
-    const intervalDayStart=Math.floor(active.startedAtUtcSecond/SECONDS_PER_DAY)*SECONDS_PER_DAY;
+    const intervalDayStart=casinoUtcSecondAtKstDay(casinoKstDayAtUtcSecond(active.startedAtUtcSecond));
     const currentSession = active.sessions.filter((session)=>intervalDayStart+session.secondOfDay<=now).at(-1)
       ?? active.sessions.find((session)=>intervalDayStart+session.secondOfDay>now)
       ?? active.session;

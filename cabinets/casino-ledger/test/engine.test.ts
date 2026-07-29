@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   casinoDaySessions,
   casinoDayPlan,
+  casinoUtcSecondAtKstDay,
   completedDayBalances,
   npcBalanceAt,
   recentNpcActivitiesAt,
@@ -17,7 +18,7 @@ const contract = TEMEROSA_NPC_LEDGER_CONTRACT;
 const profiles = TEMEROSA_NPC_GAMBLING_PROFILES;
 const openings = () => Object.fromEntries(profiles.map((profile) => [profile.id, profile.openingBalance]));
 
-describe("casino ledger 0.9 economy", () => {
+describe("casino ledger 1.0 KST economy", () => {
   it("repeats the same shared matches and exact closing for identical inputs", () => {
     const first = casinoDaySessions(profiles, 37, openings(), contract);
     expect(casinoDaySessions(profiles, 37, openings(), contract)).toEqual(first);
@@ -106,7 +107,7 @@ describe("casino ledger 0.9 economy", () => {
   it("lets personal-world-line postings change later autonomous affordability without rerolling schedules",()=>{
     const left=forcedProfile("katrinka","temerosa-match-pairs",.8),right=forcedProfile("morsisa","temerosa-match-pairs",.2);
     const day=Array.from({length:14},(_,value)=>value).find((value)=>{
-      const absolute=contract.epochUtcDay+value;
+      const absolute=contract.epochKstDay+value;
       return absolute%left.payCycleDays!==left.paydayOffset&&absolute%right.payCycleDays!==right.paydayOffset;
     })!;
     const dayOpening={[left.id]:4_000,[right.id]:4_000};
@@ -187,33 +188,33 @@ describe("casino ledger 0.9 economy", () => {
   });
 
   it("moves time forward and backward without mutating history", () => {
-    const profile=profiles[0]!;const minute=(contract.epochUtcDay+14)*1_440+1_439;
+    const profile=profiles[0]!;const minute=Math.floor(casinoUtcSecondAtKstDay(contract.epochKstDay+14,86_399)/60);
     const original=npcBalanceAt(profile,fixedClock(minute),contract);
     expect(npcBalanceAt(profile,fixedClock(minute+1_440),contract).dayIndex).toBe(original.dayIndex+1);
     expect(npcBalanceAt(profile,fixedClock(minute),contract)).toEqual(original);
   });
 
-  it("returns opening balances before the v0.8 epoch",()=>{
+  it("returns opening balances before the KST epoch",()=>{
     const profile=profiles[0]!;
-    expect(npcBalanceAt(profile,fixedClock(contract.epochUtcDay*1_440-1),contract)).toEqual({balance:profile.openingBalance,today:[],dayIndex:0});
+    expect(npcBalanceAt(profile,fixedClock(Math.floor((casinoUtcSecondAtKstDay(contract.epochKstDay)-1)/60)),contract)).toEqual({balance:profile.openingBalance,today:[],dayIndex:0});
   });
 
   it("returns recent activity and rolling seven-day profit deterministically",()=>{
-    const now=(contract.epochUtcDay+9)*1_440+800;const clock=fixedClock(now);
+    const now=Math.floor(casinoUtcSecondAtKstDay(contract.epochKstDay+9,800*60)/60);const clock=fixedClock(now);
     const activity=recentNpcActivitiesAt(profiles,clock,contract,200);
     expect(activity.length).toBeGreaterThan(0);expect(activity.every((entry)=>entry.utcMinute<=now&&entry.utcMinute>now-1_440)).toBe(true);
     expect(rollingNpcProfitAt(profiles,clock,contract,7)).toEqual(rollingNpcProfitAt(profiles,clock,contract,7));
   });
 
-  it("keeps completed profit analytics continuous across the v0.8 to v0.9 rebase",()=>{
-    const second=contract.epochUtcDay*86_400;
+  it("keeps completed profit analytics continuous across the v0.8 to v1.0 KST rebase",()=>{
+    const second=casinoUtcSecondAtKstDay(contract.epochKstDay);
     const clock:CasinoClock&{utcSecond():number}={utcMinute:()=>Math.floor(second/60),utcSecond:()=>second};
     const profit=rollingNpcProfitAt(profiles,clock,contract,7);
     expect(profit.lyla).toBe(-3_865);
     expect(profit.pale).toBe(5_890);
     expect(profit.alger).toBe(-3_170);
     expect(contract.profitHistory).toHaveLength(1);
-    expect(contract.profitHistory[0]!.utcDay).toBe(contract.epochUtcDay-1);
+    expect(contract.profitHistory[0]!.kstDay).toBe(contract.epochKstDay-1);
   });
 
   it("produces identical full and checkpoint-assisted balances",()=>{

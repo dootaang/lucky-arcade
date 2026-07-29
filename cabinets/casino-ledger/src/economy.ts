@@ -1,3 +1,5 @@
+import { casinoUtcSecondAtKstDay } from "./casino-time.ts";
+
 export const CASINO_ECONOMY_CONTRACT = "casino-economy/1.0" as const;
 export const CASINO_TRANSACTION_CONTRACT = "casino-transaction/1.0" as const;
 export const TEMEROSA_HOUSE_ACCOUNT_ID = "house:temerosa" as const;
@@ -170,14 +172,14 @@ export function settleCasinoEscrow(input: {
   });
 }
 
-export function createNpcIncomeTransaction(profile: NpcIncomeProfile, absoluteUtcDay: number): CasinoTransaction | undefined {
-  if (!Number.isSafeInteger(absoluteUtcDay) || absoluteUtcDay < 0 || !Number.isSafeInteger(profile.paydayOffset) || profile.paydayOffset < 0 || profile.paydayOffset >= profile.payCycleDays) throw new Error("npc_income_invalid_schedule");
-  if (absoluteUtcDay % profile.payCycleDays !== profile.paydayOffset) return undefined;
+export function createNpcIncomeTransaction(profile: NpcIncomeProfile, absoluteKstDay: number): CasinoTransaction | undefined {
+  if (!Number.isSafeInteger(absoluteKstDay) || absoluteKstDay < 0 || !Number.isSafeInteger(profile.paydayOffset) || profile.paydayOffset < 0 || profile.paydayOffset >= profile.payCycleDays) throw new Error("npc_income_invalid_schedule");
+  if (absoluteKstDay % profile.payCycleDays !== profile.paydayOffset) return undefined;
   const amount = NPC_INCOME_AMOUNTS[profile.incomeBand];
   return createCasinoTransaction({
-    transactionId: `npc-income/1.0:${absoluteUtcDay}:${profile.npcId}`,
-    idempotencyKey: `npc-income/1.0:${absoluteUtcDay}:${profile.npcId}`,
-    occurredAtCasinoSecond: absoluteUtcDay * 86_400 + 6 * 3_600,
+    transactionId: `npc-income/1.0:${absoluteKstDay}:${profile.npcId}`,
+    idempotencyKey: `npc-income/1.0:${absoluteKstDay}:${profile.npcId}`,
+    occurredAtCasinoSecond: casinoUtcSecondAtKstDay(absoluteKstDay, 6 * 3_600),
     kind: "npc-income",
     postings: [
       { accountId: "external:employment", delta: -amount },
@@ -215,17 +217,17 @@ export function createHouseCapitalTransaction(occurredAtCasinoSecond: number, am
   });
 }
 
-export function createHouseOperatingExpenseTransaction(input: { absoluteUtcDay: number; houseBalance: number; reserveTarget?: number; sweepRate?: number }): CasinoTransaction | undefined {
+export function createHouseOperatingExpenseTransaction(input: { absoluteKstDay: number; houseBalance: number; reserveTarget?: number; sweepRate?: number }): CasinoTransaction | undefined {
   const reserveTarget = input.reserveTarget ?? TEMEROSA_HOUSE_OPENING_CAPITAL;
   const sweepRate = input.sweepRate ?? .25;
-  if (!Number.isSafeInteger(input.absoluteUtcDay) || input.absoluteUtcDay < 0 || !Number.isSafeInteger(input.houseBalance) || input.houseBalance < 0 || !Number.isSafeInteger(reserveTarget) || reserveTarget < 0 || !(sweepRate >= 0 && sweepRate <= 1)) throw new Error("house_operating_expense_invalid");
-  if (input.absoluteUtcDay % 7 !== 0 || input.houseBalance <= reserveTarget) return undefined;
+  if (!Number.isSafeInteger(input.absoluteKstDay) || input.absoluteKstDay < 0 || !Number.isSafeInteger(input.houseBalance) || input.houseBalance < 0 || !Number.isSafeInteger(reserveTarget) || reserveTarget < 0 || !(sweepRate >= 0 && sweepRate <= 1)) throw new Error("house_operating_expense_invalid");
+  if (input.absoluteKstDay % 7 !== 0 || input.houseBalance <= reserveTarget) return undefined;
   const amount = Math.floor((input.houseBalance - reserveTarget) * sweepRate);
   if (amount <= 0) return undefined;
   return createCasinoTransaction({
-    transactionId: `house-operations/1.0:${input.absoluteUtcDay}`,
-    idempotencyKey: `house-operations/1.0:${input.absoluteUtcDay}`,
-    occurredAtCasinoSecond: input.absoluteUtcDay * 86_400 + 23 * 3_600,
+    transactionId: `house-operations/1.0:${input.absoluteKstDay}`,
+    idempotencyKey: `house-operations/1.0:${input.absoluteKstDay}`,
+    occurredAtCasinoSecond: casinoUtcSecondAtKstDay(input.absoluteKstDay, 23 * 3_600),
     kind: "house-operating-expense",
     postings: [
       { accountId: TEMEROSA_HOUSE_ACCOUNT_ID, delta: -amount },

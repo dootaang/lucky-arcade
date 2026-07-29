@@ -47,11 +47,11 @@ describe("casino economy 1.0", () => {
 
   it("keeps explicit faucets and sinks balanced through external accounts", () => {
     const capital = createHouseCapitalTransaction(0);
-    const salary = createNpcIncomeTransaction({ npcId: "pale", incomeBand: "middle", payCycleDays: 7, paydayOffset: 0 }, 0)!;
+    const salary = createNpcIncomeTransaction({ npcId: "pale", incomeBand: "middle", payCycleDays: 7, paydayOffset: 0 }, 7)!;
     const reward = createFreePlayRewardTransaction({ transactionId: "free-1", occurredAtCasinoSecond: 10, amount: 60, matchId: "old-maid-1" });
     const beforeSweep = applyCasinoTransactions({}, [capital, salary, reward]);
     expect(internalMoneySupply(beforeSweep)).toBe(150_210);
-    const sweep = createHouseOperatingExpenseTransaction({ absoluteUtcDay: 7, houseBalance: 160_000, reserveTarget: 150_000 })!;
+    const sweep = createHouseOperatingExpenseTransaction({ absoluteKstDay: 7, houseBalance: 160_000, reserveTarget: 150_000 })!;
     const afterSweep = applyCasinoTransactions(beforeSweep, [sweep]);
     expect(afterSweep[TEMEROSA_HOUSE_ACCOUNT_ID]).toBe(147_500);
     expect(internalMoneySupply(afterSweep)).toBe(147_710);
