@@ -45,7 +45,8 @@ describe("casino live play tape", () => {
       if (event.code === "table-enter" || event.code === "wager-placed" || event.code === "prediction-wager-placed") continue;
       expect(event.code.startsWith(event.tableId === "temerosa-old-maid" ? "old-maid"
         : event.tableId === "temerosa-match-pairs" ? "pairs"
-          : event.tableId === "temerosa-slot" ? "slot" : "poker")).toBe(true);
+          : event.tableId === "temerosa-slot" ? "slot"
+            : event.tableId === "temerosa-high-low" ? "high-low" : "poker")).toBe(true);
     }
     const openings=Object.fromEntries(TEMEROSA_NPC_GAMBLING_PROFILES.map((profile)=>[profile.id,profile.openingBalance]));
     const matchIds=new Set(casinoDayPlan(TEMEROSA_NPC_GAMBLING_PROFILES,0,openings,contract).matches.map((match)=>match.matchId));

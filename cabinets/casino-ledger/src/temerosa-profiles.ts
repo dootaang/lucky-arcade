@@ -6,7 +6,7 @@ import type {
   NpcTableWeight,
 } from "./contracts.ts";
 
-export const TEMEROSA_LEDGER_EPOCH_UTC_DAY = 20_662;
+export const TEMEROSA_LEDGER_EPOCH_UTC_DAY = 20_663;
 
 const SHIFTS: readonly (readonly NpcActiveWindow[])[] = [
   Object.freeze([{ startMinute: 0, endMinute: 480, weight: 1 }]),
@@ -16,22 +16,25 @@ const SHIFTS: readonly (readonly NpcActiveWindow[])[] = [
 
 const TABLE_SETS: readonly (readonly NpcTableWeight[])[] = [
   Object.freeze([
-    { tableId: "temerosa-old-maid", weight: 3 },
+    { tableId: "temerosa-old-maid", weight: 5 },
     { tableId: "temerosa-match-pairs", weight: 2 },
     { tableId: "indian-poker", weight: 2 },
+    { tableId: "temerosa-high-low", weight: 1 },
     { tableId: "temerosa-slot", weight: 1 },
   ]),
   Object.freeze([
-    { tableId: "temerosa-slot", weight: 4 },
-    { tableId: "temerosa-old-maid", weight: 2 },
+    { tableId: "temerosa-slot", weight: 3 },
+    { tableId: "temerosa-old-maid", weight: 5 },
     { tableId: "temerosa-match-pairs", weight: 1 },
     { tableId: "indian-poker", weight: 1 },
+    { tableId: "temerosa-high-low", weight: 2 },
   ]),
   Object.freeze([
     { tableId: "indian-poker", weight: 4 },
-    { tableId: "temerosa-old-maid", weight: 2 },
+    { tableId: "temerosa-old-maid", weight: 5 },
     { tableId: "temerosa-match-pairs", weight: 2 },
     { tableId: "temerosa-slot", weight: 1 },
+    { tableId: "temerosa-high-low", weight: 2 },
   ]),
 ];
 
@@ -40,6 +43,14 @@ const MEDIUM: NpcSessionRange = Object.freeze({ min: 8, max: 12 });
 const HIGH: NpcSessionRange = Object.freeze({ min: 10, max: 14 });
 
 interface FrozenTraits { attention: number; bluff: number; oldMaid: number }
+
+/** npc-ledger/0.7 closing balances at 2026-07-29 00:00 UTC. */
+const V08_OPENING_BALANCES: Readonly<Record<string, number>> = Object.freeze({
+  katrinka:35,raven:1510,lyla:3900,alger:3450,kreva:70,phaeo:140,machina:9235,kano:305,cicero:40,
+  esther:7945,wares:375,nostalgia:1075,pale:17600,apollyon:70,hiro:2170,cradle:500,nieun:60,temute:2610,
+  deokbae:2825,levillotte:30,riel:30,traver:280,adesha:1680,bacikal:240,camille:3960,anna:25,echo:30,
+  diamo:40,yul:40,ttaengchil:30,nemo:290,lilim:50,"tumit-tu":30,morsisa:75,bche:45,
+});
 
 /** Transcribed gameplay traits. Kept local so another cabinet cannot rewrite history. */
 const TRAITS: Readonly<Record<string, Readonly<FrozenTraits>>> = Object.freeze({
@@ -53,8 +64,8 @@ const TRAITS: Readonly<Record<string, Readonly<FrozenTraits>>> = Object.freeze({
 });
 
 /**
- * Frozen npc-ledger/0.7 data. The former `target` values are retained only as
- * story-authored opening bankrolls. No outcome code may steer back to them.
+ * Frozen npc-ledger/0.8 data. The former `target` values are retained only as
+ * compatibility aliases. No outcome code may steer back to them.
  * interpretation; this module intentionally does not import another cabinet.
  */
 export const TEMEROSA_NPC_GAMBLING_PROFILES: readonly NpcGamblingProfile[] = Object.freeze([
@@ -96,7 +107,7 @@ export const TEMEROSA_NPC_GAMBLING_PROFILES: readonly NpcGamblingProfile[] = Obj
 ]);
 
 export const TEMEROSA_NPC_LEDGER_CONTRACT: NpcLedgerContract = Object.freeze({
-  version: "npc-ledger/0.7",
+  version: "npc-ledger/0.8",
   epochUtcDay: TEMEROSA_LEDGER_EPOCH_UTC_DAY,
   profiles: TEMEROSA_NPC_GAMBLING_PROFILES,
 });
@@ -104,7 +115,7 @@ export const TEMEROSA_NPC_LEDGER_CONTRACT: NpcLedgerContract = Object.freeze({
 function profile(
   id: string,
   name: string,
-  openingBalance: number,
+  _openingBalance: number,
   formerVolatility: number,
   formerReversion: number,
   sessionsPerDay: NpcSessionRange,
@@ -113,11 +124,13 @@ function profile(
   const riskAppetite = formerVolatility >= 0.27 ? 0.86 : formerVolatility >= 0.16 ? 0.56 : 0.28;
   const discipline = formerReversion >= 0.16 ? 0.86 : formerReversion >= 0.10 ? 0.62 : 0.34;
   const traits = TRAITS[id] ?? Object.freeze({ attention: 0.5, bluff: 0.5, oldMaid: 0.5 });
+  const rebasedOpening = V08_OPENING_BALANCES[id];
+  if (!Number.isSafeInteger(rebasedOpening) || rebasedOpening! <= 0) throw new Error(`npc_ledger_opening_missing:${id}`);
   return Object.freeze({
     id,
     name,
-    openingBalance,
-    target: openingBalance,
+    openingBalance: rebasedOpening!,
+    target: _openingBalance,
     riskAppetite,
     discipline,
     lossChasing: Number((1 - discipline * 0.78).toFixed(2)),
@@ -130,6 +143,7 @@ function profile(
       matchPairsMemory: traits.attention,
       pokerRead: traits.attention,
       pokerBluff: traits.bluff,
+      highLowJudgment: traits.attention,
     }),
     sessionsPerDay,
     tables: TABLE_SETS[operation]!,

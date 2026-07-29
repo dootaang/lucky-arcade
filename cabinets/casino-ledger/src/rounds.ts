@@ -8,7 +8,7 @@ import type {
   NpcRoundSettlement,
   NpcSession,
 } from "./contracts.ts";
-import { recentNpcActivitiesAt } from "./engine.ts";
+import { npcActivitiesForAt, recentNpcActivitiesAt } from "./engine.ts";
 
 const ROUND_CONTRACT = "npc-live-rounds/0.5";
 
@@ -31,6 +31,14 @@ export function recentNpcRoundSettlementsAt(
     .filter((entry)=>entry.utcSecond>now-lookbackSeconds&&entry.utcSecond<=now)
     .sort((a,b)=>b.utcSecond-a.utcSecond||compareText(a.matchId,b.matchId)||compareText(a.npcId,b.npcId))
     .slice(0,limit));
+}
+
+export function npcRoundSettlementsForAt(
+  profiles: readonly NpcGamblingProfile[], clock: CasinoPresentationClock, contract: NpcLedgerContract, npcId: string, days = 0,
+): readonly NpcRoundSettlement[] {
+  return Object.freeze(npcActivitiesForAt(profiles,clock,contract,npcId,days)
+    .flatMap(({utcSecond,session})=>settlements(npcId,utcSecond,session))
+    .toSorted((left,right)=>right.utcSecond-left.utcSecond||compareText(left.roundId,right.roundId)));
 }
 
 /** Groups zero-sum counterentries into the one match the player actually saw. */

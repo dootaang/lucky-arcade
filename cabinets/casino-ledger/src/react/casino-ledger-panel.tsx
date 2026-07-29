@@ -1,7 +1,7 @@
 import { NumberTicker } from "@lucky-arcade/ui/number-ticker";
 import { HoloFoil } from "@lucky-arcade/ui/holo-card";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
-import { casinoLeaderboard } from "../presentation.ts";
+import { casinoFullLeaderboard, casinoLeaderboard, casinoNpcLedgerReport, type CasinoLeaderboardEntry } from "../presentation.ts";
 import { groupNpcRoundSettlements, npcMatchSettlementTone, type NpcMatchSettlementTone } from "../rounds.ts";
 import type { CasinoTableId, NpcMatchSettlement, NpcPlayEvent, NpcPlayEventCode, NpcPresence, NpcRoundSettlement } from "../contracts.ts";
 import { TEMEROSA_NPC_GAMBLING_PROFILES } from "../temerosa-profiles.ts";
@@ -19,6 +19,7 @@ export interface CasinoLedgerPanelProps {
   presences: readonly NpcPresence[];
   tables: readonly CasinoLiveTable[];
   onPlay(id: string): void;
+  loadNpcHistory(npcId: string, days: number): readonly NpcRoundSettlement[];
 }
 
 export interface CasinoLiveTable {
@@ -41,10 +42,17 @@ export default function CasinoLedgerPanel({
   presences,
   tables,
   onPlay,
+  loadNpcHistory,
 }: CasinoLedgerPanelProps): React.ReactElement {
   const [leaderboardMode, setLeaderboardMode] = useState<"profit" | "balance">("profit");
+  const [recordRoomOpen,setRecordRoomOpen]=useState(false);
+  const [selectedNpcId,setSelectedNpcId]=useState<string>();
+  const [recordDays,setRecordDays]=useState<0|1|7|30>(0);
   const leaderboard = casinoLeaderboard(TEMEROSA_NPC_GAMBLING_PROFILES, npcBalances, userBalance, leaderboardMode === "profit" ? npcSevenDayProfits : undefined);
   const names = new Map(TEMEROSA_NPC_GAMBLING_PROFILES.map((profile) => [profile.id, profile.name]));
+  const fullLeaderboard=casinoFullLeaderboard(TEMEROSA_NPC_GAMBLING_PROFILES,npcBalances,userBalance,leaderboardMode==="profit"?npcSevenDayProfits:undefined);
+  const currentMinute=Math.floor(currentUtcSecond/60);
+  const selectedHistory=useMemo(()=>selectedNpcId?loadNpcHistory(selectedNpcId,recordDays):Object.freeze([]),[currentMinute,loadNpcHistory,recordDays,selectedNpcId]);
   const previousBalances = useRef(npcBalances);
   const [balanceMoves, setBalanceMoves] = useState<Readonly<Record<string, "rising" | "falling">>>({});
   const settlementGroups = useMemo(() => groupNpcRoundSettlements(settlements), [settlements]);
@@ -119,7 +127,7 @@ export default function CasinoLedgerPanel({
     <div className="casino-ledger-board">
       <span className="ca-brackets" aria-hidden="true" />
       <table>
-        <caption className="ca-serif">명예의 전당 <span className="ledger-board-switch"><button aria-pressed={leaderboardMode === "profit"} onClick={() => setLeaderboardMode("profit")}>7일 손익</button><button aria-pressed={leaderboardMode === "balance"} onClick={() => setLeaderboardMode("balance")}>잔고</button></span></caption>
+        <caption className="ca-serif">명예의 전당 <span className="ledger-board-switch"><button aria-pressed={leaderboardMode === "profit"} onClick={() => setLeaderboardMode("profit")}>7일 손익</button><button aria-pressed={leaderboardMode === "balance"} onClick={() => setLeaderboardMode("balance")}>잔고</button><button onClick={()=>{setSelectedNpcId(undefined);setRecordRoomOpen(true);}}>전체 보기</button></span></caption>
         <thead><tr><th scope="col">순위</th><th scope="col">이름</th><th scope="col">{leaderboardMode === "profit" ? "7일 손익" : "잔고"}</th></tr></thead>
         <tbody ref={boardRef}>{leaderboard.map((entry) => <tr
           key={`${entry.kind}:${entry.id}`}
@@ -128,10 +136,10 @@ export default function CasinoLedgerPanel({
           style={{ "--ledger-depth": `${(Math.abs(leaderboardMode === "profit" && entry.kind === "npc" ? entry.periodProfit ?? 0 : entry.balance) / topBalance * 100).toFixed(2)}%` } as React.CSSProperties}
         >
           <td className="ca-num">{entry.rank}</td>
-          <th scope="row"><div className="ledger-person">
+          <th scope="row"><button className="ledger-person ledger-person-button" disabled={entry.kind!=="npc"} onClick={()=>{if(entry.kind!=="npc")return;setSelectedNpcId(entry.id);setRecordRoomOpen(true);}}>
             {entry.kind === "npc" && entry.rank <= 3 && <LedgerPortrait name={entry.name} src={portraits[entry.id]} crowned={entry.rank === 1} />}
             {entry.name}
-          </div></th>
+          </button></th>
           <td className="ca-num">{leaderboardMode === "profit" && entry.kind === "npc" ? <NumberTicker value={entry.periodProfit ?? 0} prefix={(entry.periodProfit ?? 0) > 0 ? "+" : ""} suffix=" P" durationMs={650} /> : <NumberTicker value={entry.balance} suffix=" P" durationMs={650} />}</td>
         </tr>)}</tbody>
       </table>
@@ -166,8 +174,52 @@ export default function CasinoLedgerPanel({
       />;
     })}
   </section>
+  {recordRoomOpen&&<CasinoRecordRoom
+    leaderboard={fullLeaderboard} leaderboardMode={leaderboardMode} selectedNpcId={selectedNpcId}
+    entries={selectedHistory} days={recordDays} names={names} portraits={portraits}
+    onSelect={setSelectedNpcId} onDays={setRecordDays} onBack={()=>setSelectedNpcId(undefined)}
+    onClose={()=>{setRecordRoomOpen(false);setSelectedNpcId(undefined);}}
+  />}
   </>;
 }
+
+function CasinoRecordRoom({leaderboard,leaderboardMode,selectedNpcId,entries,days,names,portraits,onSelect,onDays,onBack,onClose}:{
+  leaderboard:readonly CasinoLeaderboardEntry[];leaderboardMode:"profit"|"balance";selectedNpcId:string|undefined;
+  entries:readonly NpcRoundSettlement[];days:0|1|7|30;names:ReadonlyMap<string,string>;portraits:Readonly<Record<string,string>>;
+  onSelect(id:string):void;onDays(days:0|1|7|30):void;onBack():void;onClose():void;
+}):React.ReactElement{
+  const [tableFilter,setTableFilter]=useState<CasinoTableId|"all">("all");
+  const [visible,setVisible]=useState(50);
+  useEffect(()=>{setTableFilter("all");setVisible(50);},[selectedNpcId,days]);
+  useEffect(()=>{const close=(event:KeyboardEvent)=>{if(event.key==="Escape")onClose();};window.addEventListener("keydown",close);return()=>window.removeEventListener("keydown",close);},[onClose]);
+  const selected=leaderboard.find((entry)=>entry.kind==="npc"&&entry.id===selectedNpcId);
+  const filtered=tableFilter==="all"?entries:entries.filter((entry)=>entry.tableId===tableFilter);
+  const report=selectedNpcId?casinoNpcLedgerReport(selectedNpcId,filtered):undefined;
+  return <div className="casino-record-backdrop" onMouseDown={(event)=>{if(event.currentTarget===event.target)onClose();}}>
+    <section className="casino-record-room" role="dialog" aria-modal="true" aria-labelledby="casino-record-title">
+      <header><div>{selected?<button className="record-back" onClick={onBack}>← 전체 순위</button>:<span className="ca-label">CASINO ARCHIVE</span>}<h2 id="casino-record-title" className="ca-serif">{selected?`${selected.name}의 카지노 원장`:"명예의 전당 전체 순위"}</h2></div><button className="record-close" onClick={onClose} aria-label="기록실 닫기">×</button></header>
+      {!selected?<div className="record-ranking-wrap"><table className="record-ranking"><caption>{leaderboardMode==="profit"?"최근 7일 손익 순위":"현재 잔고 순위"}</caption><thead><tr><th>순위</th><th>이름</th><th>{leaderboardMode==="profit"?"7일 손익":"잔고"}</th></tr></thead><tbody>{leaderboard.map((entry)=><tr key={`${entry.kind}:${entry.id}`} className={entry.kind==="user"?"is-user":""}><td className="ca-num">{entry.rank}</td><th scope="row">{entry.kind==="npc"?<button onClick={()=>onSelect(entry.id)}><LedgerPortrait name={entry.name} src={portraits[entry.id]} crowned={entry.rank===1}/><span>{entry.name}</span></button>:entry.name}</th><td className="ca-num">{leaderboardMode==="profit"&&entry.kind==="npc"?signedPoints(entry.periodProfit??0):`${entry.balance} P`}</td></tr>)}</tbody></table></div>
+      :report&&<div className="npc-ledger-detail">
+        <div className="npc-ledger-hero"><LedgerPortrait name={selected.name} src={portraits[selected.id]} crowned={selected.rank===1}/><div><span className="ca-label">{leaderboardMode==="profit"?"7일 손익":"잔고"} {selected.rank}위</span><strong>{selected.balance.toLocaleString("ko-KR")} P</strong></div><div className="record-periods" aria-label="조회 기간">{([1,7,30,0] as const).map((value)=><button key={value} aria-pressed={days===value} onClick={()=>onDays(value)}>{value===0?"전체":value===1?"24시간":`${value}일`}</button>)}</div></div>
+        <div className="npc-ledger-kpis"><article><span>순손익</span><strong className={report.net>0?"is-gain":report.net<0?"is-loss":""}>{signedPoints(report.net)}</strong></article><article><span>정산</span><strong>{report.settlements}건</strong><small>수익 {report.gains} · 손실 {report.losses}</small></article><article><span>최대 수익</span><strong className="is-gain">{signedPoints(report.largestGain)}</strong></article><article><span>최대 손실</span><strong className="is-loss">{signedPoints(report.largestLoss)}</strong></article></div>
+        <LedgerTrend values={report.dailyNet}/>
+        <section className="npc-table-breakdown"><h3>게임별 손익</h3><div>{report.byTable.map((item)=><button key={item.tableId} aria-pressed={tableFilter===item.tableId} onClick={()=>setTableFilter((current)=>current===item.tableId?"all":item.tableId)}><span>{tableName(item.tableId)}</span><small>{item.settlements}건 · 노출 {item.exposure.toLocaleString("ko-KR")} P</small><strong className={item.net>0?"is-gain":item.net<0?"is-loss":""}>{signedPoints(item.net)}</strong></button>)}</div></section>
+        {report.opponents.length>0&&<section className="npc-opponent-summary"><h3>자주 만난 상대</h3><div>{report.opponents.slice(0,5).map((item)=><article key={item.npcId}><span>{names.get(item.npcId)??item.npcId}</span><small>{item.matches}대국</small><strong className={item.net>0?"is-gain":item.net<0?"is-loss":""}>{signedPoints(item.net)}</strong></article>)}</div></section>}
+        <section className="npc-receipts"><div className="ledger-heading"><span>전체 정산 기록</span><small>{tableFilter==="all"?"모든 게임":tableName(tableFilter)}</small></div><ol>{filtered.slice(0,visible).map((entry)=><li key={entry.roundId}><div><strong>{tableName(entry.tableId)} · {settlementLabel(entry,names)}</strong><small>{utcLabel(entry.utcSecond)}{entry.participantIds.length>1?` · 상대 ${entry.participantIds.filter((id)=>id!==entry.npcId).map((id)=>names.get(id)??id).join(", ")}`:""}</small></div><span><small>{entry.stake===0?"무료":`${entry.stake} P ×${entry.reservedAmount/entry.stake}`}</small><strong className={entry.delta>0?"is-gain":entry.delta<0?"is-loss":""}>{signedPoints(entry.delta)}</strong></span></li>)}</ol>{filtered.length>visible&&<button className="record-more" onClick={()=>setVisible((value)=>value+50)}>50건 더 보기</button>}</section>
+      </div>}
+    </section>
+  </div>;
+}
+
+function LedgerTrend({values}:{values:readonly Readonly<{utcDay:number;net:number}>[]}):React.ReactElement{
+  if(values.length===0)return <section className="ledger-trend is-empty"><span>이 기간에는 정산 기록이 없습니다.</span></section>;
+  let cursor=0;const points=values.map((entry)=>{cursor+=entry.net;return cursor;});
+  const minimum=Math.min(0,...points),maximum=Math.max(0,...points),span=Math.max(1,maximum-minimum);
+  const coordinates=points.map((value,index)=>`${points.length===1?50:index/(points.length-1)*100},${46-(value-minimum)/span*42}`).join(" ");
+  return <section className="ledger-trend" aria-label={`기간 누적 손익 ${signedPoints(cursor)}`}><div><span>잔고 흐름</span><strong className={cursor>0?"is-gain":cursor<0?"is-loss":""}>{signedPoints(cursor)}</strong></div><svg viewBox="0 0 100 50" preserveAspectRatio="none" role="img"><polyline points={coordinates}/></svg></section>;
+}
+
+function utcLabel(utcSecond:number):string{return new Intl.DateTimeFormat("ko-KR",{timeZone:"UTC",month:"numeric",day:"numeric",hour:"2-digit",minute:"2-digit",hour12:false}).format(new Date(utcSecond*1_000))+" UTC";}
 
 /** The leader alone gets real foil. It is the only holo layer on this screen. */
 function LedgerPortrait({ name, src, crowned }: { name: string; src: string | undefined; crowned: boolean }): React.ReactElement {
@@ -275,6 +327,7 @@ function TableLoop({ tableId, active }: { tableId: CasinoTableId; active: boolea
   if (tableId === "temerosa-slot") return <span className={`mini-slot ${active ? "is-running" : ""}`}><i>7</i><i>★</i><i>7</i></span>;
   if (tableId === "temerosa-match-pairs") return <span className={`mini-pairs ${active ? "is-running" : ""}`}><i /><i /></span>;
   if (tableId === "indian-poker") return <span className={`mini-poker ${active ? "is-running" : ""}`}><i /><b>●</b><b>●</b><b>●</b></span>;
+  if (tableId === "temerosa-high-low") return <span className={`mini-poker ${active ? "is-running" : ""}`}><i /><b>↑</b><b>?</b><b>↓</b></span>;
   return <span className={`mini-old-maid ${active ? "is-running" : ""}`}><i /><i /><i /><i /></span>;
 }
 
@@ -291,6 +344,7 @@ function tableName(tableId: CasinoTableId): string {
   if (tableId === "temerosa-old-maid") return "도둑잡기";
   if (tableId === "temerosa-match-pairs") return "짝맞추기";
   if (tableId === "temerosa-slot") return "슬롯";
+  if (tableId === "temerosa-high-low") return "하이로우";
   return "인디언 포커";
 }
 
@@ -358,6 +412,9 @@ function playEventLabel(code: NpcPlayEventCode, stake: number): string {
   if (code === "poker-check") return "체크";
   if (code === "poker-call") return "콜";
   if (code === "poker-raise") return "레이즈";
+  if (code === "high-low-guess") return "높고 낮음 예측";
+  if (code === "high-low-hit") return "연속 적중";
+  if (code === "high-low-cashout") return "수익 확정";
   return "표정 읽기";
 }
 
@@ -367,6 +424,10 @@ function settlementLabel(settlement: NpcRoundSettlement, names?: ReadonlyMap<str
     return lines > 0 ? `${lines}줄 적중` : "당첨 없음";
   }
   if (settlement.tableId === "indian-poker") return "칩 정산";
+  if (settlement.tableId === "temerosa-high-low") {
+    const [kind,count]=settlement.resultKind.split("-");
+    return kind==="cashout"?`${count}연속 수익 확정`:`${count}번째 예측 실패`;
+  }
   if (settlement.tableId === "temerosa-match-pairs") return "대국 정산";
   if(settlement.prediction){
     const target=names?.get(settlement.prediction.predictedNpcId)??settlement.prediction.predictedNpcId;

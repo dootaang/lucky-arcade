@@ -2,22 +2,24 @@ import { XorShift32 } from "@lucky-arcade/engine";
 import { casinoDayPlan, completedDayBalances } from "./engine.ts";
 import type { CasinoPresentationClock, CasinoTableId, NpcGamblingProfile, NpcLedgerContract, NpcMatch, NpcPlayEvent, NpcPlayEventCode, NpcPredictionWager } from "./contracts.ts";
 
-const TAPE_VERSION = "npc-live-tape/0.3";
+const TAPE_VERSION = "npc-live-tape/0.4";
 const DEFAULT_LOOKBACK_SECONDS = 90;
 const ACTIONS = Object.freeze({
   "temerosa-old-maid": ["old-maid-draw", "old-maid-discard", "old-maid-reorder", "old-maid-watch"] as const,
   "temerosa-match-pairs": ["pairs-open-first", "pairs-open-second", "pairs-match", "pairs-turn"] as const,
   "temerosa-slot": ["slot-spin", "slot-reel-stop", "slot-line-check", "slot-reach"] as const,
   "indian-poker": ["poker-check", "poker-call", "poker-raise", "poker-read"] as const,
+  "temerosa-high-low": ["high-low-guess", "high-low-hit", "high-low-cashout"] as const,
 }) satisfies Readonly<Record<CasinoTableId, readonly NpcPlayEventCode[]>>;
 const CADENCE = Object.freeze({
   "temerosa-slot": [5,9],
   "indian-poker": [14,24],
   "temerosa-match-pairs": [16,28],
   "temerosa-old-maid": [12,22],
+  "temerosa-high-low": [7,13],
 } as const);
 
-/** Every tape item belongs to a real v0.7 match. There are no ambient pseudo-actions. */
+/** Every tape item belongs to a real v0.8 match. There are no ambient pseudo-actions. */
 export function recentNpcPlayEventsAt(
   profiles: readonly NpcGamblingProfile[],
   clock: CasinoPresentationClock,
@@ -73,7 +75,7 @@ function eventsForParticipant(match:NpcMatch,npcId:string,start:number,settle:nu
   }
   return output;
 }
-function event(prefix:string,index:number,match:NpcMatch,npcId:string,utcSecond:number,code:NpcPlayEventCode):NpcPlayEvent{return Object.freeze({eventId:`${prefix}:${index}:${utcSecond}`,matchId:match.matchId,kind:"match-action",npcId,tableId:match.tableId,utcSecond,code,stake:match.stake});}
+function event(prefix:string,index:number,match:NpcMatch,npcId:string,utcSecond:number,code:NpcPlayEventCode):NpcPlayEvent{return Object.freeze({eventId:`${prefix}:${index}:${utcSecond}`,matchId:match.matchId,kind:"match-action",npcId,tableId:match.tableId,utcSecond,code,stake:match.stake,...(match.multiplier>1?{multiplier:match.multiplier as 2|3|4|5}:{})});}
 function predictionEvent(prediction:NpcPredictionWager,utcSecond:number):NpcPlayEvent{return Object.freeze({
   eventId:`${TAPE_VERSION}:${prediction.predictionId}:placed:${utcSecond}`,
   matchId:prediction.matchId,kind:"match-action",npcId:prediction.bettorNpcId,tableId:"temerosa-old-maid",utcSecond,

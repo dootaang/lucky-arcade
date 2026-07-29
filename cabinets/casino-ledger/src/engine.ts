@@ -20,18 +20,21 @@ const MINUTES_PER_DAY = 1_440;
 const SECONDS_PER_DAY = 86_400;
 const MAX_SAFE_BALANCE = 1_000_000_000;
 const PAID_STAKES = [10, 50, 200] as const;
+const HIGH_LOW_RETURN_MULTIPLIERS = [1.3, 1.9, 2.7, 4, 5.5] as const;
 const PAYLINES = [[0,1,2],[3,4,5],[6,7,8],[0,4,8],[6,4,2]] as const;
 const VISIT_SECONDS = Object.freeze({
   "temerosa-slot": [2_700, 5_400],
   "indian-poker": [3_600, 7_200],
   "temerosa-match-pairs": [3_600, 7_200],
   "temerosa-old-maid": [3_600, 7_200],
+  "temerosa-high-low": [2_700, 5_400],
 } as const);
 const MATCH_SECONDS = Object.freeze({
   "temerosa-slot": [45, 90],
   "indian-poker": [120, 240],
   "temerosa-match-pairs": [180, 360],
   "temerosa-old-maid": [240, 480],
+  "temerosa-high-low": [45, 120],
 } as const);
 
 interface VisitIntent { npcId: string; second: number; ordinal: number; tableId: CasinoTableId }
@@ -94,6 +97,8 @@ export function casinoDayPlan(
     if (terms.exposure === 0) continue;
     if (draft.tableId === "temerosa-slot") {
       settleSlot(draft, participants[0]!, balances, output, terms.stake, terms.multiplier, rng);
+    } else if (draft.tableId === "temerosa-high-low") {
+      settleHighLow(draft, participants[0]!, balances, output, terms.stake, terms.multiplier, rng);
     } else {
       settlePvp(draft, draft.tableId, participants, balances, output, terms.stake, terms.multiplier, rng);
     }
@@ -159,6 +164,31 @@ export function recentNpcActivitiesAt(profiles: readonly NpcGamblingProfile[], c
   }
   output.sort((a,b) => b.utcSecond - a.utcSecond || compareText(a.session.matchId,b.session.matchId) || compareText(a.npcId,b.npcId));
   return Object.freeze(output.slice(0, limit));
+}
+
+/** Complete receipts for one NPC over a rolling period. `days=0` means the contract epoch. */
+export function npcActivitiesForAt(
+  profiles: readonly NpcGamblingProfile[], clock: CasinoClock, contract: NpcLedgerContract, npcId: string, days = 0,
+): readonly NpcActivity[] {
+  if (!profiles.some((profile) => profile.id === npcId)) throw new Error("npc_ledger_unknown_npc");
+  if (!Number.isSafeInteger(days) || days < 0) throw new Error("npc_ledger_invalid_period");
+  const nowSecond = normalizedUtcSecond(clock);
+  const absoluteDay = Math.floor(nowSecond / SECONDS_PER_DAY);
+  const currentDayIndex = absoluteDay - contract.epochUtcDay;
+  if (currentDayIndex < 0) return Object.freeze([]);
+  const lower = days === 0 ? contract.epochUtcDay * SECONDS_PER_DAY : nowSecond - days * SECONDS_PER_DAY;
+  const firstDay = Math.max(0, Math.floor(lower / SECONDS_PER_DAY) - contract.epochUtcDay);
+  let balances = firstDay === 0 ? openingBalances(profiles) : completedDayBalances(profiles, firstDay - 1, contract);
+  const output: NpcActivity[] = [];
+  for (let day = firstDay; day <= currentDayIndex; day += 1) {
+    const plan = casinoDayPlan(profiles, day, balances, contract);
+    for (const session of plan.sessions[npcId] ?? []) {
+      const utcSecond = (contract.epochUtcDay + day) * SECONDS_PER_DAY + session.secondOfDay;
+      if (utcSecond > lower && utcSecond <= nowSecond) output.push({ npcId, utcSecond, utcMinute: Math.floor(utcSecond / 60), session });
+    }
+    balances = addDay(balances, plan.sessions, profiles);
+  }
+  return Object.freeze(output.toSorted((left, right) => right.utcSecond - left.utcSecond || compareText(left.session.matchId, right.session.matchId)));
 }
 
 export function completedDayBalances(
@@ -360,6 +390,37 @@ function settleSlot(plan: MatchDraft, profile: NpcGamblingProfile, balances: Rec
   addSession(profile.id, plan, stake, exposure, credit, `lines-${lines}`, "temerosa-slot-paytable/0.3", balances, output);
 }
 
+function settleHighLow(plan: MatchDraft, profile: NpcGamblingProfile, balances: Record<string,number>, output: Record<string,NpcSession[]>, stake: Exclude<NpcStake,0>, multiplier: WagerMultiplier, rng: XorShift32): void {
+  const exposure = stake * multiplier;
+  let currentRank = randomInteger(2, 14, rng);
+  for (let streak = 1; streak <= HIGH_LOW_RETURN_MULTIPLIERS.length; streak += 1) {
+    const higherChance = (14 - currentRank) / 13;
+    const lowerChance = (currentRank - 2) / 13;
+    const optimalHigher = higherChance >= lowerChance;
+    const followsRead = rng.next() < .55 + profile.skills.highLowJudgment * .42;
+    const guessesHigher = followsRead ? optimalHigher : !optimalHigher;
+    const nextRank = randomInteger(2, 14, rng);
+    const correct = guessesHigher ? nextRank > currentRank : nextRank < currentRank;
+    if (!correct) {
+      addSession(profile.id, plan, stake, exposure, 0, `loss-${streak}`, "temerosa-high-low-paytable/0.3", balances, output);
+      return;
+    }
+    currentRank = nextRank;
+    const baseCredit = Math.round(stake * HIGH_LOW_RETURN_MULTIPLIERS[streak - 1]!);
+    if (streak === HIGH_LOW_RETURN_MULTIPLIERS.length || !highLowContinues(profile, currentRank, streak, rng)) {
+      addSession(profile.id, plan, stake, exposure, baseCredit * multiplier, `cashout-${streak}`, "temerosa-high-low-paytable/0.3", balances, output);
+      return;
+    }
+  }
+}
+
+function highLowContinues(profile: NpcGamblingProfile, currentRank: number, streak: number, rng: XorShift32): boolean {
+  const bestChance = Math.max(14-currentRank,currentRank-2)/13;
+  const appetite = profile.riskAppetite*.34 + profile.winPressing*.28 + profile.skills.highLowJudgment*.16;
+  const caution = profile.discipline*(.12+streak*.095) + Math.max(0,.48-bestChance)*.8;
+  return rng.next() < Math.max(.08,Math.min(.9,.34+appetite-caution));
+}
+
 function addSession(
   npcId: string,
   plan: MatchDraft,
@@ -479,7 +540,7 @@ function flushPending(tableId: CasinoTableId, group: VisitIntent[], groups: Visi
   if (group.length > 0) groups.push([...group]);
   pending.set(tableId, []);
 }
-function participantCount(tableId: CasinoTableId): number { return tableId === "temerosa-slot" ? 1 : tableId === "temerosa-old-maid" ? 4 : 2; }
+function participantCount(tableId: CasinoTableId): number { return tableId === "temerosa-slot" || tableId === "temerosa-high-low" ? 1 : tableId === "temerosa-old-maid" ? 4 : 2; }
 function averageSecond(group: readonly VisitIntent[]): number { return group.reduce((sum,entry)=>sum+entry.second,0)/group.length; }
 function freezeSessions(output: Record<string,NpcSession[]>): Readonly<Record<string,readonly NpcSession[]>> { return Object.freeze(Object.fromEntries(Object.entries(output).map(([id,sessions])=>[id,Object.freeze(sessions.toSorted((a,b)=>a.secondOfDay-b.secondOfDay||compareText(a.matchId,b.matchId)))]))); }
 function addDay(openings: Readonly<Record<string,number>>, sessions: Readonly<Record<string,readonly NpcSession[]>>, profiles: readonly NpcGamblingProfile[]): Record<string,number> {
@@ -519,7 +580,7 @@ function normalizedUtcSecond(clock:CasinoClock):number {
 }
 function compareText(a:string,b:string):number{return a<b?-1:a>b?1:0;}
 function validateDay(profiles:readonly NpcGamblingProfile[],dayIndex:number,openings:Readonly<Record<string,number>>,contract:NpcLedgerContract):void {
-  if(contract.version!=="npc-ledger/0.7"||!Number.isSafeInteger(contract.epochUtcDay)||!Number.isSafeInteger(dayIndex)||dayIndex<0)throw new Error("npc_ledger_invalid_contract");
+  if(contract.version!=="npc-ledger/0.8"||!Number.isSafeInteger(contract.epochUtcDay)||!Number.isSafeInteger(dayIndex)||dayIndex<0)throw new Error("npc_ledger_invalid_contract");
   if(profiles.length===0||new Set(profiles.map((p)=>p.id)).size!==profiles.length||profiles.some((profile)=>!contract.profiles.some((entry)=>entry.id===profile.id)))throw new Error("npc_ledger_invalid_profiles");
   for(const profile of profiles){
     if(!profile.id||!profile.name||!Number.isSafeInteger(profile.openingBalance)||profile.openingBalance<=0)throw new Error("npc_ledger_invalid_profile");

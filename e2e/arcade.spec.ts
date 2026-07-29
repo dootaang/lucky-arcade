@@ -82,6 +82,14 @@ test("loads the living ledger lazily and reuses the casino manifest in a game", 
   await expect(page.getByRole("button", { name: "잔고", exact: true })).toHaveAttribute("aria-pressed", "true");
   await expect(page.locator(".casino-ledger-board thead")).toContainText("잔고");
   await expect(page.locator(".casino-ledger-board tbody tr")).toHaveCount(6);
+  await page.locator(".ledger-board-switch button").filter({ hasText: "전체 보기" }).click();
+  await expect(page.locator(".casino-record-room")).toBeVisible();
+  await expect(page.locator(".record-ranking tbody tr")).toHaveCount(36);
+  await page.locator(".record-ranking tbody tr th button").first().click();
+  await expect(page.locator(".npc-ledger-detail")).toBeVisible();
+  await expect(page.locator(".npc-ledger-kpis article")).toHaveCount(4);
+  await page.locator(".record-close").click();
+  await expect(page.locator(".casino-record-room")).toHaveCount(0);
   await expect(page.getByRole("region", { name: "최근 정산" })).toBeVisible();
   await expect(page.locator(".casino-ledger-settlements .ledger-settlement-line")).toHaveCount(8);
   expect(await page.locator(".ledger-settlement-line.is-gain, .ledger-settlement-line.is-loss").count()).toBeGreaterThan(0);

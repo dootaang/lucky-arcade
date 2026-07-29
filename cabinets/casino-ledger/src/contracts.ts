@@ -10,7 +10,8 @@ export type CasinoTableId =
   | "temerosa-old-maid"
   | "temerosa-match-pairs"
   | "temerosa-slot"
-  | "indian-poker";
+  | "indian-poker"
+  | "temerosa-high-low";
 
 export type NpcStake = 0 | 10 | 50 | 200;
 
@@ -54,6 +55,7 @@ export interface NpcGamblingProfile {
     matchPairsMemory: number;
     pokerRead: number;
     pokerBluff: number;
+    highLowJudgment: number;
   }>;
   sessionsPerDay: NpcSessionRange;
   tables: readonly NpcTableWeight[];
@@ -122,7 +124,7 @@ export interface NpcSession {
 }
 
 export interface NpcLedgerContract {
-  version: "npc-ledger/0.7";
+  version: "npc-ledger/0.8";
   epochUtcDay: number;
   profiles: readonly NpcGamblingProfile[];
 }
@@ -187,7 +189,10 @@ export type NpcPlayEventCode =
   | "poker-check"
   | "poker-call"
   | "poker-raise"
-  | "poker-read";
+  | "poker-read"
+  | "high-low-guess"
+  | "high-low-hit"
+  | "high-low-cashout";
 
 /** Presentation-only activity. It never changes either ledger balance. */
 export interface NpcPlayEvent {

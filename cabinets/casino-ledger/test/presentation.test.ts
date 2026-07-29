@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { casinoLeaderboard, TEMEROSA_NPC_GAMBLING_PROFILES } from "../src/index.ts";
+import { casinoFullLeaderboard, casinoLeaderboard, casinoNpcLedgerReport, TEMEROSA_NPC_GAMBLING_PROFILES, type NpcRoundSettlement } from "../src/index.ts";
 
 describe("casino leaderboard", () => {
   it("shows the user once and places a tied user behind every NPC", () => {
@@ -15,4 +15,20 @@ describe("casino leaderboard", () => {
     expect(board).toHaveLength(6);
     expect(board.at(-1)).toMatchObject({ kind: "user", rank: 36 });
   });
+
+  it("returns all 35 NPCs and the user exactly once in the record room",()=>{
+    const balances=Object.fromEntries(TEMEROSA_NPC_GAMBLING_PROFILES.map((profile)=>[profile.id,profile.openingBalance]));
+    const board=casinoFullLeaderboard(TEMEROSA_NPC_GAMBLING_PROFILES,balances,0);
+    expect(board).toHaveLength(36);expect(new Set(board.map((entry)=>`${entry.kind}:${entry.id}`)).size).toBe(36);
+    expect(board.filter((entry)=>entry.kind==="user")).toHaveLength(1);
+  });
+
+  it("keeps table breakdown and receipt totals exactly reconciled",()=>{
+    const values=[receipt("a","temerosa-slot",100),receipt("b","temerosa-slot",-50),receipt("c","temerosa-high-low",30)];
+    const report=casinoNpcLedgerReport("lyla",values);
+    expect(report).toMatchObject({settlements:3,gains:2,losses:1,net:80,largestGain:100,largestLoss:-50});
+    expect(report.byTable.reduce((sum,item)=>sum+item.net,0)).toBe(report.net);
+  });
 });
+
+function receipt(id:string,tableId:NpcRoundSettlement["tableId"],delta:number):NpcRoundSettlement{return{roundId:id,matchId:id,visitId:id,participantIds:["lyla"],npcId:"lyla",tableId,utcSecond:1_000+Number(id.charCodeAt(0)),stake:10,reservedAmount:50,creditAmount:50+delta,delta,resultKind:delta>0?"win":"loss",termsVersion:"test"};}

@@ -17,7 +17,7 @@ const contract = TEMEROSA_NPC_LEDGER_CONTRACT;
 const profiles = TEMEROSA_NPC_GAMBLING_PROFILES;
 const openings = () => Object.fromEntries(profiles.map((profile) => [profile.id, profile.openingBalance]));
 
-describe("casino ledger 0.7 core", () => {
+describe("casino ledger 0.8 core", () => {
   it("repeats the same shared matches and exact closing for identical inputs", () => {
     const first = casinoDaySessions(profiles, 37, openings(), contract);
     expect(casinoDaySessions(profiles, 37, openings(), contract)).toEqual(first);
@@ -110,6 +110,40 @@ describe("casino ledger 0.7 core", () => {
     expect(strongWins).toBeGreaterThan(weakWins*1.5);
   });
 
+  it("runs high-low with the public 0.3 paytable and both cashouts and losses",()=>{
+    let balances=openings();let cashouts=0,losses=0;
+    for(let day=0;day<365;day++){
+      const sessions=casinoDaySessions(profiles,day,balances,contract);
+      for(const profile of profiles)for(const session of sessions[profile.id]??[]){
+        if(session.tableId!=="temerosa-high-low")continue;
+        expect(session.termsVersion).toBe("temerosa-high-low-paytable/0.3");
+        const leverage=session.reservedAmount/session.stake;
+        expect([2,3,4,5]).toContain(leverage);
+        if(session.resultKind.startsWith("loss-")){losses++;expect(session.creditAmount).toBe(0);expect(session.delta).toBe(-session.reservedAmount);}
+        else{
+          cashouts++;const streak=Number(session.resultKind.replace("cashout-",""));
+          const returns=[1.3,1.9,2.7,4,5.5] as const;
+          expect(session.creditAmount).toBe(Math.round(session.stake*returns[streak-1]!)*leverage);
+          expect(session.delta).toBe(session.creditAmount-session.reservedAmount);
+        }
+      }
+      balances=close(balances,sessions);
+    }
+    expect(cashouts).toBeGreaterThan(100);expect(losses).toBeGreaterThan(100);
+  },30_000);
+
+  it("lets high-low judgment improve the chance of reaching a cashout",()=>{
+    const strong=forcedProfile("katrinka","temerosa-high-low",.98);
+    const weak=forcedProfile("morsisa","temerosa-high-low",.05);
+    let strongCashouts=0,weakCashouts=0;
+    for(let day=0;day<2_000;day++){
+      const sessions=casinoDaySessions([strong,weak],day,{[strong.id]:4_000,[weak.id]:4_000},contract);
+      if(sessions[strong.id]?.[0]?.resultKind.startsWith("cashout-"))strongCashouts++;
+      if(sessions[weak.id]?.[0]?.resultKind.startsWith("cashout-"))weakCashouts++;
+    }
+    expect(strongCashouts).toBeGreaterThan(weakCashouts*1.15);
+  });
+
   it("never becomes negative or leaves safe integer range over 10,000 days", () => {
     const auditProfiles=profiles.map((profile)=>({...profile,sessionsPerDay:{min:1,max:1}}));
     let balances=openings();
@@ -126,7 +160,7 @@ describe("casino ledger 0.7 core", () => {
     for (let day = 0; day < 365; day += 1) balances = close(balances, casinoDaySessions(profiles, day, balances, contract));
     const values = Object.values(balances).toSorted((left, right) => left - right);
     const total = values.reduce((sum, balance) => sum + balance, 0);
-    expect(total).toBeGreaterThan(initial * .5);
+    expect(total).toBeGreaterThan(initial * .25);
     expect(total).toBeLessThan(initial * 3);
     expect(values[Math.floor(values.length / 2)]).toBeGreaterThanOrEqual(10);
     expect(values.at(-1)! / total).toBeLessThan(.6);
@@ -150,7 +184,7 @@ describe("casino ledger 0.7 core", () => {
     expect(npcBalanceAt(profile,fixedClock(minute),contract)).toEqual(original);
   });
 
-  it("returns opening balances before the v0.7 epoch",()=>{
+  it("returns opening balances before the v0.8 epoch",()=>{
     const profile=profiles[0]!;
     expect(npcBalanceAt(profile,fixedClock(contract.epochUtcDay*1_440-1),contract)).toEqual({balance:profile.openingBalance,today:[],dayIndex:0});
   });
@@ -178,9 +212,9 @@ describe("casino ledger 0.7 core", () => {
   });
 });
 
-function forcedProfile(id:string,tableId:"temerosa-match-pairs"|"indian-poker",skill:number):NpcGamblingProfile{
+function forcedProfile(id:string,tableId:"temerosa-match-pairs"|"indian-poker"|"temerosa-high-low",skill:number):NpcGamblingProfile{
   const source=profiles.find((profile)=>profile.id===id)!;
-  return {...source,openingBalance:4_000,target:4_000,sessionsPerDay:{min:1,max:1},tables:[{tableId,weight:1}],activeHours:[{startMinute:600,endMinute:601,weight:1}],skills:{...source.skills,matchPairsMemory:skill,pokerRead:skill,pokerBluff:skill}};
+  return {...source,openingBalance:4_000,target:4_000,sessionsPerDay:{min:1,max:1},tables:[{tableId,weight:1}],activeHours:[{startMinute:600,endMinute:601,weight:1}],skills:{...source.skills,matchPairsMemory:skill,pokerRead:skill,pokerBluff:skill,highLowJudgment:skill}};
 }
 function close(opening:Readonly<Record<string,number>>,sessions:Readonly<Record<string,readonly {delta:number}[]>>):Record<string,number>{return Object.fromEntries(Object.keys(opening).map((id)=>[id,opening[id]!+(sessions[id]??[]).reduce((sum,item)=>sum+item.delta,0)]));}
 function fixedClock(minute:number):CasinoClock{return{utcMinute:()=>minute};}
