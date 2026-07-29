@@ -4,8 +4,8 @@ import { PUBLIC_CABINET_IDS } from "../venues/registry.ts";
 
 describe("public cabinet visibility", () => {
   it("derives public cabinets from the public Venue", () => {
-    expect([...PUBLIC_CABINET_IDS]).toEqual(["temerosa-old-maid", "temerosa-match-pairs", "temerosa-slot", "indian-poker"]);
-    expect(listBuiltInCabinets().map((entry) => entry.manifest.id)).toEqual(["temerosa-slot", "indian-poker", "temerosa-old-maid", "temerosa-match-pairs"]);
+    expect([...PUBLIC_CABINET_IDS]).toEqual(["temerosa-old-maid", "temerosa-match-pairs", "temerosa-slot", "indian-poker", "temerosa-high-low"]);
+    expect(listBuiltInCabinets().map((entry) => entry.manifest.id)).toEqual(["temerosa-high-low", "temerosa-slot", "indian-poker", "temerosa-old-maid", "temerosa-match-pairs"]);
     expect(getCabinetWorld("temerosa-old-maid")).toBe("테메로세 카지노");
   });
 
@@ -17,6 +17,8 @@ describe("public cabinet visibility", () => {
   it("keeps hidden cabinets out of resume and lookup UI", () => {
     expect(getCabinetRegistration("temerosa-old-maid")?.manifest.title).toContain("도둑잡기");
     expect(getCabinetRegistration("temerosa-slot")?.manifest.entry).toBe("wager");
+    expect(getCabinetRegistration("temerosa-high-low")?.manifest.version).toBe("casino-cards/0.3");
+    expect(getCabinetRegistration("indian-poker")?.manifest.description).toContain("5·7라운드");
     expect(getCabinetRegistration("temerosa-texas-holdem")).toBeUndefined();
     for (const id of ["favorite-cup", "old-maid-card", "gfl-favorite-cup", "temerosa-margin", "lucky-derby-lab", "gfl-sprite-memory", "gfl-ember", "restoration-crew", "lore-circuit"]) {
       expect(getCabinetRegistration(id)).toBeUndefined();

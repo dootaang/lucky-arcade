@@ -1,5 +1,5 @@
 import { resultHash, XorShift32 } from "@lucky-arcade/engine";
-import { CASINO_CARD_PACK_VERSION, CASINO_CARD_STATE_CONTRACT, CASINO_CARDS_VERSION, type CasinoCardAction, type CasinoCardGameId, type CasinoCardOutcome, type CasinoCardStake, type CasinoCardState, type CasinoSeatId, type HoldemCpuRead, type OneCardCpuChoice, type OneCardCpuRead } from "./contracts.ts";
+import { CASINO_CARD_PACK_VERSION, CASINO_CARD_STATE_CONTRACT, CASINO_CARDS_VERSION, HIGH_LOW_RETURN_MULTIPLIERS, type CasinoCardAction, type CasinoCardGameId, type CasinoCardOutcome, type CasinoCardStake, type CasinoCardState, type CasinoSeatId, type HoldemCpuRead, type OneCardCpuChoice, type OneCardCpuRead } from "./contracts.ts";
 import { RANKS, bestPokerHand, blackjackValue, cardById, comparePokerHands, rankValue, shuffledDeck } from "./deck.ts";
 
 const SEATS: readonly CasinoSeatId[] = ["player", "cpu-1", "cpu-2", "cpu-3"];
@@ -47,13 +47,19 @@ function startGame(state: CasinoCardState, seed: string, stake: CasinoCardStake,
 }
 
 function reduceHighLow(state: CasinoCardState, action: CasinoCardAction): CasinoCardState {
-  if (action.type === "cash_out") { assert(state.streak > 0, "high_low_cashout_invalid"); return complete({ ...state, sequence: state.sequence + 1 }, "win", (state.stake ?? 0) * 2 ** state.streak, `${state.streak}연속 적중으로 멈췄습니다.`); }
+  if (action.type === "cash_out") { assert(state.streak > 0, "high_low_cashout_invalid"); return complete({ ...state, sequence: state.sequence + 1 }, "win", highLowCredit(state.stake ?? 0, state.streak), `${state.streak}연속 적중으로 멈췄습니다.`); }
   assert(action.type === "guess" && state.currentCard, "high_low_guess_invalid");
   const next = state.deck[state.cursor]; assert(next, "high_low_deck_empty");
   const difference = rankValue(next) - rankValue(state.currentCard), correct = action.direction === "higher" ? difference > 0 : difference < 0;
   if (!correct) return complete({ ...state, sequence: state.sequence + 1, lastReveal: next, currentCard: next, cursor: state.cursor + 1 }, "loss", 0, difference === 0 ? "같은 숫자가 나와 판돈을 잃었습니다." : "예측이 빗나갔습니다.");
   const streak = state.streak + 1, nextState = { ...state, sequence: state.sequence + 1, lastReveal: next, currentCard: next, cursor: state.cursor + 1, streak, message: `${streak}연속 적중 · 지금 멈추거나 한 번 더 고르세요.` };
-  return streak >= 5 ? complete(nextState, "win", (state.stake ?? 0) * 32, "다섯 번 연속으로 맞혔습니다.") : nextState;
+  return streak >= 5 ? complete(nextState, "win", highLowCredit(state.stake ?? 0, streak), "다섯 번 연속으로 맞혔습니다.") : nextState;
+}
+
+function highLowCredit(stake: number, streak: number): number {
+  const multiplier = HIGH_LOW_RETURN_MULTIPLIERS[streak - 1];
+  assert(multiplier !== undefined, "high_low_streak_invalid");
+  return Math.round(stake * multiplier);
 }
 
 function reduceBlackjack(state: CasinoCardState, action: CasinoCardAction): CasinoCardState {

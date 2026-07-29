@@ -1,7 +1,7 @@
 import { PlayingCardBack, StandardPlayingCard, type CourtAtlas, type StandardPlayingCardId } from "@lucky-arcade/ui/playing-card";
 import { WAGER_MULTIPLIERS, leveragedWagerCredit, wagerExposure, type WagerMultiplier } from "@lucky-arcade/engine";
 import { useState } from "react";
-import { CASINO_CARD_STAKES, CASINO_GAME_INFO, blackjackValue, bestPokerHand, cardById, type CasinoCardAction, type CasinoCardStake, type CasinoCardState, type CasinoSeatId } from "../index.ts";
+import { CASINO_CARD_STAKES, CASINO_GAME_INFO, HIGH_LOW_RETURN_MULTIPLIERS, blackjackValue, bestPokerHand, cardById, type CasinoCardAction, type CasinoCardStake, type CasinoCardState, type CasinoSeatId } from "../index.ts";
 import "./casino-card-screen.css";
 
 export interface CasinoCardScreenProps {
@@ -11,31 +11,39 @@ export interface CasinoCardScreenProps {
   busy: boolean;
   error?: string;
   initialMultiplier?: WagerMultiplier;
+  dealer?: CasinoCardDealer;
   onStart(stake: CasinoCardStake, multiplier: WagerMultiplier): void | Promise<void>;
   onAction(action: CasinoCardAction): void | Promise<void>;
   onExit(): void;
 }
 
-export function CasinoCardScreen({ state, atlas, balance, busy, error, initialMultiplier = 2, onStart, onAction, onExit }: CasinoCardScreenProps) {
+export interface CasinoCardDealer {
+  id: string;
+  name: string;
+  portraits: { neutral: string; pleased: string; tense: string; despair: string };
+  record?: { wins: number; losses: number; draws: number };
+}
+
+export function CasinoCardScreen({ state, atlas, balance, busy, error, initialMultiplier = 2, dealer, onStart, onAction, onExit }: CasinoCardScreenProps) {
   const [stake, setStake] = useState<CasinoCardStake>(CASINO_CARD_STAKES[0]);
   const [multiplier, setMultiplier] = useState<WagerMultiplier>(initialMultiplier);
   const info = CASINO_GAME_INFO[state.gameId], required = wagerExposure(stake, multiplier, info.maxExposure);
   return <main className="casino-card-shell">
     <header className="casino-card-header"><button onClick={onExit} aria-label="카지노로 돌아가기">←</button><div><span>THE MARGIN · TABLE GAME</span><h1>{info.title}</h1></div><strong>{balance.toLocaleString("ko-KR")} P</strong></header>
     <section className={`casino-card-table game-${state.gameId}`}>
-      {state.status === "ready" ? <Ready state={state} balance={balance} stake={stake} multiplier={multiplier} required={required} busy={busy} onStake={setStake} onMultiplier={setMultiplier} onStart={onStart} /> : <Game state={state} atlas={atlas} busy={busy} multiplier={multiplier} onAction={onAction} />}
+      {state.status === "ready" ? <Ready state={state} balance={balance} stake={stake} multiplier={multiplier} required={required} busy={busy} dealer={dealer} onStake={setStake} onMultiplier={setMultiplier} onStart={onStart} /> : <Game state={state} atlas={atlas} busy={busy} multiplier={multiplier} dealer={dealer} onAction={onAction} />}
       {error && <p className="casino-card-error" role="alert">{error}</p>}
     </section>
   </main>;
 }
 
-function Ready({ state, balance, stake, multiplier, required, busy, onStake, onMultiplier, onStart }: { state: CasinoCardState; balance: number; stake: CasinoCardStake; multiplier: WagerMultiplier; required: number; busy: boolean; onStake(value: CasinoCardStake): void; onMultiplier(value: WagerMultiplier): void; onStart(value: CasinoCardStake, multiplier: WagerMultiplier): void | Promise<void> }) {
+function Ready({ state, balance, stake, multiplier, required, busy, dealer, onStake, onMultiplier, onStart }: { state: CasinoCardState; balance: number; stake: CasinoCardStake; multiplier: WagerMultiplier; required: number; busy: boolean; dealer?: CasinoCardDealer | undefined; onStake(value: CasinoCardStake): void; onMultiplier(value: WagerMultiplier): void; onStart(value: CasinoCardStake, multiplier: WagerMultiplier): void | Promise<void> }) {
   const info = CASINO_GAME_INFO[state.gameId];
-  return <div className="casino-card-ready"><span className="casino-card-kicker">{state.gameId === "texas-holdem" ? "최대 네 단위 예약" : "한 판 판돈"}</span><h2>{info.description}</h2><p>{ruleText(state.gameId)}</p><div className="casino-card-stakes">{CASINO_CARD_STAKES.map((value) => <button key={value} aria-pressed={stake === value} disabled={busy || balance < wagerExposure(value, multiplier, info.maxExposure)} onClick={() => onStake(value)}>{value} P</button>)}</div><div className="casino-card-multipliers" aria-label="배율 선택">{WAGER_MULTIPLIERS.map((value) => <button key={value} aria-pressed={multiplier === value} disabled={busy || balance < wagerExposure(stake, value, info.maxExposure)} onClick={() => onMultiplier(value)}>{value}배</button>)}</div><small>시작할 때 {required.toLocaleString("ko-KR")} P를 최대 손실액으로 예약합니다. 순손익은 {multiplier}배입니다.</small><button className="casino-card-primary" disabled={busy || balance < required} onClick={() => { void onStart(stake, multiplier); }}>{balance < required ? "포인트 부족" : "시작"}</button></div>;
+  return <div className="casino-card-ready">{dealer && <DealerPortrait dealer={dealer} mood="neutral" showRecord />}<span className="casino-card-kicker">{state.gameId === "texas-holdem" ? "최대 네 단위 예약" : "한 판 판돈"}</span><h2>{info.description}</h2><p>{ruleText(state.gameId)}</p><div className="casino-card-stakes">{CASINO_CARD_STAKES.map((value) => <button key={value} aria-pressed={stake === value} disabled={busy || balance < wagerExposure(value, multiplier, info.maxExposure)} onClick={() => onStake(value)}>{value} P</button>)}</div><div className="casino-card-multipliers" aria-label="배율 선택">{WAGER_MULTIPLIERS.map((value) => <button key={value} aria-pressed={multiplier === value} disabled={busy || balance < wagerExposure(stake, value, info.maxExposure)} onClick={() => onMultiplier(value)}>{value}배</button>)}</div><small>시작할 때 {required.toLocaleString("ko-KR")} P를 최대 손실액으로 예약합니다. 순손익은 {multiplier}배입니다.</small><button className="casino-card-primary" disabled={busy || balance < required} onClick={() => { void onStart(stake, multiplier); }}>{balance < required ? "포인트 부족" : "시작"}</button></div>;
 }
 
-function Game({ state, atlas, busy, multiplier, onAction }: GameProps) {
-  const props = { state, atlas, busy, multiplier, onAction };
+function Game({ state, atlas, busy, multiplier, dealer, onAction }: GameProps) {
+  const props = { state, atlas, busy, multiplier, dealer, onAction };
   if (state.gameId === "high-low") return <HighLow {...props} />;
   if (state.gameId === "blackjack") return <Blackjack {...props} />;
   if (state.gameId === "doubt") return <Doubt {...props} />;
@@ -43,7 +51,7 @@ function Game({ state, atlas, busy, multiplier, onAction }: GameProps) {
   return <Holdem {...props} />;
 }
 
-function HighLow({ state, atlas, busy, multiplier, onAction }: GameProps) { return <div className="casino-card-game"><h2>{state.streak ? `${state.streak}연속 적중 · 현재 ${2 ** state.streak}배` : "첫 번째 예측"}</h2><Card id={state.currentCard} atlas={atlas} /><p>{state.message}</p>{state.status !== "complete" ? <div className="casino-card-actions"><button disabled={busy} onClick={() => onAction({ type: "guess", direction: "lower" })}>낮다</button>{state.streak > 0 && <button disabled={busy} onClick={() => onAction({ type: "cash_out" })}>여기서 받기</button>}<button className="casino-card-primary" disabled={busy} onClick={() => onAction({ type: "guess", direction: "higher" })}>높다</button></div> : <Complete state={state} multiplier={multiplier} onAction={onAction} />}</div>; }
+function HighLow({ state, atlas, busy, multiplier, dealer, onAction }: GameProps) { const mood = state.status === "complete" ? state.outcome === "win" ? "despair" : "pleased" : state.streak >= 2 ? "tense" : "neutral"; return <div className="casino-card-game high-low-layout">{dealer && <DealerPortrait dealer={dealer} mood={mood} />}<h2>{state.streak ? `${state.streak}연속 적중 · 현재 ${HIGH_LOW_RETURN_MULTIPLIERS[state.streak - 1]}배` : "첫 번째 예측"}</h2><div className="high-low-reveal" key={`${state.cursor}:${state.currentCard}`}><Card id={state.currentCard} atlas={atlas} /></div><p>{state.message}</p>{state.status !== "complete" ? <div className="casino-card-actions"><button disabled={busy} onClick={() => onAction({ type: "guess", direction: "lower" })}>낮다</button>{state.streak > 0 && <button disabled={busy} onClick={() => onAction({ type: "cash_out" })}>여기서 받기</button>}<button className="casino-card-primary" disabled={busy} onClick={() => onAction({ type: "guess", direction: "higher" })}>높다</button></div> : <Complete state={state} multiplier={multiplier} onAction={onAction} />}</div>; }
 
 function Blackjack({ state, atlas, busy, multiplier, onAction }: GameProps) {
   const reveal = state.status === "complete";
@@ -66,11 +74,12 @@ function Holdem({ state, atlas, busy, multiplier, onAction }: GameProps) {
 }
 
 function Complete({ state, multiplier, onAction }: { state: CasinoCardState; multiplier: WagerMultiplier; onAction(action: CasinoCardAction): void | Promise<void> }) { const credit = leveragedWagerCredit(state.reservedAmount, state.creditAmount, multiplier); return <section className={`casino-card-result result-${state.outcome}`}><h2>{state.outcome === "win" ? "승리" : state.outcome === "push" ? "무승부" : "패배"}</h2><p>{state.message}</p><strong>{credit.toLocaleString("ko-KR")} P 반환 · {multiplier}배</strong><button onClick={() => onAction({ type: "restart" })}>다시하기</button></section>; }
-interface GameProps { state: CasinoCardState; atlas: CourtAtlas; busy: boolean; multiplier: WagerMultiplier; onAction(action: CasinoCardAction): void | Promise<void>; }
+interface GameProps { state: CasinoCardState; atlas: CourtAtlas; busy: boolean; multiplier: WagerMultiplier; dealer?: CasinoCardDealer | undefined; onAction(action: CasinoCardAction): void | Promise<void>; }
+function DealerPortrait({ dealer, mood, showRecord = false }: { dealer: CasinoCardDealer; mood: keyof CasinoCardDealer["portraits"]; showRecord?: boolean }) { return <aside className={`casino-card-house mood-${mood}`}><img src={dealer.portraits[mood]} alt={`${dealer.name} 초상`} /><div><span>하우스 딜러</span><strong>{dealer.name}</strong>{showRecord && dealer.record && <small>상대 전적 · {dealer.record.wins}승 {dealer.record.losses}패{dealer.record.draws ? ` ${dealer.record.draws}무` : ""}</small>}</div></aside>; }
 function Seat({ label, cards, atlas, hideAfter = 99 }: { label?: string; cards: readonly string[]; atlas: CourtAtlas; hideAfter?: number }) { return <div className="casino-card-seat">{label && <strong>{label}</strong>}<div>{cards.map((id, index) => index >= hideAfter ? <CardBack key={`${id}:${index}`} /> : <Card key={`${id}:${index}`} id={id} atlas={atlas} />)}</div></div>; }
 function Card({ id, atlas }: { id: string | null; atlas: CourtAtlas }) { if (!id) return null; cardById(id); return <div className="casino-standard-card"><StandardPlayingCard id={id as StandardPlayingCardId} atlas={atlas} /></div>; }
 function CardBack() { return <div className="casino-standard-card"><PlayingCardBack decorative /></div>; }
 function canPlay(id: string, topId: string): boolean { const card = cardById(id), top = cardById(topId); return card.suit === top.suit || card.rank === top.rank; }
 function rankLabel(rank: string | null): string { return rank === "a" ? "에이스" : rank === "j" ? "잭" : rank === "q" ? "퀸" : rank === "k" ? "킹" : rank ?? "?"; }
 function seatName(seat: CasinoSeatId): string { return seat === "cpu-1" ? "페일" : seat === "cpu-2" ? "카노" : seat === "cpu-3" ? "네모" : "플레이어"; }
-function ruleText(gameId: CasinoCardState["gameId"]): string { return gameId === "high-low" ? "같은 숫자는 실패입니다. 연속 적중할수록 2·4·8·16·32배로 올라갑니다." : gameId === "blackjack" ? "J·Q·K는 10, A는 1 또는 11입니다. 하우스는 17 이상에서 멈춥니다." : gameId === "doubt" ? "다섯 번의 카드 선언을 듣고 믿을지 다우트를 외칠지 고릅니다." : gameId === "one-card" ? "같은 무늬나 숫자만 낼 수 있습니다. 낼 카드가 없으면 한 장 받습니다." : "두 장의 개인 패와 다섯 장의 공용 패로 가장 높은 5장 족보를 만듭니다."; }
+function ruleText(gameId: CasinoCardState["gameId"]): string { return gameId === "high-low" ? "같은 숫자는 실패입니다. 연속 적중할수록 1.3·1.9·2.7·4·5.5배로 올라갑니다." : gameId === "blackjack" ? "J·Q·K는 10, A는 1 또는 11입니다. 하우스는 17 이상에서 멈춥니다." : gameId === "doubt" ? "다섯 번의 카드 선언을 듣고 믿을지 다우트를 외칠지 고릅니다." : gameId === "one-card" ? "같은 무늬나 숫자만 낼 수 있습니다. 낼 카드가 없으면 한 장 받습니다." : "두 장의 개인 패와 다섯 장의 공용 패로 가장 높은 5장 족보를 만듭니다."; }

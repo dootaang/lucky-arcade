@@ -9,13 +9,13 @@ describe("Venue registry", () => {
   });
 
   it("owns each public cabinet through its Venue manifest", () => {
-    expect([...PUBLIC_CABINET_IDS]).toEqual(["temerosa-old-maid", "temerosa-match-pairs", "temerosa-slot", "indian-poker"]);
+    expect([...PUBLIC_CABINET_IDS]).toEqual(["temerosa-old-maid", "temerosa-match-pairs", "temerosa-slot", "indian-poker", "temerosa-high-low"]);
     expect(getVenueForCabinet("temerosa-old-maid")?.title).toBe("테메로세 카지노");
     expect(getVenueForCabinet("temerosa-match-pairs")?.title).toBe("테메로세 카지노");
     expect(getVenueForCabinet("temerosa-slot")?.title).toBe("테메로세 카지노");
     expect(getVenueForCabinet("temerosa-texas-holdem")?.title).toBe("테메로세 카지노");
     expect(getPublicVenue("temerosa-casino")?.tables.filter((table) => table.status === "preparing").map((table) => table.cabinetId)).toEqual([
-      "temerosa-high-low", "temerosa-blackjack", "temerosa-doubt", "temerosa-one-card", "temerosa-texas-holdem",
+      "temerosa-blackjack", "temerosa-doubt", "temerosa-one-card", "temerosa-texas-holdem",
     ]);
     expect(getVenueForCabinet("gfl-favorite-cup")).toBeUndefined();
   });

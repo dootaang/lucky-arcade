@@ -54,7 +54,7 @@ const venues: readonly VenueManifest[] = [
       { cabinetId: "temerosa-match-pairs", status: "open" },
       { cabinetId: "temerosa-slot", status: "open" },
       { cabinetId: "indian-poker", status: "open" },
-      { cabinetId: "temerosa-high-low", status: "preparing" },
+      { cabinetId: "temerosa-high-low", status: "open" },
       { cabinetId: "temerosa-blackjack", status: "preparing" },
       { cabinetId: "temerosa-doubt", status: "preparing" },
       { cabinetId: "temerosa-one-card", status: "preparing" },

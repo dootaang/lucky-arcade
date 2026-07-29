@@ -17,7 +17,7 @@ type CabinetView = LazyExoticComponent<ComponentType<CabinetViewContext>>;
 
 const registrations: readonly WebCabinetRegistration[] = [
   {
-    manifest: { id: "temerosa-high-low", version: "casino-cards/0.1", title: "하이로우", description: "다음 카드가 더 높을지 낮을지 맞히고 배당을 쌓는 빠른 게임.", requiredCapabilities: [], sessionKind: "instant", launchKind: "built-in", resumeLabel: "하이로우로 돌아가기", estimatedMinutes: { min: 1, max: 2 }, entry: "wager", wagerTiers: [10, 50, 200] },
+    manifest: { id: "temerosa-high-low", version: "casino-cards/0.3", title: "하이로우", description: "워어즈가 펼치는 다음 카드가 더 높을지 낮을지 맞히고 배당을 쌓는다.", requiredCapabilities: [], sessionKind: "instant", launchKind: "built-in", resumeLabel: "하이로우로 돌아가기", estimatedMinutes: { min: 1, max: 2 }, entry: "wager", wagerTiers: [10, 50, 200] },
     openingRank: null, badge: "빠른 테이블", load: async () => { const module = await import("../features/casino-cards/casino-card-view.tsx"); return { default: ({ onExit }) => <module.default gameId="high-low" onExit={onExit} /> }; },
   },
   {
@@ -47,7 +47,7 @@ const registrations: readonly WebCabinetRegistration[] = [
     load: async () => { const module = await import("../features/slot-machine/temerosa-slot-view.tsx"); return { default: ({ onExit }) => <module.default onExit={onExit} /> }; },
   },
   {
-    manifest: { id: "indian-poker", version: "indian-poker/0.3", title: "테메로세 인디언 포커", description: "보이지 않는 내 카드와 상대의 표정·베팅을 함께 읽는 1대1 5라운드 승부.", requiredCapabilities: [], sessionKind: "repeat", launchKind: "built-in", resumeLabel: "인디언 포커 이어하기", estimatedMinutes: { min: 2, max: 4 }, entry: "wager", wagerTiers: [10, 50, 200] },
+    manifest: { id: "indian-poker", version: "indian-poker/0.4", title: "테메로세 인디언 포커", description: "보이지 않는 내 카드와 상대의 표정·베팅을 함께 읽는 1대1 5·7라운드 승부.", requiredCapabilities: [], sessionKind: "repeat", launchKind: "built-in", resumeLabel: "인디언 포커 이어하기", estimatedMinutes: { min: 3, max: 6 }, entry: "wager", wagerTiers: [10, 50, 200] },
     openingRank: null, badge: "심리 테이블",
     load: async () => { const module = await import("../features/indian-poker/indian-poker-view.tsx"); return { default: ({ onExit }) => <module.default onExit={onExit} /> }; },
   },

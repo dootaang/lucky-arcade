@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { CASINO_GAME_INFO, bestPokerHand, blackjackValue, casinoCardResultHash, chooseOneCardCpuAction, comparePokerHands, createCasinoCardState, holdemCpuFolds, reduceCasinoCard, type CasinoCardAction, type CasinoCardGameId, type CasinoCardState } from "../src/index.ts";
+import { CASINO_GAME_INFO, HIGH_LOW_RETURN_MULTIPLIERS, bestPokerHand, blackjackValue, casinoCardResultHash, chooseOneCardCpuAction, comparePokerHands, createCasinoCardState, holdemCpuFolds, rankValue, reduceCasinoCard, type CasinoCardAction, type CasinoCardGameId, type CasinoCardState } from "../src/index.ts";
 
 const GAME_IDS = Object.keys(CASINO_GAME_INFO) as CasinoCardGameId[];
 
@@ -48,6 +48,29 @@ describe("casino card cores", () => {
   it("treats an equal-rank high-low reveal as a loss and advances exactly once", () => {
     const state = { ...started("high-low", "high-low-tie"), currentCard: "spades-5", deck: ["hearts-5"], cursor: 0 };
     expect(reduceCasinoCard(state, { type: "guess", direction: "higher" })).toMatchObject({ status: "complete", outcome: "loss", cursor: 1, lastReveal: "hearts-5" });
+  });
+
+  it("pays the audited high-low curve instead of the inflationary powers-of-two curve", () => {
+    const state = { ...started("high-low", "high-low-cashout"), currentCard: "spades-5", deck: ["hearts-6"], cursor: 0 };
+    const hit = reduceCasinoCard(state, { type: "guess", direction: "higher" });
+    expect(HIGH_LOW_RETURN_MULTIPLIERS).toEqual([1.3, 1.9, 2.7, 4, 5.5]);
+    expect(reduceCasinoCard(hit, { type: "cash_out" })).toMatchObject({ status: "complete", outcome: "win", creditAmount: 13 });
+  });
+
+  it("keeps optimal five-step high-low play below break-even across 20,000 seeds", () => {
+    let returned = 0;
+    const runs = 20_000;
+    for (let seed = 0; seed < runs; seed += 1) {
+      let state = started("high-low", `rtp-${seed}`);
+      while (state.status !== "complete") {
+        const direction = rankValue(state.currentCard!) >= 8 ? "lower" : "higher";
+        state = reduceCasinoCard(state, { type: "guess", direction });
+      }
+      returned += state.creditAmount;
+    }
+    const returnRate = returned / (runs * 10);
+    expect(returnRate).toBeGreaterThan(.88);
+    expect(returnRate).toBeLessThan(.98);
   });
 
   it("settles a one-card table with no stock and no legal move as a push", () => {
