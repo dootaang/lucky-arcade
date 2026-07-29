@@ -7,7 +7,7 @@ import { recoverSession } from "../../lib/session-recovery.ts";
 import { loadTemerosaCasinoAssets } from "../../lib/temerosa-content.ts";
 import { loadMatchSummary, recordOldMaidCompletion, type MatchSummary } from "../../lib/match-history.ts";
 import { readCollection, unlockCollectionItem } from "../../lib/collection.ts";
-import { grantOldMaidCompletion, readWallet } from "../../lib/wallet.ts";
+import { grantOldMaidCompletion, reconcileLatestOldMaidRankReward } from "../../lib/wallet.ts";
 import { invalidatePrediction, listPredictions, PREDICTION_MULTIPLIERS, PREDICTION_STAKES, reservePrediction, settlePrediction } from "../../lib/wager.ts";
 import type { CollectionSnapshot, PredictionMultiplier, PredictionStake, SpectatorPrediction, WalletSnapshot } from "@lucky-arcade/persistence";
 import { useCasinoOpponentAvailability } from "../casino-ledger/use-casino-opponent-availability.ts";
@@ -22,7 +22,7 @@ export default function TemerosaOldMaidView({ onExit }: { onExit(): void }) {
   const [matchSummary, setMatchSummary] = useState<MatchSummary | null>(null);
   const [wallet, setWallet] = useState<WalletSnapshot | null>(null);
   const [collection, setCollection] = useState<CollectionSnapshot | null>(null);
-  const [award, setAward] = useState<{ amount: number; rank: number } | null>(null);
+  const [award, setAward] = useState<{ amount: number; rank: number; correction?: boolean } | null>(null);
   const [activePrediction, setActivePrediction] = useState<SpectatorPrediction | null>(null);
   useEffect(() => {
     let alive = true;
@@ -53,7 +53,11 @@ export default function TemerosaOldMaidView({ onExit }: { onExit(): void }) {
     }).catch(() => { if (alive) setError(true); });
     return () => { alive = false; };
   }, []);
-  useEffect(() => { void Promise.all([readWallet(), readCollection(COLLECTION)]).then(([nextWallet, nextCollection]) => { setWallet(nextWallet); setCollection(nextCollection); }).catch(() => undefined); }, []);
+  useEffect(() => { void Promise.all([reconcileLatestOldMaidRankReward(SESSION), readCollection(COLLECTION)]).then(([reward, nextCollection]) => {
+    setWallet(reward.wallet);
+    setCollection(nextCollection);
+    if (reward.correctedAmount > 0 && reward.rank !== null) setAward({ amount: reward.correctedAmount, rank: reward.rank, correction: true });
+  }).catch(() => undefined); }, []);
 
   async function persist(previous: OldMaidState, next: OldMaidState, action: OldMaidAction, psychology: OldMaidPsychologySummary) {
     const cartridge = ready?.cartridge;

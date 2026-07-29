@@ -32,7 +32,7 @@ export interface OldMaidScreenProps {
 
 export interface OldMaidEconomy {
   balance: number;
-  award?: { amount: number; rank: number } | null;
+  award?: { amount: number; rank: number; correction?: boolean } | null;
   unlockedFaceIds: readonly string[];
   onUnlock(): Promise<void>;
   prediction?: OldMaidPredictionEconomy;
@@ -528,7 +528,7 @@ export function OldMaidScreen({ cartridge, assets, thumbAssets = assets, detailA
             <strong>{matchSummary.played}판 · 1등 {matchSummary.firstPlaces}회 · 조커 {matchSummary.jokerHolds}회 · {streakLabel(matchSummary.currentStreak)}</strong>
             {matchSummary.opponents.slice(0, 3).map((opponent) => <span key={opponent.participantId}>{opponent.displayName} {opponent.played}판 {opponent.beaten}승</span>)}
           </section>}
-          {economy?.award && <p className="old-maid-award">+<NumberTicker className="ca-num" value={economy.award.amount} /> P · {economy.award.rank}등 순위 보상</p>}
+          {economy?.award && <p className="old-maid-award">+<NumberTicker className="ca-num" value={economy.award.amount} /> P · {economy.award.rank}등 {economy.award.correction ? "보상 누락분" : "순위 보상"}</p>}
           {economy?.prediction?.active && <p className={`old-maid-prediction-result ${economy.prediction.active.status}`}>
             {economy.prediction.active.status === "won" ? `예측 적중 · ${economy.prediction.active.multiplier}배 · +${economy.prediction.active.stake * economy.prediction.active.multiplier} P` : economy.prediction.active.status === "lost" ? `예측 실패 · ${economy.prediction.active.multiplier}배 · -${economy.prediction.active.reservedAmount} P` : economy.prediction.active.status === "refunded" ? `대국 무효 · ${economy.prediction.active.reservedAmount} P 반환` : `${economy.prediction.active.multiplier}배 정산 중…`}
           </p>}

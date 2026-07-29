@@ -165,6 +165,25 @@ export async function grantCompletionPoints(input: CompletionPointGrantInput): P
   await complete(transaction); db.close(); return { wallet, amount: reward };
 }
 
+export async function topUpCompletionPoints(input: { sessionId: string; sequence: number; expectedAmount: number }): Promise<{ wallet: PointWalletSnapshot; amount: number }> {
+  if (!input.sessionId || !Number.isSafeInteger(input.sequence) || input.sequence < 0 || !Number.isSafeInteger(input.expectedAmount) || input.expectedAmount < 0) throw new Error("invalid_completion_top_up");
+  const db = await openDatabase(), transaction = db.transaction([STORES.wallet, STORES.grants], "readwrite");
+  const wallets = transaction.objectStore(STORES.wallet), grants = transaction.objectStore(STORES.grants);
+  const storedWallet = await request<PointWalletSnapshot | undefined>(wallets.get("wallet"));
+  const wallet = storedWallet ?? newWallet();
+  const grant = await request<PointGrant | undefined>(grants.get(input.sessionId));
+  if (!grant || grant.contract !== "point-grant/0.1" || grant.highestSequence !== input.sequence || grant.amount >= input.expectedAmount) {
+    if (!storedWallet) wallets.put(wallet);
+    await complete(transaction); db.close(); return { wallet, amount: 0 };
+  }
+  const amount = input.expectedAmount - grant.amount;
+  const now = new Date().toISOString();
+  const nextWallet: PointWalletSnapshot = { ...wallet, balance: wallet.balance + amount, updatedAt: now };
+  wallets.put(nextWallet);
+  grants.put({ ...grant, amount: input.expectedAmount, updatedAt: now } satisfies CompletionPointGrant);
+  await complete(transaction); db.close(); return { wallet: nextWallet, amount };
+}
+
 /** @deprecated Kept until non-old-maid callers adopt the point-named API. */
 export function grantMedals(input: MedalGrantInput): Promise<{ wallet: PointWalletSnapshot; amount: number }> {
   return grantCompletionPoints(input);

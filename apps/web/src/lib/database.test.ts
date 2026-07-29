@@ -115,6 +115,32 @@ describe.sequential("point wallet and spectator predictions", () => {
     expect(result.invalid).toBe("invalid_completion_reward");
   });
 
+  it("tops up the latest completion grant without paying the correction twice", async () => {
+    const result = await page.evaluate(async () => {
+      const database = await new Function("return import('/src/lib/database.ts')")();
+      const wallet = await new Function("return import('/src/lib/wallet.ts')")();
+      await database.grantCompletionPoints({ sessionId: "old-rank-table", sequence: 42, cabinetId: "old-maid", spectated: false, amount: 5 });
+      await database.appendMatchRecord({
+        contract: "match-record/0.1", recordId: "old-rank-table#42", cabinetId: "temerosa-old-maid",
+        cabinetVersion: "old-maid/0.9", packVersion: "temerosa-old-maid/0.9", sessionId: "old-rank-table",
+        sequence: 42, seed: "stale-tab", completedAt: "2026-07-29T00:00:00.000Z", turns: 12,
+        standings: [
+          { seatId: "cpu-1", participantId: "pale", displayName: "페일", rank: 1, isPlayer: false },
+          { seatId: "player", displayName: "플레이어", rank: 2, isPlayer: true },
+        ],
+        outcome: "win", resultHash: "stale-tab-result",
+      });
+      const corrected = await wallet.reconcileLatestOldMaidRankReward("old-rank-table");
+      const repeated = await wallet.reconcileLatestOldMaidRankReward("old-rank-table");
+      const wrongSequence = await database.topUpCompletionPoints({ sessionId: "old-rank-table", sequence: 41, expectedAmount: 60 });
+      return { corrected, repeated, wrongSequence };
+    });
+
+    expect(result.corrected).toMatchObject({ correctedAmount: 25, expectedAmount: 30, rank: 2, wallet: { balance: 30 } });
+    expect(result.repeated).toMatchObject({ correctedAmount: 0, expectedAmount: 30, rank: 2, wallet: { balance: 30 } });
+    expect(result.wrongSequence).toMatchObject({ amount: 0, wallet: { balance: 30 } });
+  });
+
   it("derives player period profit from realised rewards and wager receipts", async () => {
     await seedWallet(page, 200);
     const result = await page.evaluate(async () => {

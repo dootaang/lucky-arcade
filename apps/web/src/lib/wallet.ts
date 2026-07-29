@@ -1,6 +1,6 @@
 import { oldMaidOutcome, type OldMaidState } from "@lucky-arcade/old-maid";
 import type { PointWalletSnapshot } from "@lucky-arcade/persistence";
-import { grantCompletionPoints, readWallet } from "./database.ts";
+import { grantCompletionPoints, listMatchRecordsForSession, readWallet, topUpCompletionPoints } from "./database.ts";
 
 export const INITIAL_POINT_BALANCE = 0;
 export const COLLECTION_OPEN_COST = 12;
@@ -29,4 +29,14 @@ export async function grantOldMaidCompletion(previous: OldMaidState, next: OldMa
     amount,
   });
   return { ...granted, rank: player.rank };
+}
+
+export async function reconcileLatestOldMaidRankReward(sessionId: string): Promise<{ wallet: PointWalletSnapshot; correctedAmount: number; rank: number | null; expectedAmount: number }> {
+  const [wallet, records] = await Promise.all([readWallet(), listMatchRecordsForSession(sessionId, 1)]);
+  const latest = records[0];
+  const player = latest?.standings.find((standing) => standing.isPlayer);
+  if (!latest || !player) return { wallet, correctedAmount: 0, rank: null, expectedAmount: 0 };
+  const expectedAmount = oldMaidRankReward(player.rank);
+  const corrected = await topUpCompletionPoints({ sessionId, sequence: latest.sequence, expectedAmount });
+  return { wallet: corrected.wallet, correctedAmount: corrected.amount, rank: player.rank, expectedAmount };
 }
