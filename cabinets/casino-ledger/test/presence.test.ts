@@ -21,12 +21,11 @@ describe("casino floor presence",()=>{
     }
   },30_000);
 
-  it("marks a real spectator unavailable until the prediction settles",()=>{
+  it("does not create NPC spectator reservations for old maid",()=>{
     const openings=Object.fromEntries(profiles.map((profile)=>[profile.id,profile.openingBalance]));
-    const plan=casinoDayPlan(profiles,0,openings,contract);const prediction=plan.predictions.find((entry)=>entry.role==="spectator");
-    expect(prediction).toBeDefined();const second=contract.epochUtcDay*86_400+prediction!.placedAtSecondOfDay+1;
-    const presence=casinoPresenceAt(profiles,fixedClock(second),contract).find((entry)=>entry.npcId===prediction!.bettorNpcId)!;
-    expect(presence.phase).toBe("spectating");expect(presence.role).toBe("spectating");expect(npcAvailability([presence])[presence.npcId]?.available).toBe(false);
+    const plan=casinoDayPlan(profiles,0,openings,contract);
+    expect(plan.predictions).toEqual([]);
+    expect(casinoPresenceAt(profiles,fixedClock(contract.epochUtcDay*86_400+40_000),contract).some((entry)=>entry.role==="spectating")).toBe(false);
   });
 });
 

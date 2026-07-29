@@ -1,6 +1,6 @@
 import type { CasinoPresentationClock } from "@lucky-arcade/casino-ledger";
 
-const CLOCK_FLOOR_KEY = "npc-ledger/0.8:clock-floor-second";
+const CLOCK_FLOOR_KEY = "npc-ledger/0.9:clock-floor-second";
 
 export interface CasinoClockSample {
   serverEpochMs: number;

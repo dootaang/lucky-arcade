@@ -147,6 +147,7 @@ export interface CompletionPointGrantInput {
   cabinetId: string;
   spectated: boolean;
   amount?: number;
+  casinoOccurredAtSecond?: number;
 }
 
 /** @deprecated Medal-era request shape. Use CompletionPointGrantInput.amount for the caller's reward policy. */
@@ -186,6 +187,10 @@ export interface SpectatorPrediction {
   invalidationReason?: PredictionInvalidationReason;
   /** Points credited at settlement. Reservation debits reservedAmount immediately. */
   settlementCredit: number;
+  counterpartyAccountId?: string;
+  counterpartyReservedAmount?: number;
+  casinoOccurredAtSecond?: number;
+  casinoTableId?: string;
 }
 
 export interface ReserveSpectatorPredictionInput {
@@ -195,6 +200,11 @@ export interface ReserveSpectatorPredictionInput {
   stake: PredictionStake;
   multiplier: PredictionMultiplier;
   market?: PredictionMarket;
+  counterpartyAccountId?: string;
+  counterpartyReservedAmount?: number;
+  counterpartyBaseBalance?: number;
+  casinoOccurredAtSecond?: number;
+  casinoTableId?: string;
 }
 
 export interface SettleSpectatorPredictionInput {
@@ -244,6 +254,10 @@ export interface GameWagerReceipt {
   invalidationReason?: GameWagerInvalidationReason;
   /** Points credited after the initial reservation debit. */
   settlementCredit: number;
+  /** Optional casino-economy/1.0 counterparty reservation. Legacy receipts omit it. */
+  counterpartyAccountId?: string;
+  counterpartyReservedAmount?: number;
+  casinoOccurredAtSecond?: number;
 }
 
 export interface ReserveGameWagerInput {
@@ -255,6 +269,11 @@ export interface ReserveGameWagerInput {
   choiceKey?: string;
   stake: number;
   reservedAmount: number;
+  counterpartyAccountId?: string;
+  counterpartyReservedAmount?: number;
+  /** Canonical balance before local journal postings; checked atomically with the journal overlay. */
+  counterpartyBaseBalance?: number;
+  casinoOccurredAtSecond?: number;
 }
 
 export interface SettleGameWagerInput {

@@ -16,7 +16,7 @@ export function createTemerosaCasinoRoster(contentAssets: readonly TemerosaCasin
     expressions.set(asset.expression, asset); grouped.set(asset.characterId, expressions);
   }
   return [...grouped.entries()].sort(([left], [right]) => left.localeCompare(right)).flatMap(([characterId, expressions]) => {
-    if (!selectable.has(characterId) || characterId === "bacikal") return [];
+    if (!selectable.has(characterId) || characterId === "bacikal" || characterId === "wares") return [];
     const character = sourceById.get(characterId), neutral = expressions.get("neutral"), pleased = expressions.get("pleased"), tense = expressions.get("tense"), despair = expressions.get("despair");
     if (!character || !neutral || !pleased || !tense || !despair) return [];
     return [{

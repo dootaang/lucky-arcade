@@ -6,7 +6,7 @@ import type {
   NpcTableWeight,
 } from "./contracts.ts";
 
-export const TEMEROSA_LEDGER_EPOCH_UTC_DAY = 20_663;
+export const TEMEROSA_LEDGER_EPOCH_UTC_DAY = 20_664;
 
 const SHIFTS: readonly (readonly NpcActiveWindow[])[] = [
   Object.freeze([{ startMinute: 0, endMinute: 480, weight: 1 }]),
@@ -44,12 +44,12 @@ const HIGH: NpcSessionRange = Object.freeze({ min: 10, max: 14 });
 
 interface FrozenTraits { attention: number; bluff: number; oldMaid: number }
 
-/** npc-ledger/0.7 closing balances at 2026-07-29 00:00 UTC. */
-const V08_OPENING_BALANCES: Readonly<Record<string, number>> = Object.freeze({
-  katrinka:35,raven:1510,lyla:3900,alger:3450,kreva:70,phaeo:140,machina:9235,kano:305,cicero:40,
-  esther:7945,wares:375,nostalgia:1075,pale:17600,apollyon:70,hiro:2170,cradle:500,nieun:60,temute:2610,
-  deokbae:2825,levillotte:30,riel:30,traver:280,adesha:1680,bacikal:240,camille:3960,anna:25,echo:30,
-  diamo:40,yul:40,ttaengchil:30,nemo:290,lilim:50,"tumit-tu":30,morsisa:75,bche:45,
+/** npc-ledger/0.8 closing balances at 2026-07-30 00:00 UTC. Wares is archived as the house operator. */
+const V09_OPENING_BALANCES: Readonly<Record<string, number>> = Object.freeze({
+  katrinka:34,raven:445,lyla:35,alger:280,kreva:180,phaeo:70,machina:13725,kano:60,cicero:88,
+  esther:18152,nostalgia:1340,pale:23490,apollyon:76,hiro:2400,cradle:1135,nieun:970,temute:335,
+  deokbae:505,levillotte:240,riel:395,traver:66,adesha:396,bacikal:480,camille:4454,anna:310,echo:25,
+  diamo:45,yul:150,ttaengchil:40,nemo:35,lilim:45,"tumit-tu":100,morsisa:75,bche:1045,
 });
 
 /**
@@ -57,12 +57,12 @@ const V08_OPENING_BALANCES: Readonly<Record<string, number>> = Object.freeze({
  * UTC midnight, so this frozen delta is the exact analytics bridge across the
  * contract boundary. Earlier contracts did not preserve a continuous close.
  */
-const V07_FINAL_DAY_PROFITS: Readonly<Record<string, number>> = Object.freeze({
-  katrinka:-3965,raven:-2290,lyla:300,alger:0,kreva:-3230,phaeo:-3010,machina:6235,kano:-2595,
-  cicero:-2760,esther:5245,wares:-2225,nostalgia:-1425,pale:15200,apollyon:-2230,hiro:-80,cradle:-1700,
-  nieun:-2090,temute:510,deokbae:775,levillotte:-1970,riel:-1870,traver:-1520,adesha:-20,bacikal:-1410,
-  camille:2360,anna:-1475,echo:-1370,diamo:-1260,yul:-1160,ttaengchil:-970,nemo:-510,lilim:-600,
-  "tumit-tu":-420,morsisa:-225,bche:-155,
+const V08_FINAL_DAY_PROFITS: Readonly<Record<string, number>> = Object.freeze({
+  katrinka:-1,raven:-1065,lyla:-3865,alger:-3170,kreva:110,phaeo:-70,machina:4490,kano:-245,
+  cicero:48,esther:10207,nostalgia:265,pale:5890,apollyon:6,hiro:230,cradle:635,nieun:910,
+  temute:-2275,deokbae:-2320,levillotte:210,riel:365,traver:-214,adesha:-1284,bacikal:240,
+  camille:494,anna:285,echo:-5,diamo:5,yul:110,ttaengchil:10,nemo:-255,lilim:-5,
+  "tumit-tu":70,morsisa:0,bche:1000,
 });
 
 /** Transcribed gameplay traits. Kept local so another cabinet cannot rewrite history. */
@@ -77,7 +77,7 @@ const TRAITS: Readonly<Record<string, Readonly<FrozenTraits>>> = Object.freeze({
 });
 
 /**
- * Frozen npc-ledger/0.8 data. The former `target` values are retained only as
+ * Frozen npc-ledger/0.9 data. The former `target` values are retained only as
  * compatibility aliases. No outcome code may steer back to them.
  * interpretation; this module intentionally does not import another cabinet.
  */
@@ -92,7 +92,6 @@ export const TEMEROSA_NPC_GAMBLING_PROFILES: readonly NpcGamblingProfile[] = Obj
   profile("kano", "카노", 2_900, 0.08, 0.16, LOW, 1),
   profile("cicero", "키케로", 2_800, 0.16, 0.16, MEDIUM, 2),
   profile("esther", "에스더", 2_700, 0.16, 0.16, MEDIUM, 0),
-  profile("wares", "워어즈", 2_600, 0.16, 0.16, MEDIUM, 1),
   profile("nostalgia", "노스탤지아", 2_500, 0.16, 0.10, MEDIUM, 2),
   profile("pale", "페일", 2_400, 0.27, 0.10, HIGH, 0),
   profile("apollyon", "아폴리온 아이테", 2_300, 0.08, 0.16, LOW, 1),
@@ -120,11 +119,11 @@ export const TEMEROSA_NPC_GAMBLING_PROFILES: readonly NpcGamblingProfile[] = Obj
 ]);
 
 export const TEMEROSA_NPC_LEDGER_CONTRACT: NpcLedgerContract = Object.freeze({
-  version: "npc-ledger/0.8",
+  version: "npc-ledger/0.9",
   epochUtcDay: TEMEROSA_LEDGER_EPOCH_UTC_DAY,
   profiles: TEMEROSA_NPC_GAMBLING_PROFILES,
   profitHistory: Object.freeze([
-    Object.freeze({ utcDay: TEMEROSA_LEDGER_EPOCH_UTC_DAY - 1, profits: V07_FINAL_DAY_PROFITS }),
+    Object.freeze({ utcDay: TEMEROSA_LEDGER_EPOCH_UTC_DAY - 1, profits: V08_FINAL_DAY_PROFITS }),
   ]),
 });
 
@@ -140,7 +139,7 @@ function profile(
   const riskAppetite = formerVolatility >= 0.27 ? 0.86 : formerVolatility >= 0.16 ? 0.56 : 0.28;
   const discipline = formerReversion >= 0.16 ? 0.86 : formerReversion >= 0.10 ? 0.62 : 0.34;
   const traits = TRAITS[id] ?? Object.freeze({ attention: 0.5, bluff: 0.5, oldMaid: 0.5 });
-  const rebasedOpening = V08_OPENING_BALANCES[id];
+  const rebasedOpening = V09_OPENING_BALANCES[id];
   if (!Number.isSafeInteger(rebasedOpening) || rebasedOpening! <= 0) throw new Error(`npc_ledger_opening_missing:${id}`);
   return Object.freeze({
     id,
@@ -154,6 +153,9 @@ function profile(
     stopLossRatio: Number((0.22 + discipline * 0.28).toFixed(2)),
     takeProfitRatio: Number((0.28 + discipline * 0.42).toFixed(2)),
     maxExposureRatio: Number((0.12 + riskAppetite * 0.48).toFixed(2)),
+    incomeBand: _openingBalance >= 3_300 ? "premium" : _openingBalance >= 2_200 ? "high" : _openingBalance >= 1_000 ? "middle" : "low",
+    payCycleDays: _openingBalance >= 3_300 ? 14 : 7,
+    paydayOffset: operation,
     skills: Object.freeze({
       oldMaid: traits.oldMaid,
       matchPairsMemory: traits.attention,

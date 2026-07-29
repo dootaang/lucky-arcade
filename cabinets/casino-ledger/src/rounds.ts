@@ -90,6 +90,7 @@ function settlements(npcId:string,utcSecond:number,session:NpcSession):readonly 
   ]);
   return Object.freeze([settlement(npcId,utcSecond,session,session.prediction?"prediction":"combined")]);
 }
+export function npcSessionSettlements(npcId:string,utcSecond:number,session:NpcSession):readonly NpcRoundSettlement[]{return settlements(npcId,utcSecond,session);}
 function settlement(npcId:string,utcSecond:number,session:NpcSession,component:"rank"|"prediction"|"combined"):NpcRoundSettlement {
   const rankOnly=component==="rank";
   const predictionOnly=component==="prediction";

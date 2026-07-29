@@ -1,4 +1,4 @@
-import type { CasinoTableId, NpcGamblingProfile, NpcRoundSettlement } from "./contracts.ts";
+import type { CasinoLedgerSourceId, NpcGamblingProfile, NpcRoundSettlement } from "./contracts.ts";
 
 export interface CasinoLeaderboardEntry {
   id: string;
@@ -40,7 +40,7 @@ export function casinoFullLeaderboard(
 }
 
 export interface CasinoNpcTableSummary {
-  tableId: CasinoTableId;
+  tableId: CasinoLedgerSourceId;
   settlements: number;
   gains: number;
   losses: number;
@@ -68,7 +68,7 @@ export interface CasinoNpcLedgerReport {
 
 export function casinoNpcLedgerReport(npcId: string, entries: readonly NpcRoundSettlement[]): CasinoNpcLedgerReport {
   const selected=entries.filter((entry)=>entry.npcId===npcId);
-  const tables=new Map<CasinoTableId,NpcRoundSettlement[]>();
+  const tables=new Map<CasinoLedgerSourceId,NpcRoundSettlement[]>();
   const days=new Map<number,number>();
   const opponents=new Map<string,{matches:Set<string>;net:number}>();
   for(const entry of selected){

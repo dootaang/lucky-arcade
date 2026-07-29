@@ -19,6 +19,8 @@ import { ENGINE_VERSION, leveragedWagerCredit, makeReceipt, resultHash, wagerExp
 import type { GameWagerReceipt, MatchRecord } from "@lucky-arcade/persistence";
 import type { CourtAtlas } from "@lucky-arcade/ui/playing-card";
 import { useEffect, useRef, useState } from "react";
+import { npcAccountId } from "@lucky-arcade/casino-ledger";
+import { casinoCounterpartyContext } from "../../lib/casino-economy.ts";
 import { appendAction, appendMatchRecord, listMatchRecordsForSession, pruneMatchRecords, saveSnapshot } from "../../lib/database.ts";
 import { invalidateWager, listWagers, reserveWager, settleWager } from "../../lib/game-wager.ts";
 import { loadPlayingCardAtlas } from "../../lib/playing-card-atlas.ts";
@@ -140,6 +142,8 @@ export default function IndianPokerView({ onExit }: { onExit(): void }) {
     setError("");
     try {
       const seed = `${current.seed}:deal:${crypto.randomUUID()}`;
+      const reservedAmount = wagerExposure(stake, multiplier);
+      const counterparty = await casinoCounterpartyContext(npcAccountId(current.opponentId));
       const transaction = await reserveWager({
         outcomeKey: `${INDIAN_POKER_TERMS_VERSION}:${current.opponentId}:${roundCount}:${seed}`,
         cabinetId: CABINET_ID,
@@ -147,7 +151,9 @@ export default function IndianPokerView({ onExit }: { onExit(): void }) {
         termsVersion: INDIAN_POKER_TERMS_VERSION,
         choiceKey: `deal:${current.opponentId}|${roundCount}|${seed}`,
         stake,
-        reservedAmount: wagerExposure(stake, multiplier),
+        reservedAmount,
+        ...counterparty,
+        counterpartyReservedAmount: reservedAmount,
       });
       setBalance(transaction.wallet.balance);
       const action: IndianPokerAction = { type: "start", seed, stake, wagerId: transaction.wager.wagerId, roundCount };

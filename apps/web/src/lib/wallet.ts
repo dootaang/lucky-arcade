@@ -1,6 +1,7 @@
 import { oldMaidOutcome, type OldMaidState } from "@lucky-arcade/old-maid";
 import type { PointWalletSnapshot } from "@lucky-arcade/persistence";
 import { grantCompletionPoints, listMatchRecordsForSession, readWallet, topUpCompletionPoints } from "./database.ts";
+import { casinoCurrentSecond } from "./casino-economy.ts";
 
 export const INITIAL_POINT_BALANCE = 0;
 export const COLLECTION_OPEN_COST = 12;
@@ -21,12 +22,14 @@ export async function grantOldMaidCompletion(previous: OldMaidState, next: OldMa
   const player = outcome.ranking.find((standing) => standing.seatId === "player");
   if (!player) return null;
   const amount = oldMaidRankReward(player.rank);
+  const casinoOccurredAtSecond = await casinoCurrentSecond();
   const granted = await grantCompletionPoints({
     sessionId: next.sessionId,
     sequence: next.sequence,
     cabinetId,
     spectated: false,
     amount,
+    casinoOccurredAtSecond,
   });
   return { ...granted, rank: player.rank };
 }
@@ -37,6 +40,6 @@ export async function reconcileLatestOldMaidRankReward(sessionId: string): Promi
   const player = latest?.standings.find((standing) => standing.isPlayer);
   if (!latest || !player) return { wallet, correctedAmount: 0, rank: null, expectedAmount: 0 };
   const expectedAmount = oldMaidRankReward(player.rank);
-  const corrected = await topUpCompletionPoints({ sessionId, sequence: latest.sequence, expectedAmount });
+  const corrected = await topUpCompletionPoints({ sessionId, sequence: latest.sequence, expectedAmount, casinoOccurredAtSecond: await casinoCurrentSecond() });
   return { wallet: corrected.wallet, correctedAmount: corrected.amount, rank: player.rank, expectedAmount };
 }

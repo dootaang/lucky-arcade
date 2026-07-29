@@ -53,13 +53,15 @@ describe("casino live play tape", () => {
     expect(events.every((event)=>event.kind==="match-action"&&matchIds.has(event.matchId))).toBe(true);
   });
 
-  it("puts both self and spectator old maid predictions on the real tape",()=>{
+  it("puts paid old maid reservations on the real tape without NPC side bets",()=>{
     const openings=Object.fromEntries(TEMEROSA_NPC_GAMBLING_PROFILES.map((profile)=>[profile.id,profile.openingBalance]));
-    const plan=casinoDayPlan(TEMEROSA_NPC_GAMBLING_PROFILES,0,openings,contract);
-    const prediction=plan.predictions.find((entry)=>entry.role==="spectator")??plan.predictions[0];expect(prediction).toBeDefined();
-    const second=contract.epochUtcDay*86_400+prediction!.placedAtSecondOfDay;
-    const event=recentNpcPlayEventsAt(TEMEROSA_NPC_GAMBLING_PROFILES,fixedClock(second),contract,200).find((entry)=>entry.code==="prediction-wager-placed"&&entry.npcId===prediction!.bettorNpcId);
-    expect(event).toMatchObject({matchId:prediction!.matchId,stake:prediction!.stake,multiplier:prediction!.multiplier,predictionMarket:prediction!.market,predictedNpcId:prediction!.predictedNpcId,predictionRole:prediction!.role});
+    let match:ReturnType<typeof casinoDayPlan>["matches"][number]|undefined,day=0;
+    for(;day<30&&!match;day++)match=casinoDayPlan(TEMEROSA_NPC_GAMBLING_PROFILES,day,openings,contract).matches.find((entry)=>entry.tableId==="temerosa-old-maid"&&entry.stake>0);
+    expect(match).toBeDefined();
+    const second=(contract.epochUtcDay+day-1)*86_400+match!.startsAtSecondOfDay+1;
+    const events=recentNpcPlayEventsAt(TEMEROSA_NPC_GAMBLING_PROFILES,fixedClock(second),contract,200).filter((entry)=>entry.matchId===match!.matchId);
+    expect(events.filter((entry)=>entry.code==="wager-placed")).toHaveLength(match!.participantIds.length);
+    expect(events.some((entry)=>entry.code==="prediction-wager-placed")).toBe(false);
   });
 });
 

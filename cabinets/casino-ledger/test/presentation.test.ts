@@ -13,13 +13,13 @@ describe("casino leaderboard", () => {
     const balances = Object.fromEntries(TEMEROSA_NPC_GAMBLING_PROFILES.map((profile) => [profile.id, profile.target]));
     const board = casinoLeaderboard(TEMEROSA_NPC_GAMBLING_PROFILES, balances, 0);
     expect(board).toHaveLength(6);
-    expect(board.at(-1)).toMatchObject({ kind: "user", rank: 36 });
+    expect(board.at(-1)).toMatchObject({ kind: "user", rank: 35 });
   });
 
-  it("returns all 35 NPCs and the user exactly once in the record room",()=>{
+  it("returns all 34 NPCs and the user exactly once in the record room",()=>{
     const balances=Object.fromEntries(TEMEROSA_NPC_GAMBLING_PROFILES.map((profile)=>[profile.id,profile.openingBalance]));
     const board=casinoFullLeaderboard(TEMEROSA_NPC_GAMBLING_PROFILES,balances,0);
-    expect(board).toHaveLength(36);expect(new Set(board.map((entry)=>`${entry.kind}:${entry.id}`)).size).toBe(36);
+    expect(board).toHaveLength(35);expect(new Set(board.map((entry)=>`${entry.kind}:${entry.id}`)).size).toBe(35);
     expect(board.filter((entry)=>entry.kind==="user")).toHaveLength(1);
   });
 

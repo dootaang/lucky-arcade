@@ -27,7 +27,7 @@ describe("casino ledger checkpoint adapter", () => {
     for (const dayIndex of [1, 2, 3]) {
       writeCheckpoint(storage, { contract: contract.version, dayIndex, balances: completedDayBalances(contract.profiles, dayIndex, contract) }, contract);
     }
-    expect(storage.keys().sort()).toEqual(["npc-ledger/0.8:checkpoint:1", "npc-ledger/0.8:checkpoint:2", "npc-ledger/0.8:checkpoint:3"]);
+    expect(storage.keys().sort()).toEqual(["npc-ledger/0.9:checkpoint:1", "npc-ledger/0.9:checkpoint:2", "npc-ledger/0.9:checkpoint:3"]);
   });
 
   it("reports the honest covered period and includes the frozen pre-rebase close", () => {
@@ -36,8 +36,8 @@ describe("casino ledger checkpoint adapter", () => {
     const current = npcBalancesAtWithCheckpoint(clock, contract, new MemoryStorage());
     const period = npcRollingProfitPeriodAtWithCheckpoint(clock, contract, current.balances, 7, new MemoryStorage());
     expect(period).toMatchObject({ startUtcDay: contract.epochUtcDay - 1, coveredDays: 2 });
-    expect(period.profits.lyla).toBe(300);
-    expect(period.profits.pale).toBe(15_200);
+    expect(period.profits.lyla).toBe(-3_865);
+    expect(period.profits.pale).toBe(5_890);
   });
 });
 

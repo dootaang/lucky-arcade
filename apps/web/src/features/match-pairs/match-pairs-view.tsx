@@ -1,5 +1,5 @@
 import {
-  MATCH_PAIRS_TERMS_VERSION, MATCH_PAIRS_VERSION, createMatchPairsState, isMatchPairsState, matchPairsResultHash, reduceMatchPairs, validateMatchPairsLines,
+  MATCH_PAIRS_TERMS_VERSION, MATCH_PAIRS_VERSION, createMatchPairsState, isMatchPairsState, matchPairsResultHash, matchPairsWinCreditRate, reduceMatchPairs, validateMatchPairsLines,
   type MatchPairsAction, type MatchPairsDifficulty, type MatchPairsFocus, type MatchPairsLine, type MatchPairsMode, type MatchPairsOpponent,
   type MatchPairsOpponentSelection, type MatchPairsStake, type MatchPairsState,
 } from "@lucky-arcade/match-pairs";
@@ -7,6 +7,8 @@ import { MatchPairsScreen } from "@lucky-arcade/match-pairs/react";
 import { ENGINE_VERSION, leveragedWagerCredit, makeReceipt, resultHash, wagerExposure, wagerMultiplierFromExposure, type WagerMultiplier } from "@lucky-arcade/engine";
 import type { GameWagerReceipt, MatchRecord, PredictionMultiplier, PredictionStake, SpectatorPrediction } from "@lucky-arcade/persistence";
 import { useEffect, useRef, useState } from "react";
+import { npcAccountId } from "@lucky-arcade/casino-ledger";
+import { casinoCounterpartyContext } from "../../lib/casino-economy.ts";
 import { appendAction, appendMatchRecord, listMatchRecordsForSession, pruneMatchRecords, saveSnapshot } from "../../lib/database.ts";
 import { invalidateWager, listWagers, reserveWager, settleWager } from "../../lib/game-wager.ts";
 import { recoverSession } from "../../lib/session-recovery.ts";
@@ -104,7 +106,22 @@ export default function MatchPairsView({ onExit }: { onExit(): void }) {
       let action: MatchPairsAction;
       if (current.mode === "play") {
         const identity: WagerIdentity = { seed, difficulty: current.difficulty, focus: current.focus, opponentIds: current.opponentIds };
-        const transaction = await reserveWager({ outcomeKey: `${MATCH_PAIRS_TERMS_VERSION}:${seed}`, cabinetId: CABINET_ID, sessionId: SESSION, termsVersion: MATCH_PAIRS_TERMS_VERSION, choiceKey: choiceKey(identity), stake: input.stake, reservedAmount: wagerExposure(input.stake, input.multiplier) });
+        const opponent = opponents.find((candidate) => candidate.id === current.opponentIds.npc);
+        if (!opponent) throw new Error("match_pairs_opponent_missing");
+        const reservedAmount = wagerExposure(input.stake, input.multiplier);
+        const maximumCredit = leveragedWagerCredit(input.stake, Math.round(input.stake * matchPairsWinCreditRate(opponent, current.focus)), input.multiplier);
+        const counterparty = await casinoCounterpartyContext(npcAccountId(opponent.id));
+        const transaction = await reserveWager({
+          outcomeKey: `${MATCH_PAIRS_TERMS_VERSION}:${seed}`,
+          cabinetId: CABINET_ID,
+          sessionId: SESSION,
+          termsVersion: MATCH_PAIRS_TERMS_VERSION,
+          choiceKey: choiceKey(identity),
+          stake: input.stake,
+          reservedAmount,
+          ...counterparty,
+          counterpartyReservedAmount: maximumCredit - reservedAmount,
+        });
         setBalance(transaction.wallet.balance); action = { type: "start", seed, stake: input.stake, wagerId: transaction.wager.wagerId };
       } else {
         if (!input.predictedCharacterId || !selectedIds(current).includes(input.predictedCharacterId)) throw new Error("match_pairs_prediction_target_invalid");

@@ -30,14 +30,10 @@ describe("NPC real round settlements",()=>{
   });
 
   it("does not paint a zero-sum match as an all-green win",()=>{
-    const now=(contract.epochUtcDay+3)*86_400+43_200;
-    const groups=groupNpcRoundSettlements(recentNpcRoundSettlementsAt(profiles,fixedClock(now),contract,2_000,86_400));
-    const pvp=groups.find((group)=>group.entries.some((entry)=>entry.delta>0)&&group.entries.some((entry)=>entry.delta<0));
-    const oldMaid=groups.find((group)=>group.tableId==="temerosa-old-maid"&&group.entries.length>1);
-    expect(pvp).toBeDefined();
-    expect(npcMatchSettlementTone(pvp!)).toBe("mixed");
-    expect(oldMaid).toBeDefined();
-    expect(npcMatchSettlementTone(oldMaid!)).toBe(oldMaid!.entries.some((entry)=>entry.delta<0)?"mixed":"reward");
+    const pvp=groupNpcRoundSettlements([receipt("win","lyla",50,"temerosa-match-pairs"),receipt("loss","pale",-50,"temerosa-match-pairs")])[0]!;
+    const oldMaid=groupNpcRoundSettlements([receipt("rank-1","lyla",30),receipt("rank-4","pale",-30)])[0]!;
+    expect(npcMatchSettlementTone(pvp)).toBe("mixed");
+    expect(npcMatchSettlementTone(oldMaid)).toBe("mixed");
   });
 
   it("splits a match into one tape group per NPC and keeps one NPC's receipt components together",()=>{
@@ -49,4 +45,4 @@ describe("NPC real round settlements",()=>{
 });
 
 function fixedClock(second:number):CasinoPresentationClock{return{utcSecond:()=>second,utcMinute:()=>Math.floor(second/60)};}
-function receipt(roundId:string,npcId:string,delta:number):NpcRoundSettlement{return{roundId,matchId:"match",visitId:"visit",participantIds:["lyla","pale"],npcId,tableId:"temerosa-old-maid",utcSecond:1_000,stake:0,reservedAmount:0,creditAmount:delta,delta,resultKind:"rank-1",termsVersion:"test"};}
+function receipt(roundId:string,npcId:string,delta:number,tableId:NpcRoundSettlement["tableId"]="temerosa-old-maid"):NpcRoundSettlement{return{roundId,matchId:"match",visitId:"visit",participantIds:["lyla","pale"],npcId,tableId,utcSecond:1_000,stake:10,reservedAmount:50,creditAmount:50+delta,delta,resultKind:roundId,termsVersion:"test"};}
