@@ -77,7 +77,7 @@ test("loads the living ledger lazily and reuses the casino manifest in a game", 
   });
   await page.goto("/venues/temerosa-casino");
   await expect(page.locator(".casino-ledger-board caption")).toContainText("명예의 전당");
-  await expect(page.getByRole("button", { name: /^(오늘 손익|최근 \d+일 손익|7일 손익)$/ })).toHaveAttribute("aria-pressed", "true");
+  await expect(page.getByRole("button", { name: /^(최근 손익|최근 \d+일 손익|7일 손익)$/ })).toHaveAttribute("aria-pressed", "true");
   await page.getByRole("button", { name: "잔고", exact: true }).click();
   await expect(page.getByRole("button", { name: "잔고", exact: true })).toHaveAttribute("aria-pressed", "true");
   await expect(page.locator(".casino-ledger-board thead")).toContainText("잔고");
@@ -88,6 +88,7 @@ test("loads the living ledger lazily and reuses the casino manifest in a game", 
   await page.locator(".record-ranking tbody tr th button").first().click();
   await expect(page.locator(".npc-ledger-detail")).toBeVisible();
   await expect(page.locator(".npc-ledger-kpis article")).toHaveCount(4);
+  await expect(page.locator(".npc-receipts li").first()).toContainText("KST");
   await page.locator(".record-close").click();
   await expect(page.locator(".casino-record-room")).toHaveCount(0);
   await expect(page.getByRole("region", { name: "최근 정산" })).toBeVisible();

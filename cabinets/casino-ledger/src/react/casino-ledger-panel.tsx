@@ -2,6 +2,7 @@ import { NumberTicker } from "@lucky-arcade/ui/number-ticker";
 import { HoloFoil } from "@lucky-arcade/ui/holo-card";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { casinoFullLeaderboard, casinoLeaderboard, casinoNpcLedgerReport, type CasinoLeaderboardEntry } from "../presentation.ts";
+import { formatCasinoKstTimestamp } from "../presentation-time.ts";
 import { groupNpcRoundSettlements, npcMatchSettlementTone, type NpcMatchSettlementTone } from "../rounds.ts";
 import type { CasinoTableId, NpcMatchSettlement, NpcPlayEvent, NpcPlayEventCode, NpcPresence, NpcRoundSettlement } from "../contracts.ts";
 import { TEMEROSA_NPC_GAMBLING_PROFILES } from "../temerosa-profiles.ts";
@@ -52,7 +53,7 @@ export default function CasinoLedgerPanel({
   const [recordRoomOpen,setRecordRoomOpen]=useState(false);
   const [selectedNpcId,setSelectedNpcId]=useState<string>();
   const [recordDays,setRecordDays]=useState<0|1|7|30>(0);
-  const profitLabel = profitPeriodDays >= 7 ? "7일 손익" : profitPeriodDays <= 1 ? "오늘 손익" : `최근 ${profitPeriodDays}일 손익`;
+  const profitLabel = profitPeriodDays >= 7 ? "7일 손익" : profitPeriodDays <= 1 ? "최근 손익" : `최근 ${profitPeriodDays}일 손익`;
   const leaderboard = casinoLeaderboard(TEMEROSA_NPC_GAMBLING_PROFILES, npcBalances, userBalance, leaderboardMode === "profit" ? npcSevenDayProfits : undefined, userSevenDayProfit);
   const names = new Map(TEMEROSA_NPC_GAMBLING_PROFILES.map((profile) => [profile.id, profile.name]));
   const fullLeaderboard=casinoFullLeaderboard(TEMEROSA_NPC_GAMBLING_PROFILES,npcBalances,userBalance,leaderboardMode==="profit"?npcSevenDayProfits:undefined,userSevenDayProfit);
@@ -210,7 +211,7 @@ function CasinoRecordRoom({leaderboard,leaderboardMode,profitLabel,selectedNpcId
         <LedgerTrend values={report.dailyNet}/>
         <section className="npc-table-breakdown"><h3>게임별 손익</h3><div>{report.byTable.map((item)=><button key={item.tableId} aria-pressed={tableFilter===item.tableId} onClick={()=>setTableFilter((current)=>current===item.tableId?"all":item.tableId)}><span>{tableName(item.tableId)}</span><small>{item.settlements}건 · 노출 {item.exposure.toLocaleString("ko-KR")} P</small><strong className={item.net>0?"is-gain":item.net<0?"is-loss":""}>{signedPoints(item.net)}</strong></button>)}</div></section>
         {report.opponents.length>0&&<section className="npc-opponent-summary"><h3>자주 만난 상대</h3><div>{report.opponents.slice(0,5).map((item)=><article key={item.npcId}><span>{names.get(item.npcId)??item.npcId}</span><small>{item.matches}대국</small><strong className={item.net>0?"is-gain":item.net<0?"is-loss":""}>{signedPoints(item.net)}</strong></article>)}</div></section>}
-        <section className="npc-receipts"><div className="ledger-heading"><span>전체 정산 기록</span><small>{tableFilter==="all"?"모든 게임":tableName(tableFilter)}</small></div><ol>{filtered.slice(0,visible).map((entry)=><li key={entry.roundId}><div><strong>{tableName(entry.tableId)} · {settlementLabel(entry,names)}</strong><small>{utcLabel(entry.utcSecond)}{entry.participantIds.length>1?` · 상대 ${entry.participantIds.filter((id)=>id!==entry.npcId).map((id)=>names.get(id)??id).join(", ")}`:""}</small></div><span><small>{entry.stake===0?"무료":`${entry.stake} P ×${entry.reservedAmount/entry.stake}`}</small><strong className={entry.delta>0?"is-gain":entry.delta<0?"is-loss":""}>{signedPoints(entry.delta)}</strong></span></li>)}</ol>{filtered.length>visible&&<button className="record-more" onClick={()=>setVisible((value)=>value+50)}>50건 더 보기</button>}</section>
+        <section className="npc-receipts"><div className="ledger-heading"><span>전체 정산 기록</span><small>{tableFilter==="all"?"모든 게임":tableName(tableFilter)}</small></div><ol>{filtered.slice(0,visible).map((entry)=><li key={entry.roundId}><div><strong>{tableName(entry.tableId)} · {settlementLabel(entry,names)}</strong><small>{formatCasinoKstTimestamp(entry.utcSecond)}{entry.participantIds.length>1?` · 상대 ${entry.participantIds.filter((id)=>id!==entry.npcId).map((id)=>names.get(id)??id).join(", ")}`:""}</small></div><span><small>{entry.stake===0?"무료":`${entry.stake} P ×${entry.reservedAmount/entry.stake}`}</small><strong className={entry.delta>0?"is-gain":entry.delta<0?"is-loss":""}>{signedPoints(entry.delta)}</strong></span></li>)}</ol>{filtered.length>visible&&<button className="record-more" onClick={()=>setVisible((value)=>value+50)}>50건 더 보기</button>}</section>
       </div>}
     </section>
   </div>;
@@ -224,7 +225,6 @@ function LedgerTrend({values}:{values:readonly Readonly<{utcDay:number;net:numbe
   return <section className="ledger-trend" aria-label={`기간 누적 손익 ${signedPoints(cursor)}`}><div><span>잔고 흐름</span><strong className={cursor>0?"is-gain":cursor<0?"is-loss":""}>{signedPoints(cursor)}</strong></div><svg viewBox="0 0 100 50" preserveAspectRatio="none" role="img"><polyline points={coordinates}/></svg></section>;
 }
 
-function utcLabel(utcSecond:number):string{return new Intl.DateTimeFormat("ko-KR",{timeZone:"UTC",month:"numeric",day:"numeric",hour:"2-digit",minute:"2-digit",hour12:false}).format(new Date(utcSecond*1_000))+" UTC";}
 
 /** The leader alone gets real foil. It is the only holo layer on this screen. */
 function LedgerPortrait({ name, src, crowned }: { name: string; src: string | undefined; crowned: boolean }): React.ReactElement {
