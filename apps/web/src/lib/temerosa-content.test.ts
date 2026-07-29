@@ -13,5 +13,6 @@ describe("Temerosa manifest memoization", () => {
     const [first, second] = await Promise.all([loadTemerosaCasinoManifest(), loadTemerosaCasinoManifest()]);
     expect(first).toBe(second);
     expect(fetcher).toHaveBeenCalledTimes(1);
+    expect(fetcher).toHaveBeenCalledWith("/content/temerosa-margin/0.8.0/manifest.json", { cache: "no-store" });
   });
 });

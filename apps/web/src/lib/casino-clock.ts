@@ -1,5 +1,7 @@
 import type { CasinoPresentationClock } from "@lucky-arcade/casino-ledger";
 
+const CLOCK_FLOOR_KEY = "npc-ledger/0.8:clock-floor-second";
+
 export interface CasinoClockSample {
   serverEpochMs: number;
   sampledAtPerformanceMs: number;
@@ -51,4 +53,54 @@ export function casinoClockFromSample(
     utcMinute: () => Math.floor(epochMs() / 60_000),
     utcSecond: () => Math.floor(epochMs() / 1_000),
   });
+}
+
+/**
+ * Browser HTTP caches can replay an old Date header without an Age header.
+ * Keep the clock monotonic across a reload even when that happens. The floor is
+ * presentation state only; the fresh HTTP sample remains the authoritative
+ * source whenever it is ahead.
+ */
+export function stabilizeCasinoClockSample(
+  sample: CasinoClockSample,
+  storage: ClockFloorStorage | undefined = browserSessionStorage(),
+  performanceNow = performance.now(),
+): CasinoClockSample {
+  const sampledEpochMs = sample.serverEpochMs + performanceNow - sample.sampledAtPerformanceMs;
+  const floorSecond = readClockFloor(storage);
+  if (floorSecond === undefined || sampledEpochMs >= floorSecond * 1_000) {
+    return sample;
+  }
+  return Object.freeze({
+    ...sample,
+    serverEpochMs: floorSecond * 1_000,
+    sampledAtPerformanceMs: performanceNow,
+  });
+}
+
+export function rememberCasinoClockSecond(
+  utcSecond: number,
+  storage: ClockFloorStorage | undefined = browserSessionStorage(),
+): void {
+  if (!storage || !Number.isSafeInteger(utcSecond) || utcSecond < 0) return;
+  const previous = readClockFloor(storage);
+  if (previous !== undefined && previous >= utcSecond) return;
+  try { storage.setItem(CLOCK_FLOOR_KEY, String(utcSecond)); } catch { /* optional monotonic guard */ }
+}
+
+interface ClockFloorStorage {
+  getItem(key: string): string | null;
+  setItem(key: string, value: string): void;
+}
+
+function readClockFloor(storage: ClockFloorStorage | undefined): number | undefined {
+  if (!storage) return undefined;
+  try {
+    const value = Number(storage.getItem(CLOCK_FLOOR_KEY));
+    return Number.isSafeInteger(value) && value >= 0 ? value : undefined;
+  } catch { return undefined; }
+}
+
+function browserSessionStorage(): ClockFloorStorage | undefined {
+  try { return typeof window === "undefined" ? undefined : window.sessionStorage; } catch { return undefined; }
 }

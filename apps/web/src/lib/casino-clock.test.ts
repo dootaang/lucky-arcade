@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { casinoClockFromSample, casinoClockSampleFromResponse } from "./casino-clock.ts";
+import { casinoClockFromSample, casinoClockSampleFromResponse, rememberCasinoClockSecond, stabilizeCasinoClockSample } from "./casino-clock.ts";
 
 describe("casino clock", () => {
   it("uses Date without requiring Age and aligns different device clocks", () => {
@@ -16,4 +16,26 @@ describe("casino clock", () => {
     const fallback = casinoClockSampleFromResponse(new Response("{}"), 0, 20, 123_456);
     expect(fallback).toMatchObject({ source: "device", serverEpochMs: 123_456 });
   });
+
+  it("never rewinds across a reload when a browser cache replays an old Date", () => {
+    const storage = memoryStorage();
+    rememberCasinoClockSecond(1_000, storage);
+    const stale = Object.freeze({ serverEpochMs: 900_000, sampledAtPerformanceMs: 20, uncertaintyMs: 1_000, source: "http-date" as const });
+    const stabilized = stabilizeCasinoClockSample(stale, storage, 40);
+    expect(casinoClockFromSample(stabilized, () => 40).utcSecond()).toBe(1_000);
+    rememberCasinoClockSecond(999, storage);
+    expect(stabilizeCasinoClockSample(stale, storage, 40).serverEpochMs).toBe(1_000_000);
+  });
+
+  it("keeps a fresh HTTP sample when it is ahead of the saved floor", () => {
+    const storage = memoryStorage();
+    rememberCasinoClockSecond(1_000, storage);
+    const fresh = Object.freeze({ serverEpochMs: 1_100_000, sampledAtPerformanceMs: 20, uncertaintyMs: 1_000, source: "http-date" as const });
+    expect(stabilizeCasinoClockSample(fresh, storage, 40)).toBe(fresh);
+  });
 });
+
+function memoryStorage(): { getItem(key: string): string | null; setItem(key: string, value: string): void } {
+  const values = new Map<string, string>();
+  return { getItem: (key) => values.get(key) ?? null, setItem: (key, value) => { values.set(key, value); } };
+}

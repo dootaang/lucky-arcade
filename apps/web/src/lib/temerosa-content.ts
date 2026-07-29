@@ -119,7 +119,7 @@ function fetchManifest(version: string): Promise<TemerosaManifestLoad> {
   const existing = manifestPromises.get(version);
   if (existing) return existing;
   const started = performance.now();
-  const promise = fetch(`/content/temerosa-margin/${version}/manifest.json`).then(async (response) => {
+  const promise = fetch(`/content/temerosa-margin/${version}/manifest.json`, version === "0.8.0" ? { cache: "no-store" } : undefined).then(async (response) => {
     const received = performance.now();
     const clockSample = casinoClockSampleFromResponse(response, started, received);
     if (!response.ok) throw new Error(`temerosa_manifest_missing:${version}`);

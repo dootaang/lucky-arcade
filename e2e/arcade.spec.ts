@@ -118,6 +118,30 @@ test("loads the living ledger lazily and reuses the casino manifest in a game", 
   expect(casinoManifestRequests).toBe(1);
 });
 
+test("does not rewind the casino ledger when a reload receives a stale cached Date", async ({ page }) => {
+  let manifestRequests = 0;
+  const firstResponseEpoch = Date.now();
+  await page.route("**/content/temerosa-margin/0.8.0/manifest.json", async (route) => {
+    manifestRequests += 1;
+    const response = await route.fetch();
+    const responseEpoch = manifestRequests === 1 ? firstResponseEpoch : firstResponseEpoch - 15 * 60_000;
+    await route.fulfill({
+      response,
+      headers: { ...response.headers(), date: new Date(responseEpoch).toUTCString(), age: "0", "cache-control": "max-age=3600" },
+    });
+  });
+  await page.goto("/venues/temerosa-casino");
+  const panel = page.locator(".casino-ledger-panel");
+  await expect(panel).toBeVisible();
+  await page.waitForTimeout(1_100);
+  const beforeReload = Number(await panel.getAttribute("data-ledger-utc-second"));
+  await page.reload();
+  await expect(panel).toBeVisible();
+  const afterReload = Number(await panel.getAttribute("data-ledger-utc-second"));
+  expect(afterReload).toBeGreaterThanOrEqual(beforeReload);
+  expect(manifestRequests).toBe(2);
+});
+
 test("keeps the Venue title and entry action when its hero image fails", async ({ page }) => {
   await page.route("**/temerosa-casino-venue/0.1.0/**/*.webp", (route) => route.abort());
   await page.goto("/");

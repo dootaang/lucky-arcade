@@ -128,7 +128,7 @@ export default function CasinoLedgerPanel({
     <span className="ca-label"><i className={inviteCount > 0 ? "ca-live" : "ca-idle"} aria-hidden="true" /> 지금 초대 가능 {inviteCount}명</span>
     <span className="ca-label">테이블 착석 {seatedCount}명</span>
   </div>
-  <section className="casino-ledger-panel" aria-label="카지노 활동 원장">
+  <section className="casino-ledger-panel" aria-label="카지노 활동 원장" data-ledger-utc-second={currentUtcSecond}>
     <div className="casino-ledger-board">
       <span className="ca-brackets" aria-hidden="true" />
       <table>

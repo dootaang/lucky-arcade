@@ -9,7 +9,7 @@ import {
 } from "@lucky-arcade/casino-ledger";
 import CasinoLedgerPanel, { type CasinoLiveTable } from "@lucky-arcade/casino-ledger/react";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { casinoClockFromSample, deviceCasinoClockSample, type CasinoClockSample } from "../../lib/casino-clock.ts";
+import { casinoClockFromSample, deviceCasinoClockSample, rememberCasinoClockSecond, stabilizeCasinoClockSample, type CasinoClockSample } from "../../lib/casino-clock.ts";
 import { npcBalancesAtWithCheckpoint, npcRollingProfitPeriodAtWithCheckpoint } from "../../lib/casino-ledger-cache.ts";
 import { readPlayerCasinoProfitSince } from "../../lib/database.ts";
 import { loadTemerosaCasinoManifest, temerosaContentUrl, type TemerosaManifest } from "../../lib/temerosa-content.ts";
@@ -37,7 +37,7 @@ export default function CasinoLedgerView({ userBalance, tables, onPlay }: { user
     return () => { alive = false; };
   }, []);
 
-  const clock = useMemo(() => loaded ? casinoClockFromSample(loaded.sample) : undefined, [loaded]);
+  const clock = useMemo(() => loaded ? casinoClockFromSample(stabilizeCasinoClockSample(loaded.sample)) : undefined, [loaded]);
   const absoluteUtcDay = clock ? Math.floor(clock.utcMinute() / 1_440) : undefined;
   const earliestProfitDay = TEMEROSA_NPC_LEDGER_CONTRACT.profitHistory[0]?.utcDay ?? TEMEROSA_NPC_LEDGER_CONTRACT.epochUtcDay;
   const profitStartUtcDay = absoluteUtcDay === undefined ? undefined : Math.max(earliestProfitDay, absoluteUtcDay - 6);
@@ -51,9 +51,14 @@ export default function CasinoLedgerView({ userBalance, tables, onPlay }: { user
   useEffect(() => {
     if (!clock) return;
     let previousSecond = clock.utcSecond();
+    rememberCasinoClockSecond(previousSecond);
     const refresh = () => {
       const nextSecond = clock.utcSecond();
-      if (nextSecond !== previousSecond) { previousSecond = nextSecond; setRevision((value) => value + 1); }
+      if (nextSecond !== previousSecond) {
+        previousSecond = nextSecond;
+        rememberCasinoClockSecond(nextSecond);
+        setRevision((value) => value + 1);
+      }
     };
     const interval = window.setInterval(refresh, 1_000);
     const visible = () => { if (document.visibilityState === "visible") refresh(); };
