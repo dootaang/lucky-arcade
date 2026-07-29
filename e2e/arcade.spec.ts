@@ -42,6 +42,12 @@ test("mobile navigation and Venue floor remain reachable", async ({ page }, test
   await expect(page.getByRole("button", { name: "카지노", exact: true })).toBeVisible();
   await page.getByRole("button", { name: "카지노", exact: true }).click();
   await expect(page.getByRole("heading", { name: "테이블을 골라주세요" })).toBeVisible();
+  await expect(page.getByText("LIVE PLAY TAPE", { exact: true })).toBeVisible();
+  const tapePanel = await page.locator(".casino-ledger-activity").boundingBox();
+  const pnlHeader = await page.locator(".ledger-tape-columns span").last().boundingBox();
+  const pnlValue = await page.locator(".ledger-motion .ledger-activity-line strong").first().boundingBox();
+  expect((pnlHeader?.x ?? 0) + (pnlHeader?.width ?? 0)).toBeLessThanOrEqual((tapePanel?.x ?? 0) + (tapePanel?.width ?? 0) + 1);
+  expect((pnlValue?.x ?? 0) + (pnlValue?.width ?? 0)).toBeLessThanOrEqual((tapePanel?.x ?? 0) + (tapePanel?.width ?? 0) + 1);
   const firstTable = page.locator(".table-card.playable").filter({ hasText: "도둑잡기" }).getByRole("button", { name: "시작", exact: true });
   await firstTable.scrollIntoViewIfNeeded();
   await expect(firstTable).toBeInViewport();

@@ -273,18 +273,19 @@
   .venue-active .live-table-card.playable button{grid-column:3;grid-row:1/4}
 }
 
-/* A grouped tape settlement keeps both sides readable in its narrow P&L column. */
+/* The P&L column owns one NPC value. The action column yields space first. */
 .ledger-tape-columns,.ledger-activity-line{
   grid-template-columns:minmax(70px,.8fr) 42px minmax(145px,1.5fr) minmax(86px,auto);
 }
-.ledger-activity-line strong{display:flex;justify-content:flex-end;gap:5px}
-.ledger-activity-line strong i{font-style:normal;white-space:nowrap}
-.ledger-activity-line strong i.is-gain{color:var(--ca-rising)}
-.ledger-activity-line strong i.is-loss{color:var(--ca-falling)}
-.ledger-activity-line strong i.is-flat{color:var(--ca-gold)}
-.ledger-activity-line.is-tone-reward strong i{color:var(--ca-gold-bright)}
+.ledger-activity-line strong{display:block;white-space:nowrap}
 @media(max-width:760px){
-  .ledger-tape-columns,.ledger-activity-line{grid-template-columns:minmax(62px,.7fr) minmax(130px,1.5fr) minmax(78px,auto)}
+  .ledger-tape-columns,.ledger-activity-line{
+    grid-template-columns:minmax(54px,.7fr) minmax(0,1.5fr) minmax(72px,max-content);
+    gap:4px;
+  }
+  .ledger-tape-columns{padding-right:6px;padding-left:6px}
+  .ledger-activity-line{padding-right:6px;padding-left:6px}
+  .ledger-tape-columns span:last-child,.ledger-activity-line strong{min-width:0;white-space:nowrap}
 }
 
 /* v0.4 separates short-term performance from inherited opening bankroll. */
