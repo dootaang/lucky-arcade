@@ -27,7 +27,7 @@ function collect(path) {
   const map = new Map();
   let characterId = null;
   for (const line of readFileSync(path, "utf8").split(/\r?\n/)) {
-    const heading = /^###\s+(.+?)\s+\(`([^`]+)`\)\s*$/.exec(line);
+    const heading = /^\uFEFF?###\s+(.+?)\s+\(`([^`]+)`\)\s*$/.exec(line);
     if (heading) {
       characterId = heading[2];
       continue;

@@ -5,10 +5,10 @@ import {
   ActionHalo, CardFan, CardFanItem, CardFlightLayer, DeckShoe, HandReveal, MuckPile, PotStack, StageFlourish,
   stageAnchor, useReducedMotion, usePresentationQueue, type StageFlight,
 } from "@lucky-arcade/ui/card-stage";
-import { useEffect, useMemo, useState, type CSSProperties, type ReactElement, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState, type CSSProperties, type ReactElement, type ReactNode } from "react";
 import {
   FIVE_CARD_DRAW_MAX_EXPOSURE_UNITS, FIVE_CARD_DRAW_STAKES, analyzeFiveCardDrawGuide, betActionGuide, exchangeCountGuide,
-  fiveCardDrawNpcTells, legalPlayerBetActions, type FiveCardDrawAction, type FiveCardDrawBetAction, type FiveCardDrawOpponent,
+  fiveCardDrawNpcTells, legalPlayerBetActions, selectFiveCardDrawSpeeches, type FiveCardDrawAction, type FiveCardDrawBetAction, type FiveCardDrawLine, type FiveCardDrawOpponent,
   type FiveCardDrawTell,
   type FiveCardDrawNpcSeatId, type FiveCardDrawSeatId, type FiveCardDrawStake, type FiveCardDrawState,
 } from "../index.ts";
@@ -27,8 +27,9 @@ export interface FiveCardDrawOpponentView extends FiveCardDrawOpponent {
 }
 export interface FiveCardDrawScreenProps {
   state:FiveCardDrawState;opponents:readonly FiveCardDrawOpponentView[];atlas:CourtAtlas;balance:number;busy:boolean;error:string;
+  lines?:readonly FiveCardDrawLine[];
   beginner:boolean;onBeginner(value:boolean):void;onStart(opponents:readonly FiveCardDrawOpponentView[],stake:FiveCardDrawStake):void;
-  onAction(action:FiveCardDrawAction):void;onReset():void;onResetWallet():void;onExit():void;
+  onAction(action:FiveCardDrawAction):void;onReset():void;onResetWallet():void;onInteractionPause?(paused:boolean):void;onExit():void;
 }
 
 export function FiveCardDrawScreen(props:FiveCardDrawScreenProps):ReactElement {
@@ -37,6 +38,11 @@ export function FiveCardDrawScreen(props:FiveCardDrawScreenProps):ReactElement {
   const [stake,setStake]=useState<FiveCardDrawStake>(10);
   const [selectedCards,setSelectedCards]=useState<Set<string>>(()=>new Set());
   const [shownBalance,setShownBalance]=useState(props.balance);
+  const [inspectedSeat,setInspectedSeat]=useState<FiveCardDrawSeatId|null>(null);
+  const [speeches,setSpeeches]=useState<Partial<Record<FiveCardDrawNpcSeatId,FiveCardDrawLine>>>({});
+  const previousSpeechState=useRef(props.state);
+  const recentLineIds=useRef<string[]>([]);
+  const speechTimers=useRef<number[]>([]);
   const reducedMotion=useReducedMotion();
   const queue=usePresentationQueue(props.state,planFiveCardDrawStage,reducedMotion?0:1);
   const state=queue.display,event=queue.event;
@@ -57,12 +63,39 @@ export function FiveCardDrawScreen(props:FiveCardDrawScreenProps):ReactElement {
 
   useEffect(()=>{setSelectedCards(new Set());},[state.phase,state.currentActorId]);
   useEffect(()=>{if(settled)setShownBalance(props.balance);},[props.balance,settled]);
+  useEffect(()=>{
+    const previous=previousSpeechState.current;
+    previousSpeechState.current=props.state;
+    if(previous===props.state)return;
+    const selected=selectFiveCardDrawSpeeches(previous,props.state,props.lines??[],recentLineIds.current);
+    // 결과 대사는 쇼다운 카드 공개보다 먼저 승패를 누설하면 안 된다.
+    const outcomeDelay=selected.some((speech)=>speech.line.event.startsWith("showdown-"))
+      ?620+props.state.activeSeatIds.length*240:0;
+    for(const [index,speech] of selected.entries()){
+      const show=window.setTimeout(()=>{
+        setSpeeches((current)=>({...current,[speech.seatId]:speech.line}));
+        recentLineIds.current=[...recentLineIds.current.slice(-11),speech.line.id];
+      },outcomeDelay+index*400);
+      const hide=window.setTimeout(()=>setSpeeches((current)=>{const next={...current};delete next[speech.seatId];return next;}),outcomeDelay+index*400+(speech.line.text.length>1?3_400:2_400));
+      speechTimers.current.push(show,hide);
+    }
+  },[props.state,props.lines]);
+  useEffect(()=>()=>{for(const timer of speechTimers.current)window.clearTimeout(timer);props.onInteractionPause?.(false);},[]);
+  useEffect(()=>{
+    if(inspectedSeat===null)return;
+    props.onInteractionPause?.(true);
+    const previous=document.body.style.overflow;
+    document.body.style.overflow="hidden";
+    const onKey=(event:KeyboardEvent)=>{if(event.key==="Escape")setInspectedSeat(null);};
+    window.addEventListener("keydown",onKey);
+    return ()=>{window.removeEventListener("keydown",onKey);document.body.style.overflow=previous;props.onInteractionPause?.(false);};
+  },[inspectedSeat,props.onInteractionPause]);
 
   function changeCount(value:2|3|4):void {setPlayerCount(value);setSelectedIds((current)=>fillUnique(current,value-1,props.opponents));}
   function selectAt(index:number,id:string):void {setSelectedIds((current)=>{const next=[...current];next[index]=id;return fillUnique(next,playerCount-1,props.opponents);});}
   function randomize():void {const random=new Uint32Array(1);crypto.getRandomValues(random);const start=random[0]!%props.opponents.length;setSelectedIds(Array.from({length:playerCount-1},(_,index)=>props.opponents[(start+index*7)%props.opponents.length]!.id));}
   function toggle(card:string):void {if(!canSelectCards())return;setSelectedCards((current)=>{const next=new Set(current);if(next.has(card))next.delete(card);else if(next.size<3)next.add(card);return next;});}
-  function exchange():void {props.onAction({type:"exchange",cardIds:[...selectedCards] as StandardCardId[]});setSelectedCards(new Set());}
+  function exchange():void {props.onAction({type:"exchange",cardIds:[...selectedCards] as StandardCardId[]});setSelectedCards(new Set());setInspectedSeat(null);}
   function canSelectCards():boolean {return settled&&props.state.phase==="drawing"&&props.state.currentActorId==="player";}
 
   if(props.state.phase==="ready")return <main className="draw-poker-shell draw-poker-lobby">
@@ -81,7 +114,7 @@ export function FiveCardDrawScreen(props:FiveCardDrawScreenProps):ReactElement {
   const slots=SEAT_SLOTS[state.context.opponents.length]??["top"];
   return <main className="draw-poker-shell">
     <header><button className="draw-icon-button" onClick={props.onExit} aria-label="카지노로 돌아가기"><IconArrowLeft/></button><div><span className="draw-eyebrow">ADMIN PREVIEW</span><h1>파이브 카드 드로 포커</h1></div><strong>{shownBalance.toLocaleString("ko-KR")} 시험 P</strong></header>
-    <section className={`draw-table count-${state.context.opponents.length}`} data-stage-root data-phase={state.phase} data-busy={queue.busy||undefined} onPointerDown={queue.busy?queue.skip:undefined}>
+    <section className={`draw-table count-${state.context.opponents.length}`} data-stage-root data-phase={state.phase} data-busy={queue.busy||undefined}>
       <div className="draw-opponents">{state.context.opponents.map((opponent,index)=>{
         const seatId=`npc-${index+1}` as FiveCardDrawNpcSeatId,view=props.opponents.find((item)=>item.id===opponent.id);
         const folded=state.foldedSeatIds.includes(seatId),open=revealed.has(seatId);
@@ -92,12 +125,15 @@ export function FiveCardDrawScreen(props:FiveCardDrawScreenProps):ReactElement {
         return <article className={`draw-seat draw-seat-${slots[index]??"top"}${state.currentActorId===seatId?" is-active":""}${folded?" is-folded":""}${verdictVisible&&state.result?.winnerSeatIds.includes(seatId)?" is-winner":""}${event?.kind==="check"&&event.seatId===seatId?" is-checking":""}`} key={seatId} data-tell={tell} {...stageAnchor(`seat:${seatId}`)}>
           <ActionHalo active={state.currentActorId===seatId&&!folded}/>
           <div className="draw-seat-title">{portrait?<img src={portrait} alt=""/>:<span>{opponent.name.slice(0,1)}</span>}<div><strong>{opponent.name}</strong><small>{seatStatus(state,seatId,event,verdictVisible,revealed.has(seatId))}</small></div><i className={`draw-tell draw-tell-${tell}`}>{tellLabel(tell)}</i></div>
+          {speeches[seatId]&&<SpeechBubble line={speeches[seatId]!}/>}
+          <button className="draw-hand-inspect" type="button" disabled={folded||!settled} onClick={()=>setInspectedSeat(seatId)} aria-label={`${opponent.name}의 패 크게 보기`}>
           <CardFan className={`draw-cards compact${event?.kind==="fold"&&event.seatId===seatId?" is-mucking":""}${event?.kind==="stand-pat"&&event.seatId===seatId?" is-standing-pat":""}`} count={5} anchor={`hand:${seatId}`}>
             {/* 폴드한 패는 muck으로 던져진 뒤 좌석에서 사라진다. 끝까지 공개하지 않는다. */}
             {folded?null:state.hands[seatId].map((card,cardIndex)=><CardFanItem key={`${seatId}-${cardIndex}`} index={cardIndex} count={5} className={cardClassName(card,open,highlight,arrivals,event)} {...arrivalStyle(card,arrivals)}>
               {open?<StandardPlayingCard id={card} atlas={props.atlas}/>:<PlayingCardBack/>}
             </CardFanItem>)}
           </CardFan>
+          </button>
           {open&&value&&<HandReveal tier={handTier(value)} label={value.label}/>}
           {props.beginner&&!folded&&state.phase!=="complete"&&state.exchangeCounts[seatId]!==undefined&&<p className="draw-opponent-hint">{exchangeCountGuide(state.exchangeCounts[seatId]!)}</p>}
         </article>;
@@ -117,13 +153,14 @@ export function FiveCardDrawScreen(props:FiveCardDrawScreenProps):ReactElement {
         <CardFan className={`draw-cards${event?.kind==="fold"&&event.seatId==="player"?" is-mucking":""}${event?.kind==="stand-pat"&&event.seatId==="player"?" is-standing-pat":""}`} count={5} anchor="hand:player">
           {(state.foldedSeatIds.includes("player")?[]:state.hands.player).map((card,cardIndex)=>{
             return <CardFanItem key={card} index={cardIndex} count={5} className={cardClassName(card,false,playerHighlight,arrivals,event)} {...arrivalStyle(card,arrivals)}>
-              <button disabled={!canSelectCards()} aria-pressed={selectedCards.has(card)} aria-label={`${standardCardLabel(card)}, ${cardIndex+1}번째 카드${selectedCards.has(card)?", 교환 선택됨":""}`} className={`draw-hand-card${canSelectCards()?" is-selectable":""}${props.beginner&&canSelectCards()&&guide?.discardCardIds.includes(card)?" is-recommended":""}`} onClick={()=>toggle(card)}>
+              <button aria-disabled={!settled} aria-pressed={selectedCards.has(card)} aria-label={`${standardCardLabel(card)}, ${cardIndex+1}번째 카드${selectedCards.has(card)?", 교환 선택됨":""}`} className={`draw-hand-card${canSelectCards()?" is-selectable":""}${props.beginner&&canSelectCards()&&guide?.discardCardIds.includes(card)?" is-recommended":""}`} onClick={()=>canSelectCards()?toggle(card):settled&&setInspectedSeat("player")}>
                 <StandardPlayingCard id={card} atlas={props.atlas} decorative/>
                 {selectedCards.has(card)&&<span>교환</span>}
               </button>
             </CardFanItem>;
           })}
         </CardFan>
+        {!state.foldedSeatIds.includes("player")&&settled&&<button className="draw-inspect-button" type="button" onClick={()=>setInspectedSeat("player")}>패 크게 보기</button>}
         {state.phase==="complete"&&revealed.has("player")&&state.result?.values.player&&<HandReveal tier={handTier(state.result.values.player)} label={state.result.values.player.label}/>}
       </article>
 
@@ -141,6 +178,7 @@ export function FiveCardDrawScreen(props:FiveCardDrawScreenProps):ReactElement {
       {event?.kind==="verdict"&&<StageFlourish tier={event.tier}/>}
       <CardFlightLayer flights={flights}/>
     </section>
+    {inspectedSeat&&<HandInspector seatId={inspectedSeat} state={state} opponents={props.opponents} atlas={props.atlas} revealed={revealed.has(inspectedSeat)} selectedCards={selectedCards} canSelect={inspectedSeat==="player"&&canSelectCards()} onToggle={toggle} onExchange={exchange} onClose={()=>setInspectedSeat(null)}/>}
   </main>;
 }
 
@@ -240,7 +278,22 @@ function standardCardLabel(card:StandardCardId):string {
   return `${suitName} ${rank.toUpperCase()}`;
 }
 
-function tellLabel(tell:FiveCardDrawTell):string{return tell==="confident"?"여유":tell==="uneasy"?"긴장":"무표정";}
+function tellLabel(tell:FiveCardDrawTell):string{return tell==="confident"?"만족":tell==="uneasy"?"긴장":"여유로움";}
+
+function SpeechBubble({line}:{line:FiveCardDrawLine}):ReactElement{return <div className="draw-speech" aria-hidden="true">{line.text.map((beat,index)=><span key={index}>{beat}</span>)}</div>;}
+
+function HandInspector(props:{seatId:FiveCardDrawSeatId;state:FiveCardDrawState;opponents:readonly FiveCardDrawOpponentView[];atlas:CourtAtlas;revealed:boolean;selectedCards:Set<string>;canSelect:boolean;onToggle(card:string):void;onExchange():void;onClose():void;}):ReactElement {
+  const folded=props.state.foldedSeatIds.includes(props.seatId);
+  const name=props.seatId==="player"?"내 패":`${props.opponents.find((opponent)=>opponent.id===props.state.context.opponents[Number(props.seatId.slice(-1))-1]?.id)?.name??"상대"}의 패`;
+  const showFaces=props.seatId==="player"||props.revealed;
+  return <div className="draw-hand-modal" role="dialog" aria-modal="true" aria-label={`${name} 크게 보기`} onPointerDown={(event)=>{if(event.target===event.currentTarget)props.onClose();}}>
+    <section><header><div><span className="draw-eyebrow">HAND VIEW</span><h2>{name}</h2></div><button className="draw-icon-button" type="button" onClick={props.onClose} aria-label="닫기">×</button></header>
+      {folded?<p className="draw-hidden-hand">폴드한 패는 공개되지 않습니다.</p>:<div className="draw-modal-cards">{props.state.hands[props.seatId].map((card,index)=>props.canSelect?<button key={card} className="draw-modal-card" aria-pressed={props.selectedCards.has(card)} onClick={()=>props.onToggle(card)} aria-label={`${standardCardLabel(card)}, ${index+1}번째 카드`}><StandardPlayingCard id={card} atlas={props.atlas} decorative/><span>{props.selectedCards.has(card)?"교환":"유지"}</span></button>:<div key={`${props.seatId}-${index}`} className="draw-modal-card">{showFaces?<StandardPlayingCard id={card} atlas={props.atlas}/>:<PlayingCardBack/>}</div>)}</div>}
+      {!showFaces&&<p className="draw-hidden-hand">쇼다운 전에는 상대의 카드 뒷면만 볼 수 있습니다.</p>}
+      {props.canSelect&&<div className="draw-modal-actions"><small>최대 3장까지 고르세요.</small><button className="draw-primary" onClick={props.onExchange}>{props.selectedCards.size===0?"그대로 승부":`${props.selectedCards.size}장 교환`}</button></div>}
+    </section>
+  </div>;
+}
 function fillUnique(current:readonly string[],count:number,opponents:readonly FiveCardDrawOpponentView[]):string[]{const output=[...new Set(current.filter((id)=>opponents.some((opponent)=>opponent.id===id)))].slice(0,count);for(const opponent of opponents){if(output.length>=count)break;if(!output.includes(opponent.id))output.push(opponent.id);}return output;}
 function actionLabel(action:FiveCardDrawBetAction,state:FiveCardDrawState):string {const cost=actionCost(action,state);return action==="check"?"체크":action==="fold"?"폴드":`${action==="call"?"콜":action==="raise"&&state.currentBetUnits===2?"맞레이즈":action==="raise"?"레이즈":"베팅"} ${cost} P`;}
 function actionCost(action:FiveCardDrawBetAction,state:FiveCardDrawState):number {if(!state.baseStake)return 0;const own=state.streetContributionsUnits.player;const target=action==="bet"?1:action==="raise"?state.currentBetUnits+1:action==="call"?state.currentBetUnits:own;return Math.max(0,target-own)*state.baseStake;}

@@ -56,7 +56,8 @@ export function fiveCardDrawNpcTells(state:FiveCardDrawState):FiveCardDrawPublic
   const phase=state.phase==="closing-bet"||state.phase==="complete"?"closing-bet":"opening-bet";
   return Object.fromEntries(state.context.opponents.map((opponent,index)=>{
     const seatId=`npc-${index+1}` as FiveCardDrawNpcSeatId;
-    if(!state.activeSeatIds.includes(seatId))return [seatId,"neutral"];
+    if(state.phase==="complete"&&state.result)return [seatId,state.result.winnerSeatIds.includes(seatId)?"confident":"uneasy"];
+    if(!state.activeSeatIds.includes(seatId))return [seatId,"uneasy"];
     return [seatId,selectPokerTell(state.hands[seatId],phase,opponent.persona,`${state.seed}:tell:${phase}:${state.currentBetUnits}:${seatId}`)];
   }));
 }

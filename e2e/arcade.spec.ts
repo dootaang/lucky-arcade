@@ -431,6 +431,15 @@ test("mobile five-card draw keeps four seats, the pot, and the player hand insid
   await expect(page.locator(".draw-opponents .draw-seat")).toHaveCount(3);
   await expect(page.locator(".draw-center")).toBeVisible();
   await expect(page.locator(".draw-player .draw-hand-card")).toHaveCount(5);
+  const inspectHand = page.getByRole("button", { name: "패 크게 보기", exact: true });
+  await expect(inspectHand).toBeVisible({ timeout: 4_000 });
+  await inspectHand.click();
+  await expect(page.getByRole("dialog", { name: "내 패 크게 보기" })).toBeVisible();
+  await expect(page.locator(".draw-modal-card")).toHaveCount(5);
+  expect(await page.evaluate(() => document.body.style.overflow)).toBe("hidden");
+  await page.getByRole("button", { name: "닫기" }).click();
+  await expect(page.getByRole("dialog", { name: "내 패 크게 보기" })).toHaveCount(0);
+  expect(await page.evaluate(() => document.body.style.overflow)).toBe("");
   const layout = await page.locator(".draw-table").evaluate((table) => {
     const box = table.getBoundingClientRect();
     return { left: box.left, right: box.right, viewport: window.innerWidth, scrollWidth: document.documentElement.scrollWidth };

@@ -11,10 +11,12 @@ import {
   type FiveCardDrawState,
 } from "@lucky-arcade/five-card-draw";
 import { FiveCardDrawScreen, type FiveCardDrawOpponentView } from "@lucky-arcade/five-card-draw/react";
+import { XorShift32 } from "@lucky-arcade/engine";
 import { useEffect, useRef, useState } from "react";
 import { loadPlayingCardAtlas } from "../../lib/playing-card-atlas.ts";
 import { loadTemerosaCasinoAssets } from "../../lib/temerosa-content.ts";
 import { createTemerosaFiveCardDrawOpponents } from "./temerosa-five-card-draw-opponents.ts";
+import { TEMEROSA_FIVE_CARD_DRAW_LINES } from "./temerosa-five-card-draw-lines.ts";
 
 const STORAGE_KEY = `${FIVE_CARD_DRAW_TERMS_VERSION}:envelope`;
 const BEGINNER_KEY = `${FIVE_CARD_DRAW_TERMS_VERSION}:beginner`;
@@ -38,6 +40,7 @@ export default function FiveCardDrawView({ onExit }: { onExit(): void }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [beginner, setBeginner] = useState(() => readBeginner());
+  const [interactionPaused, setInteractionPaused] = useState(false);
   const readyRef = useRef<Ready | null>(null);
   const advancingRef = useRef(false);
 
@@ -64,16 +67,16 @@ export default function FiveCardDrawView({ onExit }: { onExit(): void }) {
 
   useEffect(() => {
     const current = ready?.envelope.state;
-    if (!current || current.phase === "ready" || current.phase === "complete" || current.currentActorId === "player" || advancingRef.current) return;
+    if (!current || interactionPaused || document.hidden || current.phase === "ready" || current.phase === "complete" || current.currentActorId === "player" || advancingRef.current) return;
     const timer = window.setTimeout(() => {
       const latest = readyRef.current;
       if (!latest || latest.envelope.state.currentActorId === "player" || latest.envelope.state.phase === "complete") return;
       advancingRef.current = true;
       try { applyAction({ type: "advance" }); }
       finally { advancingRef.current = false; }
-    }, 520);
+    }, npcDecisionDelay(current));
     return () => window.clearTimeout(timer);
-  }, [ready?.envelope.state]);
+  }, [ready?.envelope.state, interactionPaused]);
 
   function update(nextEnvelope: PreviewEnvelope): void {
     writeEnvelope(nextEnvelope);
@@ -142,12 +145,14 @@ export default function FiveCardDrawView({ onExit }: { onExit(): void }) {
     balance={ready.envelope.balance}
     busy={busy}
     error={error}
+    lines={TEMEROSA_FIVE_CARD_DRAW_LINES}
     beginner={beginner}
     onBeginner={changeBeginner}
     onStart={start}
     onAction={applyAction}
     onReset={reset}
     onResetWallet={resetWallet}
+    onInteractionPause={setInteractionPaused}
     onExit={onExit}
   />;
 }
@@ -191,4 +196,20 @@ function readBeginner(): boolean {
 
 function stripPresentation(opponent: FiveCardDrawOpponentView): FiveCardDrawOpponent {
   return { id: opponent.id, name: opponent.name, persona: { ...opponent.persona } };
+}
+
+/** Presentation-only thinking time. It uses public pressure and persona, never private cards. */
+function npcDecisionDelay(state: FiveCardDrawState): number {
+  const seatId = state.currentActorId;
+  if (!seatId || seatId === "player") return 0;
+  const opponent = state.context.opponents[Number(seatId.slice(-1)) - 1];
+  if (!opponent) return 1_100;
+  const base = state.phase === "drawing" ? 900 + (1 - opponent.persona.drawActivity) * 520
+    : state.currentBetUnits === 0 ? 900
+    : state.currentBetUnits === 1 ? 1_250
+    : state.currentBetUnits === 2 ? 1_700 : 2_050;
+  const caution = (1 - opponent.persona.riskAppetite) * 420;
+  const rng = new XorShift32(`${state.seed}:think:${state.sequence}:${seatId}`);
+  const jitter = (rng.next() - 0.5) * (1 - opponent.persona.consistency) * 900;
+  return Math.round(Math.max(800, Math.min(2_800, base + caution + jitter)));
 }

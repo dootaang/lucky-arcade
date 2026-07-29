@@ -26,6 +26,7 @@
     "content:validate": "pnpm --filter @lucky-arcade/content-cli validate --",
     "dialogue:temerosa:generate": "node scripts/generate-temerosa-old-maid-dialogue.mjs",
     "dialogue:match-pairs:generate": "node scripts/generate-temerosa-match-pairs-dialogue.mjs",
+    "dialogue:five-card-draw:generate": "node scripts/generate-temerosa-five-card-draw-dialogue.mjs",
     "test": "pnpm boundaries && pnpm -r test",
     "typecheck": "pnpm -r typecheck",
     "test:e2e": "playwright test"

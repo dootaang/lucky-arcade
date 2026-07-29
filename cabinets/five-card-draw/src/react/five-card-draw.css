@@ -151,6 +151,7 @@
 .draw-seat-title small { color: var(--draw-muted); }
 .draw-tell { margin-left: auto; padding: 0.12rem 0.38rem; color: var(--draw-muted); font-size: 0.64rem; font-style: normal; border: 1px solid rgb(184 197 194 / 24%); border-radius: 999px; }
 .draw-tell-confident { color: #8fe7c3; border-color: rgb(84 214 164 / 42%); }
+.draw-tell-neutral { color: #f0d58f; border-color: rgb(228 189 99 / 38%); }
 .draw-tell-uneasy { color: #ffb0a8; border-color: rgb(242 112 102 / 42%); }
 .draw-seat[data-tell="confident"] > .draw-seat-title > img { box-shadow: 0 0 0.75rem rgb(84 214 164 / 28%); }
 .draw-seat[data-tell="uneasy"] > .draw-seat-title > img { box-shadow: 0 0 0.75rem rgb(242 112 102 / 28%); }
@@ -163,6 +164,10 @@
 .draw-cards .ca-fan-item + .ca-fan-item { margin-left: clamp(0.1rem, 0.4vw, 0.3rem); }
 .draw-cards.is-mucking .ca-fan-item { opacity: 0; transition: opacity 120ms ease; }
 .draw-cards.is-standing-pat { animation: draw-stand-pat 420ms ease-out; }
+.draw-hand-inspect { display: block; width: 100%; padding: 0; color: inherit; background: transparent; border: 0; border-radius: 0.55rem; cursor: zoom-in; }
+.draw-hand-inspect:disabled { cursor: default; opacity: 1; }
+.draw-hand-inspect:not(:disabled):focus-visible { outline: 2px solid var(--draw-gold); outline-offset: 0.2rem; }
+.draw-inspect-button { display: block; min-height: 1.9rem; margin: 0.25rem auto 0; padding: 0.2rem 0.65rem; color: var(--draw-muted); font: inherit; font-size: 0.72rem; background: rgb(5 17 13 / 76%); border: 1px solid rgb(228 189 99 / 32%); border-radius: 999px; cursor: zoom-in; }
 
 .draw-card { transition: filter 180ms ease, opacity 160ms ease; }
 .draw-card.is-leaving { opacity: 0; }
@@ -198,6 +203,48 @@
 .draw-result { display: grid; min-width: min(24rem, 100%); padding: 0.75rem 1rem; text-align: center; background: #07130f; border: 1px solid rgb(228 189 99 / 45%); border-radius: 0.75rem; }
 .draw-result em { margin-top: 0.2rem; color: var(--draw-muted); font-size: 0.7rem; font-style: normal; }
 
+.draw-speech {
+  position: absolute;
+  right: 0.45rem;
+  bottom: calc(100% - 0.15rem);
+  z-index: 12;
+  display: grid;
+  gap: 0.12rem;
+  width: max-content;
+  max-width: min(17rem, 80vw);
+  padding: 0.45rem 0.65rem;
+  color: #241b0d;
+  font-size: 0.76rem;
+  line-height: 1.35;
+  background: #f7eedb;
+  border: 1px solid var(--draw-gold);
+  border-radius: 0.75rem 0.75rem 0.15rem 0.75rem;
+  box-shadow: 0 0.65rem 1.2rem rgb(0 0 0 / 38%);
+  animation: draw-speech-in 180ms ease-out both;
+  pointer-events: none;
+}
+.draw-speech span { display: block; }
+
+.draw-hand-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: grid;
+  padding: 1rem;
+  background: rgb(0 0 0 / 76%);
+  backdrop-filter: blur(8px);
+  place-items: center;
+}
+.draw-hand-modal > section { width: min(58rem, 100%); padding: clamp(0.8rem, 2.5vw, 1.4rem); background: linear-gradient(145deg, #0c251c, #06120e); border: 1px solid rgb(228 189 99 / 58%); border-radius: 1rem; box-shadow: 0 1.5rem 5rem rgb(0 0 0 / 62%); }
+.draw-hand-modal header { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 0.8rem; }
+.draw-modal-cards { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: clamp(0.25rem, 1.2vw, 0.75rem); }
+.draw-modal-card { position: relative; min-width: 0; padding: 0; color: inherit; background: transparent; border: 2px solid transparent; border-radius: 0.65rem; }
+button.draw-modal-card { cursor: pointer; }
+.draw-modal-card[aria-pressed="true"] { translate: 0 -0.45rem; border-color: var(--draw-gold); filter: drop-shadow(0 0.65rem 0.8rem rgb(0 0 0 / 55%)); }
+.draw-modal-card > span { position: absolute; right: 5%; bottom: 4%; left: 5%; padding: 0.22rem; color: #171006; font-size: 0.72rem; font-weight: 900; background: var(--draw-gold); border-radius: 0.3rem; }
+.draw-hidden-hand { margin-top: 0.8rem !important; color: var(--draw-muted); text-align: center; }
+.draw-modal-actions { display: flex; align-items: center; justify-content: flex-end; gap: 0.7rem; margin-top: 0.9rem; color: var(--draw-muted); }
+
 /* 최상위 족보가 나오면 펠트 조명 자체가 바뀐다. */
 .draw-table:has(.ca-flourish[data-hand-tier="6"]),
 .draw-table:has(.ca-flourish[data-hand-tier="7"]) { --draw-felt-light: radial-gradient(ellipse at 50% 34%, rgb(228 189 99 / 26%), transparent 62%); }
@@ -206,6 +253,7 @@
 @keyframes draw-flip-in { from { opacity: 0.25; transform: perspective(900px) rotateY(-92deg); } to { opacity: 1; transform: perspective(900px) rotateY(0); } }
 @keyframes draw-check-knock { 0% { transform: translateY(0); } 45% { transform: translateY(3px); } 100% { transform: translateY(0); } }
 @keyframes draw-stand-pat { 0% { filter: brightness(1); } 40% { filter: brightness(1.5) drop-shadow(0 0 0.7rem rgb(228 189 99 / 65%)); } 100% { filter: brightness(1); } }
+@keyframes draw-speech-in { from { opacity: 0; translate: 0 0.35rem; scale: 0.96; } }
 
 @media (max-width: 900px) {
   .draw-table {
@@ -234,9 +282,16 @@
   .draw-seat-title > span { width: 1.9rem; height: 1.9rem; }
   .draw-seat-title strong { font-size: 0.78rem; }
   .draw-seat-title small { font-size: 0.65rem; }
-  .draw-cards.compact { --draw-card-w: clamp(1.1rem, 6vw, 2.6rem); }
+  .draw-cards { --draw-card-w: clamp(3.1rem, 15.5vw, 4rem); }
+  .draw-cards.compact { --draw-card-w: clamp(1.55rem, 7.4vw, 2.85rem); }
   .draw-cards .ca-fan-item + .ca-fan-item { margin-left: 0.08rem; }
   .draw-center .ca-pot { min-width: 5.6rem; padding: 0.3rem 0.6rem; }
+  .draw-speech { right: 0.2rem; font-size: 0.7rem; }
+  .draw-hand-modal { padding: 0.5rem; }
+  .draw-hand-modal > section { padding: 0.7rem; }
+  .draw-modal-cards { gap: 0.18rem; }
+  .draw-modal-actions { align-items: stretch; flex-direction: column; }
+  .draw-modal-actions .draw-primary { width: 100%; }
 }
 
 /* 모션을 줄이면 즉시 전환만 남는다. 큐도 speed 0으로 내려가 연출을 건너뛴다. */
@@ -249,7 +304,8 @@
   .draw-card.is-arriving,
   .draw-card.is-open,
   .draw-cards.is-standing-pat,
-  .draw-seat.is-checking { animation: none; }
+  .draw-seat.is-checking,
+  .draw-speech { animation: none; }
   .draw-hand-card.is-selectable:hover,
   .draw-hand-card.is-selectable:focus-visible { rotate: none; }
 }

@@ -18,6 +18,7 @@ export type DrawStageEvent =
   | { readonly kind: "stand-pat"; readonly token: string; readonly seatId: FiveCardDrawSeatId }
   | { readonly kind: "discard"; readonly token: string; readonly seatId: FiveCardDrawSeatId; readonly cards: readonly StandardCardId[]; readonly slots: readonly number[]; readonly leaving: readonly StandardCardId[] }
   | { readonly kind: "draw"; readonly token: string; readonly seatId: FiveCardDrawSeatId; readonly cards: readonly StandardCardId[]; readonly slots: readonly number[]; readonly leaving: readonly StandardCardId[]; readonly faceUp: boolean }
+  | { readonly kind: "showdown-pause"; readonly token: string }
   | { readonly kind: "reveal"; readonly token: string; readonly seatIds: readonly FiveCardDrawSeatId[] }
   | { readonly kind: "verdict"; readonly token: string; readonly seatIds: readonly FiveCardDrawSeatId[]; readonly tier: number }
   | { readonly kind: "award"; readonly token: string; readonly seatIds: readonly FiveCardDrawSeatId[] };
@@ -71,6 +72,7 @@ export function planFiveCardDrawStage(previous: FiveCardDrawState, next: FiveCar
     const tier = revealOrder.reduce((best, seatId) => Math.max(best, handTier(result.values[seatId])), 0);
     const revealMs = revealOrder.length >= 4 ? 190 : 240;
     const shown: FiveCardDrawSeatId[] = [];
+    if (revealOrder.length > 0) steps.push({ event: { kind: "showdown-pause", token }, duration: 620 });
     for (const [index, seatId] of revealOrder.entries()) {
       shown.push(seatId);
       steps.push({ event: { kind: "reveal", token, seatIds: [...shown] }, duration: revealMs, commit: index === 0 });
