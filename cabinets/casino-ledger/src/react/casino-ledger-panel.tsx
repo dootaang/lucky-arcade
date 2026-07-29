@@ -197,6 +197,29 @@ function CasinoRecordRoom({leaderboard,leaderboardMode,profitLabel,selectedNpcId
   const [tableFilter,setTableFilter]=useState<CasinoTableId|"all">("all");
   const [visible,setVisible]=useState(50);
   useEffect(()=>{setTableFilter("all");setVisible(50);},[selectedNpcId,days]);
+  useEffect(()=>{
+    const body=document.body,root=document.documentElement,scrollY=window.scrollY;
+    const previous={
+      bodyPosition:body.style.position,bodyTop:body.style.top,bodyLeft:body.style.left,bodyRight:body.style.right,
+      bodyWidth:body.style.width,bodyOverflow:body.style.overflow,bodyPaddingRight:body.style.paddingRight,
+      rootOverflow:root.style.overflow,
+    };
+    const scrollbarGap=Math.max(0,window.innerWidth-root.clientWidth);
+    body.style.position="fixed";
+    body.style.top=`-${scrollY}px`;
+    body.style.left="0";
+    body.style.right="0";
+    body.style.width="100%";
+    body.style.overflow="hidden";
+    if(scrollbarGap>0)body.style.paddingRight=`${Number.parseFloat(getComputedStyle(body).paddingRight||"0")+scrollbarGap}px`;
+    root.style.overflow="hidden";
+    return()=>{
+      body.style.position=previous.bodyPosition;body.style.top=previous.bodyTop;body.style.left=previous.bodyLeft;
+      body.style.right=previous.bodyRight;body.style.width=previous.bodyWidth;body.style.overflow=previous.bodyOverflow;
+      body.style.paddingRight=previous.bodyPaddingRight;root.style.overflow=previous.rootOverflow;
+      window.scrollTo(0,scrollY);
+    };
+  },[]);
   useEffect(()=>{const close=(event:KeyboardEvent)=>{if(event.key==="Escape")onClose();};window.addEventListener("keydown",close);return()=>window.removeEventListener("keydown",close);},[onClose]);
   const selected=leaderboard.find((entry)=>entry.kind==="npc"&&entry.id===selectedNpcId);
   const filtered=tableFilter==="all"?entries:entries.filter((entry)=>entry.tableId===tableFilter);

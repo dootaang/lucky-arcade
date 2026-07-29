@@ -48,6 +48,18 @@ test("mobile navigation and Venue floor remain reachable", async ({ page }, test
   const pnlValue = await page.locator(".ledger-motion .ledger-activity-line strong").first().boundingBox();
   expect((pnlHeader?.x ?? 0) + (pnlHeader?.width ?? 0)).toBeLessThanOrEqual((tapePanel?.x ?? 0) + (tapePanel?.width ?? 0) + 1);
   expect((pnlValue?.x ?? 0) + (pnlValue?.width ?? 0)).toBeLessThanOrEqual((tapePanel?.x ?? 0) + (tapePanel?.width ?? 0) + 1);
+  await page.locator(".ledger-board-switch button").filter({ hasText: "전체 보기" }).click();
+  await page.locator(".record-ranking tbody tr th button").first().click();
+  await expect(page.locator(".npc-ledger-detail")).toBeVisible();
+  const lockedPage = await page.evaluate(() => ({ position: document.body.style.position, overflow: document.documentElement.style.overflow, top: document.body.style.top }));
+  expect(lockedPage.position).toBe("fixed");
+  expect(lockedPage.overflow).toBe("hidden");
+  await page.locator(".npc-ledger-detail").evaluate((element) => { element.scrollTop = element.scrollHeight; });
+  await page.mouse.wheel(0, 1_000);
+  expect(await page.evaluate(() => document.body.style.top)).toBe(lockedPage.top);
+  await page.locator(".record-close").click();
+  await expect(page.locator(".casino-record-room")).toHaveCount(0);
+  expect(await page.evaluate(() => document.body.style.position)).toBe("");
   const firstTable = page.locator(".table-card.playable").filter({ hasText: "도둑잡기" }).getByRole("button", { name: "시작", exact: true });
   await firstTable.scrollIntoViewIfNeeded();
   await expect(firstTable).toBeInViewport();
