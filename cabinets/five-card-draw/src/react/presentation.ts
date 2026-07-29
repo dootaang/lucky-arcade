@@ -29,7 +29,7 @@ export function planFiveCardDrawStage(previous: FiveCardDrawState, next: FiveCar
   const token = `${next.context.sessionId}:${next.sequence}`;
   if (next.phase === "ready") return [];
 
-  if (previous.phase === "ready") {
+  if (previous.phase === "ready" || (previous.phase === "complete" && next.phase === "opening-bet")) {
     const cards = dealSequence(next);
     if (cards.length === 0) return [];
     const stagger = Math.round(Math.min(72, 900 / Math.max(1, cards.length - 1)));

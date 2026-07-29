@@ -49,6 +49,15 @@ describe("five-card draw presentation plan", () => {
     expect(steps[0]?.commit).toBe(true);
   });
 
+  it("deals the next hand directly from a completed hand without a ready-screen flash",()=>{
+    const previous=complete("series-first");
+    const ready=createFiveCardDrawState(context,previous.dealerIndex+1);
+    const next=reduceFiveCardDraw(ready,{type:"start",seed:"series-second",stake:10});
+    const steps=planFiveCardDrawStage(previous,next);
+    expect(steps[0]?.event.kind).toBe("deal");
+    expect(steps[0]?.commit).toBe(true);
+  });
+
   it("moves a folded hand to the muck without exposing card faces", () => {
     const previous = reduceFiveCardDraw(createFiveCardDrawState(context), { type: "start", seed: "fold", stake: 10 });
     const next: FiveCardDrawState = {

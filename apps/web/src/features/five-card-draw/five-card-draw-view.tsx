@@ -2,19 +2,30 @@ import {
   FIVE_CARD_DRAW_CONTRACT,
   FIVE_CARD_DRAW_MAX_EXPOSURE_UNITS,
   FIVE_CARD_DRAW_TERMS_VERSION,
+  continueFiveCardDrawSeries,
+  createFiveCardDrawSeries,
   createFiveCardDrawState,
+  endFiveCardDrawSeries,
+  fiveCardDrawSeriesStats,
+  fiveCardDrawSessionRead,
   isFiveCardDrawState,
+  isFiveCardDrawSeriesState,
+  recordFiveCardDrawSeriesHand,
   reduceFiveCardDraw,
   type FiveCardDrawAction,
   type FiveCardDrawOpponent,
   type FiveCardDrawStake,
   type FiveCardDrawState,
+  type FiveCardDrawSeriesLength,
+  type FiveCardDrawSeriesState,
 } from "@lucky-arcade/five-card-draw";
 import { FiveCardDrawScreen, type FiveCardDrawOpponentView } from "@lucky-arcade/five-card-draw/react";
-import { XorShift32 } from "@lucky-arcade/engine";
+import { resultHash, XorShift32 } from "@lucky-arcade/engine";
+import type { MatchRecord } from "@lucky-arcade/persistence";
 import { useEffect, useRef, useState } from "react";
 import { loadPlayingCardAtlas } from "../../lib/playing-card-atlas.ts";
 import { loadTemerosaCasinoAssets } from "../../lib/temerosa-content.ts";
+import { appendMatchRecord, pruneMatchRecords } from "../../lib/database.ts";
 import { createTemerosaFiveCardDrawOpponents } from "./temerosa-five-card-draw-opponents.ts";
 import { TEMEROSA_FIVE_CARD_DRAW_LINES } from "./temerosa-five-card-draw-lines.ts";
 
@@ -27,6 +38,8 @@ interface PreviewEnvelope {
   balance: number;
   state: FiveCardDrawState;
   settledResultIds: readonly string[];
+  series: FiveCardDrawSeriesState | null;
+  recordedSeriesIds: readonly string[];
 }
 
 interface Ready {
@@ -41,8 +54,10 @@ export default function FiveCardDrawView({ onExit }: { onExit(): void }) {
   const [error, setError] = useState("");
   const [beginner, setBeginner] = useState(() => readBeginner());
   const [interactionPaused, setInteractionPaused] = useState(false);
+  const [autoContinue, setAutoContinue] = useState(false);
   const readyRef = useRef<Ready | null>(null);
   const advancingRef = useRef(false);
+  const recordingRef = useRef(new Set<string>());
 
   useEffect(() => {
     let alive = true;
@@ -81,6 +96,24 @@ export default function FiveCardDrawView({ onExit }: { onExit(): void }) {
     return () => window.clearTimeout(timer);
   }, [ready?.envelope.state, interactionPaused]);
 
+  useEffect(() => {
+    const envelope=ready?.envelope,series=envelope?.series;
+    if(!envelope||!series||series.status!=="intermission"||!autoContinue||interactionPaused||document.hidden)return;
+    const timer=window.setTimeout(()=>continueSeries(),2_000);
+    return ()=>window.clearTimeout(timer);
+  },[ready?.envelope.series,autoContinue,interactionPaused]);
+
+  useEffect(()=>{
+    const envelope=ready?.envelope,series=envelope?.series;
+    if(!envelope||!series||series.status!=="complete"||envelope.recordedSeriesIds.includes(series.sessionId)||recordingRef.current.has(series.sessionId))return;
+    recordingRef.current.add(series.sessionId);
+    void persistSeriesRecord(envelope).then(()=>{
+      const latest=readyRef.current;
+      if(!latest||latest.envelope.series?.sessionId!==series.sessionId)return;
+      update({...latest.envelope,recordedSeriesIds:[...latest.envelope.recordedSeriesIds.slice(-49),series.sessionId]});
+    }).catch(()=>setError("연속 대국 전적을 저장하지 못했습니다.")).finally(()=>recordingRef.current.delete(series.sessionId));
+  },[ready?.envelope.series?.status,ready?.envelope.series?.sessionId]);
+
   function update(nextEnvelope: PreviewEnvelope): void {
     writeEnvelope(nextEnvelope);
     setReady((current) => {
@@ -103,7 +136,7 @@ export default function FiveCardDrawView({ onExit }: { onExit(): void }) {
     }
   }
 
-  function start(selected: readonly FiveCardDrawOpponentView[], stake: FiveCardDrawStake): void {
+  function start(selected: readonly FiveCardDrawOpponentView[], stake: FiveCardDrawStake, targetHands:FiveCardDrawSeriesLength): void {
     const current = readyRef.current;
     if (!current || busy) return;
     const reservation = stake * FIVE_CARD_DRAW_MAX_EXPOSURE_UNITS;
@@ -115,17 +148,49 @@ export default function FiveCardDrawView({ onExit }: { onExit(): void }) {
         sessionId: `five-card-draw:preview:${crypto.randomUUID()}`,
         opponents: selected.map(stripPresentation),
       };
-      const fresh = createFiveCardDrawState(context, current.envelope.state.dealerIndex);
+      const dealerIndex=current.envelope.state.dealerIndex+(current.envelope.state.phase==="complete"?1:0);
+      const fresh = createFiveCardDrawState(context, dealerIndex);
       const state = reduceFiveCardDraw(fresh, { type: "start", seed: crypto.randomUUID(), stake });
-      update({ ...current.envelope, balance: current.envelope.balance - reservation, state });
+      const series=createFiveCardDrawSeries(context,targetHands,stake);
+      setAutoContinue(targetHands>1);
+      update({ ...current.envelope, balance: current.envelope.balance - reservation, state,series });
     } catch { setError("대국을 시작하지 못했습니다."); }
     finally { setBusy(false); }
+  }
+
+  function continueSeries():void {
+    const current=readyRef.current;if(!current)return;
+    const {series,state,balance}=current.envelope;
+    if(!series||series.status!=="intermission"||state.phase!=="complete")return;
+    const reservation=series.stake*FIVE_CARD_DRAW_MAX_EXPOSURE_UNITS;
+    if(balance<reservation){update({...current.envelope,series:endFiveCardDrawSeries(series)});setAutoContinue(false);setError("다음 판의 최대 노출액이 부족해 여기서 연속 대국을 마칩니다.");return;}
+    try{
+      const context={sessionId:series.sessionId,opponents:state.context.opponents,sessionRead:fiveCardDrawSessionRead(series.memory)};
+      const fresh=createFiveCardDrawState(context,state.dealerIndex+1);
+      const next=reduceFiveCardDraw(fresh,{type:"start",seed:crypto.randomUUID(),stake:series.stake});
+      update({...current.envelope,balance:balance-reservation,state:next,series:continueFiveCardDrawSeries(series)});
+    }catch{setError("다음 판을 시작하지 못했습니다.");setAutoContinue(false);}
+  }
+
+  function endSeries():void {
+    const current=readyRef.current,series=current?.envelope.series;
+    if(!current||!series||series.status!=="intermission")return;
+    setAutoContinue(false);update({...current.envelope,series:endFiveCardDrawSeries(series)});
+  }
+
+  function replaySeries():void{
+    const current=readyRef.current,series=current?.envelope.series;
+    if(!current||!series||series.status!=="complete")return;
+    const selected=series.opponentIds.map((id)=>current.opponents.find((opponent)=>opponent.id===id)).filter((opponent):opponent is FiveCardDrawOpponentView=>Boolean(opponent));
+    if(selected.length!==series.opponentIds.length){setError("같은 상대를 다시 불러오지 못했습니다.");return;}
+    start(selected,series.stake,series.targetHands);
   }
 
   function reset(): void {
     const current = readyRef.current;
     if (!current || current.envelope.state.phase !== "complete") return;
-    update({ ...current.envelope, state: reduceFiveCardDraw(current.envelope.state, { type: "reset" }) });
+    setAutoContinue(false);
+    update({ ...current.envelope, state: reduceFiveCardDraw(current.envelope.state, { type: "reset" }),series:null });
   }
 
   function resetWallet(): void {
@@ -154,6 +219,13 @@ export default function FiveCardDrawView({ onExit }: { onExit(): void }) {
     onStart={start}
     onAction={applyAction}
     onReset={reset}
+    series={ready.envelope.series}
+    seriesStats={ready.envelope.series?fiveCardDrawSeriesStats(ready.envelope.series,ready.envelope.state.context):null}
+    autoContinue={autoContinue}
+    onAutoContinue={setAutoContinue}
+    onNextHand={continueSeries}
+    onEndSeries={endSeries}
+    onReplaySeries={replaySeries}
     onResetWallet={resetWallet}
     onInteractionPause={setInteractionPaused}
     onExit={onExit}
@@ -163,7 +235,8 @@ export default function FiveCardDrawView({ onExit }: { onExit(): void }) {
 function settleIfComplete(envelope: PreviewEnvelope): PreviewEnvelope {
   const result = envelope.state.result;
   if (envelope.state.phase !== "complete" || !result || envelope.settledResultIds.includes(result.resultId)) return envelope;
-  return { ...envelope, balance: envelope.balance + result.playerCredit, settledResultIds: [...envelope.settledResultIds.slice(-99), result.resultId] };
+  const series=envelope.series?.status==="playing"?recordFiveCardDrawSeriesHand(envelope.series,envelope.state):envelope.series;
+  return { ...envelope, balance: envelope.balance + result.playerCredit, settledResultIds: [...envelope.settledResultIds.slice(-99), result.resultId],series };
 }
 
 function freshEnvelope(opponents: readonly FiveCardDrawOpponentView[]): PreviewEnvelope {
@@ -174,6 +247,8 @@ function freshEnvelope(opponents: readonly FiveCardDrawOpponentView[]): PreviewE
     balance: INITIAL_BALANCE,
     state: createFiveCardDrawState({ sessionId: "five-card-draw:preview:ready", opponents: [stripPresentation(first)] }),
     settledResultIds: [],
+    series:null,
+    recordedSeriesIds:[],
   };
 }
 
@@ -185,7 +260,10 @@ function readEnvelope(opponents: readonly FiveCardDrawOpponentView[]): PreviewEn
     const ids = new Set(opponents.map((opponent) => opponent.id));
     if (value.contract !== FIVE_CARD_DRAW_TERMS_VERSION || !Number.isInteger(value.balance) || value.balance! < 0 || !isFiveCardDrawState(value.state)
       || value.state.contract !== FIVE_CARD_DRAW_CONTRACT || value.state.context.opponents.some((opponent) => !ids.has(opponent.id)) || !Array.isArray(value.settledResultIds)) return null;
-    return value as PreviewEnvelope;
+    const candidate=value.series===undefined||value.series===null?null:isFiveCardDrawSeriesState(value.series)?value.series:null;
+    const series=candidate&&candidate.sessionId===value.state.context.sessionId
+      &&candidate.opponentIds.every((id,index)=>id===value.state!.context.opponents[index]?.id)?candidate:null;
+    return {...value,series,recordedSeriesIds:Array.isArray(value.recordedSeriesIds)?value.recordedSeriesIds:[]} as PreviewEnvelope;
   } catch { return null; }
 }
 
@@ -215,4 +293,21 @@ function npcDecisionDelay(state: FiveCardDrawState): number {
   const rng = new XorShift32(`${state.seed}:think:${state.sequence}:${seatId}`);
   const jitter = (rng.next() - 0.5) * (1 - opponent.persona.consistency) * 900;
   return Math.round(Math.max(800, Math.min(2_800, base + caution + jitter)));
+}
+
+async function persistSeriesRecord(envelope:PreviewEnvelope):Promise<void>{
+  const series=envelope.series;if(!series||series.status!=="complete")return;
+  const stats=fiveCardDrawSeriesStats(series,envelope.state.context);
+  const player=stats.standings.find((standing)=>standing.isPlayer);
+  if(!player)return;
+  const leaders=stats.standings.filter((standing)=>standing.rank===1);
+  const outcome:MatchRecord["outcome"]=player.rank!==1?"loss":leaders.length===1?"win":"draw";
+  const record:MatchRecord={
+    contract:"match-record/0.1",recordId:`${series.sessionId}:${series.contract}`,cabinetId:"temerosa-five-card-draw",
+    cabinetVersion:FIVE_CARD_DRAW_TERMS_VERSION,sessionId:series.sessionId,sequence:series.summaries.length,
+    seed:series.summaries.map((summary)=>summary.seed).join("|"),completedAt:new Date().toISOString(),turns:series.summaries.reduce((sum,summary)=>sum+summary.turns,0),
+    standings:stats.standings.map((standing)=>({seatId:standing.seatId,participantId:standing.participantId,displayName:standing.displayName,rank:standing.rank,isPlayer:standing.isPlayer})),
+    outcome,resultHash:resultHash({contract:series.contract,sessionId:series.sessionId,summaries:series.summaries}),
+  };
+  await appendMatchRecord(record);await pruneMatchRecords(500);
 }

@@ -46,9 +46,20 @@ export interface FiveCardDrawOpponent {
   persona: FiveCardDrawPersona;
 }
 
+/** 이전 판에서 모두에게 공개된 행동만 요약한 세션 읽기 정보다. */
+export interface FiveCardDrawSessionRead {
+  handsPlayed: number;
+  aggressionRate: number;
+  foldRate: number;
+  averageExchangeCount: number;
+  revealedStrength: number | null;
+  weakAggressionRate: number;
+}
+
 export interface FiveCardDrawContext {
   sessionId: string;
   opponents: readonly FiveCardDrawOpponent[];
+  sessionRead?: FiveCardDrawSessionRead;
 }
 
 export interface NpcDrawObservation {
@@ -70,6 +81,7 @@ export interface NpcBetObservation {
   visibleExchangeCounts: Readonly<Partial<Record<FiveCardDrawSeatId, number>>>;
   visibleTells: Readonly<Partial<Record<FiveCardDrawNpcSeatId, FiveCardDrawTell>>>;
   betHistory: readonly FiveCardDrawBetRecord[];
+  sessionRead?: FiveCardDrawSessionRead;
   persona: FiveCardDrawPersona;
   planSeed: string;
   seed: string;

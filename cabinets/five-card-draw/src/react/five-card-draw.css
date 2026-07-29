@@ -86,6 +86,7 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 2.1fr) minmax(0, 1fr);
   grid-template-areas:
+    "series     series      series"
     ".         seat-top    ."
     "seat-left center      seat-right"
     "player    player      player"
@@ -106,6 +107,15 @@
   transition: background 420ms ease;
 }
 .draw-table[data-busy] { cursor: progress; }
+.draw-series-progress { grid-area: series; display: flex; align-items: center; justify-content: center; gap: 1rem; min-width: 0; padding: 0.32rem 0.7rem; color: var(--draw-muted); background: rgb(4 18 13 / 58%); border: 1px solid rgb(228 189 99 / 22%); border-radius: 999px; }
+.draw-series-progress > div { display: flex; align-items: center; gap: 0.55rem; }
+.draw-series-progress > div > span { display: flex; gap: 0.22rem; }
+.draw-series-progress i { width: 0.48rem; height: 0.48rem; background: rgb(255 255 255 / 16%); border-radius: 50%; }
+.draw-series-progress i.is-current { background: var(--draw-gold); box-shadow: 0 0 0.55rem rgb(228 189 99 / 75%); }
+.draw-series-progress i.is-done { background: #54d6a4; }
+.draw-series-progress .is-positive,.draw-series-standings .is-positive { color: #8fe7c3; }
+.draw-series-progress .is-negative,.draw-series-standings .is-negative { color: #ffb0a8; }
+.draw-dealer-marker { display: inline-grid; width: 1.35rem; height: 1.35rem; margin-left: 0.35rem; color: #171006; font-size: 0.7rem; background: var(--draw-gold); border-radius: 50%; place-items: center; animation: draw-dealer-arrive 420ms ease-out; }
 
 .draw-opponents { display: contents; }
 .draw-seat-top { grid-area: seat-top; justify-self: center; width: min(24rem, 100%); }
@@ -221,6 +231,11 @@
 .draw-action-guide { flex-basis: 100%; color: var(--draw-muted); font-size: 0.78rem; text-align: center; }
 .draw-result { display: grid; min-width: min(24rem, 100%); padding: 0.75rem 1rem; text-align: center; background: #07130f; border: 1px solid rgb(228 189 99 / 45%); border-radius: 0.75rem; }
 .draw-result em { margin-top: 0.2rem; color: var(--draw-muted); font-size: 0.7rem; font-style: normal; }
+.draw-series-actions,.draw-series-final { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.5rem; }
+.draw-series-final { width: min(42rem,100%); }
+.draw-series-standings { display: grid; flex: 1 1 18rem; gap: 0.25rem; min-width: min(18rem,100%); margin: 0; padding: 0; list-style: none; }
+.draw-series-standings li { display: grid; grid-template-columns: 3rem 1fr auto; gap: 0.5rem; padding: 0.35rem 0.55rem; background: rgb(4 18 13 / 75%); border-radius: 0.4rem; }
+.draw-series-standings li strong { font-variant-numeric: tabular-nums; }
 
 .draw-speech {
   position: absolute;
@@ -309,9 +324,11 @@ button.draw-modal-card { cursor: pointer; }
 @keyframes draw-portrait-swap { from { opacity: 0.3; scale: 1.035; filter: brightness(1.35); } }
 
 @media (max-width: 900px) {
+  .draw-series-progress { flex-wrap: wrap; gap: 0.25rem 0.7rem; border-radius: 0.75rem; }
+  .draw-series-progress > small { font-size: 0.68rem; }
   .draw-table {
     grid-template-columns: minmax(0, 1fr);
-    grid-template-areas: "opponents" "center" "player" "coach" "actions";
+    grid-template-areas: "series" "opponents" "center" "player" "coach" "actions";
     min-height: auto;
     border-radius: 1.2rem;
   }
@@ -327,6 +344,8 @@ button.draw-modal-card { cursor: pointer; }
   .draw-opponents .draw-portrait-button { width: 4rem; height: 5.35rem; }
   .draw-center { gap: 0.6rem; }
 }
+
+@keyframes draw-dealer-arrive { from { opacity: 0; transform: translateX(-0.65rem) rotate(-45deg) scale(0.65); } to { opacity: 1; transform: none; } }
 
 @media (max-width: 720px) {
   .draw-poker-shell > header { grid-template-columns: auto 1fr; }

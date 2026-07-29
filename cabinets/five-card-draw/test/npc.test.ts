@@ -46,6 +46,19 @@ describe("five-card draw NPC psychology", () => {
     expect("opponentCardIds" in visible).toBe(false);
   });
 
+  it("adapts to public prior-hand behavior without receiving prior cards",()=>{
+    let changed=0;
+    for(let index=0;index<1_000;index+=1){
+      const hand=shuffledStandardDeck(`session-read:${index}`).slice(0,5);
+      const base=observation(hand,`session-read:${index}`);
+      const loose={...base,sessionRead:{handsPlayed:4,aggressionRate:.95,foldRate:.7,averageExchangeCount:2.5,revealedStrength:.18,weakAggressionRate:.85}};
+      const solid={...base,sessionRead:{handsPlayed:4,aggressionRate:.2,foldRate:.05,averageExchangeCount:.6,revealedStrength:.82,weakAggressionRate:.05}};
+      if(chooseNpcBetAction(loose)!==chooseNpcBetAction(solid))changed+=1;
+      expect("cards" in loose.sessionRead).toBe(false);
+    }
+    expect(changed).toBeGreaterThan(15);
+  });
+
   it("defends ordinary made hands without making raises worthless", () => {
     const counts = Array.from({ length: 9 }, () => ({ folds: 0, total: 0 }));
     let folds = 0;

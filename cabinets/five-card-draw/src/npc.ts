@@ -126,7 +126,21 @@ function publicReadAdjustment(observation: NpcBetObservation): number {
   const tells = opponentTellSignal(observation.visibleTells, observation.seatId);
   const actions = actionStrengthSignal(observation);
   const ambiguous = -(exchange * .09 + tells * .065) * observation.persona.signalTrust;
-  return observation.persona.signalAttention * (ambiguous - actions * .075);
+  return observation.persona.signalAttention * (ambiguous - actions * .075 + sessionReadSignal(observation));
+}
+
+/** 이전 판에서 공개된 플레이어 행동만 읽는다. 현재 손패나 접힌 패는 절대 입력되지 않는다. */
+function sessionReadSignal(observation: NpcBetObservation): number {
+  const read=observation.sessionRead;
+  if(!read||read.handsPlayed===0)return 0;
+  const reliability=.55+observation.persona.consistency*.45;
+  const looseAggression=read.aggressionRate*(.4+.6*read.weakAggressionRate);
+  const foldPressure=read.foldRate*.45;
+  const shownStrength=read.revealedStrength===null?0:(read.revealedStrength-.5)*.8;
+  const exchangeCaution=(1-read.averageExchangeCount/3)*.18;
+  const literal=looseAggression*.1+foldPressure*.07-shownStrength*.09-exchangeCaution*.025;
+  const trust=observation.persona.signalTrust>=0?1:-.35;
+  return clamp(literal*reliability*trust,-.08,.08);
 }
 
 function opponentStrengthSignal(counts: Readonly<Partial<Record<string, number>>>, ownSeatId: string): number {
@@ -185,6 +199,14 @@ function validateBetObservation(value:NpcBetObservation):void {
   if(value.currentBetUnits<0||value.currentBetUnits>FIVE_CARD_DRAW_STREET_CAP_UNITS
     ||value.ownContributionUnits<0||value.ownContributionUnits>FIVE_CARD_DRAW_STREET_CAP_UNITS)throw new Error("five_card_draw_bet_observation_invalid");
   if(!Number.isInteger(value.potUnits)||value.potUnits<0||!value.planSeed)throw new Error("five_card_draw_bet_observation_invalid");
+  if(value.sessionRead){
+    const read=value.sessionRead;
+    if(!Number.isInteger(read.handsPlayed)||read.handsPlayed<0
+      ||![read.aggressionRate,read.foldRate,read.weakAggressionRate].every((entry)=>Number.isFinite(entry)&&entry>=0&&entry<=1)
+      ||!Number.isFinite(read.averageExchangeCount)||read.averageExchangeCount<0||read.averageExchangeCount>3
+      ||(read.revealedStrength!==null&&(!Number.isFinite(read.revealedStrength)||read.revealedStrength<0||read.revealedStrength>1)))
+      throw new Error("five_card_draw_session_read_invalid");
+  }
 }
 function clamp(value:number,min:number,max:number):number{return Math.max(min,Math.min(max,value));}
 function clamp01(value:number):number{return clamp(value,0,1);}

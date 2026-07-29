@@ -403,6 +403,7 @@ test("guards the five-card draw admin preview and keeps its trial economy separa
   await page.reload();
   await expect(page.getByRole("heading", { name: "파이브 카드 드로 포커" })).toBeVisible();
   await expect(page.getByText("2,000 시험 P")).toBeVisible();
+  await expect(page.getByRole("button", { name: "3판 · 기본" })).toHaveAttribute("aria-pressed", "true");
   await expect(page.getByRole("button", { name: "시험 대국 시작" })).toBeVisible();
   await page.getByRole("button", { name: "시험 대국 시작" }).click();
   const landing = await page.locator('.ca-stage-flight[data-flight-to^="hand:npc-"]').first().evaluate(async (flight) => {
@@ -442,6 +443,8 @@ test("guards the five-card draw admin preview and keeps its trial economy separa
   await expect(page.locator(".draw-result")).toBeVisible();
   const preview = await page.evaluate(() => JSON.parse(localStorage.getItem("temerosa-five-card-draw-preview/0.2:envelope") ?? "null"));
   expect(preview.settledResultIds).toHaveLength(1);
+  expect(preview.series.targetHands).toBe(3);
+  expect(preview.series.summaries).toHaveLength(1);
   expect(preview.balance).toBeGreaterThanOrEqual(1_930);
   const databaseWallet = await page.evaluate(async () => (await new Function("return import('/src/lib/wallet.ts')")()).readWallet());
   expect(databaseWallet.balance).not.toBe(1_000);

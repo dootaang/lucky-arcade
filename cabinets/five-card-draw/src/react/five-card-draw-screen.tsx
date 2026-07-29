@@ -11,6 +11,7 @@ import {
   fiveCardDrawNpcTells, legalPlayerBetActions, selectFiveCardDrawSpeeches, type FiveCardDrawAction, type FiveCardDrawBetAction, type FiveCardDrawLine, type FiveCardDrawOpponent,
   type FiveCardDrawTell,
   type FiveCardDrawNpcSeatId, type FiveCardDrawSeatId, type FiveCardDrawStake, type FiveCardDrawState,
+  type FiveCardDrawSeriesLength,type FiveCardDrawSeriesState,type FiveCardDrawSeriesStats,
 } from "../index.ts";
 import { handHighlight, handTier, planFiveCardDrawStage, type DrawStageEvent } from "./presentation.ts";
 import "@lucky-arcade/ui/card-stage.css";
@@ -29,14 +30,17 @@ export interface FiveCardDrawOpponentView extends FiveCardDrawOpponent {
 export interface FiveCardDrawScreenProps {
   state:FiveCardDrawState;opponents:readonly FiveCardDrawOpponentView[];atlas:CourtAtlas;balance:number;busy:boolean;error:string;
   lines?:readonly FiveCardDrawLine[];
-  beginner:boolean;onBeginner(value:boolean):void;onStart(opponents:readonly FiveCardDrawOpponentView[],stake:FiveCardDrawStake):void;
-  onAction(action:FiveCardDrawAction):void;onReset():void;onResetWallet():void;onInteractionPause?(paused:boolean):void;onExit():void;
+  series:FiveCardDrawSeriesState|null;seriesStats:FiveCardDrawSeriesStats|null;autoContinue:boolean;
+  beginner:boolean;onBeginner(value:boolean):void;onStart(opponents:readonly FiveCardDrawOpponentView[],stake:FiveCardDrawStake,targetHands:FiveCardDrawSeriesLength):void;
+  onAction(action:FiveCardDrawAction):void;onReset():void;onResetWallet():void;onNextHand():void;onEndSeries():void;onReplaySeries():void;onAutoContinue(value:boolean):void;
+  onInteractionPause?(paused:boolean):void;onExit():void;
 }
 
 export function FiveCardDrawScreen(props:FiveCardDrawScreenProps):ReactElement {
   const [playerCount,setPlayerCount]=useState<2|3|4>(()=>(props.state.context.opponents.length+1) as 2|3|4);
   const [selectedIds,setSelectedIds]=useState<string[]>(()=>props.state.context.opponents.map((opponent)=>opponent.id));
   const [stake,setStake]=useState<FiveCardDrawStake>(10);
+  const [seriesLength,setSeriesLength]=useState<FiveCardDrawSeriesLength>(3);
   const [selectedCards,setSelectedCards]=useState<Set<string>>(()=>new Set());
   const [shownBalance,setShownBalance]=useState(props.balance);
   const [inspectedSeat,setInspectedSeat]=useState<FiveCardDrawSeatId|null>(null);
@@ -128,9 +132,10 @@ export function FiveCardDrawScreen(props:FiveCardDrawScreenProps):ReactElement {
       <fieldset><legend>테이블 인원</legend><div className="draw-segmented">{([2,3,4] as const).map((count)=><button key={count} aria-pressed={playerCount===count} onClick={()=>changeCount(count)}>{count}인</button>)}</div></fieldset>
       <fieldset><legend>함께할 상대</legend><div className="draw-opponent-selects">{setupOpponents.map((chosen,index)=><label key={index}>좌석 {index+1}<select value={chosen.id} onChange={(input)=>selectAt(index,input.target.value)}>{props.opponents.filter((candidate)=>candidate.id===chosen.id||!setupOpponents.some((selected)=>selected.id===candidate.id)).map((candidate)=><option key={candidate.id} value={candidate.id}>{candidate.name}</option>)}</select></label>)}</div><button className="draw-secondary" onClick={randomize}><IconRefresh size={16}/>무작위로 채우기</button></fieldset>
       <fieldset><legend>기본 판돈</legend><div className="draw-segmented">{FIVE_CARD_DRAW_STAKES.map((value)=><button key={value} aria-pressed={stake===value} onClick={()=>setStake(value)} disabled={props.balance<value*FIVE_CARD_DRAW_MAX_EXPOSURE_UNITS}>{value} P</button>)}</div><small>최대 노출 {stake*FIVE_CARD_DRAW_MAX_EXPOSURE_UNITS} 시험 P · 사용하지 않은 예약액은 반환됩니다.</small></fieldset>
+      <fieldset><legend>연속 대국</legend><div className="draw-segmented">{([1,3,5] as const).map((value)=><button key={value} aria-pressed={seriesLength===value} onClick={()=>setSeriesLength(value)}>{value===1?"단판":`${value}판${value===3?" · 기본":""}`}</button>)}</div><small>판마다 정산하고 딜러가 한 자리씩 이동합니다. 최종 순위는 누적 손익으로 정합니다.</small></fieldset>
       <label className="draw-guide-toggle"><input type="checkbox" checked={props.beginner} onChange={(input)=>props.onBeginner(input.target.checked)}/><span><strong>초보자 안내</strong><small>현재 족보, 교환 후보와 베팅 용어를 설명합니다.</small></span></label>
       {props.error&&<p className="draw-error" role="alert">{props.error}</p>}
-      <div className="draw-start-actions"><button className="draw-primary" disabled={props.busy||setupOpponents.length!==playerCount-1||new Set(setupOpponents.map((opponent)=>opponent.id)).size!==setupOpponents.length||props.balance<stake*FIVE_CARD_DRAW_MAX_EXPOSURE_UNITS} onClick={()=>props.onStart(setupOpponents,stake)}>시험 대국 시작</button><button className="draw-secondary" onClick={props.onResetWallet}>시험칩 초기화</button></div>
+      <div className="draw-start-actions"><button className="draw-primary" disabled={props.busy||setupOpponents.length!==playerCount-1||new Set(setupOpponents.map((opponent)=>opponent.id)).size!==setupOpponents.length||props.balance<stake*FIVE_CARD_DRAW_MAX_EXPOSURE_UNITS} onClick={()=>props.onStart(setupOpponents,stake,seriesLength)}>시험 대국 시작</button><button className="draw-secondary" onClick={props.onResetWallet}>시험칩 초기화</button></div>
     </section>
   </main>;
 
@@ -138,17 +143,18 @@ export function FiveCardDrawScreen(props:FiveCardDrawScreenProps):ReactElement {
   return <main className="draw-poker-shell">
     <header><button className="draw-icon-button" onClick={props.onExit} aria-label="카지노로 돌아가기"><IconArrowLeft/></button><div><span className="draw-eyebrow">ADMIN PREVIEW</span><h1>파이브 카드 드로 포커</h1></div><strong>{shownBalance.toLocaleString("ko-KR")} 시험 P</strong></header>
     <section className={`draw-table count-${state.context.opponents.length}`} data-stage-root data-phase={state.phase} data-busy={queue.busy||undefined}>
+      {props.series&&<SeriesProgress series={props.series} stats={props.seriesStats} dealerSeatId={state.seatOrder[state.dealerIndex]??"player"}/>}
       <div className="draw-opponents">{state.context.opponents.map((opponent,index)=>{
         const seatId=`npc-${index+1}` as FiveCardDrawNpcSeatId,view=props.opponents.find((item)=>item.id===opponent.id);
         const folded=state.foldedSeatIds.includes(seatId),open=revealed.has(seatId);
-        const tell=npcTells[seatId]??"neutral";
+        const tell=seriesTell(seatId,props.series,npcTells[seatId]??"neutral");
         const portrait=view?.portraits?.[tell]??view?.portrait;
         const detailPortrait=view?.detailPortraits?.[tell]??portrait;
         const value=open?state.result?.values[seatId]:undefined;
         const highlight=open?handHighlight(state.hands[seatId],value):null;
         return <article className={`draw-seat draw-seat-${slots[index]??"top"}${state.currentActorId===seatId?" is-active":""}${folded?" is-folded":""}${verdictVisible&&state.result?.winnerSeatIds.includes(seatId)?" is-winner":""}${event?.kind==="check"&&event.seatId===seatId?" is-checking":""}`} key={seatId} data-tell={tell} {...stageAnchor(`seat:${seatId}`)}>
           <ActionHalo active={state.currentActorId===seatId&&!folded}/>
-          <div className="draw-seat-title"><button className="draw-portrait-button" type="button" onClick={()=>{setInspectedSeat(null);setInspectedPortrait(seatId);}} aria-label={`${opponent.name} 감정 초상 크게 보기`}>{portrait?<img key={portrait} className="draw-portrait-image" src={portrait} alt=""/>:<span>{opponent.name.slice(0,1)}</span>}<i className={`draw-tell draw-tell-${tell}`}>{tellLabel(tell)}</i></button><div><strong>{opponent.name}</strong><small>{seatStatus(state,seatId,event,verdictVisible,revealed.has(seatId))}</small></div></div>
+          <div className="draw-seat-title"><button className="draw-portrait-button" type="button" onClick={()=>{setInspectedSeat(null);setInspectedPortrait(seatId);}} aria-label={`${opponent.name} 감정 초상 크게 보기`}>{portrait?<img key={portrait} className="draw-portrait-image" src={portrait} alt=""/>:<span>{opponent.name.slice(0,1)}</span>}<i className={`draw-tell draw-tell-${tell}`}>{tellLabel(tell)}</i></button><div><strong>{opponent.name}{state.seatOrder[state.dealerIndex]===seatId&&<span className="draw-dealer-marker" title="이번 판 딜러">D</span>}</strong><small>{seatStatus(state,seatId,event,verdictVisible,revealed.has(seatId))}{seriesStreakLabel(seatId,props.series)}</small></div></div>
           {speeches[seatId]&&<SpeechBubble line={speeches[seatId]!}/>}
           <button className="draw-hand-inspect" type="button" disabled={folded||!settled} onClick={()=>setInspectedSeat(seatId)} aria-label={`${opponent.name}의 패 크게 보기`}>
           <CardFan className={`draw-cards compact${event?.kind==="fold"&&event.seatId===seatId?" is-mucking":""}${event?.kind==="stand-pat"&&event.seatId===seatId?" is-standing-pat":""}`} count={5} anchor={`hand:${seatId}`}>
@@ -173,7 +179,7 @@ export function FiveCardDrawScreen(props:FiveCardDrawScreenProps):ReactElement {
 
       <article className={`draw-seat draw-player${state.currentActorId==="player"?" is-active":""}${state.foldedSeatIds.includes("player")?" is-folded":""}${verdictVisible&&state.result?.winnerSeatIds.includes("player")?" is-winner":""}${event?.kind==="check"&&event.seatId==="player"?" is-checking":""}`} {...stageAnchor("seat:player")}>
         <ActionHalo active={state.currentActorId==="player"&&!state.foldedSeatIds.includes("player")}/>
-        <div className="draw-seat-title"><span>나</span><div><strong>플레이어</strong><small>{seatStatus(state,"player",event,verdictVisible,revealed.has("player"))}</small></div></div>
+        <div className="draw-seat-title"><span>나</span><div><strong>플레이어{state.seatOrder[state.dealerIndex]==="player"&&<span className="draw-dealer-marker" title="이번 판 딜러">D</span>}</strong><small>{seatStatus(state,"player",event,verdictVisible,revealed.has("player"))}{seriesStreakLabel("player",props.series)}</small></div></div>
         <CardFan className={`draw-cards${event?.kind==="fold"&&event.seatId==="player"?" is-mucking":""}${event?.kind==="stand-pat"&&event.seatId==="player"?" is-standing-pat":""}`} count={5} anchor="hand:player">
           {(state.foldedSeatIds.includes("player")?[]:state.hands.player).map((card,cardIndex)=>{
             return <CardFanItem key={card} index={cardIndex} count={5} anchor={handSlotAnchor("player",cardIndex)} className={cardClassName(card,false,playerHighlight,arrivals,event)} {...arrivalStyle(card,arrivals)}>
@@ -195,7 +201,10 @@ export function FiveCardDrawScreen(props:FiveCardDrawScreenProps):ReactElement {
         {settled&&state.phase==="drawing"&&state.currentActorId==="player"&&<button className="draw-primary" onClick={exchange}>{selectedCards.size===0?"그대로 승부":`${selectedCards.size}장 교환`}</button>}
         {playerActions.map((action)=><button key={action} className={action==="fold"?"draw-danger":"draw-primary"} onClick={()=>props.onAction({type:"bet",action})}>{actionLabel(action,props.state)}</button>)}
         {props.beginner&&playerActions.length>0&&<p className="draw-action-guide">{playerActions.map((action)=>betActionGuide(action,actionCost(action,props.state),action==="raise"&&props.state.currentBetUnits===2)).join(" · ")}</p>}
-        {settled&&state.phase==="complete"&&<><section className="draw-result"><strong>{resultLabel(state)}</strong><span>{showdownLabel(state)}</span><small>내 정산 크레딧 {state.result?.playerCredit.toLocaleString("ko-KR")} P</small>{state.foldedSeatIds.length>0&&<em>폴드한 패는 공개되지 않습니다.</em>}</section><button className="draw-primary" onClick={props.onReset}>다시하기</button></>}
+        {settled&&state.phase==="complete"&&<SeriesResult
+          state={state} series={props.series} stats={props.seriesStats} autoContinue={props.autoContinue}
+          onAutoContinue={props.onAutoContinue} onNext={props.onNextHand} onEnd={props.onEndSeries}
+          onReplay={props.onReplaySeries} onReset={props.onReset}/>}
         {props.error&&<p className="draw-error" role="alert">{props.error}</p>}
       </div>
 
@@ -302,6 +311,44 @@ function standardCardLabel(card:StandardCardId):string {
 function tellLabel(tell:FiveCardDrawTell):string{return tell==="confident"?"만족":tell==="uneasy"?"긴장":"여유로움";}
 
 function SpeechBubble({line}:{line:FiveCardDrawLine}):ReactElement{return <div className="draw-speech" data-line-id={line.id} aria-hidden="true">{line.text.map((beat,index)=><span key={index}>{beat}</span>)}</div>;}
+
+function SeriesProgress({series,stats,dealerSeatId}:{series:FiveCardDrawSeriesState;stats:FiveCardDrawSeriesStats|null;dealerSeatId:FiveCardDrawSeatId}):ReactElement{
+  const hand=Math.min(series.targetHands,series.summaries.length+(series.status==="playing"?1:0));
+  const player=stats?.standings.find((standing)=>standing.isPlayer);
+  const leader=stats?.standings[0];
+  return <aside className="draw-series-progress" aria-label="연속 대국 진행 상황">
+    <div><strong>{hand}/{series.targetHands}판</strong><span>{Array.from({length:series.targetHands},(_,index)=><i key={index} className={index<series.summaries.length?"is-done":index===hand-1?"is-current":""}/>)}</span></div>
+    <small>딜러 {dealerSeatId==="player"?"플레이어":`좌석 ${Number(dealerSeatId.slice(-1))}`}</small>
+    <small>내 누적 <b className={(player?.net??0)>=0?"is-positive":"is-negative"}>{signedPoints(player?.net??0)}</b>{leader&&!leader.isPlayer&&<> · 선두 {leader.displayName}</>}</small>
+  </aside>;
+}
+
+function SeriesResult({state,series,stats,autoContinue,onAutoContinue,onNext,onEnd,onReplay,onReset}:{state:FiveCardDrawState;series:FiveCardDrawSeriesState|null;stats:FiveCardDrawSeriesStats|null;autoContinue:boolean;onAutoContinue(value:boolean):void;onNext():void;onEnd():void;onReplay():void;onReset():void}):ReactElement{
+  const intermission=series?.status==="intermission";
+  if(series?.status==="complete"&&stats)return <section className="draw-series-final">
+    <div className="draw-result"><strong>{stats.standings.find((standing)=>standing.isPlayer)?.rank??"-"}위 · {signedPoints(stats.totalNet)}</strong><span>{stats.handsPlayed}판 {stats.handsWon}승 · 폴드 {stats.folds}회</span><small>최대 팟 {stats.largestPot.toLocaleString("ko-KR")} P{stats.bestHandLabel?` · 최고 패 ${stats.bestHandLabel}`:""}</small>{series.endedEarly&&<em>연속 대국을 일찍 마쳤습니다.</em>}</div>
+    <ol className="draw-series-standings">{stats.standings.map((standing)=><li key={standing.seatId}><b>{standing.rank}위</b><span>{standing.displayName}</span><strong>{signedPoints(standing.net)}</strong></li>)}</ol>
+    <button className="draw-primary" onClick={onReplay}>같은 상대와 다시</button><button className="draw-secondary" onClick={onReset}>상대 다시 고르기</button>
+  </section>;
+  return <><section className="draw-result"><strong>{resultLabel(state)}</strong><span>{showdownLabel(state)}</span><small>이번 판 손익 {signedPoints(series?.summaries.at(-1)?.playerNet??0)}</small>{state.foldedSeatIds.length>0&&<em>폴드한 패는 공개되지 않습니다.</em>}</section>{intermission&&<div className="draw-series-actions"><button className="draw-primary" onClick={onNext}>다음 판</button><button className="draw-secondary" aria-pressed={autoContinue} onClick={()=>onAutoContinue(!autoContinue)}>{autoContinue?"자동 진행 멈춤":"자동 진행 계속"}</button><button className="draw-secondary" onClick={onEnd}>여기서 끝내기</button></div>}{!series&&<button className="draw-primary" onClick={onReset}>다시하기</button>}</>;
+}
+
+function signedPoints(value:number):string{return `${value>0?"+":""}${value.toLocaleString("ko-KR")} P`;}
+
+function seriesTell(seatId:FiveCardDrawNpcSeatId,series:FiveCardDrawSeriesState|null,fallback:FiveCardDrawTell):FiveCardDrawTell{
+  const streak=seriesStreak(seatId,series);return streak>=2?"confident":streak<=-2?"uneasy":fallback;
+}
+function seriesStreakLabel(seatId:FiveCardDrawSeatId,series:FiveCardDrawSeriesState|null):string{
+  const streak=seriesStreak(seatId,series);return Math.abs(streak)>=2?` · ${Math.abs(streak)}연${streak>0?"승":"패"}`:"";
+}
+function seriesStreak(seatId:FiveCardDrawSeatId,series:FiveCardDrawSeriesState|null):number{
+  if(!series)return 0;let value=0;
+  for(const summary of [...series.summaries].reverse()){
+    const won=summary.winnerSeatIds.includes(seatId);
+    if(value===0)value=won?1:-1;else if((value>0)===won)value+=won?1:-1;else break;
+  }
+  return value;
+}
 
 function speechStartDelay(previous:FiveCardDrawState,next:FiveCardDrawState,selected:readonly {line:FiveCardDrawLine}[]):number {
   if(selected.length===0)return 0;
