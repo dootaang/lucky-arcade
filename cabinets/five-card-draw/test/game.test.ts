@@ -13,13 +13,13 @@ import {
 } from "../src/index.ts";
 
 const PERSONA: FiveCardDrawPersona = {
-  drawSkill: 0.7,
-  handReading: 0.6,
-  aggression: 0.5,
-  bluffFrequency: 0.2,
-  discipline: 0.7,
-  counterRead: 0.4,
-  tiltResistance: 0.8,
+  drawActivity: 0.7,
+  riskAppetite: 0.5,
+  signalAttention: 0.6,
+  signalTrust: 0.4,
+  deceptionBias: 0.2,
+  consistency: 0.7,
+  tellStyle: "standard",
 };
 
 function context(opponentCount = 1): FiveCardDrawContext {

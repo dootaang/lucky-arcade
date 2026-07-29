@@ -45,9 +45,12 @@ export default function FiveCardDrawView({ onExit }: { onExit(): void }) {
     let alive = true;
     void Promise.all([loadTemerosaCasinoAssets(), loadPlayingCardAtlas()]).then(([bundle, atlas]) => {
       const opponents = createTemerosaFiveCardDrawOpponents(bundle.contentAssets).map((opponent): FiveCardDrawOpponentView => {
-        const portrait = bundle.assets[opponent.portraitAssetId];
-        if (!portrait) throw new Error(`five_card_draw_portrait_missing:${opponent.portraitAssetId}`);
-        return { id: opponent.id, name: opponent.name, persona: opponent.persona, portrait };
+        const portraits = Object.fromEntries(Object.entries(opponent.portraitAssetIds).map(([tell, assetId]) => {
+          const portrait = bundle.assets[assetId];
+          if (!portrait) throw new Error(`five_card_draw_portrait_missing:${assetId}`);
+          return [tell, portrait];
+        })) as NonNullable<FiveCardDrawOpponentView["portraits"]>;
+        return { id: opponent.id, name: opponent.name, persona: opponent.persona, portraits };
       });
       if (opponents.length !== 30) throw new Error(`five_card_draw_opponent_count:${opponents.length}`);
       const restored = readEnvelope(opponents) ?? freshEnvelope(opponents);

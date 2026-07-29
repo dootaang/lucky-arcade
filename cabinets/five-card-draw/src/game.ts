@@ -2,11 +2,11 @@ import { shuffledStandardDeck, type StandardCardId } from "@lucky-arcade/card-ta
 import { resultHash } from "@lucky-arcade/engine";
 import {
   FIVE_CARD_DRAW_CONTRACT, FIVE_CARD_DRAW_MAX_EXPOSURE_UNITS, FIVE_CARD_DRAW_RULES_VERSION, FIVE_CARD_DRAW_STAKES,
-  type FiveCardDrawAction, type FiveCardDrawBetAction, type FiveCardDrawContext, type FiveCardDrawNpcSeatId,
+  type FiveCardDrawAction, type FiveCardDrawBetAction, type FiveCardDrawBetRecord, type FiveCardDrawContext, type FiveCardDrawNpcSeatId,
   type FiveCardDrawOutcome, type FiveCardDrawPublicView, type FiveCardDrawResult, type FiveCardDrawSeatId, type FiveCardDrawStake, type FiveCardDrawState,
 } from "./contracts.ts";
 import { comparePokerHands, evaluatePokerHand } from "./hand.ts";
-import { chooseNpcBetAction, decideNpcDraw } from "./npc.ts";
+import { chooseNpcBetAction, decideNpcDraw, selectPokerTell } from "./npc.ts";
 
 const ALL_SEATS: readonly FiveCardDrawSeatId[] = ["player","npc-1","npc-2","npc-3"];
 
@@ -18,7 +18,7 @@ export function createFiveCardDrawState(context: FiveCardDrawContext, dealerInde
     context:{sessionId:context.sessionId,opponents:context.opponents.map((opponent)=>({...opponent,persona:{...opponent.persona}}))},
     phase:"ready",sequence:0,seed:null,baseStake:null,deck:[],deckCursor:0,seatOrder,dealerIndex:dealerIndex%seatOrder.length,
     currentActorId:null,pendingSeatIds:[],activeSeatIds:[],foldedSeatIds:[],hands:emptyCards(),discarded:emptyCards(),exchangeCounts:{},
-    contributionsUnits:emptyNumbers(),streetContributionsUnits:emptyNumbers(),currentBetUnits:0,lastAction:null,result:null,
+    contributionsUnits:emptyNumbers(),streetContributionsUnits:emptyNumbers(),currentBetUnits:0,betHistory:[],lastAction:null,result:null,
   };
 }
 
@@ -27,7 +27,7 @@ export function isFiveCardDrawState(value:unknown):value is FiveCardDrawState {
   const state=value as Partial<FiveCardDrawState>;
   return state.contract===FIVE_CARD_DRAW_CONTRACT&&state.rulesVersion===FIVE_CARD_DRAW_RULES_VERSION
     &&typeof state.context?.sessionId==="string"&&Array.isArray(state.context.opponents)&&Array.isArray(state.seatOrder)
-    &&typeof state.sequence==="number"&&Boolean(state.hands)&&Boolean(state.contributionsUnits);
+    &&typeof state.sequence==="number"&&Boolean(state.hands)&&Boolean(state.contributionsUnits)&&Array.isArray(state.betHistory);
 }
 
 export function reduceFiveCardDraw(state:FiveCardDrawState,action:FiveCardDrawAction):FiveCardDrawState {
@@ -47,7 +47,17 @@ export function fiveCardDrawPublicView(state:FiveCardDrawState):FiveCardDrawPubl
   ])) as Record<FiveCardDrawNpcSeatId,readonly StandardCardId[]|null>;
   return {contract:FIVE_CARD_DRAW_CONTRACT,phase:state.phase,sequence:state.sequence,sessionId:state.context.sessionId,
     seatOrder:state.seatOrder,currentActorId:state.currentActorId,activeSeatIds:state.activeSeatIds,foldedSeatIds:state.foldedSeatIds,
-    playerHand:state.hands.player,npcHands,exchangeCounts:state.exchangeCounts,pot:potAmount(state),result:state.result};
+    playerHand:state.hands.player,npcHands,exchangeCounts:state.exchangeCounts,npcTells:fiveCardDrawNpcTells(state),betHistory:state.betHistory,pot:potAmount(state),result:state.result};
+}
+
+export function fiveCardDrawNpcTells(state:FiveCardDrawState):FiveCardDrawPublicView["npcTells"] {
+  if(!state.seed||state.phase==="ready")return {};
+  const phase=state.phase==="closing-bet"||state.phase==="complete"?"closing-bet":"opening-bet";
+  return Object.fromEntries(state.context.opponents.map((opponent,index)=>{
+    const seatId=`npc-${index+1}` as FiveCardDrawNpcSeatId;
+    if(!state.activeSeatIds.includes(seatId))return [seatId,"neutral"];
+    return [seatId,selectPokerTell(state.hands[seatId],phase,opponent.persona,`${state.seed}:tell:${phase}:${state.currentBetUnits}:${seatId}`)];
+  }));
 }
 
 export function legalPlayerBetActions(state:FiveCardDrawState):readonly FiveCardDrawBetAction[] {
@@ -74,7 +84,7 @@ function startMatch(state:FiveCardDrawState,seed:string,stake:FiveCardDrawStake)
   const pending=orderedAfterDealer(state.seatOrder,state.dealerIndex);
   return {...state,phase:"opening-bet",sequence:state.sequence+1,seed,baseStake:stake,deck,deckCursor:cursor,hands,
     activeSeatIds:active,pendingSeatIds:pending,currentActorId:pending[0]??null,contributionsUnits:contributions,
-    streetContributionsUnits:emptyNumbers(),currentBetUnits:0,foldedSeatIds:[],discarded:emptyCards(),exchangeCounts:{},lastAction:null,result:null};
+    streetContributionsUnits:emptyNumbers(),currentBetUnits:0,betHistory:[],foldedSeatIds:[],discarded:emptyCards(),exchangeCounts:{},lastAction:null,result:null};
 }
 
 function betPlayer(state:FiveCardDrawState,action:FiveCardDrawBetAction):FiveCardDrawState {
@@ -92,9 +102,10 @@ function advanceNpc(state:FiveCardDrawState):FiveCardDrawState {
     return exchangeSeat(state,seatId,decision.discardCardIds);
   }
   if(state.phase!=="opening-bet"&&state.phase!=="closing-bet")throw new Error("five_card_draw_advance_phase_invalid");
-  const action=chooseNpcBetAction({hand:state.hands[seatId],phase:state.phase,activeSeatCount:state.activeSeatIds.length,
+  const action=chooseNpcBetAction({seatId,hand:state.hands[seatId],phase:state.phase,activeSeatCount:state.activeSeatIds.length,
     ownContributionUnits:state.streetContributionsUnits[seatId],currentBetUnits:state.currentBetUnits,
-    visibleExchangeCounts:state.exchangeCounts,persona:opponent.persona,seed:`${state.seed}:${state.sequence}:${seatId}:bet`});
+    potUnits:potUnits(state),visibleExchangeCounts:state.exchangeCounts,visibleTells:fiveCardDrawNpcTells(state),betHistory:state.betHistory,
+    persona:opponent.persona,planSeed:`${state.seed}:${seatId}:plan`,seed:`${state.seed}:${state.sequence}:${seatId}:bet`});
   return applyBet(state,seatId,legalNpcAction(state,seatId,action));
 }
 
@@ -120,8 +131,9 @@ function applyBet(state:FiveCardDrawState,seatId:FiveCardDrawSeatId,action:FiveC
       aggressive=true;currentBet=target;pending=orderAfterSeat(state.seatOrder,seatId).filter((id)=>active.includes(id)&&id!==seatId);
     }
   }
+  const betRecord:FiveCardDrawBetRecord={seatId,phase:state.phase,action,amountUnits:amount};
   let next:{[K in keyof FiveCardDrawState]?:FiveCardDrawState[K]}={sequence:state.sequence+1,activeSeatIds:active,foldedSeatIds:folded,pendingSeatIds:pending,
-    currentActorId:pending[0]??null,contributionsUnits:total,streetContributionsUnits:street,currentBetUnits:currentBet,lastAction:{seatId,action,amountUnits:amount}};
+    currentActorId:pending[0]??null,contributionsUnits:total,streetContributionsUnits:street,currentBetUnits:currentBet,betHistory:[...state.betHistory,betRecord],lastAction:{seatId,action,amountUnits:amount}};
   let output={...state,...next} as FiveCardDrawState;
   if(active.length===1)return completeMatch(output);
   if(pending.length===0)output=finishBettingStreet(output);
@@ -183,10 +195,16 @@ function orderedAfterDealer(seats:readonly FiveCardDrawSeatId[],dealerIndex:numb
 function orderAfterSeat(seats:readonly FiveCardDrawSeatId[],seatId:FiveCardDrawSeatId):FiveCardDrawSeatId[]{const index=seats.indexOf(seatId);if(index<0)return [...seats];return [...seats.slice(index+1),...seats.slice(0,index+1)];}
 function stateSeatAt(seats:readonly FiveCardDrawSeatId[],index:number):FiveCardDrawSeatId{return seats[((index%seats.length)+seats.length)%seats.length]!;}
 function potAmount(state:FiveCardDrawState):number{return (state.baseStake??0)*Object.values(state.contributionsUnits).reduce((sum,value)=>sum+value,0);}
+function potUnits(state:FiveCardDrawState):number{return Object.values(state.contributionsUnits).reduce((sum,value)=>sum+value,0);}
 function emptyCards():Record<FiveCardDrawSeatId,StandardCardId[]>{return {player:[],"npc-1":[],"npc-2":[],"npc-3":[]};}
 function emptyNumbers():Record<FiveCardDrawSeatId,number>{return {player:0,"npc-1":0,"npc-2":0,"npc-3":0};}
 function validateContext(context:FiveCardDrawContext):void {
   if(!context.sessionId.trim())throw new Error("five_card_draw_context_invalid");
   if(context.opponents.length<1||context.opponents.length>3||new Set(context.opponents.map((opponent)=>opponent.id)).size!==context.opponents.length)throw new Error("five_card_draw_opponents_invalid");
-  for(const opponent of context.opponents)for(const value of Object.values(opponent.persona))if(!Number.isFinite(value)||value<0||value>1)throw new Error("five_card_draw_persona_invalid");
+  for(const opponent of context.opponents){
+    const {signalTrust,tellStyle,...bounded}=opponent.persona;
+    if(Object.values(bounded).some((value)=>!Number.isFinite(value)||value<0||value>1)
+      ||!Number.isFinite(signalTrust)||signalTrust< -1||signalTrust>1
+      ||!["open","guarded","bluffer","standard"].includes(tellStyle))throw new Error("five_card_draw_persona_invalid");
+  }
 }

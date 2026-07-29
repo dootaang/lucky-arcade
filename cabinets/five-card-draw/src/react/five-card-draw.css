@@ -149,6 +149,11 @@
 .draw-seat-title div { display: grid; min-width: 0; }
 .draw-seat-title strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .draw-seat-title small { color: var(--draw-muted); }
+.draw-tell { margin-left: auto; padding: 0.12rem 0.38rem; color: var(--draw-muted); font-size: 0.64rem; font-style: normal; border: 1px solid rgb(184 197 194 / 24%); border-radius: 999px; }
+.draw-tell-confident { color: #8fe7c3; border-color: rgb(84 214 164 / 42%); }
+.draw-tell-uneasy { color: #ffb0a8; border-color: rgb(242 112 102 / 42%); }
+.draw-seat[data-tell="confident"] > .draw-seat-title > img { box-shadow: 0 0 0.75rem rgb(84 214 164 / 28%); }
+.draw-seat[data-tell="uneasy"] > .draw-seat-title > img { box-shadow: 0 0 0.75rem rgb(242 112 102 / 28%); }
 
 /* 손패 */
 .draw-cards { --draw-card-w: clamp(2.4rem, 5.6vw, 4.2rem); min-height: calc(var(--draw-card-w) * 1.4); max-width: 100%; }

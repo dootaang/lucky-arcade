@@ -8,8 +8,9 @@ import {
 import { useEffect, useMemo, useState, type CSSProperties, type ReactElement, type ReactNode } from "react";
 import {
   FIVE_CARD_DRAW_MAX_EXPOSURE_UNITS, FIVE_CARD_DRAW_STAKES, analyzeFiveCardDrawGuide, betActionGuide, exchangeCountGuide,
-  legalPlayerBetActions, type FiveCardDrawAction, type FiveCardDrawBetAction, type FiveCardDrawOpponent,
-  type FiveCardDrawSeatId, type FiveCardDrawStake, type FiveCardDrawState,
+  fiveCardDrawNpcTells, legalPlayerBetActions, type FiveCardDrawAction, type FiveCardDrawBetAction, type FiveCardDrawOpponent,
+  type FiveCardDrawTell,
+  type FiveCardDrawNpcSeatId, type FiveCardDrawSeatId, type FiveCardDrawStake, type FiveCardDrawState,
 } from "../index.ts";
 import { handHighlight, handTier, planFiveCardDrawStage, type DrawStageEvent } from "./presentation.ts";
 import "@lucky-arcade/ui/card-stage.css";
@@ -20,7 +21,10 @@ const SEAT_SLOTS: Readonly<Record<number, readonly string[]>> = { 1: ["top"], 2:
 const DRAW_FLIGHT_MS = 300;
 const DRAW_STAGGER_MS = 70;
 
-export interface FiveCardDrawOpponentView extends FiveCardDrawOpponent { portrait?: string }
+export interface FiveCardDrawOpponentView extends FiveCardDrawOpponent {
+  portrait?: string;
+  portraits?: Readonly<Record<FiveCardDrawTell, string>>;
+}
 export interface FiveCardDrawScreenProps {
   state:FiveCardDrawState;opponents:readonly FiveCardDrawOpponentView[];atlas:CourtAtlas;balance:number;busy:boolean;error:string;
   beginner:boolean;onBeginner(value:boolean):void;onStart(opponents:readonly FiveCardDrawOpponentView[],stake:FiveCardDrawStake):void;
@@ -49,6 +53,7 @@ export function FiveCardDrawScreen(props:FiveCardDrawScreenProps):ReactElement {
   const potSettled=state.phase==="complete"&&(event?.kind==="award"||settled);
   const muckCount=Object.values(state.discarded).reduce((sum,cards)=>sum+cards.length,0)+state.foldedSeatIds.length*5;
   const verdictVisible=state.phase==="complete"&&(event===null||event.kind==="verdict"||event.kind==="award");
+  const npcTells=fiveCardDrawNpcTells(state);
 
   useEffect(()=>{setSelectedCards(new Set());},[state.phase,state.currentActorId]);
   useEffect(()=>{if(settled)setShownBalance(props.balance);},[props.balance,settled]);
@@ -78,13 +83,15 @@ export function FiveCardDrawScreen(props:FiveCardDrawScreenProps):ReactElement {
     <header><button className="draw-icon-button" onClick={props.onExit} aria-label="카지노로 돌아가기"><IconArrowLeft/></button><div><span className="draw-eyebrow">ADMIN PREVIEW</span><h1>파이브 카드 드로 포커</h1></div><strong>{shownBalance.toLocaleString("ko-KR")} 시험 P</strong></header>
     <section className={`draw-table count-${state.context.opponents.length}`} data-stage-root data-phase={state.phase} data-busy={queue.busy||undefined} onPointerDown={queue.busy?queue.skip:undefined}>
       <div className="draw-opponents">{state.context.opponents.map((opponent,index)=>{
-        const seatId=`npc-${index+1}` as FiveCardDrawSeatId,view=props.opponents.find((item)=>item.id===opponent.id);
+        const seatId=`npc-${index+1}` as FiveCardDrawNpcSeatId,view=props.opponents.find((item)=>item.id===opponent.id);
         const folded=state.foldedSeatIds.includes(seatId),open=revealed.has(seatId);
+        const tell=npcTells[seatId]??"neutral";
+        const portrait=view?.portraits?.[tell]??view?.portrait;
         const value=open?state.result?.values[seatId]:undefined;
         const highlight=open?handHighlight(state.hands[seatId],value):null;
-        return <article className={`draw-seat draw-seat-${slots[index]??"top"}${state.currentActorId===seatId?" is-active":""}${folded?" is-folded":""}${verdictVisible&&state.result?.winnerSeatIds.includes(seatId)?" is-winner":""}${event?.kind==="check"&&event.seatId===seatId?" is-checking":""}`} key={seatId} {...stageAnchor(`seat:${seatId}`)}>
+        return <article className={`draw-seat draw-seat-${slots[index]??"top"}${state.currentActorId===seatId?" is-active":""}${folded?" is-folded":""}${verdictVisible&&state.result?.winnerSeatIds.includes(seatId)?" is-winner":""}${event?.kind==="check"&&event.seatId===seatId?" is-checking":""}`} key={seatId} data-tell={tell} {...stageAnchor(`seat:${seatId}`)}>
           <ActionHalo active={state.currentActorId===seatId&&!folded}/>
-          <div className="draw-seat-title">{view?.portrait?<img src={view.portrait} alt=""/>:<span>{opponent.name.slice(0,1)}</span>}<div><strong>{opponent.name}</strong><small>{seatStatus(state,seatId,event,verdictVisible,revealed.has(seatId))}</small></div></div>
+          <div className="draw-seat-title">{portrait?<img src={portrait} alt=""/>:<span>{opponent.name.slice(0,1)}</span>}<div><strong>{opponent.name}</strong><small>{seatStatus(state,seatId,event,verdictVisible,revealed.has(seatId))}</small></div><i className={`draw-tell draw-tell-${tell}`}>{tellLabel(tell)}</i></div>
           <CardFan className={`draw-cards compact${event?.kind==="fold"&&event.seatId===seatId?" is-mucking":""}${event?.kind==="stand-pat"&&event.seatId===seatId?" is-standing-pat":""}`} count={5} anchor={`hand:${seatId}`}>
             {/* 폴드한 패는 muck으로 던져진 뒤 좌석에서 사라진다. 끝까지 공개하지 않는다. */}
             {folded?null:state.hands[seatId].map((card,cardIndex)=><CardFanItem key={`${seatId}-${cardIndex}`} index={cardIndex} count={5} className={cardClassName(card,open,highlight,arrivals,event)} {...arrivalStyle(card,arrivals)}>
@@ -233,6 +240,7 @@ function standardCardLabel(card:StandardCardId):string {
   return `${suitName} ${rank.toUpperCase()}`;
 }
 
+function tellLabel(tell:FiveCardDrawTell):string{return tell==="confident"?"여유":tell==="uneasy"?"긴장":"무표정";}
 function fillUnique(current:readonly string[],count:number,opponents:readonly FiveCardDrawOpponentView[]):string[]{const output=[...new Set(current.filter((id)=>opponents.some((opponent)=>opponent.id===id)))].slice(0,count);for(const opponent of opponents){if(output.length>=count)break;if(!output.includes(opponent.id))output.push(opponent.id);}return output;}
 function actionLabel(action:FiveCardDrawBetAction,state:FiveCardDrawState):string {const cost=actionCost(action,state);return action==="check"?"체크":action==="fold"?"폴드":`${action==="call"?"콜":action==="raise"?"레이즈":"베팅"} ${cost} P`;}
 function actionCost(action:FiveCardDrawBetAction,state:FiveCardDrawState):number {if(!state.baseStake)return 0;const own=state.streetContributionsUnits.player;const target=action==="bet"?1:action==="raise"?2:action==="call"?state.currentBetUnits:own;return Math.max(0,target-own)*state.baseStake;}

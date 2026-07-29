@@ -1,7 +1,7 @@
 import type { StandardCardId } from "@lucky-arcade/card-table";
 
-export const FIVE_CARD_DRAW_CONTRACT = "five-card-draw-state/0.2" as const;
-export const FIVE_CARD_DRAW_RULES_VERSION = "temerosa-five-card-draw/0.2" as const;
+export const FIVE_CARD_DRAW_CONTRACT = "five-card-draw-state/0.3" as const;
+export const FIVE_CARD_DRAW_RULES_VERSION = "temerosa-five-card-draw/0.3" as const;
 export const FIVE_CARD_DRAW_TERMS_VERSION = "temerosa-five-card-draw-preview/0.1" as const;
 export const FIVE_CARD_DRAW_MAX_EXPOSURE_UNITS = 5 as const;
 export const FIVE_CARD_DRAW_STAKES = [10, 50, 200] as const;
@@ -13,6 +13,8 @@ export type FiveCardDrawNpcSeatId = "npc-1" | "npc-2" | "npc-3";
 export type FiveCardDrawPhase = "ready" | "opening-bet" | "drawing" | "closing-bet" | "complete";
 export type FiveCardDrawBetAction = "check" | "bet" | "call" | "raise" | "fold";
 export type FiveCardDrawOutcome = "player-win" | "npc-win" | "tie";
+export type FiveCardDrawTell = "confident" | "neutral" | "uneasy";
+export type FiveCardDrawTellStyle = "open" | "guarded" | "bluffer" | "standard";
 
 export type PokerHandCategory =
   | "high-card" | "one-pair" | "two-pair" | "three-of-a-kind" | "straight"
@@ -26,13 +28,15 @@ export interface PokerHandValue {
 }
 
 export interface FiveCardDrawPersona {
-  drawSkill: number;
-  handReading: number;
-  aggression: number;
-  bluffFrequency: number;
-  discipline: number;
-  counterRead: number;
-  tiltResistance: number;
+  /** How readily this character changes cards; this is not poker intelligence. */
+  drawActivity: number;
+  riskAppetite: number;
+  signalAttention: number;
+  /** -1 treats ambiguous signals as bait, 0 ignores them, +1 reads them literally. */
+  signalTrust: number;
+  deceptionBias: number;
+  consistency: number;
+  tellStyle: FiveCardDrawTellStyle;
 }
 
 export interface FiveCardDrawOpponent {
@@ -55,14 +59,26 @@ export interface NpcDrawObservation {
 }
 
 export interface NpcBetObservation {
+  seatId: FiveCardDrawNpcSeatId;
   hand: readonly StandardCardId[];
   phase: "opening-bet" | "closing-bet";
   activeSeatCount: number;
   ownContributionUnits: number;
   currentBetUnits: number;
+  potUnits: number;
   visibleExchangeCounts: Readonly<Partial<Record<FiveCardDrawSeatId, number>>>;
+  visibleTells: Readonly<Partial<Record<FiveCardDrawNpcSeatId, FiveCardDrawTell>>>;
+  betHistory: readonly FiveCardDrawBetRecord[];
   persona: FiveCardDrawPersona;
+  planSeed: string;
   seed: string;
+}
+
+export interface FiveCardDrawBetRecord {
+  seatId: FiveCardDrawSeatId;
+  phase: "opening-bet" | "closing-bet";
+  action: FiveCardDrawBetAction;
+  amountUnits: number;
 }
 
 export interface NpcDrawDecision {
@@ -109,6 +125,7 @@ export interface FiveCardDrawState {
   contributionsUnits: Readonly<Record<FiveCardDrawSeatId, number>>;
   streetContributionsUnits: Readonly<Record<FiveCardDrawSeatId, number>>;
   currentBetUnits: number;
+  betHistory: readonly FiveCardDrawBetRecord[];
   lastAction: { seatId: FiveCardDrawSeatId; action: FiveCardDrawBetAction | "exchange"; amountUnits: number } | null;
   result: FiveCardDrawResult | null;
 }
@@ -132,6 +149,8 @@ export interface FiveCardDrawPublicView {
   playerHand: readonly StandardCardId[];
   npcHands: Readonly<Record<FiveCardDrawNpcSeatId, readonly StandardCardId[] | null>>;
   exchangeCounts: Readonly<Partial<Record<FiveCardDrawSeatId, number>>>;
+  npcTells: Readonly<Partial<Record<FiveCardDrawNpcSeatId, FiveCardDrawTell>>>;
+  betHistory: readonly FiveCardDrawBetRecord[];
   pot: number;
   result: FiveCardDrawResult | null;
 }

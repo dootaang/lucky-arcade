@@ -14,7 +14,7 @@ const context: FiveCardDrawContext = {
   opponents: Array.from({ length: 3 }, (_, index) => ({
     id: `npc-${index}`,
     name: `NPC ${index}`,
-    persona: { drawSkill: .7, handReading: .6, aggression: .5, bluffFrequency: .2, discipline: .7, counterRead: .4, tiltResistance: .8 },
+    persona: { drawActivity: .7, riskAppetite: .5, signalAttention: .6, signalTrust: .4, deceptionBias: .2, consistency: .7, tellStyle: "standard" },
   })),
 };
 

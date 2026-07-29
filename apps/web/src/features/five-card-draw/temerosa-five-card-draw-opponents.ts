@@ -4,7 +4,7 @@ import type { TemerosaCasinoPortraitAsset } from "@lucky-arcade/old-maid";
 import { createTemerosaCasinoRoster } from "../../lib/temerosa-casino-roster.ts";
 
 export interface TemerosaFiveCardDrawOpponent extends FiveCardDrawOpponent {
-  portraitAssetId: string;
+  portraitAssetIds: Readonly<Record<"confident" | "neutral" | "uneasy", string>>;
 }
 
 /**
@@ -23,15 +23,19 @@ function toOpponent(character: OldMaidCharacter): TemerosaFiveCardDrawOpponent {
   return {
     id: character.id,
     name: character.name,
-    portraitAssetId: character.portraits.neutral,
+    portraitAssetIds: {
+      confident: character.portraits.pleased,
+      neutral: character.portraits.neutral,
+      uneasy: character.portraits.tense,
+    },
     persona: {
-      drawSkill: level(source.reorderActivity, 0.48, 0.68, 0.86),
-      handReading: level(source.signalAttention, 0.34, 0.58, 0.82),
-      aggression: clamp(level(source.decoyBias, 0.32, 0.56, 0.78) + (tellStyle === "bluffer" ? 0.08 : 0)),
-      bluffFrequency: clamp(level(invertHonesty(source), 0.2, 0.48, 0.76) + (tellStyle === "bluffer" ? 0.1 : 0)),
-      discipline: consistency(source.consistency, 0.82, 0.65, 0.38),
-      counterRead: source.counterRead === "suspicious" ? 0.78 : source.counterRead === "mixed" ? 0.55 : 0.3,
-      tiltResistance: consistency(source.consistency, 0.86, 0.64, 0.36),
+      drawActivity: level(source.reorderActivity, 0.34, 0.62, 0.86),
+      riskAppetite: clamp(level(source.decoyBias, 0.3, 0.52, 0.72) + (tellStyle === "bluffer" ? 0.08 : 0)),
+      signalAttention: level(source.signalAttention, 0.34, 0.58, 0.82),
+      signalTrust: source.counterRead === "literal" ? 0.75 : source.counterRead === "suspicious" ? -0.65 : 0.05,
+      deceptionBias: clamp(level(invertHonesty(source), 0.18, 0.46, 0.72) + level(source.decoyBias, 0, 0.06, 0.12) + (tellStyle === "bluffer" ? 0.08 : 0)),
+      consistency: consistency(source.consistency, 0.86, 0.66, 0.4),
+      tellStyle,
     },
   };
 }

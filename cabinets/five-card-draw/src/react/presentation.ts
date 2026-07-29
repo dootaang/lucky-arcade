@@ -129,7 +129,7 @@ function hesitationFor(state: FiveCardDrawState, seatId: FiveCardDrawSeatId): nu
   if (seatId === "player") return 0;
   const opponent = state.context.opponents[Number(seatId.slice(-1)) - 1];
   if (!opponent) return 90;
-  return Math.round((1 - opponent.persona.aggression) * 170);
+  return Math.round((1 - opponent.persona.riskAppetite) * 170);
 }
 
 function seatsAfterDealer(state: FiveCardDrawState): readonly FiveCardDrawSeatId[] {
