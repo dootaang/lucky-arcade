@@ -23,6 +23,17 @@ describe("frozen Temerosa ledger profiles", () => {
     expect(TEMEROSA_NPC_GAMBLING_PROFILES.find((profile)=>profile.id==="pale")!.openingBalance).toBe(17_600);
   });
 
+  it("freezes a complete, ordered analytics bridge without feeding it into balances", () => {
+    const contract = TEMEROSA_NPC_LEDGER_CONTRACT;
+    const ids = contract.profiles.map((profile) => profile.id).sort();
+    expect(contract.profitHistory.length).toBeLessThanOrEqual(6);
+    expect(contract.profitHistory.map((entry) => entry.utcDay)).toEqual([contract.epochUtcDay - 1]);
+    for (const entry of contract.profitHistory) {
+      expect(Object.keys(entry.profits).sort()).toEqual(ids);
+      expect(Object.values(entry.profits).every(Number.isSafeInteger)).toBe(true);
+    }
+  });
+
   it("keeps Levillotte volatile and Traver restrained", () => {
     const levillotte = TEMEROSA_NPC_GAMBLING_PROFILES.find((profile) => profile.id === "levillotte")!;
     const traver = TEMEROSA_NPC_GAMBLING_PROFILES.find((profile) => profile.id === "traver")!;

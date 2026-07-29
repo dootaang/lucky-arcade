@@ -591,13 +591,6 @@ function compareText(a:string,b:string):number{return a<b?-1:a>b?1:0;}
 function validateDay(profiles:readonly NpcGamblingProfile[],dayIndex:number,openings:Readonly<Record<string,number>>,contract:NpcLedgerContract):void {
   if(contract.version!=="npc-ledger/0.8"||!Number.isSafeInteger(contract.epochUtcDay)||!Number.isSafeInteger(dayIndex)||dayIndex<0)throw new Error("npc_ledger_invalid_contract");
   if(profiles.length===0||new Set(profiles.map((p)=>p.id)).size!==profiles.length||profiles.some((profile)=>!contract.profiles.some((entry)=>entry.id===profile.id)))throw new Error("npc_ledger_invalid_profiles");
-  const historyIds=contract.profiles.map((profile)=>profile.id).toSorted(compareText);
-  if(contract.profitHistory.length>6||contract.profitHistory.some((entry,index)=>
-    !Number.isSafeInteger(entry.utcDay)||entry.utcDay>=contract.epochUtcDay
-    ||index>0&&contract.profitHistory[index-1]!.utcDay>=entry.utcDay
-    ||Object.keys(entry.profits).toSorted(compareText).join("\u0000")!==historyIds.join("\u0000")
-    ||Object.values(entry.profits).some((value)=>!Number.isSafeInteger(value))
-  ))throw new Error("npc_ledger_invalid_profit_history");
   for(const profile of profiles){
     if(!profile.id||!profile.name||!Number.isSafeInteger(profile.openingBalance)||profile.openingBalance<=0)throw new Error("npc_ledger_invalid_profile");
     for(const value of [profile.riskAppetite,profile.discipline,profile.lossChasing,profile.winPressing,profile.stopLossRatio,profile.takeProfitRatio,profile.maxExposureRatio,...Object.values(profile.skills)]) if(!(value>=0&&value<=1))throw new Error("npc_ledger_invalid_profile");

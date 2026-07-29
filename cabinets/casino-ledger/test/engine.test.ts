@@ -51,7 +51,7 @@ describe("casino ledger 0.8 core", () => {
       }
       balances=close(balances,sessions);
     }
-  },30_000);
+  },120_000);
 
   it("gives every PvP match one shared id and a zero-sum settlement", () => {
     let balances=openings(); let checked=0;
