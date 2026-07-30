@@ -114,7 +114,7 @@ const plannedTables = [
 ] as const;
 
 /** A suit stamped on each table, so a bare card still reads as a casino table. */
-const TABLE_SUITS: Record<string, string> = { "temerosa-old-maid": "♠", "temerosa-match-pairs": "♥", "temerosa-slot": "♦", "indian-poker": "♦", "temerosa-high-low": "♠", "temerosa-blackjack": "♣", "temerosa-doubt": "♦", "temerosa-one-card": "♥", "temerosa-texas-holdem": "♠", "temerosa-five-card-draw": "♣", "관전석": "♠", "알제의 교환소": "♦" };
+const TABLE_SUITS: Record<string, string> = { "temerosa-old-maid": "♠", "temerosa-match-pairs": "♥", "temerosa-slot": "♦", "indian-poker": "♦", "temerosa-high-low": "♠", "temerosa-blackjack": "♣", "temerosa-doubt": "♦", "temerosa-one-card": "♥", "temerosa-texas-holdem": "♠", "temerosa-five-card-draw": "♣", "temerosa-video-poker": "♦", "lucky-derby-lab": "♠", "temerosa-margin": "♥", "gfl-favorite-cup": "♥", "gfl-sprite-memory": "♣", "gfl-ember": "♠", "관전석": "♠", "알제의 교환소": "♦" };
 
 function VenueFloor({ venue, balance, onPlay, onPreview }: { venue: VenueManifest; balance: number; onPlay(id: string): void; onPreview(id: string): void }) {
   const tables = venue.tables.flatMap((table) => {
@@ -136,12 +136,12 @@ function VenueFloor({ venue, balance, onPlay, onPreview }: { venue: VenueManifes
     }))} /></Suspense>
     <div className="table-grid">
       <p className="table-locked-divider ca-label" aria-hidden="true">개장 준비 중</p>
-      {preparing.map(({ entry, status }) => <article className="table-card coming-soon" key={entry.manifest.id}>
+      {preparing.map(({ entry }) => <article className="table-card coming-soon" key={entry.manifest.id}>
         <span className="table-suit" aria-hidden="true">{TABLE_SUITS[entry.manifest.id] ?? "♠"}</span>
-        <span className="table-group ca-label">게임 테이블</span>
+        <span className="table-group ca-label">{entry.badge}</span>
         <h3 className="ca-serif">{entry.manifest.title.replace("테메로세 ", "")}</h3>
         <strong>개장 준비 중</strong>
-        {status === "admin-preview" && <button className="admin-preview-entry" onClick={() => onPreview(entry.manifest.id)}>관리자 시험 입장</button>}
+        <button className="admin-preview-entry" onClick={() => onPreview(entry.manifest.id)}>관리자 시험 입장</button>
       </article>)}
       {plannedTables.map((table) => <article className="table-card coming-soon" key={table.group}>
         <span className="table-suit" aria-hidden="true">{TABLE_SUITS[table.title] ?? "♣"}</span>

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { getCabinetRegistration, getCabinetWorld, listBuiltInCabinets, selectOpeningCabinet } from "./registry.tsx";
-import { PUBLIC_CABINET_IDS } from "../venues/registry.ts";
+import { getVenueTableForCabinet, PUBLIC_CABINET_IDS } from "../venues/registry.ts";
 
 describe("public cabinet visibility", () => {
   it("derives public cabinets from the public Venue", () => {
@@ -12,6 +12,13 @@ describe("public cabinet visibility", () => {
   it("can expose retained cabinets explicitly for development regression tests", () => {
     expect(listBuiltInCabinets(true).map((entry) => entry.manifest.id)).toContain("gfl-ember");
     expect(getCabinetRegistration("temerosa-margin", true)?.manifest.id).toBe("temerosa-margin");
+    expect(getCabinetRegistration("temerosa-video-poker", true)?.manifest.version).toBe("video-poker/0.1");
+  });
+
+  it("lists every built-in implementation as open or admin-preview", () => {
+    const builtIns = listBuiltInCabinets(true);
+    expect(builtIns).toHaveLength(16);
+    for (const entry of builtIns) expect(getVenueTableForCabinet(entry.manifest.id)?.status).toMatch(/^(open|admin-preview)$/);
   });
 
   it("keeps hidden cabinets out of resume and lookup UI", () => {

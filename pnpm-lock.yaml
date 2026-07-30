@@ -127,6 +127,9 @@ importers:
       '@lucky-arcade/ui':
         specifier: workspace:*
         version: link:../../packages/ui
+      '@lucky-arcade/video-poker':
+        specifier: workspace:*
+        version: link:../../cabinets/video-poker
       '@tabler/icons-react':
         specifier: 3.45.0
         version: 3.45.0(react@19.2.8)

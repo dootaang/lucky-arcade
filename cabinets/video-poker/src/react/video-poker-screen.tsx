@@ -17,15 +17,16 @@ export interface VideoPokerScreenProps {
   dealerSlot?: ReactNode;
   /** Reserved for future character dialogue without coupling dialogue to the rules engine. */
   dialogueSlot?: ReactNode;
+  onExit?(): void;
   onAction(action: VideoPokerAction): void | Promise<void>;
 }
 
-export function VideoPokerScreen({ state, atlas, nextDeal, busy = false, dealerSlot, dialogueSlot, onAction }: VideoPokerScreenProps) {
+export function VideoPokerScreen({ state, atlas, nextDeal, busy = false, dealerSlot, dialogueSlot, onExit, onAction }: VideoPokerScreenProps) {
   const holding = state.status === "holding";
   return <main className="video-poker-shell">
     <header>
       <div><small>JACKS OR BETTER</small><h1>테메로세 비디오 포커</h1></div>
-      {state.wager && <strong>{state.wager.stake} P × {state.wager.multiplier}</strong>}
+      <div className="video-poker-header-actions">{state.wager && <strong>{state.wager.stake} P × {state.wager.multiplier}</strong>}{onExit && <button type="button" onClick={onExit}>카지노로</button>}</div>
     </header>
     <section className="video-poker-table">
       <aside className="video-poker-dealer-slot" aria-label="딜러 영역">

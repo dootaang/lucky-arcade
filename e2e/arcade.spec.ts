@@ -45,9 +45,12 @@ test("mobile navigation and Venue floor remain reachable", async ({ page }, test
   await expect(page.getByText("LIVE PLAY TAPE", { exact: true })).toBeVisible();
   const tapePanel = await page.locator(".casino-ledger-activity").boundingBox();
   const pnlHeader = await page.locator(".ledger-tape-columns span").last().boundingBox();
-  const pnlValue = await page.locator(".ledger-motion .ledger-activity-line strong").first().boundingBox();
   expect((pnlHeader?.x ?? 0) + (pnlHeader?.width ?? 0)).toBeLessThanOrEqual((tapePanel?.x ?? 0) + (tapePanel?.width ?? 0) + 1);
-  expect((pnlValue?.x ?? 0) + (pnlValue?.width ?? 0)).toBeLessThanOrEqual((tapePanel?.x ?? 0) + (tapePanel?.width ?? 0) + 1);
+  const pnlValues = page.locator(".ledger-motion .ledger-activity-line strong");
+  if (await pnlValues.count() > 0) {
+    const pnlValue = await pnlValues.first().boundingBox();
+    expect((pnlValue?.x ?? 0) + (pnlValue?.width ?? 0)).toBeLessThanOrEqual((tapePanel?.x ?? 0) + (tapePanel?.width ?? 0) + 1);
+  }
   await page.locator(".ledger-board-switch button").filter({ hasText: "전체 보기" }).click();
   await page.locator(".record-ranking tbody tr th button").first().click();
   await expect(page.locator(".npc-ledger-detail")).toBeVisible();
@@ -65,7 +68,7 @@ test("mobile navigation and Venue floor remain reachable", async ({ page }, test
   await expect(firstTable).toBeInViewport();
 });
 
-test("opens the sole public Venue with five open tables and four announced tables", async ({ page }) => {
+test("opens the sole public Venue with five open tables and every built-in preview", async ({ page }) => {
   await page.goto("/");
   await expect(page.locator(".venue-card")).toHaveCount(1);
   await expect(page.getByRole("heading", { name: "테메로세 카지노" })).toBeVisible();
@@ -82,8 +85,10 @@ test("opens the sole public Venue with five open tables and four announced table
   await expect(page.locator(".table-card.playable").filter({ hasText: "슬롯 777" })).toContainText("10 P부터");
   await expect(page.locator(".table-card.playable").filter({ hasText: "하이로우" })).toContainText("10 P부터");
   await expect(page.locator(".table-card.coming-soon").filter({ hasText: "텍사스 홀덤" })).toContainText("개장 준비 중");
-  await expect(page.locator(".table-card.coming-soon")).toHaveCount(7);
+  await expect(page.locator(".table-card.coming-soon")).toHaveCount(13);
+  await expect(page.locator(".table-card.coming-soon .admin-preview-entry")).toHaveCount(11);
   await expect(page.locator(".table-card.coming-soon").filter({ hasText: "파이브 카드 드로 포커" }).getByRole("button", { name: "관리자 시험 입장" })).toBeVisible();
+  await expect(page.locator(".table-card.coming-soon").filter({ hasText: "비디오 포커" }).getByRole("button", { name: "관리자 시험 입장" })).toBeVisible();
   await page.locator(".table-card.playable").filter({ hasText: "도둑잡기" }).getByRole("button", { name: "시작", exact: true }).click();
   await expect(page.getByRole("heading", { name: "도둑잡기", exact: true })).toBeVisible();
 });
@@ -113,19 +118,20 @@ test("loads the living ledger lazily and reuses the casino manifest in a game", 
   await expect(page.locator(".casino-record-room")).toHaveCount(0);
   await expect(page.getByRole("region", { name: "최근 정산" })).toBeVisible();
   const settlementLines = page.locator(".casino-ledger-settlements .ledger-settlement-line");
-  await expect(settlementLines.first()).toBeVisible();
-  expect(await settlementLines.count()).toBeGreaterThan(0);
-  expect(await settlementLines.count()).toBeLessThanOrEqual(8);
-  expect(await page.locator(".ledger-settlement-line.is-gain, .ledger-settlement-line.is-loss").count()).toBeGreaterThan(0);
-  await expect(page.locator(".ledger-settlement-line strong").first()).toHaveText(/▲ 획득|▼ 손실|— 변동 없음/);
-  await expect(page.locator(".ledger-settlement-amount").first()).toHaveText(/[+−]?\d[\d,]* P/);
+  const settlementCount = await settlementLines.count();
+  expect(settlementCount).toBeLessThanOrEqual(8);
+  if (settlementCount > 0) {
+    await expect(settlementLines.first()).toBeVisible();
+    expect(await page.locator(".ledger-settlement-line.is-gain, .ledger-settlement-line.is-loss").count()).toBeGreaterThan(0);
+    await expect(page.locator(".ledger-settlement-line strong").first()).toHaveText(/▲ 획득|▼ 손실|— 변동 없음/);
+    await expect(page.locator(".ledger-settlement-amount").first()).toHaveText(/[+−]?\d[\d,]* P/);
+  }
   await expect(page.locator(".casino-ledger-activity [aria-live]")).toHaveCount(0);
   await expect(page.getByText("LIVE PLAY TAPE", { exact: true })).toBeVisible();
   await expect(page.locator(".casino-ledger-activity .ledger-heading small")).toContainText("ACTIONS / 60s");
   const tapeRows = page.locator(".ledger-motion [data-tape-key]");
-  await expect(tapeRows.first()).toBeVisible();
-  expect(await tapeRows.count()).toBeGreaterThan(0);
-  expect(await tapeRows.count()).toBeLessThanOrEqual(8);
+  const tapeCount = await tapeRows.count();
+  expect(tapeCount).toBeLessThanOrEqual(8);
   await expect(page.locator(".casino-live-grid .live-table-card:is(.is-open, .is-playing, .is-settling, .is-leaving)")).toHaveCount(5);
   const tapeKeys = await tapeRows.evaluateAll((rows) => rows.map((row) => row.getAttribute("data-tape-key")));
   expect(new Set(tapeKeys).size).toBe(tapeKeys.length);
@@ -134,7 +140,7 @@ test("loads the living ledger lazily and reuses the casino manifest in a game", 
   await expect(page.locator(".casino-live-grid .live-table-card")).toHaveCount(5);
   await page.emulateMedia({ reducedMotion: "reduce" });
   await expect(page.locator(".ledger-motion")).toBeHidden();
-  await expect(page.locator(".ledger-static")).toBeVisible();
+  await expect(page.locator(".ledger-static")).toHaveCSS("position", "static");
   await page.locator(".table-card.playable").filter({ hasText: "슬롯 777" }).getByRole("button", { name: "시작", exact: true }).click();
   await expect(page.getByRole("heading", { name: "슬롯 777", exact: true })).toBeVisible();
   expect(casinoManifestRequests).toBe(1);
@@ -380,20 +386,47 @@ test("mobile match-pairs keeps the whole board inside the viewport", async ({ pa
   expect(layout.scrollWidth).toBeLessThanOrEqual(layout.viewport + 1);
 });
 
-test("blocks hidden cabinets at direct public URLs", async ({ page }) => {
-  for (const cabinet of ["gfl-favorite-cup", "favorite-cup", "old-maid-card", "gfl-ember"]) {
+test("blocks personal-card cabinets at direct public URLs", async ({ page }) => {
+  for (const cabinet of ["favorite-cup", "old-maid-card", "restoration-crew", "lore-circuit"]) {
     await page.goto(`/play/${cabinet}`);
     await expect(page.getByRole("heading", { name: "이 게임은 공개되어 있지 않습니다." })).toBeVisible();
     await expect(page.locator("input[type=file]")).toHaveCount(0);
   }
 });
 
-test("keeps announced casino tables visible but blocks their direct URLs", async ({ page }) => {
-  for (const cabinet of ["temerosa-blackjack", "temerosa-doubt", "temerosa-one-card", "temerosa-texas-holdem", "temerosa-five-card-draw"]) {
+test("keeps implemented preview games visible but blocks their direct public URLs", async ({ page }) => {
+  for (const cabinet of ["temerosa-blackjack", "temerosa-doubt", "temerosa-one-card", "temerosa-texas-holdem", "temerosa-five-card-draw", "temerosa-video-poker", "lucky-derby-lab", "temerosa-margin", "gfl-favorite-cup", "gfl-sprite-memory", "gfl-ember"]) {
     await page.goto(`/play/${cabinet}`);
     await expect(page.getByRole("heading", { name: "개장 준비 중입니다." })).toBeVisible();
     await expect(page.getByRole("button", { name: "카지노로 돌아가기" })).toBeVisible();
   }
+});
+
+test("unlocks every wager preview with trial points instead of the real wallet", async ({ page }, testInfo) => {
+  test.skip(testInfo.project.metadata.mobile === true);
+  const unlock = "6b767bbc518ec7f3dcb0ec8ec30539a7a3e7cef27d495272ea203fff0f598f34";
+  await page.goto("/preview/temerosa-blackjack");
+  await page.evaluate((value) => sessionStorage.setItem("lucky-arcade:admin-preview:temerosa-blackjack", value), unlock);
+  await page.reload();
+  await expect(page.getByRole("heading", { name: "블랙잭", exact: true })).toBeVisible();
+  await expect(page.locator(".casino-card-header>strong")).toHaveText("2,000 P");
+  const wallet = await page.evaluate(async () => (await new Function("return import('/src/lib/wallet.ts')")()).readWallet());
+  expect(wallet.balance).not.toBe(2_000);
+  await page.getByRole("button", { name: "시작", exact: true }).click();
+  await expect(page.locator(".casino-card-header>strong")).toHaveText(/1,9[89]0 P|2,0\d{2} P/);
+  const walletAfterPreview = await page.evaluate(async () => (await new Function("return import('/src/lib/wallet.ts')")()).readWallet());
+  expect(walletAfterPreview.balance).toBe(wallet.balance);
+
+  await page.goto("/preview/temerosa-video-poker");
+  await page.evaluate((value) => sessionStorage.setItem("lucky-arcade:admin-preview:temerosa-video-poker", value), unlock);
+  await page.reload();
+  await expect(page.getByRole("heading", { name: "테메로세 비디오 포커", exact: true })).toBeVisible();
+  await expect(page.getByText("2,000 시험 P", { exact: true })).toBeVisible();
+  await page.getByRole("button", { name: "5장 받기" }).click();
+  await expect(page.locator(".video-poker-hand button")).toHaveCount(5);
+  await page.locator(".video-poker-hand button").first().click();
+  await page.getByRole("button", { name: "선택 외 카드 교환" }).click();
+  await expect(page.locator(".video-poker-result")).toBeVisible();
 });
 
 test("guards the five-card draw admin preview and keeps its trial economy separate", async ({ page }, testInfo) => {

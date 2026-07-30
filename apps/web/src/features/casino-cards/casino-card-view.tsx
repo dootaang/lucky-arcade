@@ -14,6 +14,8 @@ import { loadTemerosaCasinoAssets } from "../../lib/temerosa-content.ts";
 import { readWallet } from "../../lib/wallet.ts";
 import { summarizeOpponentRecords } from "../../lib/opponent-records.ts";
 
+export { CasinoCardPreviewView } from "./casino-card-preview-view.tsx";
+
 const HIGH_LOW_HOUSE_ID = "wares";
 
 interface HouseDealer {

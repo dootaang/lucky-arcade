@@ -4,7 +4,7 @@ import { lazy, Suspense, type ComponentType, type LazyExoticComponent } from "re
 import { getVenueForCabinet, PUBLIC_CABINET_IDS } from "../venues/registry.ts";
 
 export interface CabinetViewProps { analyzed: AnyAnalyzedCard; onExit(): void; }
-export interface CabinetViewContext { analyzed?: AnyAnalyzedCard; onExit(): void; }
+export interface CabinetViewContext { analyzed?: AnyAnalyzedCard; preview?: boolean; onExit(): void; }
 export interface CabinetHostProps extends CabinetViewContext { cabinetId: string; }
 export interface WebCabinetRegistration {
   manifest: CabinetManifest;
@@ -16,6 +16,16 @@ export interface WebCabinetRegistration {
 type CabinetView = LazyExoticComponent<ComponentType<CabinetViewContext>>;
 
 const registrations: readonly WebCabinetRegistration[] = [
+  {
+    manifest: {
+      id: "temerosa-video-poker", version: "video-poker/0.1", title: "테메로세 비디오 포커",
+      description: "카드 다섯 장에서 홀드를 고르고 한 번 교환하는 Jacks or Better.", requiredCapabilities: [],
+      sessionKind: "instant", launchKind: "built-in", resumeLabel: "비디오 포커 이어하기", estimatedMinutes: { min: 1, max: 2 },
+      entry: "wager", wagerTiers: [10, 50, 200],
+    },
+    openingRank: null, badge: "기계 구역",
+    load: async () => { const module = await import("../features/video-poker/video-poker-view.tsx"); return { default: module.default }; },
+  },
   {
     manifest: {
       id: "temerosa-five-card-draw", version: "temerosa-five-card-draw/0.4", title: "파이브 카드 드로 포커",
@@ -32,19 +42,19 @@ const registrations: readonly WebCabinetRegistration[] = [
   },
   {
     manifest: { id: "temerosa-blackjack", version: "casino-cards/0.1", title: "블랙잭", description: "21을 넘지 않게 카드를 받고 하우스보다 높은 수를 만든다.", requiredCapabilities: [], sessionKind: "instant", launchKind: "built-in", resumeLabel: "블랙잭으로 돌아가기", estimatedMinutes: { min: 1, max: 2 }, entry: "wager", wagerTiers: [10, 50, 200] },
-    openingRank: null, badge: "빠른 테이블", load: async () => { const module = await import("../features/casino-cards/casino-card-view.tsx"); return { default: ({ onExit }) => <module.default gameId="blackjack" onExit={onExit} /> }; },
+    openingRank: null, badge: "빠른 테이블", load: async () => { const module = await import("../features/casino-cards/casino-card-view.tsx"); return { default: ({ onExit, preview }) => preview ? <module.CasinoCardPreviewView gameId="blackjack" onExit={onExit} /> : <module.default gameId="blackjack" onExit={onExit} /> }; },
   },
   {
     manifest: { id: "temerosa-doubt", version: "casino-cards/0.1", title: "다우트", description: "상대의 선언과 표정을 읽고 진실인지 거짓인지 가려낸다.", requiredCapabilities: [], sessionKind: "repeat", launchKind: "built-in", resumeLabel: "다우트로 돌아가기", estimatedMinutes: { min: 1, max: 2 }, entry: "wager", wagerTiers: [10, 50, 200] },
-    openingRank: null, badge: "심리 테이블", load: async () => { const module = await import("../features/casino-cards/casino-card-view.tsx"); return { default: ({ onExit }) => <module.default gameId="doubt" onExit={onExit} /> }; },
+    openingRank: null, badge: "심리 테이블", load: async () => { const module = await import("../features/casino-cards/casino-card-view.tsx"); return { default: ({ onExit, preview }) => preview ? <module.CasinoCardPreviewView gameId="doubt" onExit={onExit} /> : <module.default gameId="doubt" onExit={onExit} /> }; },
   },
   {
     manifest: { id: "temerosa-one-card", version: "casino-cards/0.1", title: "원카드", description: "같은 무늬나 숫자를 이어 내고 먼저 손을 비운다.", requiredCapabilities: [], sessionKind: "repeat", launchKind: "built-in", resumeLabel: "원카드로 돌아가기", estimatedMinutes: { min: 2, max: 5 }, entry: "wager", wagerTiers: [10, 50, 200] },
-    openingRank: null, badge: "카드 테이블", load: async () => { const module = await import("../features/casino-cards/casino-card-view.tsx"); return { default: ({ onExit }) => <module.default gameId="one-card" onExit={onExit} /> }; },
+    openingRank: null, badge: "카드 테이블", load: async () => { const module = await import("../features/casino-cards/casino-card-view.tsx"); return { default: ({ onExit, preview }) => preview ? <module.CasinoCardPreviewView gameId="one-card" onExit={onExit} /> : <module.default gameId="one-card" onExit={onExit} /> }; },
   },
   {
     manifest: { id: "temerosa-texas-holdem", version: "casino-cards/0.1", title: "텍사스 홀덤", description: "공용 카드와 두 장의 패로 족보를 만들고 네 거리에서 판돈을 결정한다.", requiredCapabilities: [], sessionKind: "repeat", launchKind: "built-in", resumeLabel: "홀덤으로 돌아가기", estimatedMinutes: { min: 3, max: 7 }, entry: "wager", wagerTiers: [10, 50, 200] },
-    openingRank: null, badge: "메인 테이블", load: async () => { const module = await import("../features/casino-cards/casino-card-view.tsx"); return { default: ({ onExit }) => <module.default gameId="texas-holdem" onExit={onExit} /> }; },
+    openingRank: null, badge: "메인 테이블", load: async () => { const module = await import("../features/casino-cards/casino-card-view.tsx"); return { default: ({ onExit, preview }) => preview ? <module.CasinoCardPreviewView gameId="texas-holdem" onExit={onExit} /> : <module.default gameId="texas-holdem" onExit={onExit} /> }; },
   },
   {
     manifest: {
