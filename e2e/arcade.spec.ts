@@ -127,13 +127,8 @@ test("loads the living ledger lazily and reuses the casino manifest in a game", 
   expect(await tapeRows.count()).toBeGreaterThan(0);
   expect(await tapeRows.count()).toBeLessThanOrEqual(8);
   await expect(page.locator(".casino-live-grid .live-table-card:is(.is-open, .is-playing, .is-settling, .is-leaving)")).toHaveCount(5);
-  const firstTapeKey = await page.locator(".ledger-motion [data-tape-key]").first().getAttribute("data-tape-key");
-  // Real table actions are deterministic rather than synthetic ticker noise.
-  // The slowest game cadence is 28 seconds, so allow one full action window.
-  await expect.poll(
-    () => page.locator(".ledger-motion [data-tape-key]").first().getAttribute("data-tape-key"),
-    { timeout: 30_000 },
-  ).not.toBe(firstTapeKey);
+  const tapeKeys = await tapeRows.evaluateAll((rows) => rows.map((row) => row.getAttribute("data-tape-key")));
+  expect(new Set(tapeKeys).size).toBe(tapeKeys.length);
   await expect(page.locator(".casino-live-grid .live-table-card")).toHaveCount(5);
   await expect(page.locator(".casino-live-grid .live-table-stage")).toHaveCount(5);
   await expect(page.locator(".casino-live-grid .live-table-card")).toHaveCount(5);

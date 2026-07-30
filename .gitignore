@@ -24,3 +24,4 @@ reports/*
 test-results/
 playwright-report/
 /.tmp-*/
+/.codex-remote-attachments/
