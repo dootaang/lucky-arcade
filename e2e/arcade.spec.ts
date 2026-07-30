@@ -445,10 +445,13 @@ test("opens five-card draw publicly and settles its multiplayer pot in the real 
   await page.goto("/play/temerosa-five-card-draw");
   await expect(page.getByRole("heading", { name: "파이브 카드 드로 포커" })).toBeVisible();
   await expect(page.getByText("1,000 P", { exact: true })).toBeVisible();
-  await expect(page.getByRole("button", { name: "3판 · 기본" })).toHaveAttribute("aria-pressed", "true");
-  await page.getByRole("button", { name: "무작위로 채우기" }).click();
-  await expect(page.getByRole("button", { name: "대국 시작" })).toBeEnabled();
-  await page.getByRole("button", { name: "대국 시작" }).click();
+  await expect(page.locator(".draw-setup-table")).toBeVisible();
+  await expect(page.locator(".draw-setup-roster-grid > button")).toHaveCount(30);
+  await expect(page.locator(".draw-setup-table .draw-card")).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "3판", exact: true })).toHaveAttribute("aria-pressed", "true");
+  await page.getByRole("button", { name: "무작위 선택" }).click();
+  await expect(page.getByRole("button", { name: "카드 받기" })).toBeEnabled();
+  await page.getByRole("button", { name: "카드 받기" }).click();
   const landing = await page.locator('.ca-stage-flight[data-flight-to^="hand:npc-"]').first().evaluate(async (flight) => {
     const targetName = flight.getAttribute("data-flight-to");
     const target = targetName ? document.querySelector<HTMLElement>(`[data-stage-anchor="${targetName}"]`) : null;
@@ -506,8 +509,8 @@ test("mobile five-card draw keeps four seats, the pot, and the player hand insid
   await page.evaluate(() => new Promise<void>((resolve, reject) => { const opening = indexedDB.open("lucky-arcade", 9); opening.onerror = () => reject(opening.error); opening.onsuccess = () => { const db = opening.result, transaction = db.transaction("wallet", "readwrite"); transaction.objectStore("wallet").put({ contract: "wallet/0.1", id: "wallet", balance: 1_000, updatedAt: new Date().toISOString() }); transaction.onerror = () => reject(transaction.error); transaction.oncomplete = () => { db.close(); resolve(); }; }; }));
   await page.goto("/play/temerosa-five-card-draw");
   await page.getByRole("button", { name: "4인" }).click();
-  await page.getByRole("button", { name: "무작위로 채우기" }).click();
-  await page.getByRole("button", { name: "대국 시작" }).click();
+  await page.getByRole("button", { name: "무작위 선택" }).click();
+  await page.getByRole("button", { name: "카드 받기" }).click();
   const skip = page.getByRole("button", { name: "연출 건너뛰기" });
   if (await skip.isVisible()) await skip.click();
   await expect(page.locator(".draw-opponents .draw-seat")).toHaveCount(3);

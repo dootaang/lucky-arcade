@@ -45,33 +45,9 @@
 .draw-poker-shell button:disabled { cursor: not-allowed; opacity: 0.42; }
 
 .draw-poker-lobby { overflow: auto; }
-.draw-setup {
-  display: grid;
-  gap: 1rem;
-  width: min(48rem, 100%);
-  margin: 0 auto;
-  padding: clamp(1rem, 3vw, 1.75rem);
-  background: rgb(4 15 11 / 78%);
-  border: 1px solid rgb(228 189 99 / 38%);
-  border-radius: 1.1rem;
-  box-shadow: 0 1.5rem 5rem rgb(0 0 0 / 35%);
-}
-.draw-setup fieldset { min-width: 0; margin: 0; padding: 0.8rem; border: 1px solid rgb(255 255 255 / 12%); border-radius: 0.8rem; }
-.draw-setup legend { padding: 0 0.35rem; color: var(--draw-gold); font-weight: 800; }
-.draw-rules { display: flex; gap: 0.9rem; align-items: flex-start; }
-.draw-rules svg { flex: 0 0 auto; color: var(--draw-gold); }
-.draw-rules p,
-.draw-setup small { color: var(--draw-muted); line-height: 1.55; }
 .draw-segmented { display: flex; gap: 0.45rem; flex-wrap: wrap; margin-bottom: 0.4rem; }
 .draw-segmented button { min-width: 4.5rem; padding: 0.55rem 0.8rem; background: #10261e; }
 .draw-segmented button[aria-pressed="true"] { color: #181006; background: var(--draw-gold); }
-.draw-opponent-selects { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.6rem; margin-bottom: 0.65rem; }
-.draw-opponent-selects label { display: grid; gap: 0.3rem; color: var(--draw-muted); font-size: 0.78rem; }
-.draw-opponent-selects select { width: 100%; min-height: 2.6rem; padding: 0.45rem; color: var(--draw-ink); background: #07130f; border: 1px solid #5f5b4b; border-radius: 0.5rem; }
-.draw-guide-toggle { display: flex; gap: 0.75rem; align-items: center; padding: 0.8rem; background: rgb(228 189 99 / 8%); border-radius: 0.75rem; cursor: pointer; }
-.draw-guide-toggle span { display: grid; gap: 0.15rem; }
-.draw-guide-toggle small { display: block; }
-.draw-start-actions { display: flex; justify-content: flex-end; gap: 0.6rem; }
 .draw-error { padding: 0.75rem; color: #ffd7cf; background: #581f1d; border-radius: 0.6rem; }
 
 /* ─────────────────────── 테이블 ───────────────────────
@@ -106,6 +82,95 @@
   box-shadow: inset 0 0 0 2px rgb(228 189 99 / 35%), inset 0 0 6rem rgb(0 0 0 / 42%), 0 1rem 3rem rgb(0 0 0 / 32%);
   transition: background 420ms ease;
 }
+
+/* 준비 화면도 실제 테이블이다. 설정은 테이블 아래의 짧은 컨트롤로 두고,
+   선택한 인물은 즉시 좌·상·우 좌석에 앉힌다. */
+.draw-setup-table {
+  grid-template-areas:
+    "setup-head setup-head setup-head"
+    ".          seat-top  ."
+    "seat-left  center    seat-right"
+    "player     player    player"
+    "controls   controls  controls"
+    "roster     roster    roster"
+    "error      error     error"
+    "actions    actions   actions";
+  min-height: 0;
+  border-radius: clamp(1.4rem, 4vw, 3.7rem);
+}
+.draw-setup-intro { grid-area: setup-head; display: flex; align-items: end; justify-content: space-between; gap: 1rem; padding: 0.25rem 0.45rem 0.4rem; }
+.draw-setup-intro h2 { font-size: clamp(1.05rem, 2.1vw, 1.55rem); }
+.draw-rule-badges { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 0.4rem; }
+.draw-rule-badges span { padding: 0.28rem 0.6rem; color: var(--draw-muted); font-size: 0.72rem; background: rgb(4 18 13 / 70%); border: 1px solid rgb(228 189 99 / 28%); border-radius: 999px; }
+.draw-rule-badges b { color: var(--draw-gold); font-size: 0.92rem; }
+
+.draw-setup-seat { display: grid; align-content: center; min-height: 7.6rem; overflow: visible; }
+.draw-setup-seat.is-filled { border-color: rgb(228 189 99 / 48%); box-shadow: 0 0.8rem 1.8rem rgb(0 0 0 / 20%); animation: draw-setup-seat-in 260ms cubic-bezier(.2,.8,.2,1) both; }
+.draw-setup-seat-person { display: flex; align-items: center; gap: 0.55rem; width: 100%; min-width: 0; padding: 0; color: inherit; text-align: left; background: transparent; border: 0; cursor: pointer; }
+.draw-setup-seat-person > img,
+.draw-setup-seat-person > span:first-child { display: grid; flex: 0 0 auto; width: 3.8rem; height: 5rem; object-fit: cover; object-position: 50% 18%; color: var(--draw-gold); font-size: 1.7rem; background: #1d4638; border: 1px solid rgb(228 189 99 / 42%); border-radius: 0.55rem; place-items: center; }
+.draw-setup-seat-person > span:last-child { display: grid; min-width: 0; }
+.draw-setup-seat-person strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.draw-setup-seat-person small { color: var(--draw-muted); font-size: 0.65rem; }
+.draw-setup-seat-person:focus-visible { outline: 2px solid var(--draw-gold); outline-offset: 0.2rem; border-radius: 0.45rem; }
+.draw-setup-seat-cards { display: flex; justify-content: center; height: 0.62rem; margin-top: 0.35rem; }
+.draw-setup-seat-cards i { width: 1.25rem; height: 0.52rem; margin-left: -0.3rem; border: 1px dashed rgb(255 255 255 / 18%); border-radius: 0.16rem; transform: rotate(calc((var(--i, 0) - 2) * 2deg)); }
+.draw-setup-seat-cards i:nth-child(1) { --i: 0; }
+.draw-setup-seat-cards i:nth-child(2) { --i: 1; }
+.draw-setup-seat-cards i:nth-child(3) { --i: 2; }
+.draw-setup-seat-cards i:nth-child(4) { --i: 3; }
+.draw-setup-seat-cards i:nth-child(5) { --i: 4; }
+.draw-empty-seat { display: grid; justify-items: center; gap: 0.1rem; color: var(--draw-muted); text-align: center; }
+.draw-empty-seat > span { display: grid; width: 3.2rem; height: 3.2rem; margin-bottom: 0.2rem; color: var(--draw-gold); font: 800 1rem/1 var(--ca-display, Georgia, serif); border: 1px dashed rgb(228 189 99 / 50%); border-radius: 50%; place-items: center; }
+.draw-empty-seat small { font-size: 0.65rem; }
+.draw-setup-center { min-width: 13rem; }
+.draw-setup-center .ca-pot { min-width: 7.5rem; padding: 0.45rem 0.8rem; text-align: center; background: rgb(4 16 12 / 76%); border: 1px solid rgb(228 189 99 / 45%); border-radius: 1.2rem; }
+.draw-setup-center .ca-pot span,
+.draw-setup-center .ca-pot small { display: block; color: var(--draw-muted); font-size: 0.65rem; }
+.draw-setup-center .ca-pot strong { display: block; color: var(--draw-gold); font-size: 1.05rem; }
+
+.draw-setup-player { min-height: 5.8rem; }
+.draw-player-token { display: grid; flex: 0 0 auto; width: 2.8rem; height: 2.8rem; color: #171006; font-weight: 950; background: var(--draw-gold); border-radius: 50%; place-items: center; }
+.draw-setup-hand-slots { display: flex; justify-content: center; gap: 0.25rem; margin-top: 0.35rem; }
+.draw-setup-hand-slots i { width: clamp(2.3rem, 5vw, 3.25rem); aspect-ratio: 5 / 2; border: 1px dashed rgb(228 189 99 / 28%); border-radius: 0.3rem; }
+
+.draw-setup-controls { grid-area: controls; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.5rem; padding: 0.65rem; background: rgb(4 15 11 / 74%); border: 1px solid rgb(255 255 255 / 11%); border-radius: 0.9rem; }
+.draw-setup-controls fieldset { min-width: 0; margin: 0; padding: 0.45rem 0.5rem 0.2rem; border: 0; border-right: 1px solid rgb(255 255 255 / 10%); }
+.draw-setup-controls fieldset:nth-of-type(4) { border-right: 0; }
+.draw-setup-controls legend { display: flex; align-items: center; gap: 0.25rem; padding: 0 0.15rem; color: var(--draw-gold); font-size: 0.72rem; font-weight: 850; }
+.draw-setup-controls .draw-segmented { flex-wrap: nowrap; margin: 0; }
+.draw-setup-controls .draw-segmented button { flex: 1 1 0; min-width: 0; min-height: 2.35rem; padding: 0.38rem 0.4rem; font-size: 0.72rem; }
+.draw-guide-choice button { white-space: nowrap; }
+.draw-stake-chips { display: flex; justify-content: center; gap: 0.4rem; }
+.draw-stake-chip { display: grid; width: 2.75rem; height: 2.75rem; padding: 0; color: #f7e4ae; line-height: 1; background: radial-gradient(circle, #7a2421 0 46%, #e4bd63 47% 53%, #4d1715 54% 63%, #c89b43 64% 70%, #671d1a 71%); border: 1px solid #e4bd63; border-radius: 50%; box-shadow: 0 0.25rem 0.5rem rgb(0 0 0 / 36%); cursor: pointer; place-content: center; }
+.draw-stake-chip span { font-size: 0.72rem; font-weight: 950; }
+.draw-stake-chip small { font-size: 0.52rem; }
+.draw-stake-chip[aria-pressed="true"] { outline: 2px solid #fff0bc; outline-offset: 0.18rem; translate: 0 -0.18rem; filter: drop-shadow(0 0 0.45rem rgb(228 189 99 / 62%)); }
+.draw-rule-details { grid-column: 1 / -1; padding: 0.35rem 0.5rem 0; color: var(--draw-muted); font-size: 0.7rem; border-top: 1px solid rgb(255 255 255 / 9%); }
+.draw-rule-details summary { width: max-content; color: var(--draw-gold); cursor: pointer; }
+.draw-rule-details p { margin-top: 0.35rem; line-height: 1.55; }
+
+.draw-setup-roster { grid-area: roster; min-width: 0; padding: 0.65rem; background: rgb(4 15 11 / 78%); border: 1px solid rgb(228 189 99 / 25%); border-radius: 0.9rem; }
+.draw-setup-roster > header { display: flex; align-items: center; justify-content: space-between; gap: 0.8rem; margin-bottom: 0.55rem; }
+.draw-setup-roster > header h2 { font-size: 1rem; }
+.draw-setup-roster > header small { color: var(--draw-muted); font-size: 0.65rem; }
+.draw-setup-roster > header .draw-secondary { display: inline-flex; align-items: center; gap: 0.35rem; min-height: 2.25rem; padding: 0.35rem 0.65rem; font-size: 0.7rem; }
+.draw-setup-roster-grid { display: grid; grid-template-columns: repeat(10, minmax(0, 1fr)); gap: 0.35rem; max-height: 14.4rem; padding-right: 0.25rem; overflow: auto; scrollbar-width: thin; }
+.draw-setup-roster-grid > button { position: relative; display: grid; justify-items: center; gap: 0.18rem; min-width: 0; padding: 0.3rem; color: var(--draw-muted); background: rgb(255 255 255 / 4%); border: 1px solid rgb(255 255 255 / 12%); border-radius: 0.55rem; cursor: pointer; }
+.draw-setup-roster-grid > button.selected { color: #f6e2aa; background: rgb(228 189 99 / 13%); border-color: var(--draw-gold); box-shadow: inset 0 0 1rem rgb(228 189 99 / 8%); }
+.draw-setup-roster-grid > button.unavailable { filter: grayscale(0.7); opacity: 0.46; }
+.draw-setup-roster-grid > button.selected.unavailable { filter: none; opacity: 0.78; }
+.draw-setup-roster-grid img,
+.draw-roster-fallback { display: grid; width: 100%; max-width: 3.5rem; aspect-ratio: 4 / 5; object-fit: cover; object-position: 50% 18%; color: var(--draw-gold); font-size: 1.35rem; background: #1d4638; border-radius: 0.4rem; place-items: center; }
+.draw-setup-roster-grid b { position: absolute; top: 0.16rem; right: 0.16rem; display: grid; width: 1.25rem; height: 1.25rem; color: #171006; font-size: 0.65rem; background: var(--draw-gold); border-radius: 50%; box-shadow: 0 0.2rem 0.4rem rgb(0 0 0 / 50%); place-items: center; }
+.draw-setup-roster-grid strong { max-width: 100%; overflow: hidden; font-size: 0.63rem; text-overflow: ellipsis; white-space: nowrap; }
+.draw-setup-roster-grid small { max-width: 100%; overflow: hidden; color: #f0c47d; font-size: 0.52rem; text-overflow: ellipsis; white-space: nowrap; }
+.draw-setup-error { grid-area: error; margin: 0; }
+.draw-setup-table .draw-start-actions { grid-area: actions; display: flex; align-items: center; justify-content: flex-end; gap: 0.8rem; padding: 0.35rem 0.45rem 0.1rem; }
+.draw-setup-table .draw-start-actions > div { display: grid; margin-left: auto; color: var(--draw-muted); text-align: right; }
+.draw-setup-table .draw-start-actions > div strong { color: var(--draw-ink); font-size: 0.8rem; }
+.draw-setup-table .draw-start-actions > div small { font-size: 0.62rem; }
+.draw-setup-table .draw-start-actions .draw-primary { min-width: 9rem; font-size: 0.95rem; box-shadow: 0 0.55rem 1.2rem rgb(0 0 0 / 35%); }
 .draw-table[data-busy] { cursor: progress; }
 .draw-series-progress { grid-area: series; display: flex; align-items: center; justify-content: center; gap: 1rem; min-width: 0; padding: 0.32rem 0.7rem; color: var(--draw-muted); background: rgb(4 18 13 / 58%); border: 1px solid rgb(228 189 99 / 22%); border-radius: 999px; }
 .draw-series-progress > div { display: flex; align-items: center; gap: 0.55rem; }
@@ -322,6 +387,7 @@ button.draw-modal-card { cursor: pointer; }
 @keyframes draw-stand-pat { 0% { filter: brightness(1); } 40% { filter: brightness(1.5) drop-shadow(0 0 0.7rem rgb(228 189 99 / 65%)); } 100% { filter: brightness(1); } }
 @keyframes draw-speech-in { from { opacity: 0; translate: 0 0.35rem; scale: 0.96; } }
 @keyframes draw-portrait-swap { from { opacity: 0.3; scale: 1.035; filter: brightness(1.35); } }
+@keyframes draw-setup-seat-in { from { opacity: 0.2; translate: 0 0.65rem; scale: 0.97; } }
 
 @media (max-width: 900px) {
   .draw-series-progress { flex-wrap: wrap; gap: 0.25rem 0.7rem; border-radius: 0.75rem; }
@@ -343,6 +409,10 @@ button.draw-modal-card { cursor: pointer; }
   .draw-opponents .draw-seat-title > div { width: 100%; text-align: center; }
   .draw-opponents .draw-portrait-button { width: 4rem; height: 5.35rem; }
   .draw-center { gap: 0.6rem; }
+  .draw-setup-table { grid-template-areas: "setup-head" "opponents" "center" "player" "controls" "roster" "error" "actions"; }
+  .draw-setup-controls { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .draw-setup-controls fieldset:nth-of-type(2) { border-right: 0; }
+  .draw-setup-roster-grid { grid-template-columns: repeat(6, minmax(0, 1fr)); }
 }
 
 @keyframes draw-dealer-arrive { from { opacity: 0; transform: translateX(-0.65rem) rotate(-45deg) scale(0.65); } to { opacity: 1; transform: none; } }
@@ -350,7 +420,6 @@ button.draw-modal-card { cursor: pointer; }
 @media (max-width: 720px) {
   .draw-poker-shell > header { grid-template-columns: auto 1fr; }
   .draw-poker-shell > header > strong { grid-column: 2; }
-  .draw-opponent-selects { grid-template-columns: 1fr; }
   .draw-start-actions { flex-direction: column; }
   .draw-seat { padding: 0.38rem; }
   .draw-opponents .draw-portrait-button { width: clamp(3.65rem, 18vw, 4.3rem); height: clamp(4.9rem, 24vw, 5.75rem); }
@@ -371,6 +440,32 @@ button.draw-modal-card { cursor: pointer; }
   .draw-portrait-modal img,
   .draw-portrait-fallback { width: min(72vw, 20rem); max-height: calc(100dvh - 8.5rem); }
   .draw-portrait-modal > section > div:last-child { justify-items: center; text-align: center; }
+  .draw-setup-intro { align-items: flex-start; flex-direction: column; }
+  .draw-rule-badges { justify-content: flex-start; }
+  .draw-setup-opponents { gap: 0.25rem; }
+  .draw-setup-seat { min-height: 8.3rem; }
+  .draw-setup-seat-person { display: grid; justify-items: center; gap: 0.25rem; text-align: center; }
+  .draw-setup-seat-person > img,
+  .draw-setup-seat-person > span:first-child { width: clamp(3rem, 16vw, 3.8rem); height: clamp(4rem, 21vw, 5rem); }
+  .draw-setup-seat-person > span:last-child { width: 100%; }
+  .draw-setup-seat-person small,
+  .draw-empty-seat small { display: none; }
+  .draw-setup-seat-cards { display: none; }
+  .draw-setup-center { min-width: 0; }
+  .draw-setup-controls { padding: 0.45rem; }
+  .draw-setup-controls fieldset { padding-inline: 0.3rem; }
+  .draw-setup-controls .draw-segmented { gap: 0.25rem; }
+  .draw-setup-controls .draw-segmented button { min-height: 2.2rem; padding-inline: 0.25rem; font-size: 0.66rem; }
+  .draw-stake-chips { gap: 0.25rem; }
+  .draw-stake-chip { width: 2.45rem; height: 2.45rem; }
+  .draw-setup-roster { padding-inline: 0.45rem; }
+  .draw-setup-roster-grid { display: flex; max-height: none; margin-inline: -0.45rem; padding: 0 0.45rem 0.3rem; overflow-x: auto; scroll-snap-type: x proximity; }
+  .draw-setup-roster-grid > button { flex: 0 0 4.35rem; scroll-snap-align: start; }
+  .draw-setup-roster-grid img,
+  .draw-roster-fallback { max-width: 3.7rem; }
+  .draw-setup-table .draw-start-actions { position: sticky; bottom: 0.25rem; z-index: 20; flex-direction: row; padding: 0.55rem; background: rgb(4 15 11 / 92%); border: 1px solid rgb(228 189 99 / 36%); border-radius: 0.75rem; box-shadow: 0 -0.6rem 1.4rem rgb(0 0 0 / 28%); backdrop-filter: blur(8px); }
+  .draw-setup-table .draw-start-actions > div { margin-left: 0; margin-right: auto; text-align: left; }
+  .draw-setup-table .draw-start-actions .draw-primary { min-width: 7.5rem; }
 }
 
 /* 모션을 줄이면 즉시 전환만 남는다. 큐도 speed 0으로 내려가 연출을 건너뛴다. */
@@ -384,6 +479,7 @@ button.draw-modal-card { cursor: pointer; }
   .draw-card.is-open,
   .draw-cards.is-standing-pat,
   .draw-seat.is-checking,
+  .draw-setup-seat.is-filled,
   .draw-speech,
   .draw-portrait-image { animation: none; }
   .draw-hand-card.is-selectable:hover,
