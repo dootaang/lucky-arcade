@@ -192,7 +192,7 @@ test("reserves and settles one deterministic Temerosa slot spin", async ({ page 
   test.skip(testInfo.project.metadata.mobile === true);
   await page.goto("/");
   await page.evaluate(() => new Promise<void>((resolve, reject) => {
-    const opening = indexedDB.open("lucky-arcade", 8);
+    const opening = indexedDB.open("lucky-arcade", 9);
     opening.onerror = () => reject(opening.error);
     opening.onsuccess = () => {
       const db = opening.result;
@@ -253,7 +253,7 @@ test("wagers, records, and restores the public high-low table", async ({ page },
   test.skip(testInfo.project.metadata.mobile === true);
   await page.goto("/");
   await page.evaluate(() => new Promise<void>((resolve, reject) => {
-    const opening = indexedDB.open("lucky-arcade", 8);
+    const opening = indexedDB.open("lucky-arcade", 9);
     opening.onerror = () => reject(opening.error);
     opening.onsuccess = () => {
       const db = opening.result;
@@ -312,7 +312,7 @@ test("plays, wagers, records, and restores the public image-only match-pairs tab
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/");
   await page.evaluate(() => new Promise<void>((resolve, reject) => {
-    const opening = indexedDB.open("lucky-arcade", 8);
+    const opening = indexedDB.open("lucky-arcade", 9);
     opening.onerror = () => reject(opening.error);
     opening.onsuccess = () => {
       const db = opening.result;
@@ -534,7 +534,7 @@ test("filters hidden RecentPlay records and ignores the retired query preview", 
   await expect(page.locator(".venue-card")).toHaveCount(1);
   await expect(page.locator("input[type=file]")).toHaveCount(0);
   await page.evaluate(() => new Promise<void>((resolve, reject) => {
-    const opening = indexedDB.open("lucky-arcade", 8);
+    const opening = indexedDB.open("lucky-arcade", 9);
     opening.onerror = () => reject(opening.error);
     opening.onsuccess = () => {
       const db = opening.result;
@@ -556,7 +556,7 @@ test("selects, wagers, and restores a five-round Indian poker table while defaul
   const browserErrors: string[] = [];
   page.on("pageerror", (error) => browserErrors.push(error.message));
   await page.goto("/");
-  await page.evaluate(() => new Promise<void>((resolve, reject) => { const opening = indexedDB.open("lucky-arcade", 8); opening.onerror = () => reject(opening.error); opening.onsuccess = () => { const db = opening.result, transaction = db.transaction("wallet", "readwrite"); transaction.objectStore("wallet").put({ contract: "wallet/0.1", id: "wallet", balance: 1_000, updatedAt: new Date().toISOString() }); transaction.onerror = () => reject(transaction.error); transaction.oncomplete = () => { db.close(); resolve(); }; }; }));
+  await page.evaluate(() => new Promise<void>((resolve, reject) => { const opening = indexedDB.open("lucky-arcade", 9); opening.onerror = () => reject(opening.error); opening.onsuccess = () => { const db = opening.result, transaction = db.transaction("wallet", "readwrite"); transaction.objectStore("wallet").put({ contract: "wallet/0.1", id: "wallet", balance: 1_000, updatedAt: new Date().toISOString() }); transaction.onerror = () => reject(transaction.error); transaction.oncomplete = () => { db.close(); resolve(); }; }; }));
   await page.goto("/play/indian-poker");
   await expect(page.getByRole("heading", { name: "인디언 포커" })).toBeVisible();
   await expect(page.getByRole("button", { name: /7라운드/ })).toHaveAttribute("aria-pressed", "true");
@@ -667,6 +667,24 @@ test("falls back to restoration crew and finishes a run", async ({ page }) => {
     await page.getByRole("button", { name: problem === 3 ? "결과 보기" : "다음 기록" }).click();
   }
   await expect(page.getByText("복구 완료", { exact: true })).toBeVisible();
+});
+
+test("starts and restores a long-form Temerosa image world cup", async ({ page }) => {
+  await page.goto("/dev");
+  await page.locator(".arcade-entry").filter({ hasText: "테메로세 최애 월드컵" }).getByRole("button", { name: "작전 시작", exact: true }).click();
+  await expect(page.getByRole("heading", { name: "테메로세 최애 월드컵" })).toBeVisible();
+  await expect(page.getByText("1,551 IMAGES", { exact: false })).toBeVisible();
+  await page.locator(".favorite-mode-grid button").filter({ hasText: "세로 일러스트전" }).click();
+  await page.locator(".favorite-size-grid button").filter({ hasText: "32강" }).click();
+  await page.getByRole("button", { name: "대진 시작", exact: true }).click();
+  await expect(page.locator(".favorite-choice img")).toHaveCount(2);
+  await expect(page.getByText("남은 선택 31회", { exact: true })).toBeVisible();
+  await page.locator(".favorite-choice").first().click();
+  await expect(page.getByText("남은 선택 30회", { exact: true })).toBeVisible();
+  await page.reload();
+  await page.getByRole("button", { name: "장기 대진 이어하기", exact: true }).click();
+  await expect(page.getByText("남은 선택 30회", { exact: true })).toBeVisible();
+  await expect(page.locator(".favorite-choice img")).toHaveCount(2);
 });
 
 test("opens the Temerosa Pequod expedition, resolves combat, and restores the reward step", async ({ page }) => {
@@ -962,7 +980,7 @@ test("keeps direct play free and offers an optional self prediction", async ({ p
   test.skip(testInfo.project.metadata.mobile === true);
   await page.goto("/");
   await page.evaluate(() => new Promise<void>((resolve, reject) => {
-    const opening = indexedDB.open("lucky-arcade", 8);
+    const opening = indexedDB.open("lucky-arcade", 9);
     opening.onerror = () => reject(opening.error);
     opening.onsuccess = () => {
       const db = opening.result;
@@ -995,7 +1013,7 @@ test("starts an open-hand four-NPC Temerosa spectator table", async ({ page }, t
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/");
   await page.evaluate(() => new Promise<void>((resolve, reject) => {
-    const opening = indexedDB.open("lucky-arcade", 8);
+    const opening = indexedDB.open("lucky-arcade", 9);
     opening.onerror = () => reject(opening.error);
     opening.onsuccess = () => {
       const db = opening.result;

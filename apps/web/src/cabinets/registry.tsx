@@ -109,9 +109,9 @@ const registrations: readonly WebCabinetRegistration[] = [
   },
   {
     manifest: {
-      id: "temerosa-favorite-cup", version: "temerosa-favorite-cup/0.1", title: "테메로세 최애 월드컵",
-      description: "감사된 테메로세 인물 30명 중 오늘의 16명을 뽑아 최애를 고릅니다.", requiredCapabilities: [],
-      sessionKind: "instant", launchKind: "built-in", resumeLabel: "새 대진 시작", estimatedMinutes: { min: 1, max: 3 },
+      id: "temerosa-favorite-cup", version: "temerosa-favorite-cup/0.2", title: "테메로세 최애 월드컵",
+      description: "네 시리즈의 유효 이미지 1,551장으로 16강부터 1,000장·전체 이미지 끝장 대진까지 진행합니다.", requiredCapabilities: [],
+      sessionKind: "deep", launchKind: "built-in", resumeLabel: "장기 대진 이어하기", estimatedMinutes: { min: 1, max: 120 },
     },
     openingRank: null, badge: "바로 한 판",
     load: async () => { const module = await import("../features/built-in/temerosa-favorite-cup-view.tsx"); return { default: ({ onExit }) => <module.default onExit={onExit} /> }; },

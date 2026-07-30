@@ -20,6 +20,7 @@
     "content:temerosa:casino:inventory": "pnpm --filter @lucky-arcade/content-cli temerosa:casino:inventory --",
     "content:temerosa:casino:compile": "pnpm --filter @lucky-arcade/content-cli temerosa:casino:assets:compile --",
     "content:temerosa:casino:audit": "pnpm --filter @lucky-arcade/content-cli temerosa:casino:assets:audit --",
+    "content:temerosa:favorite:compile": "pnpm --filter @lucky-arcade/content-cli temerosa:favorite:compile --",
     "content:cards": "pnpm --filter @lucky-arcade/content-cli cards --",
     "content:cards:audit": "pnpm --filter @lucky-arcade/content-cli cards:audit --",
     "content:validate": "pnpm --filter @lucky-arcade/content-cli validate --",

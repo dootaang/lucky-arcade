@@ -12,6 +12,7 @@
     "temerosa:casino:inventory": "tsx src/inventory-temerosa-casino-assets.ts",
     "temerosa:casino:assets:compile": "tsx src/compile-temerosa-casino-assets.ts",
     "temerosa:casino:assets:audit": "tsx src/audit-temerosa-casino-assets.ts --inventory reports/temerosa-casino-asset-inventory.json --reviews apps/content-cli/src/temerosa-casino-review-queue.json --public-root apps/web/public/content",
+    "temerosa:favorite:compile": "tsx src/compile-temerosa-favorite-cup.ts",
     "cards": "tsx src/playing-cards.ts",
     "cards:audit": "tsx src/audit-playing-cards.ts",
     "validate": "tsx src/validate-pack.ts",

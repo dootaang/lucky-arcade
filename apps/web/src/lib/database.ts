@@ -36,8 +36,8 @@ import type {
 import { selectCollectionFace } from "./collection-rules.ts";
 
 const DATABASE = "lucky-arcade";
-const VERSION = 8;
-const STORES = { cards: "cards", sources: "sources", sessions: "sessions", actions: "actions", recent: "recent", matches: "matches", wallet: "wallet", grants: "grants", collection: "collection", wagers: "wagers", gameWagers: "game-wagers", casinoTransactions: "casino-transactions" } as const;
+const VERSION = 9;
+const STORES = { cards: "cards", sources: "sources", sessions: "sessions", actions: "actions", recent: "recent", matches: "matches", wallet: "wallet", grants: "grants", collection: "collection", wagers: "wagers", gameWagers: "game-wagers", casinoTransactions: "casino-transactions", favoriteVotes: "favorite-votes" } as const;
 const INITIAL_POINT_BALANCE = 0;
 const COLLECTION_COST = 12;
 const DEFAULT_COMPLETION_REWARD = 5;
@@ -48,6 +48,20 @@ const INVALIDATION_REASONS = new Set(["outcome-unavailable", "pack-version-misma
 const GAME_WAGER_INVALIDATION_REASONS = new Set(["outcome-unavailable", "version-mismatch", "corrupt-state"]);
 
 export interface StoredCard { fingerprint: string; importedAt: string; analyzed: AnyAnalyzedCard; }
+export interface TemerosaFavoriteVoteReceipt {
+  contract: "temerosa-favorite-vote/0.1";
+  voteId: string;
+  seasonId: string;
+  tournamentId: string;
+  mode: "character" | "portrait" | "square" | "landscape" | "all";
+  leftAssetId: string;
+  rightAssetId: string;
+  winnerAssetId: string;
+  loserAssetId: string;
+  round: number;
+  seed: string;
+  pickedAt: string;
+}
 
 export async function saveCard(analyzed: AnalyzedCard, source: File): Promise<StoredCard> {
   const record = { fingerprint: analyzed.report.card.fingerprint, importedAt: new Date().toISOString(), analyzed } satisfies StoredCard;
@@ -142,6 +156,20 @@ export async function pruneMatchRecords(maxRecords: number): Promise<void> {
     };
   }
   await complete(transaction); db.close();
+}
+
+export async function appendTemerosaFavoriteVote(vote: TemerosaFavoriteVoteReceipt): Promise<void> {
+  if (vote.contract !== "temerosa-favorite-vote/0.1" || !vote.voteId || !vote.tournamentId || !vote.winnerAssetId || vote.winnerAssetId === vote.loserAssetId) throw new Error("favorite_vote_invalid");
+  const db = await openDatabase(), transaction = db.transaction(STORES.favoriteVotes, "readwrite");
+  transaction.objectStore(STORES.favoriteVotes).put(vote);
+  await complete(transaction); db.close();
+}
+
+export async function listTemerosaFavoriteVotes(): Promise<TemerosaFavoriteVoteReceipt[]> {
+  const db = await openDatabase(), transaction = db.transaction(STORES.favoriteVotes, "readonly");
+  const records = await request<TemerosaFavoriteVoteReceipt[]>(transaction.objectStore(STORES.favoriteVotes).getAll());
+  await complete(transaction); db.close();
+  return records.filter((record) => record?.contract === "temerosa-favorite-vote/0.1").sort((left, right) => left.pickedAt.localeCompare(right.pickedAt) || left.voteId.localeCompare(right.voteId));
 }
 
 export async function readWallet(): Promise<WalletSnapshot> {
@@ -583,6 +611,7 @@ function openDatabase(): Promise<IDBDatabase> {
       const matches = db.objectStoreNames.contains(STORES.matches) ? opening.transaction!.objectStore(STORES.matches) : db.createObjectStore(STORES.matches, { keyPath: "recordId" });
       if (!matches.indexNames.contains("by-completed-at")) matches.createIndex("by-completed-at", "completedAt");
       if (!matches.indexNames.contains("by-session-completed-at")) matches.createIndex("by-session-completed-at", ["sessionId", "completedAt"]);
+      if (!db.objectStoreNames.contains(STORES.favoriteVotes)) db.createObjectStore(STORES.favoriteVotes, { keyPath: "voteId" });
       const actions = db.objectStoreNames.contains(STORES.actions) ? opening.transaction!.objectStore(STORES.actions) : db.createObjectStore(STORES.actions, { keyPath: "key" });
       if (!actions.indexNames.contains("by-session-sequence")) actions.createIndex("by-session-sequence", ["sessionId", "sequence"], { unique: true });
     };

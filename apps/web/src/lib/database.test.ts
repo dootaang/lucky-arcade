@@ -64,7 +64,7 @@ describe.sequential("point wallet and spectator predictions", () => {
       const wallet = await database.readWallet();
       const duplicate = await database.grantCompletionPoints({ sessionId: "legacy-session", sequence: 7, cabinetId: "old-maid", spectated: false });
       const contract = await new Promise<string>((resolve, reject) => {
-        const opening = indexedDB.open("lucky-arcade", 8);
+        const opening = indexedDB.open("lucky-arcade", 9);
         opening.onerror = () => reject(opening.error);
         opening.onsuccess = () => {
           const db = opening.result;
@@ -250,7 +250,7 @@ describe.sequential("point wallet and spectator predictions", () => {
       const database = await new Function("return import('/src/lib/database.ts')")();
       await database.readWallet();
       await new Promise<void>((resolve, reject) => {
-        const opening = indexedDB.open("lucky-arcade", 8);
+        const opening = indexedDB.open("lucky-arcade", 9);
         opening.onerror = () => reject(opening.error);
         opening.onsuccess = () => {
           const db = opening.result;
@@ -394,6 +394,21 @@ describe.sequential("point wallet and spectator predictions", () => {
     expect(results.filter((entry) => !entry.ok)).toEqual([{ ok: false, error: "insufficient_points" }]);
     expect((await page.evaluate(async () => (await (await new Function("return import('/src/lib/database.ts')")()).readWallet()).balance))).toBe(0);
   });
+
+  it("stores a favorite-cup vote receipt idempotently", async () => {
+    const records = await page.evaluate(async () => {
+      const database = await new Function("return import('/src/lib/database.ts')")();
+      const vote = {
+        contract: "temerosa-favorite-vote/0.1", voteId: "tournament:0", seasonId: "local-preseason-0", tournamentId: "tournament",
+        mode: "portrait", leftAssetId: "left", rightAssetId: "right", winnerAssetId: "left", loserAssetId: "right",
+        round: 1, seed: "seed", pickedAt: "2026-07-30T00:00:00.000Z",
+      };
+      await database.appendTemerosaFavoriteVote(vote);
+      await database.appendTemerosaFavoriteVote(vote);
+      return database.listTemerosaFavoriteVotes();
+    });
+    expect(records).toEqual([expect.objectContaining({ voteId: "tournament:0", winnerAssetId: "left" })]);
+  });
 });
 
 async function deleteEconomyDatabase(target: Page): Promise<void> {
@@ -410,7 +425,7 @@ async function seedWallet(target: Page, balance: number): Promise<void> {
     const database = await new Function("return import('/src/lib/database.ts')")();
     await database.readWallet();
     await new Promise<void>((resolve, reject) => {
-      const opening = indexedDB.open("lucky-arcade", 8);
+      const opening = indexedDB.open("lucky-arcade", 9);
       opening.onerror = () => reject(opening.error);
       opening.onsuccess = () => {
         const db = opening.result;

@@ -36,13 +36,20 @@ export interface FavoriteCupView {
   todaySelection: boolean;
 }
 
-export function createFavoriteCupState(cartridge: FavoriteCupCartridge, seed: string, eligible: readonly FavoriteCupCandidate[]): FavoriteCupState {
+export interface FavoriteCupCreateOptions {
+  entrantCount?: number;
+  groupById?: Readonly<Record<string, string>>;
+}
+
+export function createFavoriteCupState(cartridge: FavoriteCupCartridge, seed: string, eligible: readonly FavoriteCupCandidate[], options: FavoriteCupCreateOptions = {}): FavoriteCupState {
   if (eligible.length < 8) throw new Error("favorite_cup_not_enough_candidates");
+  const entrantCount = options.entrantCount ?? Math.min(16, eligible.length);
+  if (!Number.isSafeInteger(entrantCount) || entrantCount < 8 || entrantCount > eligible.length || entrantCount > 2_048) throw new Error("favorite_cup_invalid_entrant_count");
   const shuffled = shuffle(eligible.map((item) => item.npcId), new XorShift32(`${cartridge.cardFingerprint}:${seed}`));
-  const todaySelection = shuffled.length > 16;
-  const selected = shuffled.slice(0, 16);
-  const bracketSize = selected.length <= 8 ? 8 : 16;
-  const slots = spreadByes(selected, bracketSize);
+  const todaySelection = shuffled.length > entrantCount;
+  const selected = shuffled.slice(0, entrantCount);
+  const bracketSize = nextPowerOfTwo(selected.length);
+  const slots = separateFirstRoundGroups(spreadByes(selected, bracketSize), options.groupById);
   return normalize({ contract: "favorite-cup-state/0.1", version: FAVORITE_CUP_VERSION, seed, status: "playing", entrants: selected, todaySelection, round: 1, participants: slots, matchIndex: 0, winners: [], topFour: [], championId: null, picks: [] });
 }
 
@@ -58,7 +65,7 @@ export function selectFavoriteCup(state: FavoriteCupState, cartridge: FavoriteCu
   const pair = currentPair(state);
   return {
     status: state.status,
-    roundLabel: state.participants.length === 16 ? "16강" : state.participants.length === 8 ? "8강" : state.participants.length === 4 ? "준결승" : "결승",
+    roundLabel: state.participants.length === 4 ? "준결승" : state.participants.length === 2 ? "결승" : `${state.participants.length}강`,
     progress: { completed: state.picks.length, total: state.entrants.length - 1 },
     match: pair ? [requireCandidate(byId, pair[0]), requireCandidate(byId, pair[1])] : null,
     topFour: state.topFour.map((id) => requireCandidate(byId, id)),
@@ -92,3 +99,17 @@ function currentPair(state: FavoriteCupState): [string, string] | null {
 function requireCandidate(byId: Map<string, FavoriteCupCandidate>, id: string): FavoriteCupCandidate { const value = byId.get(id); if (!value) throw new Error(`favorite_cup_candidate_missing:${id}`); return value; }
 function shuffle<T>(input: readonly T[], rng: XorShift32): T[] { const output = [...input]; for (let index = output.length - 1; index > 0; index -= 1) { const target = rng.nextUint32() % (index + 1); [output[index], output[target]] = [output[target] as T, output[index] as T]; } return output; }
 function spreadByes(ids: string[], size: number): string[] { if (ids.length === size) return ids; const slots = Array<string>(size).fill(""); ids.forEach((id, index) => { slots[Math.floor(index * size / ids.length)] = id; }); return slots; }
+function nextPowerOfTwo(value: number): number { let result = 8; while (result < value) result *= 2; return result; }
+function separateFirstRoundGroups(slots: string[], groupById?: Readonly<Record<string, string>>): string[] {
+  if (!groupById) return slots;
+  const output = [...slots];
+  for (let index = 0; index < output.length; index += 2) {
+    const left = output[index], right = output[index + 1];
+    if (!left || !right || !groupById[left] || groupById[left] !== groupById[right]) continue;
+    for (let candidate = index + 2; candidate < output.length; candidate += 1) {
+      const replacement = output[candidate];
+      if (replacement && groupById[replacement] !== groupById[left]) { output[index + 1] = replacement; output[candidate] = right; break; }
+    }
+  }
+  return output;
+}

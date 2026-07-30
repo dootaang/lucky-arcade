@@ -128,3 +128,48 @@ html[data-theme="light"] { color-scheme:light; --canvas:#f5f4ef; --surface:#fff;
 .admin-preview-gate small { color: #aaa393; line-height: 1.45; }
 .admin-preview-error { padding: 0.6rem; color: #ffd7d0; background: #5a211f; border-radius: 0.5rem; }
 .admin-preview-entry { position: relative; z-index: 1; margin-top: 0.45rem; }
+
+.favorite-marathon-shell { min-height: 100dvh; background: radial-gradient(circle at 50% -10%, rgb(225 187 94 / 12%), transparent 42%), var(--canvas); }
+.favorite-marathon-setup { display: grid; width: min(68rem, calc(100% - 2rem)); gap: 1.2rem; margin: 1.5rem auto 4rem; }
+.favorite-marathon-intro,
+.favorite-size-panel,
+.favorite-local-stats { border: 1px solid var(--line); border-radius: 1.4rem; background: var(--surface); }
+.favorite-marathon-intro { padding: clamp(1.2rem, 4vw, 2.4rem); }
+.favorite-marathon-intro h2 { margin: 0.35rem 0 0.65rem; font-size: clamp(1.6rem, 4vw, 2.8rem); }
+.favorite-marathon-intro p,
+.favorite-size-panel p { margin: 0; color: var(--muted); line-height: 1.65; }
+.favorite-mode-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 0.65rem; }
+.favorite-mode-grid button,
+.favorite-size-grid button { min-height: 4.2rem; padding: 0.7rem; color: inherit; background: var(--surface); border: 1px solid var(--line); border-radius: 1rem; cursor: pointer; }
+.favorite-mode-grid button { display: grid; align-content: center; gap: 0.25rem; text-align: left; }
+.favorite-mode-grid button span { color: var(--muted); font-size: 0.76rem; }
+.favorite-mode-grid button.selected,
+.favorite-size-grid button.selected { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent), 0 0 1.4rem rgb(225 187 94 / 12%); }
+.favorite-size-panel { padding: 1rem; }
+.favorite-size-panel h3 { margin: 0 0 0.7rem; }
+.favorite-size-panel p { margin-top: 0.65rem; text-align: right; }
+.favorite-size-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.55rem; }
+.favorite-local-stats { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 0.75rem; padding: 0.9rem 1rem; color: var(--muted); }
+.favorite-local-stats b { color: var(--text); }
+.favorite-marathon-start { justify-self: end; min-width: min(100%, 16rem); }
+.favorite-marathon-progress { position: relative; width: min(68rem, calc(100% - 2rem)); height: 2rem; overflow: hidden; margin: 1rem auto 0; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); }
+.favorite-marathon-progress > div { height: 100%; background: linear-gradient(90deg, var(--accent), #ffdb83); transition: width 180ms ease; }
+.favorite-marathon-progress > span { position: absolute; inset: 0; display: grid; place-items: center; color: var(--text); font-weight: 800; font-size: 0.78rem; text-shadow: 0 1px 4px var(--canvas); }
+.favorite-marathon-choice-wrap { position: relative; min-width: 0; }
+.favorite-marathon-shell .favorite-versus { grid-template-columns: 1fr 1fr; position: relative; }
+.favorite-marathon-shell .favorite-choice { width: 100%; }
+.favorite-marathon-shell .favorite-portrait { aspect-ratio: 4 / 5; background: #080b0a; }
+.favorite-marathon-shell .favorite-portrait img { object-fit: contain; }
+.favorite-marathon-shell .versus-mark { position: absolute; top: 50%; left: calc(100% + 0.625rem); z-index: 3; transform: translate(-50%, -50%); text-shadow: 0 2px 12px var(--canvas); pointer-events: none; }
+.favorite-marathon-footer { display: flex; width: min(68rem, calc(100% - 2rem)); flex-wrap: wrap; justify-content: center; gap: 0.8rem 1.4rem; margin: 0 auto 3rem; color: var(--muted); font-size: 0.75rem; }
+.favorite-marathon-footer button { padding: 0; color: var(--muted); background: none; border: 0; text-decoration: underline; cursor: pointer; }
+
+@media (max-width: 760px) {
+  .favorite-mode-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .favorite-size-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .favorite-marathon-shell .favorite-versus { width: calc(100% - 0.8rem); gap: 0.35rem; }
+  .favorite-marathon-shell .favorite-choice { padding: 0.45rem; }
+  .favorite-marathon-shell .favorite-choice strong { font-size: clamp(0.82rem, 3.8vw, 1rem); overflow-wrap: anywhere; }
+  .favorite-marathon-shell .favorite-choice small { font-size: 0.65rem; }
+  .favorite-marathon-shell .versus-mark { left: calc(100% + 0.175rem); }
+}
