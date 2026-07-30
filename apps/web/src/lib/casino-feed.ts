@@ -1,6 +1,5 @@
 import {
   npcSessionSettlements,
-  withHouseCounterparties,
   type NpcActivity,
   type NpcPresence,
   type NpcRoundSettlement,
@@ -18,8 +17,11 @@ export function latestCasinoSettlementsAt(
 ): readonly NpcRoundSettlement[] {
   if (!Number.isSafeInteger(currentUtcSecond) || !Number.isSafeInteger(limit) || limit < 0) throw new Error("casino_feed_invalid_input");
   if (limit === 0) return Object.freeze([]);
-  const canonical = withHouseCounterparties(activities.slice(0, limit)
-    .flatMap((entry) => npcSessionSettlements(entry.npcId, entry.utcSecond, entry.session)));
+  // The house counterparty remains in the accounting ledger, but this is a
+  // player-facing activity feed. Showing it here makes the house look like a
+  // second gambler and duplicates every house-table result.
+  const canonical = activities.slice(0, limit)
+    .flatMap((entry) => npcSessionSettlements(entry.npcId, entry.utcSecond, entry.session));
   return Object.freeze([...canonical, ...journalSettlements]
     .filter((entry) => entry.utcSecond <= currentUtcSecond)
     .toSorted((left, right) => right.utcSecond - left.utcSecond || compareText(left.roundId, right.roundId))

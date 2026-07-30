@@ -20,6 +20,8 @@ describe("casino activity feed", () => {
     const settlements = latestCasinoSettlementsAt(worldline.activities, [], now);
     expect(settlements.length).toBeGreaterThan(0);
     expect(settlements[0]!.utcSecond).toBeLessThan(now - 3_600);
+    expect(settlements.some((entry) => entry.tableId === "temerosa-slot" || entry.tableId === "temerosa-high-low")).toBe(true);
+    expect(settlements.some((entry) => entry.npcId === "house:temerosa")).toBe(false);
   });
 
   it("reports the next deterministic arrival while the floor is empty", () => {
