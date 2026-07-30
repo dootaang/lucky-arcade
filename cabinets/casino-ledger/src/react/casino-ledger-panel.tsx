@@ -2,7 +2,7 @@ import { NumberTicker } from "@lucky-arcade/ui/number-ticker";
 import { HoloFoil } from "@lucky-arcade/ui/holo-card";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { casinoFullLeaderboard, casinoLeaderboard, casinoNpcLedgerReport, type CasinoLeaderboardEntry } from "../presentation.ts";
-import { formatCasinoKstTimestamp } from "../presentation-time.ts";
+import { formatCasinoKstTime, formatCasinoKstTimestamp } from "../presentation-time.ts";
 import { groupNpcRoundSettlements, npcMatchSettlementEntriesByNpc, type NpcMatchSettlementTone } from "../rounds.ts";
 import type { CasinoLedgerSourceId, CasinoTableId, NpcMatchSettlement, NpcPlayEvent, NpcPlayEventCode, NpcPresence, NpcRoundSettlement } from "../contracts.ts";
 import { TEMEROSA_NPC_GAMBLING_PROFILES } from "../temerosa-profiles.ts";
@@ -19,6 +19,7 @@ export interface CasinoLedgerPanelProps {
   playEvents: readonly NpcPlayEvent[];
   portraits: Readonly<Record<string, string>>;
   currentUtcSecond: number;
+  nextArrivalAt: number | undefined;
   clockSource: "http-date" | "device";
   presences: readonly NpcPresence[];
   tables: readonly CasinoLiveTable[];
@@ -45,6 +46,7 @@ export default function CasinoLedgerPanel({
   playEvents,
   portraits,
   currentUtcSecond,
+  nextArrivalAt,
   clockSource,
   presences,
   tables,
@@ -133,6 +135,7 @@ export default function CasinoLedgerPanel({
     <span className="ca-label"><i className={inviteCount > 0 ? "ca-live" : "ca-idle"} aria-hidden="true" /> 지금 초대 가능 {inviteCount}명</span>
     <span className="ca-label">테이블 착석 {seatedCount}명</span>
     <span className="ca-label">HOUSE {houseBalance.toLocaleString("ko-KR")} P</span>
+    {seatedCount === 0 && nextArrivalAt !== undefined && <span className="ca-label">다음 입장 {formatCasinoKstTime(nextArrivalAt)}</span>}
   </div>
   <section className="casino-ledger-panel" aria-label="카지노 활동 원장" data-ledger-utc-second={currentUtcSecond}>
     <div className="casino-ledger-board">

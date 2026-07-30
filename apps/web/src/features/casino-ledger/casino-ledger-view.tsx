@@ -8,13 +8,13 @@ import {
   recentNpcPlayEventsAt,
   TEMEROSA_NPC_GAMBLING_PROFILES,
   TEMEROSA_NPC_LEDGER_CONTRACT,
-  withHouseCounterparties,
   type CasinoTransaction,
   type NpcRoundSettlement,
 } from "@lucky-arcade/casino-ledger";
 import CasinoLedgerPanel, { type CasinoLiveTable } from "@lucky-arcade/casino-ledger/react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { casinoClockFromSample, deviceCasinoClockSample, rememberCasinoClockSecond, stabilizeCasinoClockSample, type CasinoClockSample } from "../../lib/casino-clock.ts";
+import { latestCasinoSettlementsAt, nextCasinoArrivalAt } from "../../lib/casino-feed.ts";
 import { listCasinoTransactions, readPlayerCasinoProfitSince } from "../../lib/database.ts";
 import { casinoJournalSettlements } from "../../lib/casino-journal.ts";
 import { personalCasinoWorldlineAt } from "../../lib/casino-worldline.ts";
@@ -96,8 +96,7 @@ export default function CasinoLedgerView({ userBalance, tables, onPlay }: { user
     const carriedProfits = TEMEROSA_NPC_LEDGER_CONTRACT.profitHistory.filter((entry)=>entry.kstDay>=periodStartDay);
     const profitPeriod = { coveredDays: Math.max(1,Math.min(7,(absoluteKstDay??TEMEROSA_NPC_LEDGER_CONTRACT.epochKstDay)-periodStartDay+1)), profits: Object.freeze(Object.fromEntries(TEMEROSA_NPC_GAMBLING_PROFILES.map((profile) => [profile.id, worldline.activities.filter((entry)=>entry.npcId===profile.id&&entry.utcSecond>=periodStartSecond).reduce((sum,entry)=>sum+entry.session.delta,0)+journalSettlements.filter((entry) => entry.npcId === profile.id && entry.utcSecond >= periodStartSecond).reduce((sum, entry) => sum + entry.delta, 0)+carriedProfits.reduce((sum,entry)=>sum+(entry.profits[profile.id]??0),0)]))) };
     const presences = casinoPresenceAt(TEMEROSA_NPC_GAMBLING_PROFILES, clock, TEMEROSA_NPC_LEDGER_CONTRACT);
-    const canonicalSettlements = withHouseCounterparties(worldline.activities.filter((entry)=>entry.utcSecond>currentUtcSecond-3_600).flatMap((entry)=>npcSessionSettlements(entry.npcId,entry.utcSecond,entry.session)));
-    const settlements = Object.freeze([...canonicalSettlements, ...journalSettlements].filter((entry) => entry.utcSecond <= currentUtcSecond).toSorted((left,right)=>right.utcSecond-left.utcSecond||left.roundId.localeCompare(right.roundId)).slice(0,128));
+    const settlements = latestCasinoSettlementsAt(worldline.activities, journalSettlements, currentUtcSecond);
     const liveBalances = npcLiveBalancesAt(worldline.npcBalances, TEMEROSA_NPC_GAMBLING_PROFILES, presences, clock);
     const houseBalance = worldline.houseBalance;
     const playEvents = recentNpcPlayEventsAt(TEMEROSA_NPC_GAMBLING_PROFILES, clock, TEMEROSA_NPC_LEDGER_CONTRACT, 512);
@@ -112,6 +111,7 @@ export default function CasinoLedgerView({ userBalance, tables, onPlay }: { user
       playEvents={playEvents}
       portraits={portraitMap(loaded.manifest)}
       currentUtcSecond={currentUtcSecond}
+      nextArrivalAt={nextCasinoArrivalAt(presences, currentUtcSecond)}
       clockSource={loaded.sample.source}
       presences={presences}
       tables={tables}
