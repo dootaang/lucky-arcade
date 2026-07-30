@@ -272,6 +272,7 @@ test("wagers, records, and restores the public high-low table", async ({ page },
   const cashOut = page.getByRole("button", { name: "여기서 받기", exact: true });
   if (await cashOut.count()) await cashOut.click();
   await expect(page.locator(".casino-card-result")).toContainText(/승리|패배/);
+  await expect(page.getByRole("button", { name: "다시하기", exact: true })).toBeEnabled();
   const persisted = await page.evaluate(async () => {
     const database = await new Function("return import('/src/lib/database.ts')")();
     return {
