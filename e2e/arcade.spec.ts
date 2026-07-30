@@ -395,7 +395,7 @@ test("blocks personal-card cabinets at direct public URLs", async ({ page }) => 
 });
 
 test("keeps implemented preview games visible but blocks their direct public URLs", async ({ page }) => {
-  for (const cabinet of ["temerosa-blackjack", "temerosa-doubt", "temerosa-one-card", "temerosa-texas-holdem", "temerosa-five-card-draw", "temerosa-video-poker", "lucky-derby-lab", "temerosa-margin", "gfl-favorite-cup", "gfl-sprite-memory", "gfl-ember"]) {
+  for (const cabinet of ["temerosa-blackjack", "temerosa-doubt", "temerosa-one-card", "temerosa-texas-holdem", "temerosa-five-card-draw", "temerosa-video-poker", "lucky-derby-lab", "temerosa-margin", "temerosa-favorite-cup", "temerosa-echo-memory", "temerosa-pequod-expedition"]) {
     await page.goto(`/play/${cabinet}`);
     await expect(page.getByRole("heading", { name: "개장 준비 중입니다." })).toBeVisible();
     await expect(page.getByRole("button", { name: "카지노로 돌아가기" })).toBeVisible();
@@ -669,32 +669,32 @@ test("falls back to restoration crew and finishes a run", async ({ page }) => {
   await expect(page.getByText("복구 완료", { exact: true })).toBeVisible();
 });
 
-test("opens the built-in GFL operation, resolves combat, and restores the reward step", async ({ page }) => {
+test("opens the Temerosa Pequod expedition, resolves combat, and restores the reward step", async ({ page }) => {
   const browserErrors: string[] = [];
   page.on("pageerror", (error) => browserErrors.push(error.message));
   page.on("console", (message) => { if (message.type() === "error") browserErrors.push(message.text()); });
   await page.goto("/dev");
-  await page.locator(".arcade-entry").filter({ hasText: "소녀전선: 잔불" }).getByRole("button", { name: "작전 시작", exact: true }).click();
-  await expect(page.getByRole("heading", { name: "첫 제대를 편성하세요" })).toBeVisible();
-  await expect(page.locator(".doll-grid img")).toHaveCount(12);
-  await page.getByRole("button", { name: "화력 제대", exact: true }).click();
-  await page.getByRole("button", { name: "작전 지도 진입", exact: true }).click();
+  await page.locator(".arcade-entry").filter({ hasText: "테메로세: 피쿼드 원정" }).getByRole("button", { name: "작전 시작", exact: true }).click();
+  await expect(page.getByRole("heading", { name: "함께 갈 두 사람" })).toBeVisible();
+  await expect(page.locator(".doll-grid img")).toHaveCount(3);
+  await page.getByRole("button", { name: "관계와 되돌림", exact: true }).click();
+  await page.getByRole("button", { name: "원정 지도 진입", exact: true }).click();
   for (let depth = 0; depth < 3 && await page.locator(".route-node.battle, .route-node.elite").count() === 0; depth += 1) {
     await page.locator(".route-node").first().click();
     await page.locator(".reward-grid button").first().click();
   }
   await page.locator(".route-node.battle, .route-node.elite").first().click();
   await expect(page.getByRole("heading", { name: /준비/ })).toBeVisible();
-  await page.getByRole("button", { name: "전투 영수증 확정", exact: true }).click();
-  await expect(page.locator("canvas.gfl-battle-canvas")).toBeVisible();
+  await page.getByRole("button", { name: "교전 기록 확정", exact: true }).click();
+  await expect(page.locator("canvas.temerosa-expedition-battle-canvas")).toBeVisible();
   await page.getByRole("button", { name: "4×", exact: true }).click();
-  await expect(page.getByRole("button", { name: "전투 보고 확인", exact: true })).toBeEnabled();
-  await page.getByRole("button", { name: "전투 보고 확인", exact: true }).click();
+  await expect(page.getByRole("button", { name: "교전 기록 확인", exact: true })).toBeEnabled();
+  await page.getByRole("button", { name: "교전 기록 확인", exact: true }).click();
   await expect(page.getByRole("heading", { name: "하나를 회수하세요" })).toBeVisible();
   await page.waitForTimeout(250);
   await page.reload();
-  await expect(page.getByRole("region", { name: "이어하기" })).toContainText("보상 선택");
-  await page.getByRole("button", { name: "잔불 작전 이어하기", exact: true }).click();
+  await expect(page.getByRole("region", { name: "이어하기" })).toContainText("기록 회수");
+  await page.getByRole("button", { name: "피쿼드 원정 이어하기", exact: true }).click();
   await expect(page.getByRole("heading", { name: "하나를 회수하세요" })).toBeVisible();
   expect(browserErrors).toEqual([]);
 });

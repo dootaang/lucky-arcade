@@ -6,7 +6,7 @@ export const SPRITE_MEMORY_VERSION = "sprite-memory/0.1" as const;
 export const spriteMemoryManifest: CabinetManifest = {
   id: "sprite-memory",
   version: SPRITE_MEMORY_VERSION,
-  title: "작전 암호 기억",
+  title: "잔향 기억",
   description: "차례로 나타난 인물을 같은 순서로 선택하세요.",
   requiredCapabilities: ["characters>=6", "expressions-per-character>=2"],
   sessionKind: "repeat",

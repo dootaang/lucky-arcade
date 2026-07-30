@@ -109,30 +109,30 @@ const registrations: readonly WebCabinetRegistration[] = [
   },
   {
     manifest: {
-      id: "gfl-favorite-cup", version: "gfl-favorite-cup/0.1", title: "소녀전선 최애 월드컵",
-      description: "잔불 작전의 12명 중 오늘의 최애를 고릅니다.", requiredCapabilities: [],
+      id: "temerosa-favorite-cup", version: "temerosa-favorite-cup/0.1", title: "테메로세 최애 월드컵",
+      description: "감사된 테메로세 인물 30명 중 오늘의 16명을 뽑아 최애를 고릅니다.", requiredCapabilities: [],
       sessionKind: "instant", launchKind: "built-in", resumeLabel: "새 대진 시작", estimatedMinutes: { min: 1, max: 3 },
     },
     openingRank: null, badge: "바로 한 판",
-    load: async () => { const module = await import("../features/built-in/gfl-favorite-cup-view.tsx"); return { default: ({ onExit }) => <module.default onExit={onExit} /> }; },
+    load: async () => { const module = await import("../features/built-in/temerosa-favorite-cup-view.tsx"); return { default: ({ onExit }) => <module.default onExit={onExit} /> }; },
   },
   {
     manifest: {
-      id: "gfl-sprite-memory", version: "gfl-sprite-memory/0.1", title: "작전 암호 기억",
-      description: "차례로 나타난 인물을 기억해 같은 순서로 선택합니다.", requiredCapabilities: [],
-      sessionKind: "repeat", launchKind: "built-in", resumeLabel: "기억 훈련 시작", estimatedMinutes: { min: 1, max: 2 },
+      id: "temerosa-echo-memory", version: "temerosa-echo-memory/0.1", title: "잔향 기억",
+      description: "차례로 나타난 테메로세 인물과 감정을 기억해 같은 순서로 복원합니다.", requiredCapabilities: [],
+      sessionKind: "repeat", launchKind: "built-in", resumeLabel: "잔향 복원 시작", estimatedMinutes: { min: 1, max: 2 },
     },
     openingRank: null, badge: "반복 플레이",
-    load: async () => { const module = await import("../features/built-in/gfl-sprite-memory-view.tsx"); return { default: ({ onExit }) => <module.default onExit={onExit} /> }; },
+    load: async () => { const module = await import("../features/built-in/temerosa-echo-memory-view.tsx"); return { default: ({ onExit }) => <module.default onExit={onExit} /> }; },
   },
   {
     manifest: {
-      id: "gfl-ember", version: "gfl-ember/0.1", title: "소녀전선: 잔불 작전",
-      description: "6명을 편성하고 7개 구간을 돌파하는 전술 오토배틀 로그라이트입니다.", requiredCapabilities: [],
-      sessionKind: "deep", launchKind: "built-in", resumeLabel: "잔불 작전 이어하기", estimatedMinutes: { min: 10, max: 20 },
+      id: "temerosa-pequod-expedition", version: "temerosa-pequod-expedition/0.1", title: "테메로세: 피쿼드 원정",
+      description: "페일·카노·네모 중 두 동료와 피쿼드 폐허의 일곱 구간을 통과합니다.", requiredCapabilities: [],
+      sessionKind: "deep", launchKind: "built-in", resumeLabel: "피쿼드 원정 이어하기", estimatedMinutes: { min: 8, max: 15 },
     },
     openingRank: null, badge: "긴 게임",
-    load: async () => { const module = await import("../features/gfl-ember/gfl-ember-view.tsx"); return { default: ({ onExit }) => <module.default onExit={onExit} /> }; },
+    load: async () => { const module = await import("../features/temerosa-expedition/temerosa-pequod-expedition-view.tsx"); return { default: ({ onExit }) => <module.default onExit={onExit} /> }; },
   },
   {
     manifest: {

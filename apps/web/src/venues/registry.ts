@@ -63,9 +63,9 @@ const venues: readonly VenueManifest[] = [
       { cabinetId: "temerosa-video-poker", status: "admin-preview" },
       { cabinetId: "lucky-derby-lab", status: "admin-preview" },
       { cabinetId: "temerosa-margin", status: "admin-preview" },
-      { cabinetId: "gfl-favorite-cup", status: "admin-preview" },
-      { cabinetId: "gfl-sprite-memory", status: "admin-preview" },
-      { cabinetId: "gfl-ember", status: "admin-preview" },
+      { cabinetId: "temerosa-favorite-cup", status: "admin-preview" },
+      { cabinetId: "temerosa-echo-memory", status: "admin-preview" },
+      { cabinetId: "temerosa-pequod-expedition", status: "admin-preview" },
     ],
   },
 ] as const;

@@ -114,7 +114,7 @@ const plannedTables = [
 ] as const;
 
 /** A suit stamped on each table, so a bare card still reads as a casino table. */
-const TABLE_SUITS: Record<string, string> = { "temerosa-old-maid": "♠", "temerosa-match-pairs": "♥", "temerosa-slot": "♦", "indian-poker": "♦", "temerosa-high-low": "♠", "temerosa-blackjack": "♣", "temerosa-doubt": "♦", "temerosa-one-card": "♥", "temerosa-texas-holdem": "♠", "temerosa-five-card-draw": "♣", "temerosa-video-poker": "♦", "lucky-derby-lab": "♠", "temerosa-margin": "♥", "gfl-favorite-cup": "♥", "gfl-sprite-memory": "♣", "gfl-ember": "♠", "관전석": "♠", "알제의 교환소": "♦" };
+const TABLE_SUITS: Record<string, string> = { "temerosa-old-maid": "♠", "temerosa-match-pairs": "♥", "temerosa-slot": "♦", "indian-poker": "♦", "temerosa-high-low": "♠", "temerosa-blackjack": "♣", "temerosa-doubt": "♦", "temerosa-one-card": "♥", "temerosa-texas-holdem": "♠", "temerosa-five-card-draw": "♣", "temerosa-video-poker": "♦", "lucky-derby-lab": "♠", "temerosa-margin": "♥", "temerosa-favorite-cup": "♥", "temerosa-echo-memory": "♣", "temerosa-pequod-expedition": "♠", "관전석": "♠", "알제의 교환소": "♦" };
 
 function VenueFloor({ venue, balance, onPlay, onPreview }: { venue: VenueManifest; balance: number; onPlay(id: string): void; onPreview(id: string): void }) {
   const tables = venue.tables.flatMap((table) => {

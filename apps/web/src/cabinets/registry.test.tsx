@@ -10,7 +10,7 @@ describe("public cabinet visibility", () => {
   });
 
   it("can expose retained cabinets explicitly for development regression tests", () => {
-    expect(listBuiltInCabinets(true).map((entry) => entry.manifest.id)).toContain("gfl-ember");
+    expect(listBuiltInCabinets(true).map((entry) => entry.manifest.id)).toContain("temerosa-pequod-expedition");
     expect(getCabinetRegistration("temerosa-margin", true)?.manifest.id).toBe("temerosa-margin");
     expect(getCabinetRegistration("temerosa-video-poker", true)?.manifest.version).toBe("video-poker/0.1");
   });
@@ -29,7 +29,7 @@ describe("public cabinet visibility", () => {
     expect(getCabinetRegistration("temerosa-texas-holdem")).toBeUndefined();
     expect(getCabinetRegistration("temerosa-five-card-draw")).toBeUndefined();
     expect(getCabinetRegistration("temerosa-five-card-draw", true)?.manifest.version).toBe("temerosa-five-card-draw/0.4");
-    for (const id of ["favorite-cup", "old-maid-card", "gfl-favorite-cup", "temerosa-margin", "lucky-derby-lab", "gfl-sprite-memory", "gfl-ember", "restoration-crew", "lore-circuit"]) {
+    for (const id of ["favorite-cup", "old-maid-card", "temerosa-favorite-cup", "temerosa-margin", "lucky-derby-lab", "temerosa-echo-memory", "temerosa-pequod-expedition", "restoration-crew", "lore-circuit"]) {
       expect(getCabinetRegistration(id)).toBeUndefined();
     }
   });

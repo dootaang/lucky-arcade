@@ -163,13 +163,13 @@ function frameAt(tick: number, racers: readonly MutableRacer[]): RaceFrame {
   return { tick, racers: racers.map((racer) => ({ id: racer.profile.id, progress: racer.progress, energy: racer.energy, rank: rank.get(racer.profile.id) ?? racers.length })) };
 }
 
-export const gflDerbyRoster: readonly DerbyRacer[] = [
-  { id: "m4a1", name: "M4A1", className: "AR", portraitAssetId: "portrait:m4a1:motivated", speed: 84, acceleration: 82, stamina: 78, focus: 92, strategy: "stalker" },
-  { id: "ar-15", name: "AR-15", className: "AR", portraitAssetId: "portrait:ar-15:serious", speed: 91, acceleration: 87, stamina: 70, focus: 88, strategy: "front" },
-  { id: "ro635", name: "RO635", className: "SMG", portraitAssetId: "portrait:ro635:motivated", speed: 88, acceleration: 93, stamina: 84, focus: 86, strategy: "front" },
-  { id: "ump45", name: "UMP45", className: "SMG", portraitAssetId: "portrait:ump45:natural", speed: 83, acceleration: 90, stamina: 81, focus: 95, strategy: "stalker" },
-  { id: "dp-12", name: "DP-12", className: "SG", portraitAssetId: "portrait:dp-12:motivated", speed: 70, acceleration: 66, stamina: 98, focus: 83, strategy: "closer" },
-  { id: "m1918", name: "M1918", className: "MG", portraitAssetId: "portrait:m1918:serious", speed: 77, acceleration: 72, stamina: 91, focus: 87, strategy: "closer" },
-  { id: "wa2000", name: "WA2000", className: "RF", portraitAssetId: "portrait:wa2000:serious", speed: 89, acceleration: 74, stamina: 68, focus: 98, strategy: "stalker" },
-  { id: "m950a", name: "M950A", className: "HG", portraitAssetId: "portrait:m950a:joy", speed: 86, acceleration: 96, stamina: 73, focus: 84, strategy: "front" },
+export const temerosaDerbyRoster: readonly DerbyRacer[] = [
+  { id: "yul", name: "율", className: "선행", portraitAssetId: "npc-yul-pleased", speed: 91, acceleration: 87, stamina: 70, focus: 84, strategy: "front" },
+  { id: "levillotte", name: "레빌로트", className: "변칙", portraitAssetId: "npc-levillotte-pleased", speed: 88, acceleration: 94, stamina: 69, focus: 76, strategy: "front" },
+  { id: "traver", name: "트레버", className: "균형", portraitAssetId: "npc-traver-neutral", speed: 82, acceleration: 81, stamina: 84, focus: 90, strategy: "stalker" },
+  { id: "lyla", name: "라일라", className: "통제", portraitAssetId: "npc-lyla-neutral", speed: 83, acceleration: 78, stamina: 88, focus: 96, strategy: "stalker" },
+  { id: "katrinka", name: "카트린카", className: "지구", portraitAssetId: "npc-katrinka-pleased", speed: 75, acceleration: 72, stamina: 98, focus: 88, strategy: "closer" },
+  { id: "raven", name: "레이븐", className: "계산", portraitAssetId: "npc-raven-neutral", speed: 80, acceleration: 76, stamina: 91, focus: 95, strategy: "closer" },
+  { id: "adesha", name: "아데샤", className: "잠행", portraitAssetId: "npc-adesha-neutral", speed: 89, acceleration: 84, stamina: 72, focus: 92, strategy: "stalker" },
+  { id: "ttaengchil", name: "땡칠이", className: "돌파", portraitAssetId: "npc-ttaengchil-pleased", speed: 87, acceleration: 96, stamina: 74, focus: 80, strategy: "front" },
 ] as const;

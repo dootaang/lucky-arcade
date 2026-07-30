@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { gflDerbyRoster, rankEngineBenchmarks, simulateRace } from "../src/index.ts";
+import { rankEngineBenchmarks, simulateRace, temerosaDerbyRoster } from "../src/index.ts";
 
 describe("lucky derby deterministic race", () => {
   it("replays the same seed byte-for-byte", () => {
-    const first = simulateRace({ seed: "daily-2026-07-24", racers: gflDerbyRoster });
-    const second = simulateRace({ seed: "daily-2026-07-24", racers: gflDerbyRoster });
+    const first = simulateRace({ seed: "daily-2026-07-24", racers: temerosaDerbyRoster });
+    const second = simulateRace({ seed: "daily-2026-07-24", racers: temerosaDerbyRoster });
     expect(first).toEqual(second);
     expect(first.resultHash).toHaveLength(64);
     expect(first.frames).toHaveLength(91);
@@ -21,9 +21,9 @@ describe("lucky derby deterministic race", () => {
   });
 
   it("changes the race with a different seed without losing racers", () => {
-    const first = simulateRace({ seed: "alpha", racers: gflDerbyRoster });
-    const second = simulateRace({ seed: "beta", racers: gflDerbyRoster });
+    const first = simulateRace({ seed: "alpha", racers: temerosaDerbyRoster });
+    const second = simulateRace({ seed: "beta", racers: temerosaDerbyRoster });
     expect(first.resultHash).not.toBe(second.resultHash);
-    expect(new Set(second.results.map((result) => result.racerId))).toEqual(new Set(gflDerbyRoster.map((racer) => racer.id)));
+    expect(new Set(second.results.map((result) => result.racerId))).toEqual(new Set(temerosaDerbyRoster.map((racer) => racer.id)));
   });
 });

@@ -35,9 +35,6 @@ importers:
       '@lucky-arcade/contracts':
         specifier: workspace:*
         version: link:../../packages/contracts
-      '@lucky-arcade/gfl-ember':
-        specifier: workspace:*
-        version: link:../../cabinets/gfl-ember
       sharp:
         specifier: 0.35.3
         version: 0.35.3(@types/node@24.13.3)
@@ -91,9 +88,6 @@ importers:
       '@lucky-arcade/five-card-draw':
         specifier: workspace:*
         version: link:../../cabinets/five-card-draw
-      '@lucky-arcade/gfl-ember':
-        specifier: workspace:*
-        version: link:../../cabinets/gfl-ember
       '@lucky-arcade/indian-poker':
         specifier: workspace:*
         version: link:../../cabinets/indian-poker
@@ -121,6 +115,9 @@ importers:
       '@lucky-arcade/sprite-memory':
         specifier: workspace:*
         version: link:../../cabinets/sprite-memory
+      '@lucky-arcade/temerosa-expedition':
+        specifier: workspace:*
+        version: link:../../cabinets/temerosa-expedition
       '@lucky-arcade/temerosa-margin':
         specifier: workspace:*
         version: link:../../cabinets/temerosa-margin
@@ -248,40 +245,6 @@ importers:
       react:
         specifier: 19.2.8
         version: 19.2.8
-    devDependencies:
-      '@types/react':
-        specifier: 19.2.17
-        version: 19.2.17
-
-  cabinets/gfl-ember:
-    dependencies:
-      '@lucky-arcade/cabinet-sdk':
-        specifier: workspace:*
-        version: link:../../packages/cabinet-sdk
-      '@lucky-arcade/contracts':
-        specifier: workspace:*
-        version: link:../../packages/contracts
-      '@lucky-arcade/engine':
-        specifier: workspace:*
-        version: link:../../packages/engine
-      '@lucky-arcade/persistence':
-        specifier: workspace:*
-        version: link:../../packages/persistence
-      '@lucky-arcade/ui':
-        specifier: workspace:*
-        version: link:../../packages/ui
-      '@tabler/icons-react':
-        specifier: 3.45.0
-        version: 3.45.0(react@19.2.8)
-      littlejsengine:
-        specifier: 1.18.24
-        version: 1.18.24
-      react:
-        specifier: 19.2.8
-        version: 19.2.8
-      zod:
-        specifier: 4.4.3
-        version: 4.4.3
     devDependencies:
       '@types/react':
         specifier: 19.2.17
@@ -475,6 +438,40 @@ importers:
       react:
         specifier: 19.2.8
         version: 19.2.8
+    devDependencies:
+      '@types/react':
+        specifier: 19.2.17
+        version: 19.2.17
+
+  cabinets/temerosa-expedition:
+    dependencies:
+      '@lucky-arcade/cabinet-sdk':
+        specifier: workspace:*
+        version: link:../../packages/cabinet-sdk
+      '@lucky-arcade/contracts':
+        specifier: workspace:*
+        version: link:../../packages/contracts
+      '@lucky-arcade/engine':
+        specifier: workspace:*
+        version: link:../../packages/engine
+      '@lucky-arcade/persistence':
+        specifier: workspace:*
+        version: link:../../packages/persistence
+      '@lucky-arcade/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
+      '@tabler/icons-react':
+        specifier: 3.45.0
+        version: 3.45.0(react@19.2.8)
+      littlejsengine:
+        specifier: 1.18.24
+        version: 1.18.24
+      react:
+        specifier: 19.2.8
+        version: 19.2.8
+      zod:
+        specifier: 4.4.3
+        version: 4.4.3
     devDependencies:
       '@types/react':
         specifier: 19.2.17

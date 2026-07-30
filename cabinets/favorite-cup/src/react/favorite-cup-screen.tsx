@@ -8,10 +8,11 @@ export interface FavoriteCupScreenProps {
   cartridge: FavoriteCupCartridge;
   candidates: FavoriteCupCandidate[];
   loadAsset(assetId: string): Promise<string>;
+  title?: string;
   onExit(): void;
 }
 
-export function FavoriteCupScreen({ cartridge, candidates, loadAsset, onExit }: FavoriteCupScreenProps) {
+export function FavoriteCupScreen({ cartridge, candidates, loadAsset, title = "최애 월드컵", onExit }: FavoriteCupScreenProps) {
   const today = new Date().toISOString().slice(0, 10);
   const [attempt, setAttempt] = useState(0);
   const seed = `${today}:${attempt}`;
@@ -20,7 +21,7 @@ export function FavoriteCupScreen({ cartridge, candidates, loadAsset, onExit }: 
   useEffect(() => setState(initial), [initial]);
   const view = selectFavoriteCup(state, cartridge);
   if (view.status === "won" && view.champion) return <main className="game-shell favorite-cup-shell">
-    <header className="game-header"><button className="icon-button" onClick={onExit} aria-label="분석 화면으로 돌아가기"><IconArrowLeft /></button><div><span>LUCKY OPENING</span><h1>최애 월드컵</h1></div></header>
+    <header className="game-header"><button className="icon-button" onClick={onExit} aria-label="분석 화면으로 돌아가기"><IconArrowLeft /></button><div><span>LUCKY OPENING</span><h1>{title}</h1></div></header>
     <section className="favorite-result">
       <span className="eyebrow">오늘의 최애</span><IconCrown className="winner-crown" size={48} />
       <Portrait candidate={view.champion} loadAsset={loadAsset} featured />
@@ -32,7 +33,7 @@ export function FavoriteCupScreen({ cartridge, candidates, loadAsset, onExit }: 
   </main>;
   if (!view.match) return <main className="game-shell"><div className="game-loading">대진을 준비하고 있어요…</div></main>;
   return <main className="game-shell favorite-cup-shell">
-    <header className="game-header"><button className="icon-button" onClick={onExit} aria-label="분석 화면으로 돌아가기"><IconArrowLeft /></button><div><span>LUCKY OPENING</span><h1>최애 월드컵</h1></div><div className="game-meters"><span>{view.roundLabel}</span><span><b>{view.progress.completed + 1}</b> / {view.progress.total}</span></div></header>
+    <header className="game-header"><button className="icon-button" onClick={onExit} aria-label="분석 화면으로 돌아가기"><IconArrowLeft /></button><div><span>LUCKY OPENING</span><h1>{title}</h1></div><div className="game-meters"><span>{view.roundLabel}</span><span><b>{view.progress.completed + 1}</b> / {view.progress.total}</span></div></header>
     {view.todaySelection && <p className="today-selection">인물이 많아 카드 지문과 오늘 날짜로 ‘오늘의 16명’을 골랐습니다.</p>}
     <section className="favorite-versus" aria-label={`${view.match[0].displayName} 대 ${view.match[1].displayName}`}>
       <Choice key={view.match[0].npcId} candidate={view.match[0]} loadAsset={loadAsset} onChoose={() => setState((current) => reduceFavoriteCup(current, view.match?.[0].npcId ?? ""))} />

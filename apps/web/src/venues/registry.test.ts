@@ -17,9 +17,9 @@ describe("Venue registry", () => {
     expect(getPublicVenue("temerosa-casino")?.tables.filter((table) => table.status === "preparing")).toEqual([]);
     expect(getPublicVenue("temerosa-casino")?.tables.filter((table) => table.status === "admin-preview").map((table) => table.cabinetId)).toEqual([
       "temerosa-blackjack", "temerosa-doubt", "temerosa-one-card", "temerosa-texas-holdem", "temerosa-five-card-draw",
-      "temerosa-video-poker", "lucky-derby-lab", "temerosa-margin", "gfl-favorite-cup", "gfl-sprite-memory", "gfl-ember",
+      "temerosa-video-poker", "lucky-derby-lab", "temerosa-margin", "temerosa-favorite-cup", "temerosa-echo-memory", "temerosa-pequod-expedition",
     ]);
-    expect(getVenueForCabinet("gfl-favorite-cup")?.title).toBe("테메로세 카지노");
+    expect(getVenueForCabinet("temerosa-favorite-cup")?.title).toBe("테메로세 카지노");
   });
 
   it("uses only the checked-in responsive derivatives within the home budget", () => {

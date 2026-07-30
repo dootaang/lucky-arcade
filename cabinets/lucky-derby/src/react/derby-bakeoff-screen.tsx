@@ -1,7 +1,7 @@
 import type { RuntimeDiagnostics } from "@lucky-arcade/cabinet-sdk";
 import { IconArrowLeft, IconBolt, IconPlayerPlay, IconRefresh, IconTrophy } from "@tabler/icons-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { gflDerbyRoster, rankEngineBenchmarks, simulateRace, type EngineBenchmarkSample } from "../index.ts";
+import { rankEngineBenchmarks, simulateRace, temerosaDerbyRoster, type EngineBenchmarkSample } from "../index.ts";
 import { createDerbyRuntime } from "./runtime/factory.ts";
 import type { DerbyEngineId } from "./runtime/shared.ts";
 import type { DerbyRuntimeAdapter } from "./runtime/types.ts";
@@ -17,7 +17,7 @@ export interface DerbyBakeoffScreenProps { assets: Readonly<Record<string, strin
 
 export function DerbyBakeoffScreen({ assets, onExit }: DerbyBakeoffScreenProps) {
   const [seed, setSeed] = useState(() => dailySeed());
-  const transcript = useMemo(() => simulateRace({ seed, racers: gflDerbyRoster }), [seed]);
+  const transcript = useMemo(() => simulateRace({ seed, racers: temerosaDerbyRoster }), [seed]);
   const [active, setActive] = useState<DerbyEngineId>("phaser");
   const [status, setStatus] = useState("출발 준비");
   const [samples, setSamples] = useState<EngineBenchmarkSample[]>(() => readSamples());

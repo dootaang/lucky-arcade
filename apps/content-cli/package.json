@@ -4,7 +4,6 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "start": "tsx src/gfl-ember.ts",
     "temerosa": "tsx src/temerosa.ts",
     "temerosa:audit": "tsx src/audit-temerosa.ts",
     "temerosa:expressions": "tsx src/audit-temerosa-expressions.ts",
@@ -23,7 +22,6 @@
     "@lucky-arcade/cabinet-sdk": "workspace:*",
     "@lucky-arcade/card-io": "workspace:*",
     "@lucky-arcade/contracts": "workspace:*",
-    "@lucky-arcade/gfl-ember": "workspace:*",
     "sharp": "0.35.3"
   },
   "devDependencies": {
