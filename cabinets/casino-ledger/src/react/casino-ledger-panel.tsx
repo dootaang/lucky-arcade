@@ -363,6 +363,7 @@ function TableLoop({ tableId, active }: { tableId: CasinoTableId; active: boolea
   if (tableId === "temerosa-match-pairs") return <span className={`mini-pairs ${active ? "is-running" : ""}`}><i /><i /></span>;
   if (tableId === "indian-poker") return <span className={`mini-poker ${active ? "is-running" : ""}`}><i /><b>●</b><b>●</b><b>●</b></span>;
   if (tableId === "temerosa-high-low") return <span className={`mini-poker ${active ? "is-running" : ""}`}><i /><b>↑</b><b>?</b><b>↓</b></span>;
+  if (tableId === "temerosa-five-card-draw") return <span className={`mini-poker ${active ? "is-running" : ""}`}><i /><b>♣</b><b>♦</b><b>♠</b></span>;
   return <span className={`mini-old-maid ${active ? "is-running" : ""}`}><i /><i /><i /><i /></span>;
 }
 
@@ -381,6 +382,7 @@ function tableName(tableId: CasinoLedgerSourceId): string {
   if (tableId === "temerosa-match-pairs") return "짝맞추기";
   if (tableId === "temerosa-slot") return "슬롯";
   if (tableId === "temerosa-high-low") return "하이로우";
+  if (tableId === "temerosa-five-card-draw") return "파이브 카드 드로";
   if (tableId === "temerosa-blackjack") return "블랙잭";
   if (tableId === "temerosa-doubt") return "다우트";
   if (tableId === "temerosa-one-card") return "원카드";
@@ -470,6 +472,7 @@ function settlementLabel(settlement: NpcRoundSettlement, names?: ReadonlyMap<str
     return lines > 0 ? `${lines}줄 적중` : "당첨 없음";
   }
   if (settlement.tableId === "indian-poker") return "칩 정산";
+  if (settlement.tableId === "temerosa-five-card-draw") return settlement.resultKind === "draw" ? "팟 분할" : settlement.resultKind === "win" ? "팟 획득" : "대국 패배";
   if (settlement.tableId === "temerosa-high-low") {
     const [kind,count]=settlement.resultKind.split("-");
     return kind==="cashout"?`${count}연속 수익 확정`:`${count}번째 예측 실패`;

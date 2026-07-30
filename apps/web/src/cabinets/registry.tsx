@@ -28,12 +28,12 @@ const registrations: readonly WebCabinetRegistration[] = [
   },
   {
     manifest: {
-      id: "temerosa-five-card-draw", version: "temerosa-five-card-draw/0.4", title: "파이브 카드 드로 포커",
+      id: "temerosa-five-card-draw", version: "temerosa-five-card-draw-wager/1.0", title: "파이브 카드 드로 포커",
       description: "카드 5장을 교환하고 두 번의 베팅으로 승부하는 정통 드로 포커.", requiredCapabilities: [],
-      sessionKind: "repeat", launchKind: "built-in", resumeLabel: "드로 포커 시험 계속하기", estimatedMinutes: { min: 3, max: 8 },
+      sessionKind: "repeat", launchKind: "built-in", resumeLabel: "드로 포커 이어하기", estimatedMinutes: { min: 3, max: 8 },
       entry: "wager", wagerTiers: [10, 50, 200],
     },
-    openingRank: null, badge: "관리자 시험 테이블",
+    openingRank: null, badge: "포커 테이블",
     load: async () => { const module = await import("../features/five-card-draw/five-card-draw-view.tsx"); return { default: module.default }; },
   },
   {

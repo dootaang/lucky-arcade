@@ -7,7 +7,7 @@ import {
 } from "@lucky-arcade/casino-ledger";
 
 const SOURCES = new Set<CasinoLedgerSourceId>([
-  "temerosa-old-maid", "temerosa-match-pairs", "temerosa-slot", "indian-poker", "temerosa-high-low",
+  "temerosa-old-maid", "temerosa-match-pairs", "temerosa-slot", "indian-poker", "temerosa-high-low", "temerosa-five-card-draw",
   "temerosa-blackjack", "temerosa-doubt", "temerosa-one-card", "temerosa-texas-holdem",
 ]);
 

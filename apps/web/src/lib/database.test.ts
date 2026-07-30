@@ -395,6 +395,35 @@ describe.sequential("point wallet and spectator predictions", () => {
     expect((await page.evaluate(async () => (await (await new Function("return import('/src/lib/database.ts')")()).readWallet()).balance))).toBe(0);
   });
 
+  it("atomically reserves and settles a multiplayer pot across three NPC accounts", async () => {
+    await seedWallet(page, 500);
+    const result = await page.evaluate(async () => {
+      const database = await new Function("return import('/src/lib/database.ts')")();
+      const reserved = await database.reserveGameWager({
+        wagerId: "draw-four-seat", outcomeKey: "draw-four-seat:seed", cabinetId: "temerosa-five-card-draw",
+        sessionId: "five-card-draw:public-1", termsVersion: "temerosa-five-card-draw-wager/1.0", stake: 10, reservedAmount: 70,
+        counterpartyReservations: { "npc:lyla": 70, "npc:pale": 70, "npc:kano": 70 },
+        counterpartyBaseBalances: { "npc:lyla": 100, "npc:pale": 100, "npc:kano": 100 }, casinoOccurredAtSecond: 2_000,
+      });
+      const settled = await database.settleGameWager({
+        wagerId: "draw-four-seat", settlementSequence: 12, resultKey: "showdown", creditAmount: 160,
+        counterpartyCredits: { "npc:lyla": 20, "npc:pale": 30, "npc:kano": 70 },
+      });
+      return { reserved, settled, journal: await database.listCasinoTransactions() };
+    });
+    expect(result.reserved).toMatchObject({ wallet: { balance: 430 }, wager: { counterpartyReservations: { "npc:lyla": 70, "npc:pale": 70, "npc:kano": 70 } } });
+    expect(result.settled).toMatchObject({ wallet: { balance: 590 }, wager: { status: "settled", settlementCredit: 160 } });
+    expect(result.journal).toHaveLength(2);
+    expect(result.journal[0].postings).toEqual([
+      { accountId: "npc:kano", delta: -70 }, { accountId: "npc:lyla", delta: -70 }, { accountId: "npc:pale", delta: -70 },
+      { accountId: "player:local", delta: -70 }, { accountId: "escrow:draw-four-seat", delta: 280 },
+    ]);
+    expect(result.journal[1].postings).toEqual([
+      { accountId: "escrow:draw-four-seat", delta: -280 }, { accountId: "npc:kano", delta: 70 },
+      { accountId: "npc:lyla", delta: 20 }, { accountId: "npc:pale", delta: 30 }, { accountId: "player:local", delta: 160 },
+    ]);
+  });
+
   it("stores a favorite-cup vote receipt idempotently", async () => {
     const records = await page.evaluate(async () => {
       const database = await new Function("return import('/src/lib/database.ts')")();

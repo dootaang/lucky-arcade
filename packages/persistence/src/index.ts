@@ -257,6 +257,8 @@ export interface GameWagerReceipt {
   /** Optional casino-economy/1.0 counterparty reservation. Legacy receipts omit it. */
   counterpartyAccountId?: string;
   counterpartyReservedAmount?: number;
+  /** Multi-seat casino reservation. New multiplayer games use this instead of the singular compatibility fields. */
+  counterpartyReservations?: Readonly<Record<string, number>>;
   casinoOccurredAtSecond?: number;
 }
 
@@ -273,6 +275,10 @@ export interface ReserveGameWagerInput {
   counterpartyReservedAmount?: number;
   /** Canonical balance before local journal postings; checked atomically with the journal overlay. */
   counterpartyBaseBalance?: number;
+  /** Multi-seat casino reservation. Account ids must be distinct internal NPC/house accounts. */
+  counterpartyReservations?: Readonly<Record<string, number>>;
+  /** Canonical balances paired one-to-one with counterpartyReservations. */
+  counterpartyBaseBalances?: Readonly<Record<string, number>>;
   casinoOccurredAtSecond?: number;
 }
 
@@ -281,6 +287,8 @@ export interface SettleGameWagerInput {
   settlementSequence: number;
   resultKey: string;
   creditAmount: number;
+  /** Required for multi-seat reservations; together with creditAmount it must exhaust escrow exactly. */
+  counterpartyCredits?: Readonly<Record<string, number>>;
 }
 
 export interface ForfeitGameWagerInput {

@@ -1,6 +1,7 @@
 import type { AnalyzedCard, AnyAnalyzedCard } from "@lucky-arcade/contracts";
 import {
   LOCAL_PLAYER_ACCOUNT_ID,
+  TEMEROSA_HOUSE_ACCOUNT_ID,
   assertCasinoTransaction,
   createCollectionPurchaseTransaction,
   createFreePlayRewardTransaction,
@@ -411,6 +412,7 @@ export async function reserveGameWager(input: ReserveGameWagerInput): Promise<Ga
     if (wallet.balance < input.reservedAmount) throw new Error("insufficient_points");
     const now = new Date().toISOString();
     const nextWallet: PointWalletSnapshot = { ...wallet, balance: wallet.balance - input.reservedAmount, updatedAt: now };
+    const counterparties = inputCounterpartyReservations(input);
     const wager: GameWagerReceipt = {
       contract: "game-wager/0.1",
       wagerId: input.wagerId,
@@ -429,17 +431,23 @@ export async function reserveGameWager(input: ReserveGameWagerInput): Promise<Ga
         counterpartyReservedAmount: input.counterpartyReservedAmount,
         casinoOccurredAtSecond: input.casinoOccurredAtSecond,
       } : {}),
+      ...(input.counterpartyReservations ? {
+        counterpartyReservations: Object.freeze({ ...input.counterpartyReservations }),
+        casinoOccurredAtSecond: input.casinoOccurredAtSecond,
+      } : {}),
     };
-    if (input.counterpartyAccountId) {
+    if (counterparties) {
       const journal = transaction.objectStore(STORES.casinoTransactions);
       const existing = await request<CasinoTransaction[]>(journal.getAll());
-      const localDelta = casinoAccountDelta(existing, input.counterpartyAccountId);
-      if (input.counterpartyBaseBalance! + localDelta < input.counterpartyReservedAmount!) throw new Error("casino_counterparty_insufficient_points");
+      for (const [accountId, reservedAmount] of Object.entries(counterparties.reservations)) {
+        const localDelta = casinoAccountDelta(existing, accountId);
+        if (counterparties.baseBalances[accountId]! + localDelta < reservedAmount) throw new Error("casino_counterparty_insufficient_points");
+      }
       const reservation = reserveCasinoEscrow({
         wagerId: input.wagerId,
         idempotencyKey: `casino-wager:${input.wagerId}:reserve`,
         occurredAtCasinoSecond: input.casinoOccurredAtSecond!,
-        reservations: { [LOCAL_PLAYER_ACCOUNT_ID]: input.reservedAmount, [input.counterpartyAccountId]: input.counterpartyReservedAmount! },
+        reservations: { [LOCAL_PLAYER_ACCOUNT_ID]: input.reservedAmount, ...counterparties.reservations },
         tableId: input.cabinetId,
         termsVersion: input.termsVersion,
         matchId: input.wagerId,
@@ -466,11 +474,13 @@ export async function settleGameWager(input: SettleGameWagerInput): Promise<Game
     if (wager.status === "settled" || wager.status === "forfeited") return { wallet, wager };
     if (wager.status !== "reserved") throw new Error("game_wager_not_settleable");
     const nextWallet = input.creditAmount === 0 ? wallet : { ...wallet, balance: wallet.balance + input.creditAmount, updatedAt: now };
-    if (wager.counterpartyAccountId) {
-      const total=wager.reservedAmount+wager.counterpartyReservedAmount!;
+    const counterparties = receiptCounterpartyReservations(wager);
+    if (counterparties) {
+      const total=wager.reservedAmount+sumValues(counterparties);
       if(input.creditAmount>total)throw new Error("casino_settlement_exceeds_escrow");
       const reservation=reservationFromReceipt(wager);
-      transaction.objectStore(STORES.casinoTransactions).add(settleCasinoEscrow({reservation,idempotencyKey:`casino-wager:${wager.wagerId}:settle`,occurredAtCasinoSecond:casinoSettlementSecond(wager),credits:{[LOCAL_PLAYER_ACCOUNT_ID]:input.creditAmount,[wager.counterpartyAccountId]:total-input.creditAmount},resultKey:input.resultKey}));
+      const counterpartyCredits=settlementCounterpartyCredits(wager,input.counterpartyCredits,total-input.creditAmount);
+      transaction.objectStore(STORES.casinoTransactions).add(settleCasinoEscrow({reservation,idempotencyKey:`casino-wager:${wager.wagerId}:settle`,occurredAtCasinoSecond:casinoSettlementSecond(wager),credits:{[LOCAL_PLAYER_ACCOUNT_ID]:input.creditAmount,...counterpartyCredits},resultKey:input.resultKey}));
     }
     return { wallet: nextWallet, wager: { ...wager, status: "settled", settledAt: now, settlementSequence: input.settlementSequence, resultKey: input.resultKey, settlementCredit: input.creditAmount } };
   });
@@ -481,9 +491,11 @@ export async function forfeitGameWager(input: ForfeitGameWagerInput): Promise<Ga
   return finishGameWager(input.wagerId, (wager, wallet, now, transaction) => {
     if (wager.status === "settled" || wager.status === "forfeited") return { wallet, wager };
     if (wager.status !== "reserved") throw new Error("game_wager_not_forfeitable");
-    if(wager.counterpartyAccountId){
-      const reservation=reservationFromReceipt(wager),total=wager.reservedAmount+wager.counterpartyReservedAmount!;
-      transaction.objectStore(STORES.casinoTransactions).add(settleCasinoEscrow({reservation,idempotencyKey:`casino-wager:${wager.wagerId}:forfeit`,occurredAtCasinoSecond:casinoSettlementSecond(wager),credits:{[wager.counterpartyAccountId]:total},resultKey:input.resultKey??"forfeit",kind:"forfeit"}));
+    const counterparties = receiptCounterpartyReservations(wager);
+    if(counterparties){
+      if (wager.counterpartyReservations) throw new Error("game_wager_multiplayer_forfeit_requires_settlement");
+      const reservation=reservationFromReceipt(wager),total=wager.reservedAmount+sumValues(counterparties);
+      transaction.objectStore(STORES.casinoTransactions).add(settleCasinoEscrow({reservation,idempotencyKey:`casino-wager:${wager.wagerId}:forfeit`,occurredAtCasinoSecond:casinoSettlementSecond(wager),credits:{[wager.counterpartyAccountId!]:total},resultKey:input.resultKey??"forfeit",kind:"forfeit"}));
     }
     return { wallet, wager: { ...wager, status: "forfeited", settledAt: now, settlementSequence: input.settlementSequence, ...(input.resultKey === undefined ? {} : { resultKey: input.resultKey }), settlementCredit: 0 } };
   });
@@ -495,9 +507,10 @@ export async function systemInvalidateGameWager(input: InvalidateGameWagerInput)
     if (wager.status === "refunded") return { wallet, wager };
     if (wager.status !== "reserved") throw new Error("game_wager_not_refundable");
     const nextWallet: PointWalletSnapshot = { ...wallet, balance: wallet.balance + wager.reservedAmount, updatedAt: now };
-    if(wager.counterpartyAccountId){
+    const counterparties = receiptCounterpartyReservations(wager);
+    if(counterparties){
       const reservation=reservationFromReceipt(wager);
-      transaction.objectStore(STORES.casinoTransactions).add(settleCasinoEscrow({reservation,idempotencyKey:`casino-wager:${wager.wagerId}:refund`,occurredAtCasinoSecond:casinoSettlementSecond(wager),credits:{[LOCAL_PLAYER_ACCOUNT_ID]:wager.reservedAmount,[wager.counterpartyAccountId]:wager.counterpartyReservedAmount!},resultKey:input.reason,kind:"system-refund"}));
+      transaction.objectStore(STORES.casinoTransactions).add(settleCasinoEscrow({reservation,idempotencyKey:`casino-wager:${wager.wagerId}:refund`,occurredAtCasinoSecond:casinoSettlementSecond(wager),credits:{[LOCAL_PLAYER_ACCOUNT_ID]:wager.reservedAmount,...counterparties},resultKey:input.reason,kind:"system-refund"}));
     }
     return { wallet: nextWallet, wager: { ...wager, status: "refunded", settledAt: now, invalidationReason: input.reason, settlementCredit: wager.reservedAmount } };
   });
@@ -640,15 +653,45 @@ function assertPredictionInput(input: ReserveSpectatorPredictionInput): void {
     || input.counterpartyAccountId === undefined && (input.counterpartyReservedAmount !== undefined || input.counterpartyBaseBalance !== undefined || input.casinoOccurredAtSecond !== undefined || input.casinoTableId !== undefined)) throw new Error("invalid_prediction");
 }
 function assertGameWagerReservation(input: ReserveGameWagerInput): void {
+  const singular = input.counterpartyAccountId !== undefined;
+  const multiple = input.counterpartyReservations !== undefined;
+  const multipleEntries = Object.entries(input.counterpartyReservations ?? {});
   if (!input.wagerId || !input.outcomeKey || !input.cabinetId || !input.sessionId || !input.termsVersion
     || input.choiceKey !== undefined && !input.choiceKey
     || !isPositiveInteger(input.stake) || !isPositiveInteger(input.reservedAmount) || input.reservedAmount < input.stake
-    || input.counterpartyAccountId !== undefined && (!input.counterpartyAccountId || !isPositiveInteger(input.counterpartyReservedAmount!) || !isNonNegativeInteger(input.counterpartyBaseBalance!) || !isNonNegativeInteger(input.casinoOccurredAtSecond!))
-    || input.counterpartyAccountId === undefined && (input.counterpartyReservedAmount !== undefined || input.counterpartyBaseBalance !== undefined || input.casinoOccurredAtSecond !== undefined)) throw new Error("invalid_game_wager");
+    || singular && multiple
+    || input.counterpartyAccountId !== undefined && (!isCasinoCounterpartyAccount(input.counterpartyAccountId) || !isPositiveInteger(input.counterpartyReservedAmount!) || !isNonNegativeInteger(input.counterpartyBaseBalance!) || !isNonNegativeInteger(input.casinoOccurredAtSecond!))
+    || input.counterpartyAccountId === undefined && (input.counterpartyReservedAmount !== undefined || input.counterpartyBaseBalance !== undefined)
+    || multiple && (multipleEntries.length < 1 || Object.keys(input.counterpartyBaseBalances ?? {}).length !== multipleEntries.length
+      || multipleEntries.some(([accountId, amount]) => !isCasinoCounterpartyAccount(accountId) || !isPositiveInteger(amount) || !isNonNegativeInteger(input.counterpartyBaseBalances?.[accountId] ?? -1)))
+    || !multiple && input.counterpartyBaseBalances !== undefined
+    || !singular && !multiple && input.casinoOccurredAtSecond !== undefined
+    || (singular || multiple) && !isNonNegativeInteger(input.casinoOccurredAtSecond!)) throw new Error("invalid_game_wager");
 }
+function isCasinoCounterpartyAccount(accountId:string):boolean{return accountId===TEMEROSA_HOUSE_ACCOUNT_ID||accountId.startsWith("npc:")&&accountId.length>4;}
 
 function casinoAccountDelta(transactions:readonly CasinoTransaction[],accountId:string):number{return transactions.reduce((sum,transaction)=>sum+transaction.postings.filter((posting)=>posting.accountId===accountId).reduce((postingSum,posting)=>postingSum+posting.delta,0),0);}
-function reservationFromReceipt(wager:GameWagerReceipt){return reserveCasinoEscrow({wagerId:wager.wagerId,idempotencyKey:`casino-wager:${wager.wagerId}:reserve`,occurredAtCasinoSecond:wager.casinoOccurredAtSecond!,reservations:{[LOCAL_PLAYER_ACCOUNT_ID]:wager.reservedAmount,[wager.counterpartyAccountId!]:wager.counterpartyReservedAmount!},matchId:wager.wagerId,tableId:wager.cabinetId,termsVersion:wager.termsVersion,stake:wager.stake});}
+function inputCounterpartyReservations(input:ReserveGameWagerInput):{reservations:Readonly<Record<string,number>>;baseBalances:Readonly<Record<string,number>>}|undefined{
+  if(input.counterpartyReservations)return {reservations:input.counterpartyReservations,baseBalances:input.counterpartyBaseBalances!};
+  if(input.counterpartyAccountId)return {reservations:{[input.counterpartyAccountId]:input.counterpartyReservedAmount!},baseBalances:{[input.counterpartyAccountId]:input.counterpartyBaseBalance!}};
+  return undefined;
+}
+function receiptCounterpartyReservations(wager:GameWagerReceipt):Readonly<Record<string,number>>|undefined{
+  if(wager.counterpartyReservations)return wager.counterpartyReservations;
+  return wager.counterpartyAccountId?{[wager.counterpartyAccountId]:wager.counterpartyReservedAmount!}:undefined;
+}
+function reservationFromReceipt(wager:GameWagerReceipt){const counterparties=receiptCounterpartyReservations(wager);if(!counterparties)throw new Error("casino_wager_counterparty_missing");return reserveCasinoEscrow({wagerId:wager.wagerId,idempotencyKey:`casino-wager:${wager.wagerId}:reserve`,occurredAtCasinoSecond:wager.casinoOccurredAtSecond!,reservations:{[LOCAL_PLAYER_ACCOUNT_ID]:wager.reservedAmount,...counterparties},matchId:wager.wagerId,tableId:wager.cabinetId,termsVersion:wager.termsVersion,stake:wager.stake});}
+function settlementCounterpartyCredits(wager:GameWagerReceipt,credits:Readonly<Record<string,number>>|undefined,expectedTotal:number):Readonly<Record<string,number>>{
+  const reservations=receiptCounterpartyReservations(wager);if(!reservations)throw new Error("casino_wager_counterparty_missing");
+  if(!wager.counterpartyReservations){
+    if(credits!==undefined)throw new Error("casino_settlement_unexpected_counterparty_credits");
+    return {[wager.counterpartyAccountId!]:expectedTotal};
+  }
+  const entries=Object.entries(credits??{}),reservedIds=Object.keys(reservations).sort(),creditIds=entries.map(([id])=>id).sort();
+  if(reservedIds.length!==creditIds.length||reservedIds.some((id,index)=>id!==creditIds[index])||entries.some(([,amount])=>!isNonNegativeInteger(amount))||sumValues(credits!)!==expectedTotal)throw new Error("casino_settlement_invalid_counterparty_credits");
+  return credits!;
+}
+function sumValues(values:Readonly<Record<string,number>>):number{return Object.values(values).reduce((sum,value)=>sum+value,0);}
 function casinoSettlementSecond(wager:GameWagerReceipt):number{
   const elapsed=Math.max(0,Math.floor((Date.now()-Date.parse(wager.createdAt))/1_000));
   return wager.casinoOccurredAtSecond!+elapsed;

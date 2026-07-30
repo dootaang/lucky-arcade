@@ -11,7 +11,8 @@ export type CasinoTableId =
   | "temerosa-match-pairs"
   | "temerosa-slot"
   | "indian-poker"
-  | "temerosa-high-low";
+  | "temerosa-high-low"
+  | "temerosa-five-card-draw";
 
 export type CasinoLedgerSourceId = CasinoTableId
   | "npc-income"
@@ -142,7 +143,7 @@ export interface NpcSession {
 }
 
 export interface NpcLedgerContract {
-  version: "npc-ledger/1.0";
+  version: "npc-ledger/1.0" | "npc-ledger/1.1";
   /** Frozen deterministic seed domain; changing calendar boundaries must not reroll history. */
   seedVersion: "npc-ledger/0.9";
   /** First casino calendar day, counted at KST midnight. */

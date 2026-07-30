@@ -32,7 +32,9 @@ export interface FiveCardDrawScreenProps {
   lines?:readonly FiveCardDrawLine[];
   series:FiveCardDrawSeriesState|null;seriesStats:FiveCardDrawSeriesStats|null;autoContinue:boolean;
   beginner:boolean;onBeginner(value:boolean):void;onStart(opponents:readonly FiveCardDrawOpponentView[],stake:FiveCardDrawStake,targetHands:FiveCardDrawSeriesLength):void;
-  onAction(action:FiveCardDrawAction):void;onReset():void;onResetWallet():void;onNextHand():void;onEndSeries():void;onReplaySeries():void;onAutoContinue(value:boolean):void;
+  opponentAvailability?:Readonly<Record<string,Readonly<{available:boolean;label:string}>>>;onOpponentSelectionChange?(ids:readonly string[]):void;
+  opponentBalances?:Readonly<Record<string,number>>;
+  onAction(action:FiveCardDrawAction):void;onReset():void;onNextHand():void;onEndSeries():void;onReplaySeries():void;onAutoContinue(value:boolean):void;
   onInteractionPause?(paused:boolean):void;onExit():void;
 }
 
@@ -118,30 +120,33 @@ export function FiveCardDrawScreen(props:FiveCardDrawScreenProps):ReactElement {
     return ()=>{window.removeEventListener("keydown",onKey);document.body.style.overflow=previous;};
   },[inspectedSeat,inspectedPortrait]);
 
-  function changeCount(value:2|3|4):void {setPlayerCount(value);setSelectedIds((current)=>fillUnique(current,value-1,props.opponents));}
-  function selectAt(index:number,id:string):void {setSelectedIds((current)=>{const next=[...current];next[index]=id;return fillUnique(next,playerCount-1,props.opponents);});}
-  function randomize():void {const random=new Uint32Array(1);crypto.getRandomValues(random);const start=random[0]!%props.opponents.length;setSelectedIds(Array.from({length:playerCount-1},(_,index)=>props.opponents[(start+index*7)%props.opponents.length]!.id));}
+  useEffect(()=>{if(state.phase==="ready")props.onOpponentSelectionChange?.(setupOpponents.map((opponent)=>opponent.id));},[state.phase,setupOpponents.map((opponent)=>opponent.id).join("|")]);
+  function opponentCanAfford(opponent:FiveCardDrawOpponentView):boolean{return (props.opponentBalances?.[opponent.id]??0)>=stake*FIVE_CARD_DRAW_MAX_EXPOSURE_UNITS;}
+  function selectableOpponents():readonly FiveCardDrawOpponentView[]{return props.opponents.filter((opponent)=>props.opponentAvailability?.[opponent.id]?.available!==false&&opponentCanAfford(opponent));}
+  function changeCount(value:2|3|4):void {setPlayerCount(value);setSelectedIds((current)=>fillUnique(current,value-1,selectableOpponents()));}
+  function selectAt(index:number,id:string):void {setSelectedIds((current)=>{const next=[...current];next[index]=id;return fillUnique(next,playerCount-1,selectableOpponents());});}
+  function randomize():void {const available=selectableOpponents();if(available.length<playerCount-1)return;const random=new Uint32Array(1);crypto.getRandomValues(random);const start=random[0]!%available.length;setSelectedIds(Array.from({length:playerCount-1},(_,index)=>available[(start+index*7)%available.length]!.id));}
   function toggle(card:string):void {if(!canSelectCards())return;setSelectedCards((current)=>{const next=new Set(current);if(next.has(card))next.delete(card);else if(next.size<3)next.add(card);return next;});}
   function exchange():void {props.onAction({type:"exchange",cardIds:[...selectedCards] as StandardCardId[]});setSelectedCards(new Set());setInspectedSeat(null);}
   function canSelectCards():boolean {return settled&&props.state.phase==="drawing"&&props.state.currentActorId==="player";}
 
   if(props.state.phase==="ready")return <main className="draw-poker-shell draw-poker-lobby">
-    <header><button className="draw-icon-button" onClick={props.onExit} aria-label="카지노로 돌아가기"><IconArrowLeft/></button><div><span className="draw-eyebrow">ADMIN PREVIEW · TEMEROSA CASINO</span><h1>파이브 카드 드로 포커</h1></div><strong>{props.balance.toLocaleString("ko-KR")} 시험 P</strong></header>
+    <header><button className="draw-icon-button" onClick={props.onExit} aria-label="카지노로 돌아가기"><IconArrowLeft/></button><div><span className="draw-eyebrow">TEMEROSA CASINO · DRAW POKER</span><h1>파이브 카드 드로 포커</h1></div><strong>{props.balance.toLocaleString("ko-KR")} P</strong></header>
     <section className="draw-setup">
       <div className="draw-rules"><IconCards/><div><h2>카드 5장, 두 번의 베팅</h2><p>카드를 0~3장 교환하고 상대의 행동을 읽어 가장 높은 포커 족보를 만드세요.</p></div></div>
       <fieldset><legend>테이블 인원</legend><div className="draw-segmented">{([2,3,4] as const).map((count)=><button key={count} aria-pressed={playerCount===count} onClick={()=>changeCount(count)}>{count}인</button>)}</div></fieldset>
-      <fieldset><legend>함께할 상대</legend><div className="draw-opponent-selects">{setupOpponents.map((chosen,index)=><label key={index}>좌석 {index+1}<select value={chosen.id} onChange={(input)=>selectAt(index,input.target.value)}>{props.opponents.filter((candidate)=>candidate.id===chosen.id||!setupOpponents.some((selected)=>selected.id===candidate.id)).map((candidate)=><option key={candidate.id} value={candidate.id}>{candidate.name}</option>)}</select></label>)}</div><button className="draw-secondary" onClick={randomize}><IconRefresh size={16}/>무작위로 채우기</button></fieldset>
-      <fieldset><legend>기본 판돈</legend><div className="draw-segmented">{FIVE_CARD_DRAW_STAKES.map((value)=><button key={value} aria-pressed={stake===value} onClick={()=>setStake(value)} disabled={props.balance<value*FIVE_CARD_DRAW_MAX_EXPOSURE_UNITS}>{value} P</button>)}</div><small>최대 노출 {stake*FIVE_CARD_DRAW_MAX_EXPOSURE_UNITS} 시험 P · 사용하지 않은 예약액은 반환됩니다.</small></fieldset>
+      <fieldset><legend>함께할 상대</legend><div className="draw-opponent-selects">{setupOpponents.map((chosen,index)=><label key={index}>좌석 {index+1}<select value={chosen.id} onChange={(input)=>selectAt(index,input.target.value)}>{props.opponents.filter((candidate)=>candidate.id===chosen.id||!setupOpponents.some((selected)=>selected.id===candidate.id)).map((candidate)=>{const unavailable=props.opponentAvailability?.[candidate.id]?.available===false,poor=!opponentCanAfford(candidate);return <option key={candidate.id} value={candidate.id} disabled={unavailable||poor}>{candidate.name}{unavailable?` · ${props.opponentAvailability![candidate.id]!.label}`:poor?" · 판돈 부족":""}</option>;})}</select></label>)}</div><button className="draw-secondary" onClick={randomize} disabled={selectableOpponents().length<playerCount-1}><IconRefresh size={16}/>무작위로 채우기</button></fieldset>
+      <fieldset><legend>기본 판돈</legend><div className="draw-segmented">{FIVE_CARD_DRAW_STAKES.map((value)=><button key={value} aria-pressed={stake===value} onClick={()=>setStake(value)} disabled={props.balance<value*FIVE_CARD_DRAW_MAX_EXPOSURE_UNITS}>{value} P</button>)}</div><small>최대 손실 {stake*FIVE_CARD_DRAW_MAX_EXPOSURE_UNITS} P · 사용하지 않은 예약액은 반환됩니다.</small></fieldset>
       <fieldset><legend>연속 대국</legend><div className="draw-segmented">{([1,3,5] as const).map((value)=><button key={value} aria-pressed={seriesLength===value} onClick={()=>setSeriesLength(value)}>{value===1?"단판":`${value}판${value===3?" · 기본":""}`}</button>)}</div><small>판마다 정산하고 딜러가 한 자리씩 이동합니다. 최종 순위는 누적 손익으로 정합니다.</small></fieldset>
       <label className="draw-guide-toggle"><input type="checkbox" checked={props.beginner} onChange={(input)=>props.onBeginner(input.target.checked)}/><span><strong>초보자 안내</strong><small>현재 족보, 교환 후보와 베팅 용어를 설명합니다.</small></span></label>
       {props.error&&<p className="draw-error" role="alert">{props.error}</p>}
-      <div className="draw-start-actions"><button className="draw-primary" disabled={props.busy||setupOpponents.length!==playerCount-1||new Set(setupOpponents.map((opponent)=>opponent.id)).size!==setupOpponents.length||props.balance<stake*FIVE_CARD_DRAW_MAX_EXPOSURE_UNITS} onClick={()=>props.onStart(setupOpponents,stake,seriesLength)}>시험 대국 시작</button><button className="draw-secondary" onClick={props.onResetWallet}>시험칩 초기화</button></div>
+      <div className="draw-start-actions"><button className="draw-primary" disabled={props.busy||setupOpponents.length!==playerCount-1||new Set(setupOpponents.map((opponent)=>opponent.id)).size!==setupOpponents.length||setupOpponents.some((opponent)=>props.opponentAvailability?.[opponent.id]?.available===false||!opponentCanAfford(opponent))||props.balance<stake*FIVE_CARD_DRAW_MAX_EXPOSURE_UNITS} onClick={()=>props.onStart(setupOpponents,stake,seriesLength)}>대국 시작</button></div>
     </section>
   </main>;
 
   const slots=SEAT_SLOTS[state.context.opponents.length]??["top"];
   return <main className="draw-poker-shell">
-    <header><button className="draw-icon-button" onClick={props.onExit} aria-label="카지노로 돌아가기"><IconArrowLeft/></button><div><span className="draw-eyebrow">ADMIN PREVIEW</span><h1>파이브 카드 드로 포커</h1></div><strong>{shownBalance.toLocaleString("ko-KR")} 시험 P</strong></header>
+    <header><button className="draw-icon-button" onClick={props.onExit} aria-label="카지노로 돌아가기"><IconArrowLeft/></button><div><span className="draw-eyebrow">TEMEROSA CASINO</span><h1>파이브 카드 드로 포커</h1></div><strong>{shownBalance.toLocaleString("ko-KR")} P</strong></header>
     <section className={`draw-table count-${state.context.opponents.length}`} data-stage-root data-phase={state.phase} data-busy={queue.busy||undefined}>
       {props.series&&<SeriesProgress series={props.series} stats={props.seriesStats} dealerSeatId={state.seatOrder[state.dealerIndex]??"player"}/>}
       <div className="draw-opponents">{state.context.opponents.map((opponent,index)=>{

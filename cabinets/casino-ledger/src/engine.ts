@@ -34,6 +34,7 @@ const VISIT_SECONDS = Object.freeze({
   "temerosa-match-pairs": [3_600, 7_200],
   "temerosa-old-maid": [3_600, 7_200],
   "temerosa-high-low": [2_700, 5_400],
+  "temerosa-five-card-draw": [3_600, 7_200],
 } as const);
 const MATCH_SECONDS = Object.freeze({
   "temerosa-slot": [45, 90],
@@ -41,7 +42,10 @@ const MATCH_SECONDS = Object.freeze({
   "temerosa-match-pairs": [180, 360],
   "temerosa-old-maid": [240, 480],
   "temerosa-high-low": [45, 120],
+  "temerosa-five-card-draw": [180, 360],
 } as const);
+/** 2026-07-30 18:00 KST. Earlier settlements on release day remain byte-for-byte stable. */
+const FIVE_CARD_DRAW_OPENING_SECOND_OF_DAY = 18 * 60 * 60;
 
 interface VisitIntent { npcId: string; second: number; ordinal: number; tableId: CasinoTableId }
 interface MatchDraft { matchId: string; visitId: string; tableId: CasinoTableId; participantIds: readonly string[]; startsAtSecondOfDay: number; settlesAtSecondOfDay: number }
@@ -284,7 +288,10 @@ function createIntents(profiles: readonly NpcGamblingProfile[], dayIndex: number
     const scheduleRng = new XorShift32(`${prefix}:schedule`);
     const tableRng = new XorShift32(`${prefix}:tables`);
     const count = randomInteger(profile.sessionsPerDay.min, profile.sessionsPerDay.max, scheduleRng);
-    return sessionSchedule(profile, count, scheduleRng).map((minute, ordinal) => ({ npcId: profile.id, second: minute*60+randomInteger(0,59,scheduleRng), ordinal, tableId: weightedTable(profile, tableRng) }));
+    return sessionSchedule(profile, count, scheduleRng).map((minute, ordinal) => {
+      const second=minute*60+randomInteger(0,59,scheduleRng);
+      return { npcId: profile.id, second, ordinal, tableId: weightedTable(profile, tableRng, dayIndex, second) };
+    });
   }).sort((a,b) => a.second-b.second || compareText(a.npcId,b.npcId) || a.ordinal-b.ordinal);
 }
 
@@ -324,21 +331,22 @@ function settlePaidOldMaid(
   });
 }
 
-function settlePvp(plan: MatchDraft, tableId: "temerosa-match-pairs"|"indian-poker", profiles: readonly NpcGamblingProfile[], balances: Record<string,number>, output: Record<string,NpcSession[]>, stake: Exclude<NpcStake,0>, multiplier: WagerMultiplier, rng: XorShift32): void {
+function settlePvp(plan: MatchDraft, tableId: "temerosa-match-pairs"|"indian-poker"|"temerosa-five-card-draw", profiles: readonly NpcGamblingProfile[], balances: Record<string,number>, output: Record<string,NpcSession[]>, stake: Exclude<NpcStake,0>, multiplier: WagerMultiplier, rng: XorShift32): void {
   if (profiles.length < 2) return;
   const [left,right] = profiles;
   const skill = (profile: NpcGamblingProfile) => tableId === "temerosa-match-pairs" ? profile.skills.matchPairsMemory : profile.skills.pokerRead*.58 + profile.skills.pokerBluff*.42;
   const leftScore = skill(left!) + (rng.next()-.5)*.9;
   const rightScore = skill(right!) + (rng.next()-.5)*.9;
   const exposure = stake*multiplier;
+  const termsVersion=tableId==="temerosa-five-card-draw"?"temerosa-five-card-draw-ledger/1.0":`${tableId}-ledger/0.5`;
   if (Math.abs(leftScore-rightScore) < .035) {
-    for (const profile of profiles) addSession(profile.id, plan, stake, exposure, exposure, "draw", `${tableId}-ledger/0.5`, balances, output);
+    for (const profile of profiles) addSession(profile.id, plan, stake, exposure, exposure, "draw", termsVersion, balances, output);
     return;
   }
   const winner = leftScore > rightScore ? left! : right!;
   const loser = winner.id === left!.id ? right! : left!;
-  addSession(winner.id, plan, stake, exposure, exposure*2, "win", `${tableId}-ledger/0.5`, balances, output);
-  addSession(loser.id, plan, stake, exposure, 0, "loss", `${tableId}-ledger/0.5`, balances, output);
+  addSession(winner.id, plan, stake, exposure, exposure*2, "win", termsVersion, balances, output);
+  addSession(loser.id, plan, stake, exposure, 0, "loss", termsVersion, balances, output);
 }
 
 function settleSlot(plan: MatchDraft, profile: NpcGamblingProfile, balances: Record<string,number>, output: Record<string,NpcSession[]>, stake: Exclude<NpcStake,0>, multiplier: WagerMultiplier, rng: XorShift32): void {
@@ -473,7 +481,13 @@ function sessionSchedule(profile:NpcGamblingProfile,count:number,rng:XorShift32)
   if(values.size!==count) throw new Error("npc_ledger_insufficient_schedule");
   return [...values].sort((a,b)=>a-b);
 }
-function weightedTable(profile:NpcGamblingProfile,rng:XorShift32):CasinoTableId { return profile.tables[drawWeightedIndex(profile.tables.map((entry)=>entry.weight),rng)]!.tableId; }
+function weightedTable(profile:NpcGamblingProfile,rng:XorShift32,dayIndex:number,secondOfDay:number):CasinoTableId {
+  /* Release-day visits before opening preserve every already-observed v1.0
+     settlement. Later visits can enter the newly public table immediately. */
+  const beforeOpening=dayIndex===0&&secondOfDay<FIVE_CARD_DRAW_OPENING_SECOND_OF_DAY;
+  const tables=beforeOpening?profile.tables.filter((entry)=>entry.tableId!=="temerosa-five-card-draw"):profile.tables;
+  return tables[drawWeightedIndex(tables.map((entry)=>entry.weight),rng)]!.tableId;
+}
 function incomeSessionsForDay(profiles:readonly NpcGamblingProfile[],dayIndex:number,contract:NpcLedgerContract):Readonly<Record<string,NpcSession>> {
   const absoluteDay=contract.epochKstDay+dayIndex;
   return Object.freeze(Object.fromEntries(profiles.flatMap((profile)=>{
@@ -494,7 +508,7 @@ function normalizedUtcSecond(clock:CasinoClock):number {
 }
 function compareText(a:string,b:string):number{return a<b?-1:a>b?1:0;}
 function validateDay(profiles:readonly NpcGamblingProfile[],dayIndex:number,openings:Readonly<Record<string,number>>,contract:NpcLedgerContract):void {
-  if(contract.version!=="npc-ledger/1.0"||contract.seedVersion!=="npc-ledger/0.9"||!Number.isSafeInteger(contract.epochKstDay)||!Number.isSafeInteger(dayIndex)||dayIndex<0)throw new Error("npc_ledger_invalid_contract");
+  if(!["npc-ledger/1.0","npc-ledger/1.1"].includes(contract.version)||contract.seedVersion!=="npc-ledger/0.9"||!Number.isSafeInteger(contract.epochKstDay)||!Number.isSafeInteger(dayIndex)||dayIndex<0)throw new Error("npc_ledger_invalid_contract");
   if(profiles.length===0||new Set(profiles.map((p)=>p.id)).size!==profiles.length||profiles.some((profile)=>!contract.profiles.some((entry)=>entry.id===profile.id)))throw new Error("npc_ledger_invalid_profiles");
   for(const profile of profiles){
     if(!profile.id||!profile.name||!Number.isSafeInteger(profile.openingBalance)||profile.openingBalance<=0)throw new Error("npc_ledger_invalid_profile");

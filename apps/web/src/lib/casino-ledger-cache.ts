@@ -7,10 +7,8 @@ import {
   type NpcLedgerContract,
 } from "@lucky-arcade/casino-ledger";
 
-const PREFIX = "npc-ledger/1.0:checkpoint:";
-
 export interface NpcLedgerCheckpoint {
-  contract: "npc-ledger/1.0";
+  contract: NpcLedgerContract["version"];
   dayIndex: number;
   balances: Readonly<Record<string, number>>;
 }
@@ -121,11 +119,12 @@ export function readLatestCheckpoint(
   maximumDayIndex: number,
   contract: NpcLedgerContract,
 ): NpcLedgerCheckpoint | undefined {
+  const prefix=checkpointPrefix(contract);
   let latest: NpcLedgerCheckpoint | undefined;
   for (const key of ledgerKeys(storage)) {
-    const keyDay = Number(key.slice(PREFIX.length));
+    const keyDay = checkpointDayFromKey(key);
     const parsed = safeParse(storage, key);
-    if (!isCheckpoint(parsed, keyDay, maximumDayIndex, contract)) {
+    if (!key.startsWith(prefix) || !isCheckpoint(parsed, keyDay, maximumDayIndex, contract)) {
       safeRemove(storage, key);
       continue;
     }
@@ -137,9 +136,10 @@ export function readLatestCheckpoint(
 export function writeCheckpoint(storage: StorageLike, checkpoint: NpcLedgerCheckpoint, contract: NpcLedgerContract): void {
   if (!isCheckpoint(checkpoint, checkpoint.dayIndex, checkpoint.dayIndex, contract)) return;
   try {
-    storage.setItem(`${PREFIX}${checkpoint.dayIndex}`, JSON.stringify(checkpoint));
-    const keys = ledgerKeys(storage)
-      .map((key) => ({ key, day: Number(key.slice(PREFIX.length)) }))
+    const prefix=checkpointPrefix(contract);
+    storage.setItem(`${prefix}${checkpoint.dayIndex}`, JSON.stringify(checkpoint));
+    const keys = ledgerKeys(storage).filter((key)=>key.startsWith(prefix))
+      .map((key) => ({ key, day: Number(key.slice(prefix.length)) }))
       .filter((entry) => Number.isSafeInteger(entry.day))
       .sort((left, right) => right.day - left.day);
     for (const stale of keys.slice(9)) storage.removeItem(stale.key);
@@ -180,6 +180,9 @@ function ledgerKeys(storage: StorageLike): string[] {
   } catch { /* optional cache unavailable */ }
   return keys;
 }
+
+function checkpointPrefix(contract:NpcLedgerContract):string{return `${contract.version}:checkpoint:`;}
+function checkpointDayFromKey(key:string):number{return Number(key.slice(key.lastIndexOf(":checkpoint:")+12));}
 
 function safeParse(storage: StorageLike, key: string): unknown {
   try {

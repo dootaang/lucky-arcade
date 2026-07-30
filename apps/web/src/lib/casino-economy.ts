@@ -12,6 +12,8 @@ import { loadTemerosaCasinoManifest } from "./temerosa-content.ts";
 
 export interface CasinoCounterpartyContext {
   counterpartyAccountId: CasinoInternalAccountId;
+  /** Canonical balance plus every journal posting visible at this clock sample. */
+  counterpartyBalance: number;
   counterpartyBaseBalance: number;
   casinoOccurredAtSecond: number;
 }
@@ -33,6 +35,17 @@ export async function casinoCurrentSecond(): Promise<number> {
 export async function casinoCounterpartyContext(
   accountId: CasinoInternalAccountId,
 ): Promise<CasinoCounterpartyContext> {
+  const contexts = await casinoCounterpartyContexts([accountId]);
+  const context = contexts[accountId];
+  if (!context) throw new Error(`casino_counterparty_unknown:${accountId}`);
+  return context;
+}
+
+/** Resolves a multiplayer table against one clock sample and one journal snapshot. */
+export async function casinoCounterpartyContexts(
+  accountIds: readonly CasinoInternalAccountId[],
+): Promise<Readonly<Record<string, CasinoCounterpartyContext>>> {
+  if (accountIds.length === 0 || new Set(accountIds).size !== accountIds.length) throw new Error("casino_counterparty_list_invalid");
   const sample = await loadTemerosaCasinoManifest()
     .then(({ clockSample }) => stabilizeCasinoClockSample(clockSample))
     .catch(() => deviceCasinoClockSample());
@@ -41,20 +54,18 @@ export async function casinoCounterpartyContext(
   rememberCasinoClockSecond(casinoOccurredAtSecond);
   const journal = (await listCasinoTransactions()).filter((transaction) => transaction.occurredAtCasinoSecond <= casinoOccurredAtSecond);
   const worldline = personalCasinoWorldlineAt(TEMEROSA_NPC_GAMBLING_PROFILES, clock, TEMEROSA_NPC_LEDGER_CONTRACT, journal);
-  const localDelta = casinoJournalAccountDelta(journal, accountId);
 
-  if (accountId === TEMEROSA_HOUSE_ACCOUNT_ID) {
-    return {
+  return Object.freeze(Object.fromEntries(accountIds.map((accountId) => {
+    const localDelta = casinoJournalAccountDelta(journal, accountId);
+    if (accountId === TEMEROSA_HOUSE_ACCOUNT_ID) return [accountId, {
       counterpartyAccountId: accountId,
+      counterpartyBalance: worldline.houseBalance,
       counterpartyBaseBalance: worldline.houseBalance - localDelta,
       casinoOccurredAtSecond,
-    };
-  }
-  if (accountId.startsWith("npc:")) {
-    const npcId = accountId.slice(4);
-    const balance = worldline.npcBalances[npcId];
+    }];
+    if (!accountId.startsWith("npc:")) throw new Error(`casino_counterparty_invalid:${accountId}`);
+    const balance = worldline.npcBalances[accountId.slice(4)];
     if (balance === undefined || !Number.isSafeInteger(balance) || balance < 0) throw new Error(`casino_counterparty_unknown:${accountId}`);
-    return { counterpartyAccountId: accountId, counterpartyBaseBalance: balance - localDelta, casinoOccurredAtSecond };
-  }
-  throw new Error(`casino_counterparty_invalid:${accountId}`);
+    return [accountId, { counterpartyAccountId: accountId, counterpartyBalance: balance, counterpartyBaseBalance: balance - localDelta, casinoOccurredAtSecond }];
+  })));
 }

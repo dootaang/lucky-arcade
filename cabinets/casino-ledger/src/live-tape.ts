@@ -11,6 +11,7 @@ const ACTIONS = Object.freeze({
   "temerosa-slot": ["slot-spin", "slot-reel-stop", "slot-line-check", "slot-reach"] as const,
   "indian-poker": ["poker-check", "poker-call", "poker-raise", "poker-read"] as const,
   "temerosa-high-low": ["high-low-guess", "high-low-hit", "high-low-cashout"] as const,
+  "temerosa-five-card-draw": ["poker-check", "poker-call", "poker-raise", "poker-read"] as const,
 }) satisfies Readonly<Record<CasinoTableId, readonly NpcPlayEventCode[]>>;
 const CADENCE = Object.freeze({
   "temerosa-slot": [5,9],
@@ -18,6 +19,7 @@ const CADENCE = Object.freeze({
   "temerosa-match-pairs": [16,28],
   "temerosa-old-maid": [12,22],
   "temerosa-high-low": [7,13],
+  "temerosa-five-card-draw": [12,22],
 } as const);
 
 /** Every tape item belongs to a real v0.8 match. There are no ambient pseudo-actions. */

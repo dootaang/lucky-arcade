@@ -85,6 +85,7 @@ function tableLabel(tableId: string | undefined): string {
   if (tableId === "temerosa-match-pairs") return "짝맞추기";
   if (tableId === "indian-poker") return "인디언 포커";
   if (tableId === "temerosa-high-low") return "하이로우";
+  if (tableId === "temerosa-five-card-draw") return "파이브 카드 드로";
   return "슬롯";
 }
 

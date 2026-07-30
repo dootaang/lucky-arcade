@@ -21,6 +21,7 @@ const TABLE_SETS: readonly (readonly NpcTableWeight[])[] = [
     { tableId: "indian-poker", weight: 2 },
     { tableId: "temerosa-high-low", weight: 1 },
     { tableId: "temerosa-slot", weight: 1 },
+    { tableId: "temerosa-five-card-draw", weight: 2 },
   ]),
   Object.freeze([
     { tableId: "temerosa-slot", weight: 3 },
@@ -28,6 +29,7 @@ const TABLE_SETS: readonly (readonly NpcTableWeight[])[] = [
     { tableId: "temerosa-match-pairs", weight: 1 },
     { tableId: "indian-poker", weight: 1 },
     { tableId: "temerosa-high-low", weight: 2 },
+    { tableId: "temerosa-five-card-draw", weight: 1 },
   ]),
   Object.freeze([
     { tableId: "indian-poker", weight: 4 },
@@ -35,6 +37,7 @@ const TABLE_SETS: readonly (readonly NpcTableWeight[])[] = [
     { tableId: "temerosa-match-pairs", weight: 2 },
     { tableId: "temerosa-slot", weight: 1 },
     { tableId: "temerosa-high-low", weight: 2 },
+    { tableId: "temerosa-five-card-draw", weight: 3 },
   ]),
 ];
 
@@ -119,7 +122,7 @@ export const TEMEROSA_NPC_GAMBLING_PROFILES: readonly NpcGamblingProfile[] = Obj
 ]);
 
 export const TEMEROSA_NPC_LEDGER_CONTRACT: NpcLedgerContract = Object.freeze({
-  version: "npc-ledger/1.0",
+  version: "npc-ledger/1.1",
   seedVersion: "npc-ledger/0.9",
   epochKstDay: TEMEROSA_LEDGER_EPOCH_KST_DAY,
   profiles: TEMEROSA_NPC_GAMBLING_PROFILES,

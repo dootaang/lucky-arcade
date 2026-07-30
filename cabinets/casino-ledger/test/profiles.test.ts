@@ -7,7 +7,7 @@ describe("frozen Temerosa ledger profiles", () => {
     expect(ids).toHaveLength(34);
     expect(new Set(ids).size).toBe(34);
     expect(ids).not.toContain("wares");
-    expect(TEMEROSA_NPC_LEDGER_CONTRACT.version).toBe("npc-ledger/1.0");
+    expect(TEMEROSA_NPC_LEDGER_CONTRACT.version).toBe("npc-ledger/1.1");
     expect(TEMEROSA_NPC_LEDGER_CONTRACT.seedVersion).toBe("npc-ledger/0.9");
     expect(TEMEROSA_NPC_LEDGER_CONTRACT.epochKstDay).toBe(20_664);
     expect([...ids].sort()).toEqual([
@@ -50,6 +50,6 @@ describe("frozen Temerosa ledger profiles", () => {
     expect(shifts.filter((start) => start === 480)).toHaveLength(11);
     expect(shifts.filter((start) => start === 960)).toHaveLength(11);
     const tables = new Set(TEMEROSA_NPC_GAMBLING_PROFILES.flatMap((profile) => profile.tables.map((table) => table.tableId)));
-    expect([...tables].sort()).toEqual(["indian-poker", "temerosa-high-low", "temerosa-match-pairs", "temerosa-old-maid", "temerosa-slot"]);
+    expect([...tables].sort()).toEqual(["indian-poker", "temerosa-five-card-draw", "temerosa-high-low", "temerosa-match-pairs", "temerosa-old-maid", "temerosa-slot"]);
   });
 });
