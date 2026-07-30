@@ -4,6 +4,8 @@ import { ENGINE_VERSION, leveragedWagerCredit, makeReceipt, resultHash, wagerExp
 import type { GameWagerReceipt, MatchRecord } from "@lucky-arcade/persistence";
 import type { CourtAtlas } from "@lucky-arcade/ui/playing-card";
 import { useEffect, useRef, useState } from "react";
+import { TEMEROSA_HOUSE_ACCOUNT_ID } from "@lucky-arcade/casino-ledger";
+import { casinoCounterpartyContext } from "../../lib/casino-economy.ts";
 import { appendAction, appendMatchRecord, listMatchRecordsForSession, pruneMatchRecords, saveSnapshot } from "../../lib/database.ts";
 import { invalidateWager, listWagers, reserveWager, settleWager } from "../../lib/game-wager.ts";
 import { loadPlayingCardAtlas } from "../../lib/playing-card-atlas.ts";
@@ -60,7 +62,7 @@ export default function CasinoCardView({ gameId, onExit }: { gameId: CasinoCardG
   }
   async function start(stake: CasinoCardStake, multiplier: WagerMultiplier): Promise<void> {
     if (busy || !ready) return; const baseReserved = stake * info.maxExposure, reservedAmount = wagerExposure(stake, multiplier, info.maxExposure); setBusy(true); setError("");
-    try { const seed = crypto.randomUUID(), transaction = await reserveWager({ outcomeKey: `${termsVersion}:${seed}`, cabinetId, sessionId, termsVersion, choiceKey: `deal:${seed}`, stake, reservedAmount }); setBalance(transaction.wallet.balance); setReady((current) => current ? { ...current, multiplier } : current); const next = await apply({ type: "start", seed, stake, reservedAmount: baseReserved, wagerId: transaction.wager.wagerId }); if (next.status === "complete") await settle(next); else setBusy(false); }
+    try { const seed = crypto.randomUUID(), counterparty = await casinoCounterpartyContext(TEMEROSA_HOUSE_ACCOUNT_ID), maximumCredit = leveragedWagerCredit(baseReserved, maximumCasinoCardCredit(gameId, stake), multiplier), transaction = await reserveWager({ outcomeKey: `${termsVersion}:${seed}`, cabinetId, sessionId, termsVersion, choiceKey: `deal:${seed}`, stake, reservedAmount, ...counterparty, counterpartyReservedAmount: maximumCredit - reservedAmount }); setBalance(transaction.wallet.balance); setReady((current) => current ? { ...current, multiplier } : current); const next = await apply({ type: "start", seed, stake, reservedAmount: baseReserved, wagerId: transaction.wager.wagerId }); if (next.status === "complete") await settle(next); else setBusy(false); }
     catch (cause) { setError(cause instanceof Error && cause.message === "insufficient_points" ? "포인트가 부족합니다." : "대국을 시작하지 못했습니다."); setBusy(false); }
   }
   async function act(action: CasinoCardAction): Promise<void> {
@@ -70,7 +72,7 @@ export default function CasinoCardView({ gameId, onExit }: { gameId: CasinoCardG
   }
   async function settle(state: CasinoCardState): Promise<void> {
     if (!state.wagerId) { setBusy(false); return; }
-    try { const receipt = (await listWagers(sessionId)).find((candidate) => candidate.wagerId === state.wagerId); if (!receipt) throw new Error("casino_card_wager_receipt_missing"); const transaction = await settleWager({ wagerId: state.wagerId, settlementSequence: state.sequence, resultKey: casinoCardResultHash(state), creditAmount: leveragedCredit(state, receipt, info.maxExposure) }); setBalance(transaction.wallet.balance); setBusy(false); if (gameId === "high-low") { try { await recordHighLowMatch(state); const records = summarizeOpponentRecords(await listMatchRecordsForSession(sessionId, 200)); setReady((current) => current?.dealer ? { ...current, dealer: { ...current.dealer, record: records[HIGH_LOW_HOUSE_ID] ?? emptyRecord() } } : current); } catch { setError("포인트는 정산됐지만 상대 전적을 남기지 못했습니다."); } } }
+    try { const receipt = (await listWagers(sessionId)).find((candidate) => candidate.wagerId === state.wagerId); if (!receipt) throw new Error("casino_card_wager_receipt_missing"); const transaction = await settleWager({ wagerId: state.wagerId, settlementSequence: state.sequence, resultKey: casinoCardResultHash(state), creditAmount: leveragedCredit(state, receipt, info.maxExposure) }); setBalance(transaction.wallet.balance); if (gameId === "high-low") { try { await recordHighLowMatch(state); const records = summarizeOpponentRecords(await listMatchRecordsForSession(sessionId, 200)); setReady((current) => current?.dealer ? { ...current, dealer: { ...current.dealer, record: records[HIGH_LOW_HOUSE_ID] ?? emptyRecord() } } : current); } catch { setError("포인트는 정산됐지만 상대 전적을 남기지 못했습니다."); } } setBusy(false); }
     catch { setError("결과는 보존됐지만 정산이 남았습니다. 다시 들어오면 같은 영수증으로 처리합니다."); }
   }
   if (!ready) return <main className="game-shell"><div className="game-loading" role={error ? "alert" : undefined}>{error || `${info.title} 테이블을 준비하고 있습니다…`}{error && <button onClick={onExit}>카지노로 돌아가기</button>}</div></main>;
@@ -85,6 +87,12 @@ function seedFromReceipt(receipt: GameWagerReceipt): string | null { return rece
 function isStake(value: number): value is CasinoCardStake { return value === 10 || value === 50 || value === 200; }
 function validReceipt(receipt: GameWagerReceipt, baseExposure: number): boolean { try { wagerMultiplierFromExposure(receipt.stake, receipt.reservedAmount, baseExposure); return isStake(receipt.stake); } catch { return false; } }
 function leveragedCredit(state: CasinoCardState, receipt: GameWagerReceipt, baseExposure: number): number { return leveragedWagerCredit(state.reservedAmount, casinoCardCredit(state), wagerMultiplierFromExposure(receipt.stake, receipt.reservedAmount, baseExposure)); }
+function maximumCasinoCardCredit(gameId: CasinoCardGameId, stake: CasinoCardStake): number {
+  if (gameId === "high-low") return Math.round(stake * 5.5);
+  if (gameId === "blackjack") return Math.floor(stake * 2.5);
+  if (gameId === "texas-holdem") return stake * 16;
+  return stake * 2;
+}
 
 async function buildHouseDealer(bundle: Awaited<ReturnType<typeof loadTemerosaCasinoAssets>>, sessionId: string): Promise<HouseDealer> {
   const assetIdByMood = { neutral: "wares-standing", pleased: "wares-smile", tense: "wares-surprised", despair: "wares-sad" } as const;

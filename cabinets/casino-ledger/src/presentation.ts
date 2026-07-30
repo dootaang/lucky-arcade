@@ -1,4 +1,5 @@
-import type { CasinoTableId, NpcGamblingProfile, NpcRoundSettlement } from "./contracts.ts";
+import type { CasinoLedgerSourceId, NpcGamblingProfile, NpcRoundSettlement } from "./contracts.ts";
+import { casinoKstDayAtUtcSecond } from "./casino-time.ts";
 
 export interface CasinoLeaderboardEntry {
   id: string;
@@ -40,7 +41,7 @@ export function casinoFullLeaderboard(
 }
 
 export interface CasinoNpcTableSummary {
-  tableId: CasinoTableId;
+  tableId: CasinoLedgerSourceId;
   settlements: number;
   gains: number;
   losses: number;
@@ -62,18 +63,18 @@ export interface CasinoNpcLedgerReport {
   largestGain: number;
   largestLoss: number;
   byTable: readonly CasinoNpcTableSummary[];
-  dailyNet: readonly Readonly<{ utcDay: number; net: number }>[];
+  dailyNet: readonly Readonly<{ kstDay: number; net: number }>[];
   opponents: readonly Readonly<{ npcId: string; matches: number; net: number }>[];
 }
 
 export function casinoNpcLedgerReport(npcId: string, entries: readonly NpcRoundSettlement[]): CasinoNpcLedgerReport {
   const selected=entries.filter((entry)=>entry.npcId===npcId);
-  const tables=new Map<CasinoTableId,NpcRoundSettlement[]>();
+  const tables=new Map<CasinoLedgerSourceId,NpcRoundSettlement[]>();
   const days=new Map<number,number>();
   const opponents=new Map<string,{matches:Set<string>;net:number}>();
   for(const entry of selected){
     tables.set(entry.tableId,[...(tables.get(entry.tableId)??[]),entry]);
-    const day=Math.floor(entry.utcSecond/86_400);days.set(day,(days.get(day)??0)+entry.delta);
+    const day=casinoKstDayAtUtcSecond(entry.utcSecond);days.set(day,(days.get(day)??0)+entry.delta);
     for(const opponentId of entry.participantIds)if(opponentId!==npcId){
       const current=opponents.get(opponentId)??{matches:new Set<string>(),net:0};
       current.matches.add(entry.matchId);current.net+=entry.delta;opponents.set(opponentId,current);
@@ -94,7 +95,7 @@ export function casinoNpcLedgerReport(npcId: string, entries: readonly NpcRoundS
     largestGain:Math.max(0,...selected.map((entry)=>entry.delta)),
     largestLoss:Math.min(0,...selected.map((entry)=>entry.delta)),
     byTable:Object.freeze([...tables.entries()].map(([tableId,values])=>Object.freeze({tableId,...summary(values)})).toSorted((left,right)=>Math.abs(right.net)-Math.abs(left.net)||compareText(left.tableId,right.tableId))),
-    dailyNet:Object.freeze([...days.entries()].map(([utcDay,net])=>Object.freeze({utcDay,net})).toSorted((left,right)=>left.utcDay-right.utcDay)),
+    dailyNet:Object.freeze([...days.entries()].map(([kstDay,net])=>Object.freeze({kstDay,net})).toSorted((left,right)=>left.kstDay-right.kstDay)),
     opponents:Object.freeze([...opponents.entries()].map(([id,value])=>Object.freeze({npcId:id,matches:value.matches.size,net:value.net})).toSorted((left,right)=>right.matches-left.matches||compareText(left.npcId,right.npcId))),
   });
 }

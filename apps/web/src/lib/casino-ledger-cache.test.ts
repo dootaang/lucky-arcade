@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { completedDayBalances, TEMEROSA_NPC_LEDGER_CONTRACT, type CasinoClock } from "@lucky-arcade/casino-ledger";
+import { casinoUtcSecondAtKstDay, completedDayBalances, TEMEROSA_NPC_LEDGER_CONTRACT, type CasinoClock } from "@lucky-arcade/casino-ledger";
 import { npcBalancesAtWithCheckpoint, npcRollingProfitPeriodAtWithCheckpoint, readLatestCheckpoint, writeCheckpoint } from "./casino-ledger-cache.ts";
 
 describe("casino ledger checkpoint adapter", () => {
   it("matches a full calculation after saving and reusing a checkpoint", () => {
     const storage = new MemoryStorage();
-    const clock = fixedClock((TEMEROSA_NPC_LEDGER_CONTRACT.epochUtcDay + 8) * 1_440 + 700);
+    const clock = fixedClock(Math.floor(casinoUtcSecondAtKstDay(TEMEROSA_NPC_LEDGER_CONTRACT.epochKstDay + 8,700*60)/60));
     const first = npcBalancesAtWithCheckpoint(clock, TEMEROSA_NPC_LEDGER_CONTRACT, storage);
     const second = npcBalancesAtWithCheckpoint(clock, TEMEROSA_NPC_LEDGER_CONTRACT, storage);
     const withoutCache = npcBalancesAtWithCheckpoint(clock, TEMEROSA_NPC_LEDGER_CONTRACT, new MemoryStorage());
@@ -27,17 +27,17 @@ describe("casino ledger checkpoint adapter", () => {
     for (const dayIndex of [1, 2, 3]) {
       writeCheckpoint(storage, { contract: contract.version, dayIndex, balances: completedDayBalances(contract.profiles, dayIndex, contract) }, contract);
     }
-    expect(storage.keys().sort()).toEqual(["npc-ledger/0.8:checkpoint:1", "npc-ledger/0.8:checkpoint:2", "npc-ledger/0.8:checkpoint:3"]);
+    expect(storage.keys().sort()).toEqual(["npc-ledger/1.0:checkpoint:1", "npc-ledger/1.0:checkpoint:2", "npc-ledger/1.0:checkpoint:3"]);
   });
 
   it("reports the honest covered period and includes the frozen pre-rebase close", () => {
     const contract = TEMEROSA_NPC_LEDGER_CONTRACT;
-    const clock = fixedClock(contract.epochUtcDay * 1_440);
+    const clock = fixedClock(Math.floor(casinoUtcSecondAtKstDay(contract.epochKstDay)/60));
     const current = npcBalancesAtWithCheckpoint(clock, contract, new MemoryStorage());
     const period = npcRollingProfitPeriodAtWithCheckpoint(clock, contract, current.balances, 7, new MemoryStorage());
-    expect(period).toMatchObject({ startUtcDay: contract.epochUtcDay - 1, coveredDays: 2 });
-    expect(period.profits.lyla).toBe(300);
-    expect(period.profits.pale).toBe(15_200);
+    expect(period).toMatchObject({ startKstDay: contract.epochKstDay - 1, coveredDays: 2 });
+    expect(period.profits.lyla).toBe(-3_865);
+    expect(period.profits.pale).toBe(5_890);
   });
 });
 

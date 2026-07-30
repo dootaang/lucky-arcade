@@ -13,6 +13,13 @@ export type CasinoTableId =
   | "indian-poker"
   | "temerosa-high-low";
 
+export type CasinoLedgerSourceId = CasinoTableId
+  | "npc-income"
+  | "temerosa-blackjack"
+  | "temerosa-doubt"
+  | "temerosa-one-card"
+  | "temerosa-texas-holdem";
+
 export type NpcStake = 0 | 10 | 50 | 200;
 
 export type NpcPresencePhase = "idle" | "approaching" | "playing" | "spectating" | "settling" | "leaving";
@@ -50,6 +57,9 @@ export interface NpcGamblingProfile {
   stopLossRatio: number;
   takeProfitRatio: number;
   maxExposureRatio: number;
+  incomeBand: "low" | "middle" | "high" | "premium";
+  payCycleDays: 7 | 14;
+  paydayOffset: number;
   skills: Readonly<{
     oldMaid: number;
     matchPairsMemory: number;
@@ -88,6 +98,14 @@ export interface CasinoDayPlan {
   sessions: Readonly<Record<string, readonly NpcSession[]>>;
 }
 
+/** A personal-world-line posting that can change later autonomous stakes. */
+export interface NpcBalanceEvent {
+  eventId: string;
+  npcId: string;
+  secondOfDay: number;
+  delta: number;
+}
+
 export interface NpcPredictionWager {
   predictionId: string;
   matchId: string;
@@ -112,7 +130,7 @@ export interface NpcSession {
   participantIds: readonly string[];
   secondOfDay: number;
   minuteOfDay: number;
-  tableId: CasinoTableId;
+  tableId: CasinoLedgerSourceId;
   stake: NpcStake;
   reservedAmount: number;
   creditAmount: number;
@@ -124,14 +142,17 @@ export interface NpcSession {
 }
 
 export interface NpcLedgerContract {
-  version: "npc-ledger/0.8";
-  epochUtcDay: number;
+  version: "npc-ledger/1.0";
+  /** Frozen deterministic seed domain; changing calendar boundaries must not reroll history. */
+  seedVersion: "npc-ledger/0.9";
+  /** First casino calendar day, counted at KST midnight. */
+  epochKstDay: number;
   profiles: readonly NpcGamblingProfile[];
   /**
    * Completed daily profits carried across a contract rebase. These are
    * presentation analytics only: they never seed balances or game outcomes.
    */
-  profitHistory: readonly Readonly<{ utcDay: number; profits: Readonly<Record<string, number>> }>[];
+  profitHistory: readonly Readonly<{ kstDay: number; profits: Readonly<Record<string, number>> }>[];
 }
 
 export interface NpcBalanceSnapshot {
@@ -154,7 +175,7 @@ export interface NpcRoundSettlement {
   visitId: string;
   participantIds: readonly string[];
   npcId: string;
-  tableId: CasinoTableId;
+  tableId: CasinoLedgerSourceId;
   utcSecond: number;
   stake: NpcStake;
   reservedAmount: number;
@@ -169,7 +190,7 @@ export interface NpcRoundSettlement {
 export interface NpcMatchSettlement {
   matchId: string;
   visitId: string;
-  tableId: CasinoTableId;
+  tableId: CasinoLedgerSourceId;
   utcSecond: number;
   participantIds: readonly string[];
   entries: readonly NpcRoundSettlement[];

@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   casinoDaySessions,
   casinoDayPlan,
+  casinoUtcSecondAtKstDay,
   completedDayBalances,
   npcBalanceAt,
   recentNpcActivitiesAt,
@@ -17,7 +18,7 @@ const contract = TEMEROSA_NPC_LEDGER_CONTRACT;
 const profiles = TEMEROSA_NPC_GAMBLING_PROFILES;
 const openings = () => Object.fromEntries(profiles.map((profile) => [profile.id, profile.openingBalance]));
 
-describe("casino ledger 0.8 core", () => {
+describe("casino ledger 1.0 KST economy", () => {
   it("repeats the same shared matches and exact closing for identical inputs", () => {
     const first = casinoDaySessions(profiles, 37, openings(), contract);
     expect(casinoDaySessions(profiles, 37, openings(), contract)).toEqual(first);
@@ -45,6 +46,7 @@ describe("casino ledger 0.8 core", () => {
         expect(session.delta).toBe(session.creditAmount-session.reservedAmount);
         expect([0,10,50,200]).toContain(session.stake);
         if(session.stake===0) expect(session.reservedAmount).toBe(0);
+        else if (session.tableId === "temerosa-old-maid") expect(session.reservedAmount/session.stake).toBeLessThanOrEqual(7.5);
         else expect([2,3,4,5]).toContain(session.reservedAmount/session.stake);
         if(session.resultKind==="win") expect(session.delta).toBe(session.reservedAmount);
         if(session.resultKind==="loss") expect(session.delta).toBe(-session.reservedAmount);
@@ -71,30 +73,22 @@ describe("casino ledger 0.8 core", () => {
     expect(checked).toBeGreaterThan(100);
   },30_000);
 
-  it("lets old maid players self-bet and idle NPCs predict either winner or loser",()=>{
-    let balances=openings();let self=0,spectator=0,wins=0,losses=0;const markets=new Set<string>();
+  it("settles paid old maid only among participants without NPC side bets",()=>{
+    let balances=openings();let checked=0;
     for(let day=0;day<120;day++){
       const plan=casinoDayPlan(profiles,day,balances,contract);
-      for(const prediction of plan.predictions){
-        const match=plan.matches.find((entry)=>entry.matchId===prediction.matchId)!;
-        expect(match.tableId).toBe("temerosa-old-maid");
-        expect(prediction.delta).toBe(prediction.creditAmount-prediction.reservedAmount);
-        expect(prediction.delta).toBe(prediction.won?prediction.reservedAmount:-prediction.reservedAmount);
-        expect([10,50,200]).toContain(prediction.stake);
-        expect([2,3,4,5]).toContain(prediction.multiplier);
-        expect(prediction.reservedAmount).toBe(prediction.stake*prediction.multiplier);
-        const receipt=(plan.sessions[prediction.bettorNpcId]??[]).find((session)=>session.matchId===prediction.matchId&&session.prediction?.predictionId===prediction.predictionId);
-        expect(receipt?.prediction).toEqual(prediction);
-        if(prediction.role==="self"){
-          self++;expect(match.participantIds).toContain(prediction.bettorNpcId);expect(prediction.predictedNpcId).toBe(prediction.bettorNpcId);expect(prediction.market).toBe("first-place");
-        }else{
-          spectator++;expect(match.participantIds).not.toContain(prediction.bettorNpcId);markets.add(prediction.market);
-        }
-        if(prediction.won)wins++;else losses++;
+      expect(plan.predictions).toEqual([]);
+      for(const match of plan.matches.filter((entry)=>entry.tableId==="temerosa-old-maid")){
+        const entries=match.participantIds.flatMap((npcId)=>(plan.sessions[npcId]??[]).filter((session)=>session.matchId===match.matchId));
+        if(entries.length<2)continue;
+        expect(entries).toHaveLength(match.participantIds.length);
+        expect(entries.every((entry)=>entry.stake>0&&entry.termsVersion==="old-maid-zero-sum/1.0")).toBe(true);
+        expect(entries.reduce((sum,entry)=>sum+entry.delta,0)).toBe(0);
+        checked++;
       }
       balances=close(balances,plan.sessions);
     }
-    expect(self).toBeGreaterThan(20);expect(spectator).toBeGreaterThan(10);expect([...markets].sort()).toEqual(["first-place","joker-holder"]);expect(wins).toBeGreaterThan(0);expect(losses).toBeGreaterThan(0);
+    expect(checked).toBeGreaterThan(20);
   },30_000);
 
   it("lets game skill beat weaker profiles over a large audit sample", () => {
@@ -108,6 +102,23 @@ describe("casino ledger 0.8 core", () => {
       if(sessions[weak.id]?.[0]?.delta!>0)weakWins++;
     }
     expect(strongWins).toBeGreaterThan(weakWins*1.5);
+  });
+
+  it("lets personal-world-line postings change later autonomous affordability without rerolling schedules",()=>{
+    const left=forcedProfile("katrinka","temerosa-match-pairs",.8),right=forcedProfile("morsisa","temerosa-match-pairs",.2);
+    const day=Array.from({length:14},(_,value)=>value).find((value)=>{
+      const absolute=contract.epochKstDay+value;
+      return absolute%left.payCycleDays!==left.paydayOffset&&absolute%right.payCycleDays!==right.paydayOffset;
+    })!;
+    const dayOpening={[left.id]:4_000,[right.id]:4_000};
+    const baseline=casinoDaySessions([left,right],day,dayOpening,contract);
+    const depleted=casinoDaySessions([left,right],day,dayOpening,contract,[
+      {eventId:"player-result:left",npcId:left.id,secondOfDay:0,delta:-3_990},
+      {eventId:"player-result:right",npcId:right.id,secondOfDay:0,delta:-3_990},
+    ]);
+    expect((baseline[left.id]??[]).length+(baseline[right.id]??[]).length).toBeGreaterThan(0);
+    expect(depleted[left.id]).toEqual([]);
+    expect(depleted[right.id]).toEqual([]);
   });
 
   it("runs high-low with the public 0.3 paytable and both cashouts and losses",()=>{
@@ -160,51 +171,50 @@ describe("casino ledger 0.8 core", () => {
     for (let day = 0; day < 365; day += 1) balances = close(balances, casinoDaySessions(profiles, day, balances, contract));
     const values = Object.values(balances).toSorted((left, right) => left - right);
     const total = values.reduce((sum, balance) => sum + balance, 0);
-    expect(total).toBeGreaterThan(initial * .25);
+    expect(total).toBeGreaterThan(0);
     expect(total).toBeLessThan(initial * 3);
-    expect(values[Math.floor(values.length / 2)]).toBeGreaterThanOrEqual(10);
-    expect(values.at(-1)! / total).toBeLessThan(.6);
+    expect(values[Math.floor(values.length / 2)]).toBeGreaterThanOrEqual(20);
+    expect(values.filter((value)=>value>=20).length/profiles.length).toBeGreaterThanOrEqual(.7);
+    expect(values.at(-1)! / total).toBeLessThan(.35);
   },30_000);
 
-  it("recovers a zero balance through free old maid before any paid table", () => {
+  it("recovers a zero balance through employment income, never free NPC old maid", () => {
     const zero={...openings(),katrinka:0};
-    const sessions=casinoDaySessions(profiles,8,zero,contract).katrinka??[];
-    expect(sessions.length).toBeGreaterThan(0);
-    const firstPaid=sessions.findIndex((session)=>session.stake>0);
-    const recoveryWindow=firstPaid<0?sessions:sessions.slice(0,firstPaid);
-    expect(recoveryWindow.length).toBeGreaterThan(0);
-    expect(recoveryWindow.every((session)=>session.tableId==="temerosa-old-maid"&&session.stake===0&&session.reservedAmount===0)).toBe(true);
-    expect(sessions.reduce((sum,session)=>sum+session.delta,0)).toBeGreaterThan(0);
+    const sessions=Array.from({length:14},(_,day)=>casinoDaySessions(profiles,day,zero,contract).katrinka??[]).flat();
+    const income=sessions.find((session)=>session.tableId==="npc-income");
+    expect(income).toBeDefined();
+    expect(income).toMatchObject({stake:0,reservedAmount:0,creditAmount:500,delta:500,resultKind:"salary"});
+    expect(sessions.some((session)=>session.tableId==="temerosa-old-maid"&&session.stake===0)).toBe(false);
   });
 
   it("moves time forward and backward without mutating history", () => {
-    const profile=profiles[0]!;const minute=(contract.epochUtcDay+14)*1_440+1_439;
+    const profile=profiles[0]!;const minute=Math.floor(casinoUtcSecondAtKstDay(contract.epochKstDay+14,86_399)/60);
     const original=npcBalanceAt(profile,fixedClock(minute),contract);
     expect(npcBalanceAt(profile,fixedClock(minute+1_440),contract).dayIndex).toBe(original.dayIndex+1);
     expect(npcBalanceAt(profile,fixedClock(minute),contract)).toEqual(original);
   });
 
-  it("returns opening balances before the v0.8 epoch",()=>{
+  it("returns opening balances before the KST epoch",()=>{
     const profile=profiles[0]!;
-    expect(npcBalanceAt(profile,fixedClock(contract.epochUtcDay*1_440-1),contract)).toEqual({balance:profile.openingBalance,today:[],dayIndex:0});
+    expect(npcBalanceAt(profile,fixedClock(Math.floor((casinoUtcSecondAtKstDay(contract.epochKstDay)-1)/60)),contract)).toEqual({balance:profile.openingBalance,today:[],dayIndex:0});
   });
 
   it("returns recent activity and rolling seven-day profit deterministically",()=>{
-    const now=(contract.epochUtcDay+9)*1_440+800;const clock=fixedClock(now);
+    const now=Math.floor(casinoUtcSecondAtKstDay(contract.epochKstDay+9,800*60)/60);const clock=fixedClock(now);
     const activity=recentNpcActivitiesAt(profiles,clock,contract,200);
     expect(activity.length).toBeGreaterThan(0);expect(activity.every((entry)=>entry.utcMinute<=now&&entry.utcMinute>now-1_440)).toBe(true);
     expect(rollingNpcProfitAt(profiles,clock,contract,7)).toEqual(rollingNpcProfitAt(profiles,clock,contract,7));
   });
 
-  it("keeps completed profit analytics continuous across the v0.7 to v0.8 rebase",()=>{
-    const second=contract.epochUtcDay*86_400;
+  it("keeps completed profit analytics continuous across the v0.8 to v1.0 KST rebase",()=>{
+    const second=casinoUtcSecondAtKstDay(contract.epochKstDay);
     const clock:CasinoClock&{utcSecond():number}={utcMinute:()=>Math.floor(second/60),utcSecond:()=>second};
     const profit=rollingNpcProfitAt(profiles,clock,contract,7);
-    expect(profit.lyla).toBe(300);
-    expect(profit.pale).toBe(15_200);
-    expect(profit.alger).toBe(0);
+    expect(profit.lyla).toBe(-3_865);
+    expect(profit.pale).toBe(5_890);
+    expect(profit.alger).toBe(-3_170);
     expect(contract.profitHistory).toHaveLength(1);
-    expect(contract.profitHistory[0]!.utcDay).toBe(contract.epochUtcDay-1);
+    expect(contract.profitHistory[0]!.kstDay).toBe(contract.epochKstDay-1);
   });
 
   it("produces identical full and checkpoint-assisted balances",()=>{
@@ -217,9 +227,9 @@ describe("casino ledger 0.8 core", () => {
     for(const token of ["Date"+".now(","Math"+".random(","local"+"Storage","session"+"Storage","fetch(","re"+"act"])expect(sources).not.toContain(token);
   });
 
-  it("keeps prediction choice and match result in separate seed domains",()=>{
+  it("keeps match outcomes in an explicit deterministic seed domain",()=>{
     const source=readFileSync(new URL("../src/engine.ts",import.meta.url),"utf8");
-    expect(source).toContain(":self-prediction:");expect(source).toContain(":spectator-prediction:");expect(source).toContain(":result`");
+    expect(source).toContain(":result`");
   });
 });
 

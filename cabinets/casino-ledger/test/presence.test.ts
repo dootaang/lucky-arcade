@@ -1,10 +1,18 @@
 import { describe,expect,it } from "vitest";
-import { casinoDayPlan,casinoPresenceAt,npcAvailability,npcPresenceIntervalsForDay,TEMEROSA_NPC_GAMBLING_PROFILES,TEMEROSA_NPC_LEDGER_CONTRACT,type CasinoPresentationClock } from "../src/index.ts";
+import { casinoDayPlan,casinoPresenceAt,casinoUtcSecondAtKstDay,npcAvailability,npcPresenceIntervalsForDay,recentNpcPlayEventsAt,recentNpcRoundSettlementsAt,TEMEROSA_NPC_GAMBLING_PROFILES,TEMEROSA_NPC_LEDGER_CONTRACT,type CasinoPresentationClock } from "../src/index.ts";
 
 const profiles=TEMEROSA_NPC_GAMBLING_PROFILES,contract=TEMEROSA_NPC_LEDGER_CONTRACT;
 
 describe("casino floor presence",()=>{
-  it("derives the same presence from the same UTC second",()=>{const second=contract.epochUtcDay*86_400+40_000;expect(casinoPresenceAt(profiles,fixedClock(second),contract)).toEqual(casinoPresenceAt(profiles,fixedClock(second),contract));});
+  it("derives the same KST-calendar presence from the same Unix second",()=>{const second=casinoUtcSecondAtKstDay(contract.epochKstDay,40_000);expect(casinoPresenceAt(profiles,fixedClock(second),contract)).toEqual(casinoPresenceAt(profiles,fixedClock(second),contract));});
+
+  it("starts presence, live tape and settlements on the KST epoch day",()=>{
+    const during=casinoUtcSecondAtKstDay(contract.epochKstDay,160);
+    const after=casinoUtcSecondAtKstDay(contract.epochKstDay,300);
+    expect(casinoPresenceAt(profiles,fixedClock(during),contract).some((entry)=>entry.phase!=="idle")).toBe(true);
+    expect(recentNpcPlayEventsAt(profiles,fixedClock(during),contract,100).length).toBeGreaterThan(0);
+    expect(recentNpcRoundSettlementsAt(profiles,fixedClock(after),contract,100,3_600).length).toBeGreaterThan(0);
+  });
 
   it("marks an active visit unavailable without exposing another result",()=>{
     const profile=profiles[0]!,opening=profile.openingBalance;const interval=npcPresenceIntervalsForDay(profile,0,opening,contract)[0]!;
@@ -21,12 +29,11 @@ describe("casino floor presence",()=>{
     }
   },30_000);
 
-  it("marks a real spectator unavailable until the prediction settles",()=>{
+  it("does not create NPC spectator reservations for old maid",()=>{
     const openings=Object.fromEntries(profiles.map((profile)=>[profile.id,profile.openingBalance]));
-    const plan=casinoDayPlan(profiles,0,openings,contract);const prediction=plan.predictions.find((entry)=>entry.role==="spectator");
-    expect(prediction).toBeDefined();const second=contract.epochUtcDay*86_400+prediction!.placedAtSecondOfDay+1;
-    const presence=casinoPresenceAt(profiles,fixedClock(second),contract).find((entry)=>entry.npcId===prediction!.bettorNpcId)!;
-    expect(presence.phase).toBe("spectating");expect(presence.role).toBe("spectating");expect(npcAvailability([presence])[presence.npcId]?.available).toBe(false);
+    const plan=casinoDayPlan(profiles,0,openings,contract);
+    expect(plan.predictions).toEqual([]);
+    expect(casinoPresenceAt(profiles,fixedClock(casinoUtcSecondAtKstDay(contract.epochKstDay,40_000)),contract).some((entry)=>entry.role==="spectating")).toBe(false);
   });
 });
 

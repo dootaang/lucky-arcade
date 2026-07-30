@@ -3,6 +3,8 @@ import { SlotMachineScreen } from "@lucky-arcade/slot-machine/react";
 import { ENGINE_VERSION, leveragedWagerCredit, makeReceipt, resultHash, wagerExposure, wagerMultiplierFromExposure, type WagerMultiplier } from "@lucky-arcade/engine";
 import type { GameWagerReceipt } from "@lucky-arcade/persistence";
 import { useEffect, useRef, useState } from "react";
+import { TEMEROSA_HOUSE_ACCOUNT_ID } from "@lucky-arcade/casino-ledger";
+import { casinoCounterpartyContext } from "../../lib/casino-economy.ts";
 import { appendAction, saveSnapshot } from "../../lib/database.ts";
 import { invalidateWager, listWagers, reserveWager, settleWager } from "../../lib/game-wager.ts";
 import { recoverSession } from "../../lib/session-recovery.ts";
@@ -89,6 +91,9 @@ export default function TemerosaSlotView({ onExit }: { onExit(): void }) {
     setError("");
     try {
       const spinSeed = crypto.randomUUID();
+      const reservedAmount = wagerExposure(stake, multiplier);
+      const maximumCredit = leveragedWagerCredit(stake, stake * 30, multiplier);
+      const counterparty = await casinoCounterpartyContext(TEMEROSA_HOUSE_ACCOUNT_ID);
       const reserved = await reserveWager({
         outcomeKey: `${SLOT_MACHINE_TERMS_VERSION}:${spinSeed}`,
         cabinetId: CABINET_ID,
@@ -96,7 +101,9 @@ export default function TemerosaSlotView({ onExit }: { onExit(): void }) {
         termsVersion: SLOT_MACHINE_TERMS_VERSION,
         choiceKey: `spin:${spinSeed}`,
         stake,
-        reservedAmount: wagerExposure(stake, multiplier),
+        reservedAmount,
+        ...counterparty,
+        counterpartyReservedAmount: maximumCredit - reservedAmount,
       });
       setBalance(reserved.wallet.balance);
       setReady((current) => current ? { ...current, multiplier } : current);

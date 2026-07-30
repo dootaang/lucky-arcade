@@ -6,8 +6,7 @@ import { CabinetHost, getCabinetRegistration, getCabinetWorld, listBuiltInCabine
 import { CardImporter } from "../features/cards/card-importer.tsx";
 import { ReportView } from "../features/cards/report-view.tsx";
 import { analyzeCardFile } from "../lib/card-analysis.ts";
-import { listCards, listRecentPlays, loadCardSource, replaceAnalyzedCard, type StoredCard } from "../lib/database.ts";
-import { readWallet } from "../lib/wallet.ts";
+import { listCards, listRecentPlays, loadCardSource, readWallet, replaceAnalyzedCard, type StoredCard } from "../lib/database.ts";
 import { NumberTicker } from "@lucky-arcade/ui/number-ticker";
 import { VenueMarquee } from "@lucky-arcade/ui/venue-marquee";
 import type { CasinoTableId } from "@lucky-arcade/casino-ledger";

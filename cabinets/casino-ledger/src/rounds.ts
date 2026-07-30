@@ -9,14 +9,15 @@ import type {
   NpcSession,
 } from "./contracts.ts";
 import { npcActivitiesForAt, recentNpcActivitiesAt } from "./engine.ts";
+import { casinoKstDayAtUtcSecond, casinoUtcSecondAtKstDay } from "./casino-time.ts";
 
 const ROUND_CONTRACT = "npc-live-rounds/0.5";
 
 export type NpcMatchSettlementTone = "gain" | "loss" | "flat" | "mixed" | "reward";
 
 export function npcVisitRounds(interval: NpcPresenceInterval, _profile: NpcGamblingProfile): readonly NpcRoundSettlement[] {
-  const absoluteDay = Math.floor(interval.startedAtUtcSecond/86_400);
-  return Object.freeze(interval.sessions.flatMap((session)=>settlements(interval.npcId,absoluteDay*86_400+session.secondOfDay,session)));
+  const kstDay = casinoKstDayAtUtcSecond(interval.startedAtUtcSecond);
+  return Object.freeze(interval.sessions.flatMap((session)=>settlements(interval.npcId,casinoUtcSecondAtKstDay(kstDay,session.secondOfDay),session)));
 }
 
 export function recentNpcRoundSettlementsAt(
@@ -90,6 +91,7 @@ function settlements(npcId:string,utcSecond:number,session:NpcSession):readonly 
   ]);
   return Object.freeze([settlement(npcId,utcSecond,session,session.prediction?"prediction":"combined")]);
 }
+export function npcSessionSettlements(npcId:string,utcSecond:number,session:NpcSession):readonly NpcRoundSettlement[]{return settlements(npcId,utcSecond,session);}
 function settlement(npcId:string,utcSecond:number,session:NpcSession,component:"rank"|"prediction"|"combined"):NpcRoundSettlement {
   const rankOnly=component==="rank";
   const predictionOnly=component==="prediction";

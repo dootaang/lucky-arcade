@@ -64,7 +64,7 @@ describe.sequential("point wallet and spectator predictions", () => {
       const wallet = await database.readWallet();
       const duplicate = await database.grantCompletionPoints({ sessionId: "legacy-session", sequence: 7, cabinetId: "old-maid", spectated: false });
       const contract = await new Promise<string>((resolve, reject) => {
-        const opening = indexedDB.open("lucky-arcade", 7);
+        const opening = indexedDB.open("lucky-arcade", 8);
         opening.onerror = () => reject(opening.error);
         opening.onsuccess = () => {
           const db = opening.result;
@@ -224,13 +224,33 @@ describe.sequential("point wallet and spectator predictions", () => {
     expect(result.wallet.balance).toBe(50);
   });
 
+  it("backs new spectator predictions with the house escrow", async () => {
+    await seedWallet(page, 100);
+    const result = await page.evaluate(async () => {
+      const database = await new Function("return import('/src/lib/database.ts')")();
+      const reserved = await database.reserveSpectatorPrediction({
+        predictionId: "house-prediction", outcomeKey: "temerosa-old-maid|round", predictedCharacterId: "alice", stake: 10, multiplier: 2,
+        counterpartyAccountId: "house:temerosa", counterpartyReservedAmount: 20, counterpartyBaseBalance: 150_000,
+        casinoOccurredAtSecond: 2_000, casinoTableId: "temerosa-old-maid",
+      });
+      const settled = await database.settleSpectatorPrediction({ predictionId: "house-prediction", winningCharacterId: "alice" });
+      const repeated = await database.settleSpectatorPrediction({ predictionId: "house-prediction", winningCharacterId: "bob" });
+      return { reserved, settled, repeated, journal: await database.listCasinoTransactions() };
+    });
+    expect(result.reserved).toMatchObject({ wallet: { balance: 80 }, prediction: { counterpartyAccountId: "house:temerosa", counterpartyReservedAmount: 20 } });
+    expect(result.settled).toMatchObject({ wallet: { balance: 120 }, prediction: { status: "won", settlementCredit: 40 } });
+    expect(result.repeated).toEqual(result.settled);
+    expect(result.journal).toHaveLength(2);
+    expect(result.journal.flatMap((transaction: { postings: Array<{ delta: number }> }) => transaction.postings).reduce((sum: number, posting: { delta: number }) => sum + posting.delta, 0)).toBe(0);
+  });
+
   it("reads legacy 0.1 predictions as 3x without changing their historical debit", async () => {
     await seedWallet(page, 90);
     const result = await page.evaluate(async () => {
       const database = await new Function("return import('/src/lib/database.ts')")();
       await database.readWallet();
       await new Promise<void>((resolve, reject) => {
-        const opening = indexedDB.open("lucky-arcade", 7);
+        const opening = indexedDB.open("lucky-arcade", 8);
         opening.onerror = () => reject(opening.error);
         opening.onsuccess = () => {
           const db = opening.result;
@@ -309,6 +329,51 @@ describe.sequential("point wallet and spectator predictions", () => {
     expect(result.wallet.balance).toBe(240);
   });
 
+  it("atomically escrows both player and NPC funds in the casino journal", async () => {
+    await seedWallet(page, 200);
+    const result = await page.evaluate(async () => {
+      const database = await new Function("return import('/src/lib/database.ts')")();
+      const reserved = await database.reserveGameWager({
+        wagerId: "npc-heads-up",
+        outcomeKey: "npc-heads-up:seed",
+        cabinetId: "temerosa-match-pairs",
+        sessionId: "npc-heads-up-session",
+        termsVersion: "match-pairs/1.0",
+        stake: 10,
+        reservedAmount: 40,
+        counterpartyAccountId: "npc:lyla",
+        counterpartyReservedAmount: 60,
+        counterpartyBaseBalance: 100,
+        casinoOccurredAtSecond: 1_000,
+      });
+      const before = await database.listCasinoTransactions();
+      const settled = await database.settleGameWager({ wagerId: "npc-heads-up", settlementSequence: 4, resultKey: "player-win", creditAmount: 100 });
+      const settledAgain = await database.settleGameWager({ wagerId: "npc-heads-up", settlementSequence: 5, resultKey: "replay", creditAmount: 0 });
+      let insufficient = "";
+      try {
+        await database.reserveGameWager({
+          wagerId: "npc-heads-up-2", outcomeKey: "npc-heads-up:seed-2", cabinetId: "temerosa-match-pairs", sessionId: "npc-heads-up-session",
+          termsVersion: "match-pairs/1.0", stake: 10, reservedAmount: 20, counterpartyAccountId: "npc:lyla", counterpartyReservedAmount: 50,
+          counterpartyBaseBalance: 100, casinoOccurredAtSecond: 1_010,
+        });
+      } catch (caught) { insufficient = caught instanceof Error ? caught.message : String(caught); }
+      return { reserved, before, settled, settledAgain, insufficient, after: await database.listCasinoTransactions() };
+    });
+
+    expect(result.reserved).toMatchObject({ wallet: { balance: 160 }, wager: { counterpartyAccountId: "npc:lyla", counterpartyReservedAmount: 60 } });
+    expect(result.before).toHaveLength(1);
+    expect(result.before[0].postings).toEqual([
+      { accountId: "npc:lyla", delta: -60 },
+      { accountId: "player:local", delta: -40 },
+      { accountId: "escrow:npc-heads-up", delta: 100 },
+    ]);
+    expect(result.settled).toMatchObject({ wallet: { balance: 260 }, wager: { status: "settled", settlementCredit: 100 } });
+    expect(result.settledAgain).toEqual(result.settled);
+    expect(result.insufficient).toBe("casino_counterparty_insufficient_points");
+    expect(result.after).toHaveLength(2);
+    expect(result.after.flatMap((transaction: { postings: Array<{ delta: number }> }) => transaction.postings).reduce((sum: number, posting: { delta: number }) => sum + posting.delta, 0)).toBe(0);
+  });
+
   it("serializes generic reservations across tabs", async () => {
     await seedWallet(page, 100);
     const other = await context.newPage();
@@ -345,7 +410,7 @@ async function seedWallet(target: Page, balance: number): Promise<void> {
     const database = await new Function("return import('/src/lib/database.ts')")();
     await database.readWallet();
     await new Promise<void>((resolve, reject) => {
-      const opening = indexedDB.open("lucky-arcade", 7);
+      const opening = indexedDB.open("lucky-arcade", 8);
       opening.onerror = () => reject(opening.error);
       opening.onsuccess = () => {
         const db = opening.result;
