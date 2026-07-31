@@ -1,5 +1,5 @@
 import {describe,expect,it}from"vitest";
-import {TEMEROSA_FLOW_EPOCH_KST_DAY,TEMEROSA_FLOW_NPC_GAMBLING_PROFILES,TEMEROSA_FLOW_NPC_LEDGER_CONTRACT,TEMEROSA_NPC_GAMBLING_PROFILES,TEMEROSA_NPC_LEDGER_CONTRACT,auditCasinoFlowEconomy,casinoDayPlan,casinoUtcSecondAtKstDay,completedDayBalances,houseBalanceAt,temerosaCasinoLedgerAtUtcSecond}from"../src/index.ts";
+import {TEMEROSA_FLOW_EPOCH_KST_DAY,TEMEROSA_FLOW_NPC_GAMBLING_PROFILES,TEMEROSA_FLOW_NPC_LEDGER_CONTRACT,TEMEROSA_NPC_GAMBLING_PROFILES,TEMEROSA_NPC_LEDGER_CONTRACT,auditCasinoFlowEconomy,casinoDayPlan,casinoUtcSecondAtKstDay,completedDayBalances,houseBalanceAt,recentNpcPlayEventsAt,temerosaCasinoLedgerAtUtcSecond}from"../src/index.ts";
 
 describe("Temerosa flow ledger cutover",()=>{
   it("carries every NPC and house close exactly once",()=>{
@@ -23,6 +23,15 @@ describe("Temerosa flow ledger cutover",()=>{
     const boundary=casinoUtcSecondAtKstDay(TEMEROSA_FLOW_EPOCH_KST_DAY);
     expect(temerosaCasinoLedgerAtUtcSecond(boundary-1).contract.version).toBe("npc-ledger/1.1");
     expect(temerosaCasinoLedgerAtUtcSecond(boundary).contract.version).toBe("npc-ledger/1.2");
+  });
+
+  it("keeps real live-tape actions visible immediately after the cutover",()=>{
+    const openings=Object.fromEntries(TEMEROSA_FLOW_NPC_GAMBLING_PROFILES.map((profile)=>[profile.id,profile.openingBalance]));
+    const plan=casinoDayPlan(TEMEROSA_FLOW_NPC_GAMBLING_PROFILES,0,openings,TEMEROSA_FLOW_NPC_LEDGER_CONTRACT);
+    const first=plan.matches[0]!;
+    const second=casinoUtcSecondAtKstDay(TEMEROSA_FLOW_EPOCH_KST_DAY,first.startsAtSecondOfDay+1);
+    const events=recentNpcPlayEventsAt(TEMEROSA_FLOW_NPC_GAMBLING_PROFILES,{utcMinute:()=>Math.floor(second/60),utcSecond:()=>second},TEMEROSA_FLOW_NPC_LEDGER_CONTRACT,32);
+    expect(events.some((event)=>event.matchId===first.matchId&&event.code==="table-enter")).toBe(true);
   });
 
   it("keeps the one-year internal supply within the frozen audit band",()=>{
