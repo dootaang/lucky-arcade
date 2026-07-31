@@ -75,7 +75,9 @@
 `cabinets/casino-ledger/src/temerosa-series-migration.ts`는 수정하지 않고 테스트에서 읽기만 했다.
 
 - legacy ID: 34개, 중복 0
-- successor 대상: 34개, 중복 0
+- legacy 계정 34개는 successor 계정 33개로 이어진다. 유일한 중복은 오너 결정에 따라
+  `bacikal`과 `nemo`의 기존 잔고를 `temerosa:guest:nemo` 한 계정에 합산하는 경우다.
+  바치칼 시리즈 신원은 명부에는 보존하지만 카지노 참가 풀에서는 제외한다.
 - 네 시리즈 대상: 모두 116개 고정 명부에 존재
 - 네모 대상: 정확히 `temerosa:guest:nemo` 한 곳
 

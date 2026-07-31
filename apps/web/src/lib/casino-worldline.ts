@@ -11,6 +11,7 @@ import {
   createHouseOperatingExpensePlan,
   houseDailyActivityFromPlan,
   npcFlowEconomyDay,
+  successorNpcId,
   type CasinoDayPlan,
   type CasinoPresentationClock,
   type CasinoTransaction,
@@ -54,9 +55,14 @@ export function personalCasinoWorldlineAt(
     const epochSecond=casinoUtcSecondAtKstDay(contract.epochKstDay);
     const predecessorTransactions=transactions.filter((transaction)=>transaction.occurredAtCasinoSecond<epochSecond);
     const predecessorClock={utcMinute:()=>Math.floor((epochSecond-1)/60),utcSecond:()=>epochSecond-1};
+    const predecessorBase=personalCasinoWorldlineAt(contract.predecessor.profiles,predecessorClock,contract.predecessor.contract,[]);
     const predecessor=personalCasinoWorldlineAt(contract.predecessor.profiles,predecessorClock,contract.predecessor.contract,predecessorTransactions);
-    for(const profile of profiles)if(predecessor.npcBalances[profile.id]!==undefined)balances[profile.id]=predecessor.npcBalances[profile.id]!;
-    houseOpeningBalance=predecessor.houseBalance;
+    for(const legacyProfile of contract.predecessor.profiles){
+      const successorId=successorNpcId(legacyProfile.id)??legacyProfile.id;
+      if(balances[successorId]===undefined)continue;
+      balances[successorId]! += (predecessor.npcBalances[legacyProfile.id]??0)-(predecessorBase.npcBalances[legacyProfile.id]??0);
+    }
+    houseOpeningBalance+=predecessor.houseBalance-predecessorBase.houseBalance;
   }
   const externalReserves: Record<string,number> = Object.fromEntries((contract.externalIncomeProfiles??[]).map((profile)=>[profile.npcId,profile.openingExternalReserve]));
   const grossIncomeToday: Record<string,number> = {};
@@ -123,7 +129,7 @@ function npcEvents(transactions:readonly CasinoTransaction[],dayStart:number):re
 function applyHouseDay(opening:number,absoluteDay:number,cutoff:number,plan:CasinoDayPlan,transactions:readonly CasinoTransaction[],dayStart:number,contract:NpcLedgerContract):{balance:number;gamingProfit:number;operatingExpenses:number;curtailedOperatingExpenses:number}{
   const sessions=plan.sessions;
   const movements=[
-    ...Object.values(sessions).flat().filter((session)=>isHouseTable(session.tableId)).map((session)=>({second:session.secondOfDay,delta:-session.delta,kind:"gaming" as const,id:session.matchId})),
+    ...Object.values(sessions).flat().filter((session)=>contract.version==="npc-ledger/1.2"?session.tableId!=="npc-income":isHouseTable(session.tableId)).map((session)=>({second:session.secondOfDay,delta:-session.delta,kind:"gaming" as const,id:session.matchId})),
     ...transactions.flatMap((transaction)=>transaction.postings.flatMap((posting,index)=>posting.accountId===TEMEROSA_HOUSE_ACCOUNT_ID?[{second:transaction.occurredAtCasinoSecond-dayStart,delta:posting.delta,kind:isHouseGamingTransaction(transaction)?"gaming" as const:"local" as const,id:`${transaction.transactionId}:${index}`}]:[])),
   ].filter((movement)=>movement.second<=cutoff).sort((left,right)=>left.second-right.second||compareText(left.id,right.id));
   const operatingPolicy=contract.houseOperatingPolicy??DEFAULT_HOUSE_OPERATING_COST_POLICY;

@@ -15,4 +15,23 @@ describe("Temerosa manifest memoization", () => {
     expect(fetcher).toHaveBeenCalledTimes(1);
     expect(fetcher).toHaveBeenCalledWith("/content/temerosa-margin/0.8.0/manifest.json", { cache: "no-store" });
   });
+
+  it("loads the series portrait pack lazily and memoizes the parsed maps", async()=>{
+    vi.resetModules();
+    const fetcher=vi.fn(async()=>new Response(JSON.stringify({
+      contract:"temerosa-series-npc-portrait-pack/0.1",packId:"temerosa-series-npcs",version:"0.1.0",
+      npcs:[
+        {npcId:"temerosa:overture:test",status:"available",sm:{path:"assets/sm/a.webp",emotion:"neutral"},md:{neutral:{path:"assets/md/a.webp",emotion:"neutral"}},lg:{path:"assets/lg/a.webp",emotion:"neutral"}},
+        {npcId:"temerosa:finale:missing",status:"unavailable"},
+      ],
+    }),{status:200}));
+    vi.stubGlobal("fetch",fetcher);
+    const {loadTemerosaSeriesNpcAssets}=await import("./temerosa-content.ts");
+    const [first,second]=await Promise.all([loadTemerosaSeriesNpcAssets(),loadTemerosaSeriesNpcAssets()]);
+    expect(first).toBe(second);
+    expect(fetcher).toHaveBeenCalledOnce();
+    expect(first.thumbAssets["temerosa:overture:test"]).toBe("/content/temerosa-series-npcs/0.1.0/assets/sm/a.webp");
+    expect(first.assets["temerosa:overture:test"]?.neutral).toBe("/content/temerosa-series-npcs/0.1.0/assets/md/a.webp");
+    expect(first.unavailableNpcIds).toEqual(["temerosa:finale:missing"]);
+  });
 });

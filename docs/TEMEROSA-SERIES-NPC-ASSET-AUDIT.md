@@ -2,7 +2,7 @@
 
 > 팩: `temerosa-series-npcs/0.1.0`
 >
-> 기준 명부: `temerosa-series-npc-inventory/0.1` (116명, 안전 이미지 후보 1,616개)
+> 기준 명부: `temerosa-series-npc-inventory/0.2` (116명, 안전 이미지 후보 1,616개)
 >
 > 검수 방식: 오너 결정에 따라 육안 사전 검사를 생략하고 자동 안전 검사 후 컴파일했다. 정적 연락판에서 사후 검수한다.
 

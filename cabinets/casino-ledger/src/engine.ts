@@ -48,8 +48,18 @@ const MATCH_SECONDS = Object.freeze({
   "temerosa-high-low": [45, 120],
   "temerosa-five-card-draw": [180, 360],
 } as const);
+/** Faster player-scale rounds for the gated flow economy. Legacy history keeps MATCH_SECONDS. */
+const FLOW_MATCH_SECONDS = Object.freeze({
+  "temerosa-slot": [15, 33],
+  "indian-poker": [45, 91],
+  "temerosa-match-pairs": [68, 135],
+  "temerosa-old-maid": [90, 178],
+  "temerosa-high-low": [15, 44],
+  "temerosa-five-card-draw": [68, 135],
+} as const);
 /** 2026-07-30 18:00 KST. Earlier settlements on release day remain byte-for-byte stable. */
 const FIVE_CARD_DRAW_OPENING_SECOND_OF_DAY = 18 * 60 * 60;
+const FLOW_PVP_RAKE_BPS = 750;
 
 interface VisitIntent { npcId: string; second: number; ordinal: number; tableId: CasinoTableId }
 interface MatchDraft { matchId: string; visitId: string; tableId: CasinoTableId; participantIds: readonly string[]; startsAtSecondOfDay: number; settlesAtSecondOfDay: number }
@@ -119,7 +129,7 @@ export function casinoDayPlan(
     } else if (draft.tableId === "temerosa-high-low") {
       settleHighLow(draft, participants[0]!, balances, output, terms.stake, terms.multiplier, rng, contract.epochKstDay + dayIndex >= AUDITED_HIGH_LOW_OPENING_KST_DAY);
     } else {
-      settlePvp(draft, draft.tableId, participants, balances, output, terms.stake, terms.multiplier, rng);
+      settlePvp(draft, draft.tableId, participants, balances, output, terms.stake, terms.multiplier, rng, contract.version === "npc-ledger/1.2");
     }
     matches.push(matchFromDraft(draft, terms.stake, terms.multiplier));
   }
@@ -303,7 +313,7 @@ function createIntents(profiles: readonly NpcGamblingProfile[], dayIndex: number
 
 function createMatchDrafts(visit: NpcVisit, dayIndex: number, contract: NpcLedgerContract): readonly MatchDraft[] {
   const rng = new XorShift32(`${contract.seedVersion}:${dayIndex}:${visit.visitId}:matches`);
-  const range = MATCH_SECONDS[visit.tableId];
+  const range = (contract.version === "npc-ledger/1.2" ? FLOW_MATCH_SECONDS : MATCH_SECONDS)[visit.tableId];
   const output: MatchDraft[] = [];
   const behavior=contract.behaviors?.find((entry)=>entry.npcId===visit.participantIds[0]);
   const desiredRounds=behavior?randomInteger(behavior.roundsPerVisit.min,behavior.roundsPerVisit.max,rng):Number.MAX_SAFE_INTEGER;
@@ -339,21 +349,22 @@ function settlePaidOldMaid(
   });
 }
 
-function settlePvp(plan: MatchDraft, tableId: "temerosa-match-pairs"|"indian-poker"|"temerosa-five-card-draw", profiles: readonly NpcGamblingProfile[], balances: Record<string,number>, output: Record<string,NpcSession[]>, stake: Exclude<NpcStake,0>, multiplier: WagerMultiplier, rng: XorShift32): void {
+function settlePvp(plan: MatchDraft, tableId: "temerosa-match-pairs"|"indian-poker"|"temerosa-five-card-draw", profiles: readonly NpcGamblingProfile[], balances: Record<string,number>, output: Record<string,NpcSession[]>, stake: Exclude<NpcStake,0>, multiplier: WagerMultiplier, rng: XorShift32, flowEconomy: boolean): void {
   if (profiles.length < 2) return;
   const [left,right] = profiles;
   const skill = (profile: NpcGamblingProfile) => tableId === "temerosa-match-pairs" ? profile.skills.matchPairsMemory : profile.skills.pokerRead*.58 + profile.skills.pokerBluff*.42;
   const leftScore = skill(left!) + (rng.next()-.5)*.9;
   const rightScore = skill(right!) + (rng.next()-.5)*.9;
   const exposure = stake*multiplier;
-  const termsVersion=tableId==="temerosa-five-card-draw"?"temerosa-five-card-draw-ledger/1.0":`${tableId}-ledger/0.5`;
+  const termsVersion=flowEconomy?`temerosa-pvp-rake/1.0:${tableId}`:tableId==="temerosa-five-card-draw"?"temerosa-five-card-draw-ledger/1.0":`${tableId}-ledger/0.5`;
   if (Math.abs(leftScore-rightScore) < .035) {
     for (const profile of profiles) addSession(profile.id, plan, stake, exposure, exposure, "draw", termsVersion, balances, output);
     return;
   }
   const winner = leftScore > rightScore ? left! : right!;
   const loser = winner.id === left!.id ? right! : left!;
-  addSession(winner.id, plan, stake, exposure, exposure*2, "win", termsVersion, balances, output);
+  const rake=flowEconomy?Math.max(1,Math.floor(exposure*2*FLOW_PVP_RAKE_BPS/10_000)):0;
+  addSession(winner.id, plan, stake, exposure, exposure*2-rake, "win", termsVersion, balances, output);
   addSession(loser.id, plan, stake, exposure, 0, "loss", termsVersion, balances, output);
 }
 

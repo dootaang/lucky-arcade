@@ -151,6 +151,7 @@ export function buildSeriesNpcAssetSelection(inventory: TemerosaSeriesNpcInvento
 
 export function assertSeriesNpcAssetSelection(selection: SeriesNpcAssetSelection, inventory: TemerosaSeriesNpcInventory): void {
   if (selection.contract !== "temerosa-series-npc-asset-selection/0.1" || selection.identityRule !== "series-and-source-persona") throw new Error("series_asset_selection_contract_invalid");
+  if (selection.inventoryContract !== inventory.contract) throw new Error("series_asset_selection_inventory_contract_invalid");
   if (selection.policy.crossSeriesFallback || !selection.policy.unavailableIsExplicit) throw new Error("series_asset_selection_policy_invalid");
   if (selection.items.length !== inventory.records.length || new Set(selection.items.map((item) => item.npcId)).size !== selection.items.length) throw new Error("series_asset_selection_count_invalid");
   const records = new Map(inventory.records.map((record) => [record.id, record]));
@@ -324,7 +325,7 @@ async function createVariant(staging: string, scale: PortraitScale, emotion: Emo
 function withoutRaw(source: ResolvedSource): PortraitVariant["source"] { const { raw: _raw, ...value } = source; return value; }
 
 function assertInventory(inventory: TemerosaSeriesNpcInventory): void {
-  if (inventory.contract !== "temerosa-series-npc-inventory/0.1" || inventory.identityRule !== "series-and-source-persona" || inventory.records.length !== 116 || inventory.totals.assetCandidates !== 1616) throw new Error("series_asset_inventory_invalid");
+  if (inventory.contract !== "temerosa-series-npc-inventory/0.2" || inventory.identityRule !== "series-and-source-persona" || inventory.records.length !== 116 || inventory.totals.assetCandidates !== 1616) throw new Error("series_asset_inventory_invalid");
 }
 
 function assertManifest(manifest: SeriesNpcPortraitPackManifest, inventory: TemerosaSeriesNpcInventory): void {

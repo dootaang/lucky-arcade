@@ -32,7 +32,10 @@ export const TEMEROSA_LEGACY_NPC_SUCCESSORS: Readonly<Record<string, TemerosaSer
   riel: "temerosa:bestiaization:riel",
   traver: "temerosa:bestiaization:traver",
   adesha: "temerosa:bestiaization:adesha",
-  bacikal: "temerosa:finale:bacikal",
+  // Owner rule: the playable NPC is magical-girl Nemo. The retired Bacikal
+  // bankroll is folded into that one account instead of creating a second
+  // active Nemo identity or destroying previously visible points.
+  bacikal: "temerosa:guest:nemo",
   camille: "temerosa:bestiaization:camille",
   anna: "temerosa:bestiaization:anna",
   echo: "temerosa:bestiaization:echo",
@@ -49,4 +52,3 @@ export const TEMEROSA_LEGACY_NPC_SUCCESSORS: Readonly<Record<string, TemerosaSer
 export function successorNpcId(legacyNpcId: string): TemerosaSeriesNpcId | undefined {
   return TEMEROSA_LEGACY_NPC_SUCCESSORS[legacyNpcId];
 }
-

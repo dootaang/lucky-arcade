@@ -38,12 +38,12 @@ export function houseBalanceAt(profiles: readonly NpcGamblingProfile[], clock: C
     if(contract.version==="npc-ledger/1.2"){
       const operatingPolicy=contract.houseOperatingPolicy??DEFAULT_HOUSE_OPERATING_COST_POLICY;
       const operationsSecond=operatingPolicy.settlementSecondOfDay;
-      const beforeOperations=houseGamingDeltaThrough(sessions,Math.min(secondLimit,operationsSecond));
+      const beforeOperations=flowHouseGamingDeltaThrough(sessions,Math.min(secondLimit,operationsSecond));
       balance+=beforeOperations;gamingProfit+=beforeOperations;
       if(secondLimit>=operationsSecond){
         const expense=createHouseOperatingExpensePlan(houseDailyActivityFromPlan({absoluteKstDay:kstDay,houseBalance:balance,reservedLiability:0,plan,throughSecondOfDay:operationsSecond}),operatingPolicy);
         balance-=expense.paidAmount;operatingExpenses+=expense.paidAmount;curtailedOperatingExpenses+=expense.curtailedAmount;
-        const afterOperations=houseGamingDeltaBetween(sessions,operationsSecond,secondLimit);
+        const afterOperations=flowHouseGamingDeltaBetween(sessions,operationsSecond,secondLimit);
         balance+=afterOperations;gamingProfit+=afterOperations;
       }
     }else{
@@ -61,20 +61,21 @@ export function houseBalanceAt(profiles: readonly NpcGamblingProfile[], clock: C
 }
 
 export function withHouseCounterparties(entries: readonly NpcRoundSettlement[]): readonly NpcRoundSettlement[] {
-  const output: NpcRoundSettlement[]=[];
-  for(const entry of entries){
-    output.push(entry);
-    if(!isHouseTable(entry.tableId))continue;
-    const delta=-entry.delta;
+  const output: NpcRoundSettlement[]=[...entries];
+  const matches=Map.groupBy(entries,(entry)=>entry.matchId);
+  for(const values of matches.values()){
+    const entry=values[0]!;
+    const delta=-values.reduce((sum,value)=>sum+value.delta,0);
+    if(delta===0)continue;
     output.push(Object.freeze({
       ...entry,
       roundId:`house-counterparty/1.0:${entry.roundId}`,
       npcId:TEMEROSA_HOUSE_ACCOUNT_ID,
-      participantIds:Object.freeze([entry.npcId,TEMEROSA_HOUSE_ACCOUNT_ID]),
+      participantIds:Object.freeze([...entry.participantIds,TEMEROSA_HOUSE_ACCOUNT_ID]),
       reservedAmount:delta<0?-delta:0,
       creditAmount:delta>0?delta:0,
       delta,
-      resultKind:`house:${entry.resultKind}`,
+      resultKind:`house:${entry.tableId}`,
     }));
   }
   return Object.freeze(output.toSorted((left,right)=>right.utcSecond-left.utcSecond||compareText(left.roundId,right.roundId)));
@@ -89,6 +90,8 @@ function closeNpcBalances(opening:Readonly<Record<string,number>>,sessions:Reado
 }
 function houseGamingDeltaThrough(sessions:Readonly<Record<string,readonly NpcSession[]>>,through:number):number{return -Object.values(sessions).flat().filter((session)=>session.secondOfDay<=through&&isHouseTable(session.tableId)).reduce((sum,session)=>sum+session.delta,0);}
 function houseGamingDeltaBetween(sessions:Readonly<Record<string,readonly NpcSession[]>>,after:number,through:number):number{return -Object.values(sessions).flat().filter((session)=>session.secondOfDay>after&&session.secondOfDay<=through&&isHouseTable(session.tableId)).reduce((sum,session)=>sum+session.delta,0);}
+function flowHouseGamingDeltaThrough(sessions:Readonly<Record<string,readonly NpcSession[]>>,through:number):number{return flowHouseGamingDeltaBetween(sessions,-1,through);}
+function flowHouseGamingDeltaBetween(sessions:Readonly<Record<string,readonly NpcSession[]>>,after:number,through:number):number{return -Object.values(sessions).flat().filter((session)=>session.tableId!=="npc-income"&&session.secondOfDay>after&&session.secondOfDay<=through).reduce((sum,session)=>sum+session.delta,0);}
 function snapshot(balance:number,gamingProfit:number,operatingExpenses:number,curtailedOperatingExpenses:number,dayIndex:number):HouseBalanceSnapshot{return Object.freeze({accountId:TEMEROSA_HOUSE_ACCOUNT_ID,balance,gamingProfit,operatingExpenses,curtailedOperatingExpenses,availableReserve:balance,reservedLiability:0,dayIndex});}
 function normalizedUtcSecond(clock:CasinoClock):number{const exact=(clock as CasinoClock&{utcSecond?:()=>number}).utcSecond?.();const value=exact??clock.utcMinute()*60+59;if(!Number.isSafeInteger(value))throw new Error("house_clock_invalid");return value;}
 function compareText(left:string,right:string):number{return left<right?-1:left>right?1:0;}

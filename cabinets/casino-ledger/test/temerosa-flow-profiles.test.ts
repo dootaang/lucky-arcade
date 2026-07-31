@@ -16,12 +16,16 @@ describe("Temerosa flow profile builder",()=>{
     const records=await readRecords();
     const result=buildTemerosaFlowProfileSet({records,identityPolicy:"series-persona",legacyProfiles:TEMEROSA_NPC_GAMBLING_PROFILES,legacySuccessors:TEMEROSA_LEGACY_NPC_SUCCESSORS});
     expect(result.identityPolicy).toBe("series-persona");
-    expect(result.profiles).toHaveLength(34);
+    expect(result.profiles).toHaveLength(33);
     expect(result.exclusions.every((entry)=>entry.reason==="missing-authored-profile")).toBe(true);
     expect(result.exclusions.length).toBeGreaterThan(0);
     expect(result.profiles.some((profile)=>profile.id.includes(":wares"))).toBe(false);
-    expect(result.profiles.filter((profile)=>profile.openingBalance>0)).toHaveLength(34);
+    expect(result.profiles.filter((profile)=>profile.openingBalance>0)).toHaveLength(33);
     expect(result.profiles.reduce((sum,profile)=>sum+profile.openingBalance,0)).toBe(TEMEROSA_NPC_GAMBLING_PROFILES.reduce((sum,profile)=>sum+profile.openingBalance,0));
+    expect(result.profiles.some((profile)=>profile.id.includes(":bacikal"))).toBe(false);
+    expect(result.profiles.find((profile)=>profile.id==="temerosa:guest:nemo")?.openingBalance).toBe(
+      TEMEROSA_NPC_GAMBLING_PROFILES.filter((profile)=>profile.id==="nemo"||profile.id==="bacikal").reduce((sum,profile)=>sum+profile.openingBalance,0),
+    );
   });
 
   it("can alternatively collapse related appearances behind one canonical wallet",async()=>{

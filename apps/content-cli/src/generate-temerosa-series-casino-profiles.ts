@@ -10,7 +10,7 @@ const rosterUrl = new URL("./temerosa-series-npc-roster.generated.json", import.
 const outputUrl = new URL("./temerosa-series-casino-profiles.generated.json", import.meta.url);
 const roster = JSON.parse(await readFile(rosterUrl, "utf8")) as SeriesRoster;
 const legacySuccessors = await loadLegacySuccessorBehaviors();
-const document = buildSeriesCasinoProfiles(roster, legacySuccessors);
+const profileSet = buildSeriesCasinoProfiles(roster, legacySuccessors);
 
-await writeFile(outputUrl, `${JSON.stringify(document, null, 2)}\n`, "utf8");
-console.log(`Wrote ${document.profiles.length} profiles to ${fileURLToPath(outputUrl)}`);
+await writeFile(outputUrl, `${JSON.stringify(profileSet, null, 2)}\n`, "utf8");
+console.log(`Wrote ${profileSet.profiles.length} profiles to ${fileURLToPath(outputUrl)}`);

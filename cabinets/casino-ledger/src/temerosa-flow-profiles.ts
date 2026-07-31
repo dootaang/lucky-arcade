@@ -51,7 +51,12 @@ export function buildTemerosaFlowProfileSet(input: {
   const legacyProfiles: readonly NpcGamblingProfile[] = input.legacyProfiles ?? Object.freeze([]);
   const legacySuccessors: Readonly<Record<string,string>> = input.legacySuccessors ?? Object.freeze({});
   const profileOverrides:Readonly<Record<string,Readonly<TemerosaFlowAuthoredProfile>>>=input.profileOverrides??Object.freeze({});
-  const legacyBySuccessor = new Map(Object.entries(legacySuccessors).map(([legacyId, successor]) => [successor, legacyProfiles.find((profile) => profile.id === legacyId)]));
+  const legacyBySuccessor = new Map<string,ReadonlyArray<Readonly<{legacyId:string;profile:NpcGamblingProfile}>>>();
+  for(const [legacyId,successor] of Object.entries(legacySuccessors)){
+    const profile=legacyProfiles.find((candidate)=>candidate.id===legacyId);
+    if(!profile)continue;
+    legacyBySuccessor.set(successor,Object.freeze([...(legacyBySuccessor.get(successor)??[]),Object.freeze({legacyId,profile})]));
+  }
   const eligible = input.records.filter((record) => record.role === "gambler"&&!isWaresHouseIdentity(record.id));
   const groups = groupRecords(eligible, input.identityPolicy);
   const profiles: NpcGamblingProfile[] = [];
@@ -62,7 +67,7 @@ export function buildTemerosaFlowProfileSet(input: {
 
   for (const [npcId, records] of groups) {
     const representative = chooseRepresentative(records, legacyBySuccessor);
-    const legacy = records.map((record) => legacyBySuccessor.get(record.id)).find((profile): profile is NpcGamblingProfile => Boolean(profile));
+    const legacy = records.flatMap((record) => legacyBySuccessor.get(record.id)??[]).map((entry)=>entry.profile)[0];
     const authored=profileOverrides[npcId];
     if(!legacy&&!authored){
       exclusions.push(Object.freeze({npcId,sourceRecordIds:Object.freeze(records.map((record)=>record.id).toSorted(compareText)),reason:"missing-authored-profile"}));
@@ -75,13 +80,13 @@ export function buildTemerosaFlowProfileSet(input: {
     sourceRecordIds[npcId] = Object.freeze(records.map((record) => record.id).toSorted(compareText));
   }
 
-  for (const [legacyId, successor] of Object.entries(legacySuccessors)) {
-    if (eligible.some((record) => record.id === successor)) continue;
-    const legacy = legacyProfiles.find((profile) => profile.id === legacyId);
-    if (!legacy || profiles.some((profile) => profile.id === successor)) continue;
-    const guest = createGuestProfile(successor, legacy);
+  for (const [successor,legacyEntries] of legacyBySuccessor) {
+    if (eligible.some((record) => record.id === successor) || profiles.some((profile) => profile.id === successor)) continue;
+    const preferred=legacyEntries.find((entry)=>entry.legacyId===successor.split(":").at(-1))??legacyEntries[0];
+    if(!preferred)continue;
+    const guest = createGuestProfile(successor, preferred.profile, legacyEntries.reduce((sum,entry)=>sum+entry.profile.openingBalance,0));
     profiles.push(guest);
-    incomes.push(createIncomeProfile(guest, Object.freeze([]), legacy));
+    incomes.push(createIncomeProfile(guest, Object.freeze([]), preferred.profile));
     behaviors.push(createBehavior(guest));
     sourceRecordIds[successor] = Object.freeze([]);
   }
@@ -108,7 +113,7 @@ function groupRecords(records: readonly TemerosaFlowRosterRecord[], policy: Teme
   return new Map([...groups].toSorted(([left],[right])=>compareText(left,right)));
 }
 
-function chooseRepresentative(records: readonly TemerosaFlowRosterRecord[], legacyBySuccessor: ReadonlyMap<string,NpcGamblingProfile|undefined>): TemerosaFlowRosterRecord {
+function chooseRepresentative(records: readonly TemerosaFlowRosterRecord[], legacyBySuccessor: ReadonlyMap<string,readonly Readonly<{legacyId:string;profile:NpcGamblingProfile}>[]>): TemerosaFlowRosterRecord {
   return records.find((record) => legacyBySuccessor.has(record.id)) ?? records.toSorted((left,right)=>seriesPriority(right.series)-seriesPriority(left.series)||compareText(left.id,right.id))[0]!;
 }
 
@@ -118,7 +123,7 @@ function createGamblingProfile(npcId:string, record:TemerosaFlowRosterRecord, le
   return Object.freeze({...authored.gambling,id:npcId,name:record.qualifiedName,openingBalance:0});
 }
 
-function createGuestProfile(npcId:string,legacy:NpcGamblingProfile):NpcGamblingProfile{return Object.freeze({...legacy,id:npcId});}
+function createGuestProfile(npcId:string,legacy:NpcGamblingProfile,openingBalance:number):NpcGamblingProfile{return Object.freeze({...legacy,id:npcId,openingBalance});}
 
 function createIncomeProfile(profile:NpcGamblingProfile,records:readonly TemerosaFlowRosterRecord[],legacy:NpcGamblingProfile):NpcExternalIncomeProfile {
   const expected=Math.max(1,Math.round(NPC_INCOME_AMOUNTS[legacy.incomeBand]/legacy.payCycleDays));

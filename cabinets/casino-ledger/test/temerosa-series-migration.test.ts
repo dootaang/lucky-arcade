@@ -8,10 +8,17 @@ type Inventory = { records: readonly { id: string }[] };
 const rosterPath = fileURLToPath(new URL("../../../apps/content-cli/src/temerosa-series-npc-roster.generated.json", import.meta.url));
 
 describe("Temerosa legacy account successors", () => {
-  it("maps every existing gambler once without cloning a target", () => {
+  it("maps every existing gambler once and only folds Bacikal into guest Nemo", () => {
     const legacyIds = TEMEROSA_NPC_GAMBLING_PROFILES.map((profile) => profile.id).sort();
     expect(Object.keys(TEMEROSA_LEGACY_NPC_SUCCESSORS).sort()).toEqual(legacyIds);
-    expect(new Set(Object.values(TEMEROSA_LEGACY_NPC_SUCCESSORS)).size).toBe(legacyIds.length);
+    expect(new Set(Object.values(TEMEROSA_LEGACY_NPC_SUCCESSORS)).size).toBe(legacyIds.length - 1);
+    const grouped = Map.groupBy(Object.entries(TEMEROSA_LEGACY_NPC_SUCCESSORS), ([, successor]) => successor);
+    expect([...grouped.entries()].filter(([, predecessors]) => predecessors.length > 1)).toEqual([
+      ["temerosa:guest:nemo", [
+        ["bacikal", "temerosa:guest:nemo"],
+        ["nemo", "temerosa:guest:nemo"],
+      ]],
+    ]);
   });
 
   it("points every four-series successor at the frozen census", async () => {
@@ -23,4 +30,3 @@ describe("Temerosa legacy account successors", () => {
     }
   });
 });
-

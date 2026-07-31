@@ -77,7 +77,7 @@ describe("personal casino world line", () => {
       postings:[{accountId:"legacy:clearing",delta:-100},{accountId:"npc:pale",delta:100}],
     });
     const carried=personalCasinoWorldlineAt(TEMEROSA_FLOW_NPC_GAMBLING_PROFILES,clock,TEMEROSA_FLOW_NPC_LEDGER_CONTRACT,[transaction]);
-    expect(carried.npcBalances.pale).toBe(baseline.npcBalances.pale!+100);
+    expect(carried.npcBalances["temerosa:finale:pale"]).toBe(baseline.npcBalances["temerosa:finale:pale"]!+100);
   });
 });
 

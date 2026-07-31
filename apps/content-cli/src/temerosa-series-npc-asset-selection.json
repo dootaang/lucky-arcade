@@ -1,6 +1,6 @@
 {
   "contract": "temerosa-series-npc-asset-selection/0.1",
-  "inventoryContract": "temerosa-series-npc-inventory/0.1",
+  "inventoryContract": "temerosa-series-npc-inventory/0.2",
   "identityRule": "series-and-source-persona",
   "policy": {
     "selection": "automatic-safe-expression-priority",

@@ -1,5 +1,4 @@
 import { casinoDayPlan } from "./engine.ts";
-import { isHouseTable } from "./house.ts";
 import { TEMEROSA_HOUSE_OPENING_CAPITAL } from "./economy.ts";
 import type { NpcLedgerContract } from "./contracts.ts";
 import { npcFlowEconomyTransactions } from "./flow-economy.ts";
@@ -50,7 +49,7 @@ export function auditCasinoFlowEconomy(contract:NpcLedgerContract,days:number,op
       roundIds.add(match.matchId);
       totalRoundSettlementRows+=1;
       const npcDelta=sessions.filter((session)=>session.matchId===match.matchId).reduce((sum,session)=>sum+session.delta,0);
-      const houseDelta=isHouseTable(match.tableId)?-npcDelta:0;
+      const houseDelta=-npcDelta;
       const roundImbalance=npcDelta+houseDelta;
       postingImbalance+=roundImbalance;
       if(roundImbalance!==0)unbalancedRoundCount+=1;
@@ -65,13 +64,13 @@ export function auditCasinoFlowEconomy(contract:NpcLedgerContract,days:number,op
       return [profile.id,closing];
     }));
     const operationsSecond=operatingPolicy.settlementSecondOfDay;
-    const houseBefore=-Object.values(plan.sessions).flat().filter((session)=>session.secondOfDay<=operationsSecond&&isHouseTable(session.tableId)).reduce((total,session)=>total+session.delta,0);
+    const houseBefore=flowHouseDelta(plan.sessions,-1,operationsSecond);
     houseBalance+=houseBefore;houseGamingProfit+=houseBefore;
     const activity=houseDailyActivityFromPlan({absoluteKstDay:contract.epochKstDay+dayIndex,houseBalance,reservedLiability:0,plan,throughSecondOfDay:operationsSecond});
     const expense=createHouseOperatingExpensePlan(activity,operatingPolicy);
     if(expense.transaction)postingImbalance+=expense.transaction.postings.reduce((sum,posting)=>sum+posting.delta,0);
     houseBalance-=expense.paidAmount;houseOperatingExpenses+=expense.paidAmount;houseCurtailedOperatingExpenses+=expense.curtailedAmount;
-    const houseAfter=-Object.values(plan.sessions).flat().filter((session)=>session.secondOfDay>operationsSecond&&isHouseTable(session.tableId)).reduce((total,session)=>total+session.delta,0);
+    const houseAfter=flowHouseDelta(plan.sessions,operationsSecond,86_399);
     houseBalance+=houseAfter;houseGamingProfit+=houseAfter;
   }
   const finalNpcBalances=Object.values(balances).toSorted((left,right)=>left-right);
@@ -93,5 +92,6 @@ export function auditCasinoFlowEconomy(contract:NpcLedgerContract,days:number,op
 }
 
 function topIds(balances:Readonly<Record<string,number>>,limit:number):string[]{return Object.entries(balances).toSorted((left,right)=>right[1]-left[1]||compareText(left[0],right[0])).slice(0,limit).map(([id])=>id);}
+function flowHouseDelta(sessions:Readonly<Record<string,readonly {tableId:string;secondOfDay:number;delta:number}[]>>,after:number,through:number):number{return -Object.values(sessions).flat().filter((session)=>session.tableId!=="npc-income"&&session.secondOfDay>after&&session.secondOfDay<=through).reduce((total,session)=>total+session.delta,0);}
 function sum(values:readonly number[]):number{return values.reduce((total,value)=>total+value,0);}
 function compareText(left:string,right:string):number{return left<right?-1:left>right?1:0;}

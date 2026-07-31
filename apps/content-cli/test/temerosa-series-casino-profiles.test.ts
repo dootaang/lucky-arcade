@@ -57,10 +57,10 @@ describe("Temerosa series-scoped casino profiles", () => {
     }
   });
 
-  it("preserves the 33 four-series successors and does not copy them to sibling series", async () => {
+  it("preserves the 32 active four-series successors and does not copy them to sibling series", async () => {
     const { generated } = await fixtures();
     const legacy = await loadLegacySuccessorBehaviors();
-    expect(Object.keys(legacy)).toHaveLength(33);
+    expect(Object.keys(legacy)).toHaveLength(32);
     expect(legacy["temerosa:guest:nemo"]).toBeUndefined();
     const profiles = new Map(generated.profiles.map((profile) => [profile.npcId, profile]));
     for (const [successorId, baseline] of Object.entries(legacy)) {

@@ -1,8 +1,8 @@
 {
   "contract": "temerosa-series-casino-profiles/0.1",
   "generatedFrom": {
-    "rosterContract": "temerosa-series-npc-inventory/0.1",
-    "rosterGeneratedAt": "2026-07-31T09:35:09.435Z"
+    "rosterContract": "temerosa-series-npc-inventory/0.2",
+    "rosterGeneratedAt": "2026-07-31T10:47:51.888Z"
   },
   "identityRule": "series-and-source-persona",
   "profiles": [
@@ -7306,34 +7306,31 @@
         }
       },
       "behavior": {
-        "riskAppetite": 8600,
-        "stakeAggression": 7600,
-        "lossChasing": 5200,
-        "stopLossDiscipline": 6200,
-        "takeProfitDiscipline": 6200,
+        "riskAppetite": 3600,
+        "stakeAggression": 4200,
+        "lossChasing": 1500,
+        "stopLossDiscipline": 9000,
+        "takeProfitDiscipline": 8500,
         "visitsPerDay": {
-          "min": 10,
-          "max": 14
+          "min": 1,
+          "max": 2
         },
         "roundsPerVisit": {
           "min": 3,
-          "max": 8
+          "max": 5
         },
         "preferredTables": [
-          "indian-poker",
-          "temerosa-old-maid",
           "temerosa-match-pairs",
-          "temerosa-slot",
-          "temerosa-high-low",
+          "indian-poker",
           "temerosa-five-card-draw"
         ],
         "gameSkills": {
-          "temerosa-old-maid": 7200,
-          "temerosa-match-pairs": 8400,
-          "temerosa-slot": 5000,
-          "indian-poker": 8064,
-          "temerosa-high-low": 8400,
-          "temerosa-five-card-draw": 8064
+          "temerosa-old-maid": 6500,
+          "temerosa-match-pairs": 7800,
+          "temerosa-slot": 4000,
+          "indian-poker": 7100,
+          "temerosa-high-low": 7200,
+          "temerosa-five-card-draw": 7100
         }
       },
       "fieldBasis": {
@@ -7348,16 +7345,15 @@
         "behavior.lossChasing": "derived",
         "behavior.stopLossDiscipline": "derived",
         "behavior.takeProfitDiscipline": "derived",
-        "behavior.visitsPerDay": "derived",
+        "behavior.visitsPerDay": "balance",
         "behavior.roundsPerVisit": "balance",
         "behavior.preferredTables": "derived",
-        "behavior.gameSkills": "derived",
+        "behavior.gameSkills": "balance",
         "behavior.gameSkills.temerosa-slot": "balance"
       },
       "rationale": [
         "Source characterization supports planned play and firm stopping discipline.",
-        "All income, budget, cadence, and non-legacy skill numbers are balanceValue inputs, not lore facts.",
-        "Preserves the authored behavior and skills of legacy profile bacikal; no other series incarnation inherits them."
+        "All income, budget, cadence, and non-legacy skill numbers are balanceValue inputs, not lore facts."
       ]
     },
     {
