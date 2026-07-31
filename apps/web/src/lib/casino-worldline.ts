@@ -49,7 +49,15 @@ export function personalCasinoWorldlineAt(
   const absoluteDay = casinoKstDayAtUtcSecond(now);
   const finalDayIndex = absoluteDay - contract.epochKstDay;
   const balances: Record<string, number> = Object.fromEntries(profiles.map((profile) => [profile.id, profile.openingBalance]));
-  const houseOpeningBalance=contract.houseOpeningBalance??TEMEROSA_HOUSE_OPENING_CAPITAL;
+  let houseOpeningBalance=contract.houseOpeningBalance??TEMEROSA_HOUSE_OPENING_CAPITAL;
+  if(contract.predecessor){
+    const epochSecond=casinoUtcSecondAtKstDay(contract.epochKstDay);
+    const predecessorTransactions=transactions.filter((transaction)=>transaction.occurredAtCasinoSecond<epochSecond);
+    const predecessorClock={utcMinute:()=>Math.floor((epochSecond-1)/60),utcSecond:()=>epochSecond-1};
+    const predecessor=personalCasinoWorldlineAt(contract.predecessor.profiles,predecessorClock,contract.predecessor.contract,predecessorTransactions);
+    for(const profile of profiles)if(predecessor.npcBalances[profile.id]!==undefined)balances[profile.id]=predecessor.npcBalances[profile.id]!;
+    houseOpeningBalance=predecessor.houseBalance;
+  }
   const externalReserves: Record<string,number> = Object.fromEntries((contract.externalIncomeProfiles??[]).map((profile)=>[profile.npcId,profile.openingExternalReserve]));
   const grossIncomeToday: Record<string,number> = {};
   const casinoTopUpsToday: Record<string,number> = {};

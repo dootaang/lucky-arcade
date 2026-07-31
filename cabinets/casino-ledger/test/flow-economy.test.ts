@@ -21,7 +21,7 @@ const profile: NpcExternalIncomeProfile = Object.freeze({
 });
 
 describe("NPC flow economy 1.0", () => {
-  it("is deterministic and settles exactly once in its KST window", () => {
+  it("is deterministic and settles exactly once in its KST range", () => {
     const first = npcFlowEconomyDay(profile, 20_667);
     const second = npcFlowEconomyDay(profile, 20_667);
     expect(first).toEqual(second);

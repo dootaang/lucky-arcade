@@ -1,6 +1,8 @@
 import {
   TEMEROSA_NPC_GAMBLING_PROFILES,
   TEMEROSA_NPC_LEDGER_CONTRACT,
+  TEMEROSA_FLOW_NPC_GAMBLING_PROFILES,
+  TEMEROSA_FLOW_NPC_LEDGER_CONTRACT,
   createCasinoTransaction,
   createCollectionPurchaseTransaction,
   casinoUtcSecondAtKstDay,
@@ -64,6 +66,18 @@ describe("personal casino world line", () => {
     expect(worldline.npcCasinoTopUpsToday[gambler.id]).toBe(50);
     expect(worldline.activities.some((entry) => entry.session.resultKind === "casino-top-up")).toBe(true);
     expect(worldline.houseOperatingExpenses).toBeGreaterThan(0);
+  });
+
+  it("carries the exact local predecessor branch across the flow cutover",()=>{
+    const boundary=casinoUtcSecondAtKstDay(TEMEROSA_FLOW_NPC_LEDGER_CONTRACT.epochKstDay);
+    const clock=fixedClock(boundary);
+    const baseline=personalCasinoWorldlineAt(TEMEROSA_FLOW_NPC_GAMBLING_PROFILES,clock,TEMEROSA_FLOW_NPC_LEDGER_CONTRACT,[]);
+    const transaction=createCasinoTransaction({
+      transactionId:"pre-cutover:pale",idempotencyKey:"pre-cutover:pale",occurredAtCasinoSecond:boundary-1,kind:"legacy-migration",
+      postings:[{accountId:"legacy:clearing",delta:-100},{accountId:"npc:pale",delta:100}],
+    });
+    const carried=personalCasinoWorldlineAt(TEMEROSA_FLOW_NPC_GAMBLING_PROFILES,clock,TEMEROSA_FLOW_NPC_LEDGER_CONTRACT,[transaction]);
+    expect(carried.npcBalances.pale).toBe(baseline.npcBalances.pale!+100);
   });
 });
 

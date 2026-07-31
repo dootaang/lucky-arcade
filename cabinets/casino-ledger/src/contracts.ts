@@ -87,7 +87,7 @@ export interface NpcExternalIncomeProfile {
   casinoBudgetRateBps: readonly [number, number];
   /** Tracked off-casino reserve at the flow-economy epoch. */
   openingExternalReserve: number;
-  /** Inclusive KST minute-of-day window for the personal daily settlement. */
+  /** Inclusive KST minute-of-day range for the personal daily settlement. */
   settlementWindow: readonly [number, number];
 }
 
@@ -193,6 +193,8 @@ export interface NpcLedgerContract {
   /** Exact house close carried into this epoch. Legacy contracts default to 150,000 P. */
   houseOpeningBalance?: number;
   houseOperatingPolicy?: Readonly<HouseOperatingCostPolicy>;
+  /** Optional frozen predecessor used to carry each browser's local branch exactly. */
+  predecessor?: Readonly<{profiles:readonly NpcGamblingProfile[];contract:NpcLedgerContract}>;
   /** Required by npc-ledger/1.2; ignored by frozen legacy contracts. */
   externalIncomeProfiles?: readonly NpcExternalIncomeProfile[];
   /** Optional authored overrides. Existing NpcGamblingProfile fields remain the fallback. */
