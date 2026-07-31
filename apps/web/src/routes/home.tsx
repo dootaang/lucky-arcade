@@ -1,6 +1,6 @@
 import { IconCards, IconClockPlay, IconDeviceGamepad2, IconHome, IconMenu2, IconMoon, IconPlayerPlay, IconSun, IconX } from "@tabler/icons-react";
 import type { RecentPlay } from "@lucky-arcade/persistence";
-import { lazy, Suspense, useCallback, useEffect, useState } from "react";
+import { lazy, Suspense, useCallback, useEffect, useState, type ComponentProps } from "react";
 import { useNavigate, useParams } from "react-router";
 import { CabinetHost, getCabinetRegistration, getCabinetWorld, listBuiltInCabinets, selectOpeningCabinet, type WebCabinetRegistration } from "../cabinets/registry.tsx";
 import { CardImporter } from "../features/cards/card-importer.tsx";
@@ -12,7 +12,17 @@ import { VenueMarquee } from "@lucky-arcade/ui/venue-marquee";
 import type { CasinoTableId } from "@lucky-arcade/casino-ledger";
 import { getPublicVenue, getVenueForCabinet, listPublicVenues, type VenueManifest } from "../venues/registry.ts";
 
-const CasinoLedgerView = lazy(() => import("../features/casino-ledger/casino-ledger-view.tsx"));
+const CasinoLedgerView = lazy(async () => {
+  const [{ default: View }, { CasinoLedgerPortraitProvider }, { resolveTemerosaSeriesNpcPortrait }] = await Promise.all([
+    import("../features/casino-ledger/casino-ledger-view.tsx"),
+    import("@lucky-arcade/casino-ledger/react"),
+    import("../lib/temerosa-content.ts"),
+  ]);
+  function LedgerViewWithSeriesPortraits(props: ComponentProps<typeof View>): React.ReactElement {
+    return <CasinoLedgerPortraitProvider resolve={resolveTemerosaSeriesNpcPortrait}><View {...props} /></CasinoLedgerPortraitProvider>;
+  }
+  return { default: LedgerViewWithSeriesPortraits };
+});
 
 export function Home({ privatePreview = false }: { privatePreview?: boolean }) {
   const navigate = useNavigate();

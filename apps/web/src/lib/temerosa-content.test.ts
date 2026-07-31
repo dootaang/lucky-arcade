@@ -26,12 +26,27 @@ describe("Temerosa manifest memoization", () => {
       ],
     }),{status:200}));
     vi.stubGlobal("fetch",fetcher);
-    const {loadTemerosaSeriesNpcAssets}=await import("./temerosa-content.ts");
+    const {loadTemerosaSeriesNpcAssets,resolveTemerosaSeriesNpcPortrait}=await import("./temerosa-content.ts");
     const [first,second]=await Promise.all([loadTemerosaSeriesNpcAssets(),loadTemerosaSeriesNpcAssets()]);
     expect(first).toBe(second);
     expect(fetcher).toHaveBeenCalledOnce();
     expect(first.thumbAssets["temerosa:overture:test"]).toBe("/content/temerosa-series-npcs/0.1.0/assets/sm/a.webp");
     expect(first.assets["temerosa:overture:test"]?.neutral).toBe("/content/temerosa-series-npcs/0.1.0/assets/md/a.webp");
     expect(first.unavailableNpcIds).toEqual(["temerosa:finale:missing"]);
+    await expect(resolveTemerosaSeriesNpcPortrait("temerosa:overture:test","sm")).resolves.toBe("/content/temerosa-series-npcs/0.1.0/assets/sm/a.webp");
+    await expect(resolveTemerosaSeriesNpcPortrait("temerosa:overture:test","detail")).resolves.toBe("/content/temerosa-series-npcs/0.1.0/assets/lg/a.webp");
+    await expect(resolveTemerosaSeriesNpcPortrait("temerosa:finale:missing","sm")).resolves.toBeUndefined();
+    await expect(resolveTemerosaSeriesNpcPortrait("temerosa:finale:test","sm")).resolves.toBeUndefined();
+    await expect(resolveTemerosaSeriesNpcPortrait("pale","sm")).resolves.toBeUndefined();
+    expect(fetcher).toHaveBeenCalledOnce();
+  });
+
+  it("does not fetch the series pack for a legacy 1.1 identity",async()=>{
+    vi.resetModules();
+    const fetcher=vi.fn();
+    vi.stubGlobal("fetch",fetcher);
+    const {resolveTemerosaSeriesNpcPortrait}=await import("./temerosa-content.ts");
+    await expect(resolveTemerosaSeriesNpcPortrait("pale","sm")).resolves.toBeUndefined();
+    expect(fetcher).not.toHaveBeenCalled();
   });
 });

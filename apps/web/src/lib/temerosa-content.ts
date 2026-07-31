@@ -89,6 +89,8 @@ export interface TemerosaSeriesNpcAssetBundle {
   unavailableNpcIds: readonly string[];
 }
 
+export type TemerosaSeriesNpcPortraitIntent = "sm" | "detail";
+
 export function loadTemerosaPilotAssets(): Promise<Readonly<Record<string, string>>> {
   assetPromise ??= Promise.all(PACKS.map((version) => fetchManifest(version).then((loaded) => loaded.manifest))).then((manifests) => {
     const assets: Record<string, string> = {};
@@ -155,6 +157,14 @@ export function loadTemerosaSeriesNpcAssets():Promise<TemerosaSeriesNpcAssetBund
     return Object.freeze({thumbAssets:Object.freeze(thumbAssets),assets:Object.freeze(assets),detailAssets:Object.freeze(detailAssets),unavailableNpcIds:Object.freeze(unavailable.toSorted())});
   }).catch((error:unknown)=>{seriesNpcAssetPromise=null;throw error;});
   return seriesNpcAssetPromise;
+}
+
+/** Resolves one mounted NPC at a time; image bytes remain browser-lazy. */
+export async function resolveTemerosaSeriesNpcPortrait(npcId:string,intent:TemerosaSeriesNpcPortraitIntent):Promise<string|undefined>{
+  if(!npcId.startsWith("temerosa:"))return undefined;
+  const bundle=await loadTemerosaSeriesNpcAssets();
+  if(bundle.unavailableNpcIds.includes(npcId))return undefined;
+  return intent==="detail"?bundle.detailAssets[npcId]:bundle.thumbAssets[npcId];
 }
 
 function fetchManifest(version: string): Promise<TemerosaManifestLoad> {
