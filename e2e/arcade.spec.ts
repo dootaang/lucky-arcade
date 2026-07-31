@@ -192,6 +192,13 @@ test("reserves, restores, and settles one integrated spectator market receipt", 
     return (await database.listGameWagers("temerosa-side-market"))[0];
   });
   expect(settled.status).toBe("settled");
+  await market.getByRole("button", { name: "처음부터 다시 보기", exact: true }).click();
+  const replay = page.getByRole("dialog", { name: /관전석/ });
+  await expect(replay).toBeVisible();
+  await expect(replay.locator(".side-replay-table")).toBeVisible();
+  await expect(replay).toContainText(/REPLAY|대국 종료/);
+  await replay.getByRole("button", { name: "닫기", exact: true }).click();
+  await expect(replay).toBeHidden();
 });
 
 test("does not rewind the casino ledger when a reload receives a stale cached Date", async ({ page }) => {

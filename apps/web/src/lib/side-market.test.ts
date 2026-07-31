@@ -8,7 +8,7 @@ describe("side market receipt", () => {
   it("restores only a frozen quote matching the one-bet market key and exposure", () => {
     const marketId = `${CASINO_SPECTATOR_MARKET_CONTRACT}:match-winner:test`;
     const choice = {
-      contract: "casino-side-market-choice/0.1",
+      contract: "casino-side-market-choice/0.2",
       marketContract: CASINO_SPECTATOR_MARKET_CONTRACT,
       marketId,
       outcomeId: "lyla",

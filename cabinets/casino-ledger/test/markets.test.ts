@@ -21,16 +21,16 @@ const openings = Object.freeze(Object.fromEntries(profiles.map((profile) => [pro
 
 describe("integrated NPC spectator markets", () => {
   it("publishes the matchup before betting and hides the deterministic result until settlement", () => {
-    const target = firstMarketMatch();
-    const starts = casinoUtcSecondAtKstDay(contract.epochKstDay + target.dayIndex, target.match.startsAtSecondOfDay);
-    const openClock = fixedClock(starts - 120);
-    const open = casinoSpectatorMarketsAt(profiles, openClock, contract, 128).find((market) => market.matchId === target.match.matchId);
+    const base = casinoUtcSecondAtKstDay(contract.epochKstDay + 2, 36_000);
+    const opens = Math.floor(base / 300) * 300;
+    const open = casinoSpectatorMarketsAt(profiles, fixedClock(opens + 30), contract, 8)
+      .find((market) => market.matchId.startsWith("casino-spectator-exhibition/0.2:"));
     expect(open?.phase).toBe("open");
     expect(open?.winningOutcomeId).toBeUndefined();
-    expect(open?.participantIds).toEqual(target.match.participantIds);
-    const settled = casinoSpectatorMarketByIdAt(profiles, fixedClock(casinoUtcSecondAtKstDay(contract.epochKstDay + target.dayIndex, target.match.settlesAtSecondOfDay + 1)), contract, open!.marketId);
+    const settled = casinoSpectatorMarketByIdAt(profiles, fixedClock(open!.settlesAtUtcSecond + 1), contract, open!.marketId);
     expect(settled?.phase).toBe("settled");
-    expect(settled?.outcomes.some((outcome) => outcome.outcomeId === settled.winningOutcomeId)).toBe(true);
+    expect(settled?.winningOutcomeId).toBeUndefined();
+    expect(settled?.participantIds).toEqual(open?.participantIds);
   });
 
   it("freezes complete quotes whose individual expected return never exceeds the market cap", () => {
@@ -68,7 +68,7 @@ describe("integrated NPC spectator markets", () => {
     const base = casinoUtcSecondAtKstDay(contract.epochKstDay + 3, 36_000);
     const now = Math.floor(base / 300) * 300 + 30;
     const openMarket = casinoSpectatorMarketsAt(profiles, fixedClock(now), contract, 8)
-      .find((market) => market.matchId.startsWith("casino-spectator-exhibition/0.1:"));
+      .find((market) => market.matchId.startsWith("casino-spectator-exhibition/0.2:"));
     expect(openMarket?.phase).toBe("open");
     expect(casinoSpectatorMarketPresencesAt([openMarket!], openMarket!.closesAtUtcSecond - 1)).toHaveLength(0);
     const locked = casinoSpectatorMarketPresencesAt([openMarket!], openMarket!.closesAtUtcSecond);
@@ -76,7 +76,7 @@ describe("integrated NPC spectator markets", () => {
     expect(locked.every((presence) => presence.availableAtUtcSecond === openMarket!.settlesAtUtcSecond + 18)).toBe(true);
     expect(casinoSpectatorMarketPresencesAt([openMarket!], openMarket!.settlesAtUtcSecond + 18)).toHaveLength(0);
     const recovered = casinoSpectatorMarketByIdAt(profiles, fixedClock(openMarket!.settlesAtUtcSecond + 1), contract, openMarket!.marketId);
-    expect(recovered?.winningOutcomeId).toBeDefined();
+    expect(recovered?.winningOutcomeId).toBeUndefined();
     expect(recovered?.participantIds).toEqual(openMarket!.participantIds);
   });
 
@@ -86,10 +86,29 @@ describe("integrated NPC spectator markets", () => {
     const markets = Array.from({ length: 12 }, (_, offset) => {
       const now = (firstCycle + offset) * 300 + 30;
       return casinoSpectatorMarketsAt(profiles, fixedClock(now), contract, 4)
-        .find((market) => market.matchId.startsWith("casino-spectator-exhibition/0.1:") && market.tableId === "temerosa-old-maid");
+        .find((market) => market.matchId.startsWith("casino-spectator-exhibition/0.2:") && market.tableId === "temerosa-old-maid");
     }).filter((market) => market !== undefined);
     expect(markets.length).toBeGreaterThan(0);
     expect(markets.every((market) => !market.participantIds.includes("bacikal"))).toBe(true);
+  });
+
+  it("only schedules match-pairs characters with a frozen cabinet persona", () => {
+    const base = casinoUtcSecondAtKstDay(contract.epochKstDay + 4, 36_000);
+    const firstCycle = Math.floor(base / 300);
+    const forbidden = new Set(["bacikal", "pale", "kano", "riel"]);
+    for (let offset = 0; offset < 20; offset += 1) {
+      const market = casinoSpectatorMarketsAt(profiles, fixedClock((firstCycle + offset) * 300 + 30), contract, 4)
+        .find((candidate) => candidate.tableId === "temerosa-match-pairs");
+      if (market) expect(market.participantIds.every((id) => !forbidden.has(id))).toBe(true);
+    }
+  });
+
+  it("keeps the latest settled exhibition visible for replay", () => {
+    const base = casinoUtcSecondAtKstDay(contract.epochKstDay + 5, 36_000);
+    const now = Math.floor(base / 300) * 300 + 30;
+    const markets = casinoSpectatorMarketsAt(profiles, fixedClock(now), contract, 4);
+    expect(markets.some((market) => market.phase === "settled")).toBe(true);
+    expect(markets.some((market) => market.phase === "open" || market.phase === "locked")).toBe(true);
   });
 });
 

@@ -8,8 +8,8 @@ import { casinoKstDayAtUtcSecond, casinoUtcSecondAtKstDay } from "./casino-time.
 import { casinoDayPlan, completedDayBalances } from "./engine.ts";
 import type { CasinoClock, CasinoTableId, NpcGamblingProfile, NpcLedgerContract, NpcMatch, NpcPresence, NpcSession } from "./contracts.ts";
 
-export const CASINO_SPECTATOR_MARKET_CONTRACT = "casino-spectator-market/0.1" as const;
-export const CASINO_SPECTATOR_PRICING_VERSION = "casino-spectator-pricing/0.1" as const;
+export const CASINO_SPECTATOR_MARKET_CONTRACT = "casino-spectator-market/0.2" as const;
+export const CASINO_SPECTATOR_PRICING_VERSION = "casino-spectator-pricing/0.2" as const;
 export const CASINO_SPECTATOR_TARGET_RETURN_BPS = 9_600;
 
 export type CasinoSpectatorMarketKind = "match-winner" | "joker-holder";
@@ -51,6 +51,11 @@ const EXHIBITION_CLOSE_OFFSET = 180;
 const EXHIBITION_START_OFFSET = 190;
 const EXHIBITION_SETTLE_OFFSET = 280;
 const PRICING_CACHE = new Map<string, readonly CasinoSpectatorMarketOutcome[]>();
+const MATCH_PAIRS_REPLAY_IDS = new Set([
+  "adesha", "alger", "anna", "apollyon", "bche", "camille", "cicero", "cradle", "deokbae", "diamo",
+  "echo", "esther", "hiro", "katrinka", "kreva", "levillotte", "lilim", "lyla", "machina", "morsisa",
+  "nemo", "nieun", "nostalgia", "phaeo", "raven", "temute", "traver", "ttaengchil", "tumit-tu", "yul",
+]);
 
 /** Returns the current, recently settled, and next scheduled NPC-only markets. */
 export function casinoSpectatorMarketsAt(
@@ -61,23 +66,24 @@ export function casinoSpectatorMarketsAt(
 ): readonly CasinoSpectatorMarket[] {
   if (!Number.isSafeInteger(limit) || limit < 0) throw new Error("casino_market_invalid_limit");
   const now = normalizedUtcSecond(clock);
-  const absoluteDay = casinoKstDayAtUtcSecond(now);
-  const firstDayIndex = Math.max(0, absoluteDay - contract.epochKstDay - 1);
-  const lastDayIndex = Math.max(0, absoluteDay - contract.epochKstDay + 1);
   const markets: CasinoSpectatorMarket[] = [];
   const currentCycle = Math.floor(now / EXHIBITION_CYCLE_SECONDS);
   for (let cycle = currentCycle - 1; cycle <= currentCycle + 12; cycle += 1) {
     const market = scheduledExhibitionMarket(profiles, contract, cycle, now);
     if (market.settlesAtUtcSecond >= now - MARKET_HISTORY_SECONDS && market.opensAtUtcSecond <= now + MARKET_LOOKAHEAD_SECONDS) markets.push(market);
   }
-  for (let dayIndex = firstDayIndex; dayIndex <= lastDayIndex; dayIndex += 1) {
-    markets.push(...casinoSpectatorMarketsForDay(profiles, dayIndex, contract, now)
-      .filter((market) => market.settlesAtUtcSecond >= now - MARKET_HISTORY_SECONDS && market.opensAtUtcSecond <= now + MARKET_LOOKAHEAD_SECONDS));
-  }
-  return Object.freeze([...new Map(markets.map((market) => [market.marketId, market])).values()]
-    .sort((left, right) => phaseOrder(left.phase) - phaseOrder(right.phase)
-      || left.startsAtUtcSecond - right.startsAtUtcSecond || compareText(left.marketId, right.marketId))
-    .slice(0, limit));
+  // Only exhibitions are listed here: each has a canonical cabinet replay.
+  // Autonomous ledger matches remain available to the activity tape, but are
+  // not sold as watchable markets because they have no card-by-card transcript.
+  const unique = [...new Map(markets.map((market) => [market.marketId, market])).values()];
+  const ordered = unique.sort((left, right) => phaseOrder(left.phase) - phaseOrder(right.phase)
+    || left.startsAtUtcSecond - right.startsAtUtcSecond || compareText(left.marketId, right.marketId));
+  const selected = ordered.slice(0, limit);
+  const latestSettled = unique.filter((market) => market.phase === "settled")
+    .sort((left, right) => right.settlesAtUtcSecond - left.settlesAtUtcSecond || compareText(left.marketId, right.marketId))[0];
+  if (limit > 1 && latestSettled && !selected.some((market) => market.marketId === latestSettled.marketId)) selected[selected.length - 1] = latestSettled;
+  return Object.freeze(selected.sort((left, right) => phaseOrder(left.phase) - phaseOrder(right.phase)
+    || left.startsAtUtcSecond - right.startsAtUtcSecond || compareText(left.marketId, right.marketId)));
 }
 
 /** Complete day inventory used by probability audits and exact receipt recovery. */
@@ -101,7 +107,7 @@ export function casinoSpectatorMarketByIdAt(
   profiles: readonly NpcGamblingProfile[], clock: CasinoClock, contract: NpcLedgerContract, marketId: string,
 ): CasinoSpectatorMarket | undefined {
   if (!marketId) return undefined;
-  const exhibition = /casino-spectator-exhibition\/0\.1:(\d+)$/.exec(marketId);
+  const exhibition = /casino-spectator-exhibition\/0\.[12]:(\d+)$/.exec(marketId);
   if (exhibition) {
     const cycle = Number(exhibition[1]);
     return Number.isSafeInteger(cycle) ? scheduledExhibitionMarket(profiles, contract, cycle, normalizedUtcSecond(clock)) : undefined;
@@ -161,7 +167,7 @@ export function casinoMarketCredit(exposure: number, quote: CasinoMarketQuote): 
 
 function createMarket(
   match: NpcMatch,
-  resultOutcomeId: string,
+  resultOutcomeId: string | undefined,
   profiles: readonly NpcGamblingProfile[],
   now: number,
   opensAtUtcSecond: number,
@@ -206,32 +212,18 @@ function scheduledExhibitionMarket(
     return dayStart + visit.startedAtSecondOfDay < settles && dayStart + visit.endsAtSecondOfDay > starts;
   }).flatMap((visit) => visit.participantIds));
   const rng = new XorShift32(`${CASINO_SPECTATOR_PRICING_VERSION}:event:${cycle}:participants`);
-  const eligibleProfiles = tableId === "temerosa-old-maid" ? profiles.filter((profile) => profile.id !== "bacikal") : profiles;
+  const eligibleProfiles = tableId === "temerosa-old-maid"
+    ? profiles.filter((profile) => profile.id !== "bacikal")
+    : profiles.filter((profile) => MATCH_PAIRS_REPLAY_IDS.has(profile.id));
   const candidates = eligibleProfiles.filter((profile) => !busy.has(profile.id)).map((profile) => ({ profile, order: rng.next() }))
     .sort((left, right) => left.order - right.order || compareText(left.profile.id, right.profile.id));
   const fallback = eligibleProfiles.filter((profile) => !candidates.some((candidate) => candidate.profile.id === profile.id)).map((profile) => ({ profile, order: rng.next() }))
     .sort((left, right) => left.order - right.order || compareText(left.profile.id, right.profile.id));
   const participantIds = [...candidates, ...fallback].slice(0, needed).map((candidate) => candidate.profile.id).sort(compareText);
   if (participantIds.length !== needed) throw new Error("casino_market_insufficient_participants");
-  const matchId = `casino-spectator-exhibition/0.1:${cycle}`;
+  const matchId = `casino-spectator-exhibition/0.2:${cycle}`;
   const match: NpcMatch = Object.freeze({ matchId, visitId: `${matchId}:visit`, tableId, participantIds: Object.freeze(participantIds), startsAtSecondOfDay: 0, settlesAtSecondOfDay: 1, stake: 0, multiplier: 1 });
-  return createMarket(match, simulatedResult(tableId, participantIds, profiles, `${matchId}:result`), profiles, now, opens, starts, settles);
-}
-
-function simulatedResult(tableId: CasinoSpectatorMarket["tableId"], participantIds: readonly string[], profiles: readonly NpcGamblingProfile[], seed: string): string {
-  const byId = new Map(profiles.map((profile) => [profile.id, profile]));
-  const rng = new XorShift32(seed);
-  const scores = participantIds.map((id) => {
-    const profile = byId.get(id);
-    if (!profile) throw new Error("casino_market_unknown_participant");
-    return { id, score: (tableId === "temerosa-match-pairs" ? profile.skills.matchPairsMemory : profile.skills.oldMaid) + (rng.next() - .5) * (tableId === "temerosa-match-pairs" ? .9 : .72) };
-  });
-  if (tableId === "temerosa-match-pairs") {
-    const [left, right] = scores;
-    return Math.abs(left!.score - right!.score) < .035 ? "draw" : left!.score > right!.score ? left!.id : right!.id;
-  }
-  scores.sort((left, right) => right.score - left.score || compareText(left.id, right.id));
-  return scores.at(-1)!.id;
+  return createMarket(match, undefined, profiles, now, opens, starts, settles);
 }
 
 function pricedOutcomes(

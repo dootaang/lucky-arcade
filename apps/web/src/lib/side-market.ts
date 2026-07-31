@@ -16,7 +16,7 @@ import { invalidateWager, listWagers, reserveWager, settleWager } from "./game-w
 
 export const SIDE_MARKET_SESSION_ID = "temerosa-side-market";
 export const SIDE_MARKET_CABINET_ID = "temerosa-side-market";
-const CHOICE_CONTRACT = "casino-side-market-choice/0.1" as const;
+const CHOICE_CONTRACT = "casino-side-market-choice/0.2" as const;
 const CHOICE_PREFIX = "side-market:";
 
 export interface SideMarketChoice {
@@ -37,8 +37,11 @@ export async function reserveSideMarketWager(input: {
   multiplier: WagerMultiplier;
 }): Promise<{ walletBalance: number; wager: GameWagerReceipt }> {
   const now = await casinoCurrentSecond();
-  if (input.market.phase !== "open" || now < input.market.opensAtUtcSecond || now >= input.market.closesAtUtcSecond) throw new Error("side_market_closed");
-  const outcome = input.market.outcomes.find((candidate) => candidate.outcomeId === input.outcomeId);
+  const rawMarket = casinoSpectatorMarketByIdAt(TEMEROSA_NPC_GAMBLING_PROFILES, fixedClock(now), TEMEROSA_NPC_LEDGER_CONTRACT, input.market.marketId);
+  if (!rawMarket || rawMarket.phase !== "open" || now < rawMarket.opensAtUtcSecond || now >= rawMarket.closesAtUtcSecond) throw new Error("side_market_closed");
+  const { resolveCasinoSideMarketOffer } = await import("./casino-side-market-replay.ts");
+  const market = await resolveCasinoSideMarketOffer(rawMarket);
+  const outcome = market.outcomes.find((candidate) => candidate.outcomeId === input.outcomeId);
   if (!outcome) throw new Error("side_market_outcome_missing");
   assertCasinoMarketQuote(outcome.quote);
   const exposure = input.stake * input.multiplier;
@@ -49,15 +52,15 @@ export async function reserveSideMarketWager(input: {
   const choice: SideMarketChoice = Object.freeze({
     contract: CHOICE_CONTRACT,
     marketContract: CASINO_SPECTATOR_MARKET_CONTRACT,
-    marketId: input.market.marketId,
+    marketId: market.marketId,
     outcomeId: outcome.outcomeId,
     quote: outcome.quote,
-    closesAtUtcSecond: input.market.closesAtUtcSecond,
-    settlesAtUtcSecond: input.market.settlesAtUtcSecond,
+    closesAtUtcSecond: market.closesAtUtcSecond,
+    settlesAtUtcSecond: market.settlesAtUtcSecond,
     multiplier: input.multiplier,
   });
   const result = await reserveWager({
-    outcomeKey: input.market.marketId,
+    outcomeKey: market.marketId,
     cabinetId: SIDE_MARKET_CABINET_ID,
     sessionId: SIDE_MARKET_SESSION_ID,
     termsVersion: CASINO_SPECTATOR_PRICING_VERSION,
@@ -86,20 +89,22 @@ export async function reconcileSideMarketWagers(nowUtcSecond?: number): Promise<
     }
     if (now < choice.settlesAtUtcSecond) continue;
     const market = casinoSpectatorMarketByIdAt(TEMEROSA_NPC_GAMBLING_PROFILES, clock, TEMEROSA_NPC_LEDGER_CONTRACT, choice.marketId);
-    if (!market || market.phase !== "settled" || !market.winningOutcomeId) {
+    if (!market || market.phase !== "settled") {
       await invalidateWager({ wagerId: wager.wagerId, reason: "outcome-unavailable" });
       continue;
     }
-    const currentOutcome = market.outcomes.find((outcome) => outcome.outcomeId === choice.outcomeId);
+    const { resolveCasinoSideMarketOffer, resolveCasinoSideMarketReplay } = await import("./casino-side-market-replay.ts");
+    const [offer, replay] = await Promise.all([resolveCasinoSideMarketOffer(market), resolveCasinoSideMarketReplay(market)]);
+    const currentOutcome = offer.outcomes.find((outcome) => outcome.outcomeId === choice.outcomeId);
     if (!currentOutcome || !sameQuote(currentOutcome.quote, choice.quote) || wager.termsVersion !== CASINO_SPECTATOR_PRICING_VERSION) {
       await invalidateWager({ wagerId: wager.wagerId, reason: "version-mismatch" });
       continue;
     }
-    const won = market.winningOutcomeId === choice.outcomeId;
+    const won = replay.winningOutcomeId === choice.outcomeId;
     await settleWager({
       wagerId: wager.wagerId,
       settlementSequence: market.settlesAtUtcSecond,
-      resultKey: `${market.marketId}:${market.winningOutcomeId}`,
+      resultKey: `${market.marketId}:${replay.resultHash}:${replay.winningOutcomeId}`,
       creditAmount: won ? casinoMarketCredit(wager.reservedAmount, choice.quote) : 0,
     });
   }

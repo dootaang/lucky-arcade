@@ -6,6 +6,7 @@ export * from "./dialogue.ts";
 export * from "./engine.ts";
 export * from "./outcome.ts";
 export * from "./read.ts";
+export * from "./replay.ts";
 export * from "./tells.ts";
 export { temerosaOldMaidLines } from "./temerosa-lines.ts";
 export { temerosaCasinoOldMaidLines } from "./temerosa-casino-lines.ts";
