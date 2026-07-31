@@ -19,10 +19,17 @@ describe("Temerosa flow ledger cutover",()=>{
     expect(TEMEROSA_FLOW_NPC_GAMBLING_PROFILES.some((profile)=>profile.id==="wares")).toBe(false);
   });
 
-  it("switches contracts only at the frozen KST midnight",()=>{
+  it("does not switch contracts at the candidate date without a release flag",()=>{
     const boundary=casinoUtcSecondAtKstDay(TEMEROSA_FLOW_EPOCH_KST_DAY);
     expect(temerosaCasinoLedgerAtUtcSecond(boundary-1).contract.version).toBe("npc-ledger/1.1");
-    expect(temerosaCasinoLedgerAtUtcSecond(boundary).contract.version).toBe("npc-ledger/1.2");
+    expect(temerosaCasinoLedgerAtUtcSecond(boundary).contract.version).toBe("npc-ledger/1.1");
+    expect(temerosaCasinoLedgerAtUtcSecond(boundary+365*86_400).contract.version).toBe("npc-ledger/1.1");
+  });
+
+  it("selects the candidate flow contract only with an explicit release flag",()=>{
+    const boundary=casinoUtcSecondAtKstDay(TEMEROSA_FLOW_EPOCH_KST_DAY);
+    expect(temerosaCasinoLedgerAtUtcSecond(boundary-1,{flowEconomy:true}).contract.version).toBe("npc-ledger/1.1");
+    expect(temerosaCasinoLedgerAtUtcSecond(boundary,{flowEconomy:true}).contract.version).toBe("npc-ledger/1.2");
   });
 
   it("keeps real live-tape actions visible immediately after the cutover",()=>{

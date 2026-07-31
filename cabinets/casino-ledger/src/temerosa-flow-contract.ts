@@ -6,8 +6,11 @@ import { houseBalanceAt } from "./house.ts";
 import { DEFAULT_HOUSE_OPERATING_COST_POLICY } from "./house-operations.ts";
 import { TEMEROSA_NPC_GAMBLING_PROFILES,TEMEROSA_NPC_LEDGER_CONTRACT } from "./temerosa-profiles.ts";
 
-/** 2026-08-01 00:00 KST. Legacy observations remain frozen before this boundary. */
+/** Audit-candidate epoch only. It is inert until an explicit release flag is supplied. */
 export const TEMEROSA_FLOW_EPOCH_KST_DAY=20_666;
+
+export interface TemerosaCasinoReleaseFlags{flowEconomy:boolean}
+export const TEMEROSA_CASINO_RELEASE_FLAGS_DISABLED:Readonly<TemerosaCasinoReleaseFlags>=Object.freeze({flowEconomy:false});
 
 const LEGACY_FINAL_DAY_INDEX=TEMEROSA_FLOW_EPOCH_KST_DAY-TEMEROSA_NPC_LEDGER_CONTRACT.epochKstDay-1;
 const LEGACY_CLOSE=completedDayBalances(TEMEROSA_NPC_GAMBLING_PROFILES,LEGACY_FINAL_DAY_INDEX,TEMEROSA_NPC_LEDGER_CONTRACT);
@@ -52,9 +55,9 @@ export const TEMEROSA_FLOW_NPC_LEDGER_CONTRACT:NpcLedgerContract=Object.freeze({
   profitHistory:legacyProfitHistory(),
 });
 
-export function temerosaCasinoLedgerAtUtcSecond(utcSecond:number):Readonly<{profiles:readonly NpcGamblingProfile[];contract:NpcLedgerContract}>{
+export function temerosaCasinoLedgerAtUtcSecond(utcSecond:number,releaseFlags:Readonly<TemerosaCasinoReleaseFlags>=TEMEROSA_CASINO_RELEASE_FLAGS_DISABLED):Readonly<{profiles:readonly NpcGamblingProfile[];contract:NpcLedgerContract}>{
   if(!Number.isSafeInteger(utcSecond))throw new Error("temerosa_ledger_invalid_clock");
-  return casinoKstDayAtUtcSecond(utcSecond)>=TEMEROSA_FLOW_EPOCH_KST_DAY
+  return releaseFlags.flowEconomy&&casinoKstDayAtUtcSecond(utcSecond)>=TEMEROSA_FLOW_EPOCH_KST_DAY
     ? Object.freeze({profiles:TEMEROSA_FLOW_NPC_GAMBLING_PROFILES,contract:TEMEROSA_FLOW_NPC_LEDGER_CONTRACT})
     : Object.freeze({profiles:TEMEROSA_NPC_GAMBLING_PROFILES,contract:TEMEROSA_NPC_LEDGER_CONTRACT});
 }
