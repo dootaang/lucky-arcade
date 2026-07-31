@@ -1,5 +1,6 @@
 import { WAGER_MULTIPLIERS, XorShift32, type WagerMultiplier } from "@lucky-arcade/engine";
 import { NPC_INCOME_AMOUNTS } from "./economy.ts";
+import { NPC_FLOW_ECONOMY_CONTRACT, assertNpcExternalIncomeProfile, npcFlowEconomyDay } from "./flow-economy.ts";
 import {
   CASINO_SECONDS_PER_DAY,
   casinoKstDayAtUtcSecond,
@@ -495,6 +496,16 @@ function weightedTable(profile:NpcGamblingProfile,rng:XorShift32,dayIndex:number
 }
 function incomeSessionsForDay(profiles:readonly NpcGamblingProfile[],dayIndex:number,contract:NpcLedgerContract):Readonly<Record<string,NpcSession>> {
   const absoluteDay=contract.epochKstDay+dayIndex;
+  if(contract.version==="npc-ledger/1.2"){
+    const incomeProfiles=new Map((contract.externalIncomeProfiles??[]).map((profile)=>[profile.npcId,profile]));
+    return Object.freeze(Object.fromEntries(profiles.map((profile)=>{
+      const incomeProfile=incomeProfiles.get(profile.id);
+      if(!incomeProfile)throw new Error(`npc_ledger_missing_flow_income_profile:${profile.id}`);
+      const day=npcFlowEconomyDay(incomeProfile,absoluteDay);
+      const secondOfDay=day.settlementMinute*60;
+      return [profile.id,Object.freeze({matchId:`${NPC_FLOW_ECONOMY_CONTRACT}:${absoluteDay}:${profile.id}:casino-top-up`,visitId:`${NPC_FLOW_ECONOMY_CONTRACT}:${absoluteDay}`,participantIds:Object.freeze([profile.id]),secondOfDay,minuteOfDay:day.settlementMinute,tableId:"npc-income" as const,stake:0,reservedAmount:0,creditAmount:day.casinoTopUp,delta:day.casinoTopUp,resultKind:"casino-top-up",termsVersion:NPC_FLOW_ECONOMY_CONTRACT})];
+    })));
+  }
   return Object.freeze(Object.fromEntries(profiles.flatMap((profile)=>{
     if(absoluteDay%profile.payCycleDays!==profile.paydayOffset)return [];
     const amount=NPC_INCOME_AMOUNTS[profile.incomeBand];
@@ -513,10 +524,18 @@ function normalizedUtcSecond(clock:CasinoClock):number {
 }
 function compareText(a:string,b:string):number{return a<b?-1:a>b?1:0;}
 function validateDay(profiles:readonly NpcGamblingProfile[],dayIndex:number,openings:Readonly<Record<string,number>>,contract:NpcLedgerContract):void {
-  if(!["npc-ledger/1.0","npc-ledger/1.1"].includes(contract.version)||contract.seedVersion!=="npc-ledger/0.9"||!Number.isSafeInteger(contract.epochKstDay)||!Number.isSafeInteger(dayIndex)||dayIndex<0)throw new Error("npc_ledger_invalid_contract");
+  if(!["npc-ledger/1.0","npc-ledger/1.1","npc-ledger/1.2"].includes(contract.version)||!["npc-ledger/0.9","casino-flow/1.0"].includes(contract.seedVersion)||!Number.isSafeInteger(contract.epochKstDay)||!Number.isSafeInteger(dayIndex)||dayIndex<0)throw new Error("npc_ledger_invalid_contract");
+  if(contract.version!=="npc-ledger/1.2"&&contract.seedVersion!=="npc-ledger/0.9")throw new Error("npc_ledger_invalid_contract");
+  if(contract.version==="npc-ledger/1.2"){
+    const incomeProfiles=contract.externalIncomeProfiles??[];
+    const ids=new Set<string>();
+    for(const incomeProfile of incomeProfiles){assertNpcExternalIncomeProfile(incomeProfile);if(ids.has(incomeProfile.npcId))throw new Error(`npc_ledger_duplicate_flow_income_profile:${incomeProfile.npcId}`);ids.add(incomeProfile.npcId);}
+    for(const profile of profiles)if(!ids.has(profile.id))throw new Error(`npc_ledger_missing_flow_income_profile:${profile.id}`);
+    for(const id of ids)if(!profiles.some((profile)=>profile.id===id))throw new Error(`npc_ledger_orphan_flow_income_profile:${id}`);
+  }
   if(profiles.length===0||new Set(profiles.map((p)=>p.id)).size!==profiles.length||profiles.some((profile)=>!contract.profiles.some((entry)=>entry.id===profile.id)))throw new Error("npc_ledger_invalid_profiles");
   for(const profile of profiles){
-    if(!profile.id||!profile.name||!Number.isSafeInteger(profile.openingBalance)||profile.openingBalance<=0)throw new Error("npc_ledger_invalid_profile");
+    if(!profile.id||!profile.name||!Number.isSafeInteger(profile.openingBalance)||profile.openingBalance<(contract.version==="npc-ledger/1.2"?0:1))throw new Error("npc_ledger_invalid_profile");
     for(const value of [profile.riskAppetite,profile.discipline,profile.lossChasing,profile.winPressing,profile.stopLossRatio,profile.takeProfitRatio,profile.maxExposureRatio,...Object.values(profile.skills)]) if(!(value>=0&&value<=1))throw new Error("npc_ledger_invalid_profile");
     if(!["low","middle","high","premium"].includes(profile.incomeBand)||![7,14].includes(profile.payCycleDays)||!Number.isSafeInteger(profile.paydayOffset)||profile.paydayOffset<0||profile.paydayOffset>=profile.payCycleDays)throw new Error("npc_ledger_invalid_income_profile");
     const opening=openings[profile.id]; if(!Number.isSafeInteger(opening)||opening!<0||opening!>MAX_SAFE_BALANCE)throw new Error(`npc_ledger_invalid_state:${profile.id}`);

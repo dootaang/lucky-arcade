@@ -74,6 +74,37 @@ export interface NpcGamblingProfile {
   activeHours: readonly NpcActiveWindow[];
 }
 
+/** Authored off-casino livelihood and leisure-budget inputs. */
+export interface NpcExternalIncomeProfile {
+  npcId: string;
+  /** Lore-backed label, or the neutral fallback `개인 활동 정산`. */
+  sourceLabel: string;
+  /** Stable lore hashes/keys. Empty only when the neutral fallback is used. */
+  evidenceRefs: readonly string[];
+  /** Inclusive daily gross-income range, in whole points. */
+  dailyIncomeRange: readonly [number, number];
+  /** Inclusive share moved to the casino wallet. 10_000 basis points is 100%. */
+  casinoBudgetRateBps: readonly [number, number];
+  /** Tracked off-casino reserve at the flow-economy epoch. */
+  openingExternalReserve: number;
+  /** Inclusive KST minute-of-day window for the personal daily settlement. */
+  settlementWindow: readonly [number, number];
+}
+
+/** Shared decision engine inputs; characters differ through data, not bespoke code. */
+export interface CasinoNpcBehavior {
+  npcId: string;
+  riskAppetite: number;
+  stakeAggression: number;
+  lossChasing: number;
+  stopLossDiscipline: number;
+  takeProfitDiscipline: number;
+  visitsPerDay: NpcSessionRange;
+  roundsPerVisit: NpcSessionRange;
+  skills: Readonly<Partial<Record<CasinoTableId, number>>>;
+  preferredTables: readonly NpcTableWeight[];
+}
+
 export interface NpcVisit {
   visitId: string;
   tableId: CasinoTableId;
@@ -144,12 +175,16 @@ export interface NpcSession {
 }
 
 export interface NpcLedgerContract {
-  version: "npc-ledger/1.0" | "npc-ledger/1.1";
+  version: "npc-ledger/1.0" | "npc-ledger/1.1" | "npc-ledger/1.2";
   /** Frozen deterministic seed domain; changing calendar boundaries must not reroll history. */
-  seedVersion: "npc-ledger/0.9";
+  seedVersion: "npc-ledger/0.9" | "casino-flow/1.0";
   /** First casino calendar day, counted at KST midnight. */
   epochKstDay: number;
   profiles: readonly NpcGamblingProfile[];
+  /** Required by npc-ledger/1.2; ignored by frozen legacy contracts. */
+  externalIncomeProfiles?: readonly NpcExternalIncomeProfile[];
+  /** Optional authored overrides. Existing NpcGamblingProfile fields remain the fallback. */
+  behaviors?: readonly CasinoNpcBehavior[];
   /**
    * Completed daily profits carried across a contract rebase. These are
    * presentation analytics only: they never seed balances or game outcomes.

@@ -11,11 +11,14 @@ export type CasinoInternalAccountId =
   | typeof TEMEROSA_HOUSE_ACCOUNT_ID
   | `npc:${string}`
   | `escrow:${string}`;
+export type NpcExternalReserveAccountId = `external:npc:${string}`;
 export type CasinoExternalAccountId =
   | "external:employment"
+  | "external:livelihood"
   | "external:free-play"
   | "external:operations"
   | "external:capital"
+  | NpcExternalReserveAccountId
   | "legacy:clearing";
 export type CasinoAccountId = CasinoInternalAccountId | CasinoExternalAccountId;
 
@@ -25,6 +28,8 @@ export type CasinoTransactionKind =
   | "system-refund"
   | "forfeit"
   | "npc-income"
+  | "npc-external-income"
+  | "npc-casino-top-up"
   | "free-play-reward"
   | "house-operating-expense"
   | "collection-purchase"
@@ -75,6 +80,11 @@ export const NPC_INCOME_AMOUNTS: Readonly<Record<NpcIncomeBand, number>> = Objec
 export function npcAccountId(npcId: string): `npc:${string}` {
   if (!npcId || npcId === "wares") throw new Error("casino_economy_invalid_npc_account");
   return `npc:${npcId}`;
+}
+
+export function npcExternalReserveAccountId(npcId: string): NpcExternalReserveAccountId {
+  if (!npcId || npcId === "wares") throw new Error("casino_economy_invalid_npc_account");
+  return `external:npc:${npcId}`;
 }
 
 export function createCasinoTransaction(input: Omit<CasinoTransaction, "contract">): CasinoTransaction {
@@ -280,11 +290,12 @@ function compareTransactions(left: CasinoTransaction, right: CasinoTransaction):
 }
 function transactionPriority(kind: CasinoTransactionKind): number {
   if (kind === "wager-reservation") return 0;
-  if (kind === "npc-income" || kind === "house-operating-expense" || kind === "capital-injection" || kind === "legacy-migration") return 1;
-  return 2;
+  if (kind === "npc-external-income") return 1;
+  if (kind === "npc-income" || kind === "npc-casino-top-up" || kind === "house-operating-expense" || kind === "capital-injection" || kind === "legacy-migration") return 2;
+  return 3;
 }
 function isFundingAccount(accountId: string): accountId is CasinoInternalAccountId {
-  return accountId === LOCAL_PLAYER_ACCOUNT_ID || accountId === TEMEROSA_HOUSE_ACCOUNT_ID || accountId.startsWith("npc:");
+  return accountId === LOCAL_PLAYER_ACCOUNT_ID || accountId === TEMEROSA_HOUSE_ACCOUNT_ID || accountId.startsWith("npc:") || accountId.startsWith("external:npc:");
 }
 function isCirculatingAccount(accountId: string): boolean {
   return accountId === LOCAL_PLAYER_ACCOUNT_ID || accountId === TEMEROSA_HOUSE_ACCOUNT_ID || accountId.startsWith("npc:");
