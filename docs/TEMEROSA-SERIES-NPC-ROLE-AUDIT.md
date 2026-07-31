@@ -1,7 +1,9 @@
 # 테메로세 4시리즈 NPC 역할·출시 감사
 
-> 기준 명부: `temerosa-series-npc-inventory/0.2`  
-> 범위: Overture, Root2, Bestiaization, Finale의 series-and-source-persona 116개  
+> 기준 명부: `temerosa-series-npc-inventory/0.2`
+>
+> 범위: Overture, Root2, Bestiaization, Finale의 series-and-source-persona 116개
+>
 > 비범위: 경제 엔진, 지갑 생성, 전적·랭킹, 앱 UI, 이미지 컴파일
 
 ## 결론
