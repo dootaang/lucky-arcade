@@ -87,7 +87,7 @@ export default function CasinoLedgerPanel({
   const allTape = useMemo(() => casinoTape(playEvents, settlementGroups, currentUtcSecond, names), [currentUtcSecond, playEvents, settlementGroups]);
   const tape = allTape.slice(0, 8);
   const lastMinuteCount = allTape.filter((event) => currentUtcSecond - event.utcSecond < 60).length;
-  const recentSettlements = settlements.slice(0, 8);
+  const recentSettlements = settlementGroups.slice(0, 8).map((settlement)=>settlement.entries[0]!);
   const boardRef = useRef<HTMLTableSectionElement>(null);
   const inviteCount = presences.filter((presence) => presence.phase === "idle").length;
   const seatedCount = presences.length - inviteCount;
@@ -177,7 +177,7 @@ export default function CasinoLedgerPanel({
     </div>
     <section className="casino-ledger-settlements" aria-labelledby="settlement-heading">
       <div className="ledger-heading"><span id="settlement-heading">최근 정산</span><small>실제 잔고 변동</small></div>
-      <ol>{recentSettlements.map((settlement) => <li key={settlement.roundId}><SettlementLine settlement={settlement} names={names} currentUtcSecond={currentUtcSecond} /></li>)}</ol>
+      <ol>{recentSettlements.map((settlement) => <li key={settlement.matchId}><SettlementLine settlement={settlement} names={names} currentUtcSecond={currentUtcSecond} /></li>)}</ol>
     </section>
     <div className="casino-ledger-activity">
       <div className="ledger-heading"><span><i className="ca-live" aria-hidden="true" /> LIVE PLAY TAPE</span><small>{lastMinuteCount} ACTIONS / 60s{clockSource === "device" ? " · 기기 시간" : ""}</small></div>

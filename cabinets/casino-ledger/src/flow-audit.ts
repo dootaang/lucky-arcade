@@ -2,6 +2,7 @@ import { casinoDayPlan } from "./engine.ts";
 import { isHouseTable } from "./house.ts";
 import { TEMEROSA_HOUSE_OPENING_CAPITAL } from "./economy.ts";
 import type { NpcLedgerContract } from "./contracts.ts";
+import { npcFlowEconomyTransactions } from "./flow-economy.ts";
 import { DEFAULT_HOUSE_OPERATING_COST_POLICY,createHouseOperatingExpensePlan,houseDailyActivityFromPlan,type HouseOperatingCostPolicy } from "./house-operations.ts";
 
 export interface CasinoFlowAuditReport {
@@ -13,6 +14,10 @@ export interface CasinoFlowAuditReport {
   totalNpcCasinoTopUps: number;
   totalRounds: number;
   totalSettlementRows: number;
+  totalRoundSettlementRows: number;
+  duplicateRoundIdCount: number;
+  unbalancedRoundCount: number;
+  postingImbalance: number;
   averageSettlementGapSeconds: number;
   finalNpcSupply: number;
   finalNpcMedianBalance: number;
@@ -31,12 +36,25 @@ export function auditCasinoFlowEconomy(contract:NpcLedgerContract,days:number,op
   let balances:Record<string,number>=Object.fromEntries(profiles.map((profile)=>[profile.id,profile.openingBalance]));
   const initialNpcSupply=sum(Object.values(balances));
   const initialTopFive=topIds(balances,5);
-  let totalNpcCasinoTopUps=0,totalRounds=0,totalSettlementRows=0;
+  let totalNpcCasinoTopUps=0,totalRounds=0,totalSettlementRows=0,totalRoundSettlementRows=0,duplicateRoundIdCount=0,unbalancedRoundCount=0,postingImbalance=0;
+  const roundIds=new Set<string>();
   const houseOpeningBalance=contract.houseOpeningBalance??TEMEROSA_HOUSE_OPENING_CAPITAL;
   let houseBalance=houseOpeningBalance,houseGamingProfit=0,houseOperatingExpenses=0,houseCurtailedOperatingExpenses=0;
   for(let dayIndex=0;dayIndex<days;dayIndex+=1){
     const plan=casinoDayPlan(profiles,dayIndex,balances,contract);
     totalRounds+=plan.matches.length;
+    for(const transaction of npcFlowEconomyTransactions(contract.externalIncomeProfiles??[],contract.epochKstDay+dayIndex))postingImbalance+=transaction.postings.reduce((sum,posting)=>sum+posting.delta,0);
+    const sessions=Object.values(plan.sessions).flat();
+    for(const match of plan.matches){
+      if(roundIds.has(match.matchId))duplicateRoundIdCount+=1;
+      roundIds.add(match.matchId);
+      totalRoundSettlementRows+=1;
+      const npcDelta=sessions.filter((session)=>session.matchId===match.matchId).reduce((sum,session)=>sum+session.delta,0);
+      const houseDelta=isHouseTable(match.tableId)?-npcDelta:0;
+      const roundImbalance=npcDelta+houseDelta;
+      postingImbalance+=roundImbalance;
+      if(roundImbalance!==0)unbalancedRoundCount+=1;
+    }
     for(const sessions of Object.values(plan.sessions))for(const session of sessions){
       if(session.tableId==="npc-income")totalNpcCasinoTopUps+=session.delta;
       else totalSettlementRows+=1;
@@ -51,6 +69,7 @@ export function auditCasinoFlowEconomy(contract:NpcLedgerContract,days:number,op
     houseBalance+=houseBefore;houseGamingProfit+=houseBefore;
     const activity=houseDailyActivityFromPlan({absoluteKstDay:contract.epochKstDay+dayIndex,houseBalance,reservedLiability:0,plan,throughSecondOfDay:operationsSecond});
     const expense=createHouseOperatingExpensePlan(activity,operatingPolicy);
+    if(expense.transaction)postingImbalance+=expense.transaction.postings.reduce((sum,posting)=>sum+posting.delta,0);
     houseBalance-=expense.paidAmount;houseOperatingExpenses+=expense.paidAmount;houseCurtailedOperatingExpenses+=expense.curtailedAmount;
     const houseAfter=-Object.values(plan.sessions).flat().filter((session)=>session.secondOfDay>operationsSecond&&isHouseTable(session.tableId)).reduce((total,session)=>total+session.delta,0);
     houseBalance+=houseAfter;houseGamingProfit+=houseAfter;
@@ -63,7 +82,7 @@ export function auditCasinoFlowEconomy(contract:NpcLedgerContract,days:number,op
   return Object.freeze({
     days,npcCount:profiles.length,initialInternalSupply,finalInternalSupply,
     supplyChangeBps:Math.round((finalInternalSupply-initialInternalSupply)*10_000/initialInternalSupply),
-    totalNpcCasinoTopUps,totalRounds,totalSettlementRows,
+    totalNpcCasinoTopUps,totalRounds,totalSettlementRows,totalRoundSettlementRows,duplicateRoundIdCount,unbalancedRoundCount,postingImbalance,
     averageSettlementGapSeconds:Number((days*86_400/Math.max(1,totalSettlementRows)).toFixed(2)),
     finalNpcSupply,finalNpcMedianBalance:finalNpcBalances[Math.floor(finalNpcBalances.length/2)]??0,
     paidEligibleNpcCount:finalNpcBalances.filter((balance)=>balance>=20).length,
