@@ -1,0 +1,89 @@
+{
+  "contract": "temerosa-series-npc-portrait-audit/0.1",
+  "packId": "temerosa-series-npcs",
+  "version": "0.1.0",
+  "status": "passed",
+  "missingNpcIds": [
+    "temerosa:overture:licanica",
+    "temerosa:overture:mortem",
+    "temerosa:bestiaization:boris-leblanc",
+    "temerosa:bestiaization:gestas",
+    "temerosa:bestiaization:iweleth",
+    "temerosa:bestiaization:kudryavka",
+    "temerosa:bestiaization:leviathan",
+    "temerosa:bestiaization:sherirus"
+  ],
+  "emotionFallbacks": [
+    {
+      "npcId": "temerosa:overture:elton-carrasco",
+      "emotion": "neutral",
+      "fallbackFrom": "smile"
+    },
+    {
+      "npcId": "temerosa:overture:hab",
+      "emotion": "neutral",
+      "fallbackFrom": "embarrassed"
+    },
+    {
+      "npcId": "temerosa:overture:ishmael",
+      "emotion": "neutral",
+      "fallbackFrom": "smile"
+    },
+    {
+      "npcId": "temerosa:overture:kano",
+      "emotion": "neutral",
+      "fallbackFrom": "blush"
+    },
+    {
+      "npcId": "temerosa:overture:lyla",
+      "emotion": "neutral",
+      "fallbackFrom": "embarrassed"
+    },
+    {
+      "npcId": "temerosa:overture:mascot",
+      "emotion": "neutral",
+      "fallbackFrom": "embarrassed"
+    },
+    {
+      "npcId": "temerosa:overture:merry-pip",
+      "emotion": "neutral",
+      "fallbackFrom": "smile"
+    },
+    {
+      "npcId": "temerosa:overture:pale",
+      "emotion": "neutral",
+      "fallbackFrom": "blush"
+    },
+    {
+      "npcId": "temerosa:overture:septendecilliono",
+      "emotion": "neutral",
+      "fallbackFrom": "contempt"
+    },
+    {
+      "npcId": "temerosa:overture:tashtego",
+      "emotion": "neutral",
+      "fallbackFrom": "teardrop"
+    },
+    {
+      "npcId": "temerosa:root2:revi",
+      "emotion": "pleased",
+      "fallbackFrom": "neutral"
+    },
+    {
+      "npcId": "temerosa:bestiaization:dorsinea",
+      "emotion": "despair",
+      "fallbackFrom": "neutral"
+    },
+    {
+      "npcId": "temerosa:bestiaization:francis",
+      "emotion": "pleased",
+      "fallbackFrom": "neutral"
+    }
+  ],
+  "forbiddenAssetMatches": [],
+  "mimeMismatches": [],
+  "enlargedVariants": [],
+  "crossSeriesFallbacks": [],
+  "uniqueImageFiles": 588,
+  "imageBytes": 24257462
+}

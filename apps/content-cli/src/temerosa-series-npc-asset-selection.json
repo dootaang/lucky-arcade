@@ -1,0 +1,3538 @@
+{
+  "contract": "temerosa-series-npc-asset-selection/0.1",
+  "inventoryContract": "temerosa-series-npc-inventory/0.1",
+  "identityRule": "series-and-source-persona",
+  "policy": {
+    "selection": "automatic-safe-expression-priority",
+    "crossSeriesFallback": false,
+    "unavailableIsExplicit": true,
+    "manualVisualPrecheck": false
+  },
+  "items": [
+    {
+      "npcId": "temerosa:overture:elton-carrasco",
+      "series": "overture",
+      "sourceFingerprint": "3f3d3b04a700ad69fa2270f5308dc096d08b00cab0fa412d299d1336a6875407",
+      "status": "selected",
+      "emotions": {
+        "neutral": {
+          "assetId": "3f3d3b04a700ad69:90:1ee2f801feb6",
+          "name": "Elton Carrasco.smile",
+          "sourceEntryPath": "assets/other/image/91.png",
+          "sourceExpression": "smile",
+          "fallbackFrom": "smile"
+        },
+        "pleased": {
+          "assetId": "3f3d3b04a700ad69:90:1ee2f801feb6",
+          "name": "Elton Carrasco.smile",
+          "sourceEntryPath": "assets/other/image/91.png",
+          "sourceExpression": "smile"
+        },
+        "tense": {
+          "assetId": "3f3d3b04a700ad69:95:f4eb3d7d33dc",
+          "name": "Elton Carrasco.Angry",
+          "sourceEntryPath": "assets/other/image/96.png",
+          "sourceExpression": "angry"
+        },
+        "despair": {
+          "assetId": "3f3d3b04a700ad69:94:bb16cf6b4f4f",
+          "name": "Elton Carrasco.cry",
+          "sourceEntryPath": "assets/other/image/95.png",
+          "sourceExpression": "cry"
+        }
+      }
+    },
+    {
+      "npcId": "temerosa:overture:hab",
+      "series": "overture",
+      "sourceFingerprint": "3f3d3b04a700ad69fa2270f5308dc096d08b00cab0fa412d299d1336a6875407",
+      "status": "selected",
+      "emotions": {
+        "neutral": {
+          "assetId": "3f3d3b04a700ad69:15:c19210b969ef",
+          "name": "hab.embarrassed",
+          "sourceEntryPath": "assets/other/image/16.png",
+          "sourceExpression": "embarrassed",
+          "fallbackFrom": "embarrassed"
+        },
+        "pleased": {
+          "assetId": "3f3d3b04a700ad69:23:b57655d181dc",
+          "name": "hab.smile",
+          "sourceEntryPath": "assets/other/image/24.png",
+          "sourceExpression": "smile"
+        },
+        "tense": {
+          "assetId": "3f3d3b04a700ad69:18:1f43d15825cc",
+          "name": "hab.Angry",
+          "sourceEntryPath": "assets/other/image/19.png",
+          "sourceExpression": "angry"
+        },
+        "despair": {
+          "assetId": "3f3d3b04a700ad69:28:0353b918d78c",
+          "name": "hab.cry",
+          "sourceEntryPath": "assets/other/image/29.png",
+          "sourceExpression": "cry"
+        }
+      }
+    },
+    {
+      "npcId": "temerosa:overture:ishmael",
+      "series": "overture",
+      "sourceFingerprint": "3f3d3b04a700ad69fa2270f5308dc096d08b00cab0fa412d299d1336a6875407",
+      "status": "selected",
+      "emotions": {
+        "neutral": {
+          "assetId": "3f3d3b04a700ad69:102:7dcede0ebc18",
+          "name": "Ishmael.smile",
+          "sourceEntryPath": "assets/other/image/103.png",
+          "sourceExpression": "smile",
+          "fallbackFrom": "smile"
+        },
+        "pleased": {
+          "assetId": "3f3d3b04a700ad69:102:7dcede0ebc18",
+          "name": "Ishmael.smile",
+          "sourceEntryPath": "assets/other/image/103.png",
+          "sourceExpression": "smile"
+        },
+        "tense": {
+          "assetId": "3f3d3b04a700ad69:108:6ade30022caf",
+          "name": "Ishmael.Angry",
+          "sourceEntryPath": "assets/other/image/109.png",
+          "sourceExpression": "angry"
+        },
+        "despair": {
+          "assetId": "3f3d3b04a700ad69:106:86dcc74a9cc4",
+          "name": "Ishmael.cry",
+          "sourceEntryPath": "assets/other/image/107.png",
+          "sourceExpression": "cry"
+        }
+      }
+    },
+    {
+      "npcId": "temerosa:overture:kano",
+      "series": "overture",
+      "sourceFingerprint": "3f3d3b04a700ad69fa2270f5308dc096d08b00cab0fa412d299d1336a6875407",
+      "status": "selected",
+      "emotions": {
+        "neutral": {
+          "assetId": "3f3d3b04a700ad69:10:c64bab744789",
+          "name": "Pale.blush",
+          "sourceEntryPath": "assets/other/image/11.png",
+          "sourceExpression": "blush",
+          "fallbackFrom": "blush"
+        },
+        "pleased": {
+          "assetId": "3f3d3b04a700ad69:134:feb35018bdff",
+          "name": "Kano.smile",
+          "sourceEntryPath": "assets/other/image/135.png",
+          "sourceExpression": "smile"
+        },
+        "tense": {
+          "assetId": "3f3d3b04a700ad69:131:a8550a9caa23",
+          "name": "Kano.Angry",
+          "sourceEntryPath": "assets/other/image/132.png",
+          "sourceExpression": "angry"
+        },
+        "despair": {
+          "assetId": "3f3d3b04a700ad69:139:4ed380f21133",
+          "name": "Kano.cry",
+          "sourceEntryPath": "assets/other/image/140.png",
+          "sourceExpression": "cry"
+        }
+      }
+    },
+    {
+      "npcId": "temerosa:overture:licanica",
+      "series": "overture",
+      "sourceFingerprint": "3f3d3b04a700ad69fa2270f5308dc096d08b00cab0fa412d299d1336a6875407",
+      "status": "unavailable",
+      "reason": "no-safe-image-candidates"
+    },
+    {
+      "npcId": "temerosa:overture:lyla",
+      "series": "overture",
+      "sourceFingerprint": "3f3d3b04a700ad69fa2270f5308dc096d08b00cab0fa412d299d1336a6875407",
+      "status": "selected",
+      "emotions": {
+        "neutral": {
+          "assetId": "3f3d3b04a700ad69:61:fe529c77283e",
+          "name": "Lyla.embarrassed",
+          "sourceEntryPath": "assets/other/image/62.png",
+          "sourceExpression": "embarrassed",
+          "fallbackFrom": "embarrassed"
+        },
+        "pleased": {
+          "assetId": "3f3d3b04a700ad69:62:894c0342da9c",
+          "name": "Lyla.smile",
+          "sourceEntryPath": "assets/other/image/63.png",
+          "sourceExpression": "smile"
+        },
+        "tense": {
+          "assetId": "3f3d3b04a700ad69:64:7612b58b6acd",
+          "name": "Lyla.Angry",
+          "sourceEntryPath": "assets/other/image/65.png",
+          "sourceExpression": "angry"
+        },
+        "despair": {
+          "assetId": "3f3d3b04a700ad69:69:df284217cb20",
+          "name": "Lyla.cry",
+          "sourceEntryPath": "assets/other/image/70.png",
+          "sourceExpression": "cry"
+        }
+      }
+    },
+    {
+      "npcId": "temerosa:overture:mascot",
+      "series": "overture",
+      "sourceFingerprint": "3f3d3b04a700ad69fa2270f5308dc096d08b00cab0fa412d299d1336a6875407",
+      "status": "selected",
+      "emotions": {
+        "neutral": {
+          "assetId": "3f3d3b04a700ad69:61:fe529c77283e",
+          "name": "Lyla.embarrassed",
+          "sourceEntryPath": "assets/other/image/62.png",
+          "sourceExpression": "embarrassed",
+          "fallbackFrom": "embarrassed"
+        },
+        "pleased": {
+          "assetId": "3f3d3b04a700ad69:62:894c0342da9c",
+          "name": "Lyla.smile",
+          "sourceEntryPath": "assets/other/image/63.png",
+          "sourceExpression": "smile"
+        },
+        "tense": {
+          "assetId": "3f3d3b04a700ad69:64:7612b58b6acd",
+          "name": "Lyla.Angry",
+          "sourceEntryPath": "assets/other/image/65.png",
+          "sourceExpression": "angry"
+        },
+        "despair": {
+          "assetId": "3f3d3b04a700ad69:69:df284217cb20",
+          "name": "Lyla.cry",
+          "sourceEntryPath": "assets/other/image/70.png",
+          "sourceExpression": "cry"
+        }
+      }
+    },
+    {
+      "npcId": "temerosa:overture:merry-pip",
+      "series": "overture",
+      "sourceFingerprint": "3f3d3b04a700ad69fa2270f5308dc096d08b00cab0fa412d299d1336a6875407",
+      "status": "selected",
+      "emotions": {
+        "neutral": {
+          "assetId": "3f3d3b04a700ad69:76:8e6df2e2739d",
+          "name": "merry-pip.smile",
+          "sourceEntryPath": "assets/other/image/77.png",
+          "sourceExpression": "smile",
+          "fallbackFrom": "smile"
+        },
+        "pleased": {
+          "assetId": "3f3d3b04a700ad69:76:8e6df2e2739d",
+          "name": "merry-pip.smile",
+          "sourceEntryPath": "assets/other/image/77.png",
+          "sourceExpression": "smile"
+        },
+        "tense": {
+          "assetId": "3f3d3b04a700ad69:77:febe466cf19d",
+          "name": "merry-pip.Angry",
+          "sourceEntryPath": "assets/other/image/78.png",
+          "sourceExpression": "angry"
+        },
+        "despair": {
+          "assetId": "3f3d3b04a700ad69:81:d048837386ec",
+          "name": "merry-pip.cry",
+          "sourceEntryPath": "assets/other/image/82.png",
+          "sourceExpression": "cry"
+        }
+      }
+    },
+    {
+      "npcId": "temerosa:overture:mortem",
+      "series": "overture",
+      "sourceFingerprint": "3f3d3b04a700ad69fa2270f5308dc096d08b00cab0fa412d299d1336a6875407",
+      "status": "unavailable",
+      "reason": "no-safe-image-candidates"
+    },
+    {
+      "npcId": "temerosa:overture:pale",
+      "series": "overture",
+      "sourceFingerprint": "3f3d3b04a700ad69fa2270f5308dc096d08b00cab0fa412d299d1336a6875407",
+      "status": "selected",
+      "emotions": {
+        "neutral": {
+          "assetId": "3f3d3b04a700ad69:10:c64bab744789",
+          "name": "Pale.blush",
+          "sourceEntryPath": "assets/other/image/11.png",
+          "sourceExpression": "blush",
+          "fallbackFrom": "blush"
+        },
+        "pleased": {
+          "assetId": "3f3d3b04a700ad69:5:298792ec5ead",
+          "name": "Pale.smile",
+          "sourceEntryPath": "assets/other/image/6.png",
+          "sourceExpression": "smile"
+        },
+        "tense": {
+          "assetId": "3f3d3b04a700ad69:1:a3bc88ae2d99",
+          "name": "Pale.Angry",
+          "sourceEntryPath": "assets/other/image/2.png",
+          "sourceExpression": "angry"
+        },
+        "despair": {
+          "assetId": "3f3d3b04a700ad69:6:1ccb81586c67",
+          "name": "Pale.cry",
+          "sourceEntryPath": "assets/other/image/7.png",
+          "sourceExpression": "cry"
+        }
+      }
+    },
+    {
+      "npcId": "temerosa:overture:septendecilliono",
+      "series": "overture",
+      "sourceFingerprint": "3f3d3b04a700ad69fa2270f5308dc096d08b00cab0fa412d299d1336a6875407",
+      "status": "selected",
+      "emotions": {
+        "neutral": {
+          "assetId": "3f3d3b04a700ad69:32:4646ada13856",
+          "name": "septendecilliono.contempt",
+          "sourceEntryPath": "assets/other/image/33.png",
+          "sourceExpression": "contempt",
+          "fallbackFrom": "contempt"
+        },
+        "pleased": {
+          "assetId": "3f3d3b04a700ad69:33:b325e735e638",
+          "name": "septendecilliono.smile",
+          "sourceEntryPath": "assets/other/image/34.png",
+          "sourceExpression": "smile"
+        },
+        "tense": {
+          "assetId": "3f3d3b04a700ad69:35:cfc0effb32b1",
+          "name": "septendecilliono.Angry",
+          "sourceEntryPath": "assets/other/image/36.png",
+          "sourceExpression": "angry"
+        },
+        "despair": {
+          "assetId": "3f3d3b04a700ad69:36:f45f35f29f81",
+          "name": "septendecilliono.cry",
+          "sourceEntryPath": "assets/other/image/37.png",
+          "sourceExpression": "cry"
+        }
+      }
+    },
+    {
+      "npcId": "temerosa:overture:tashtego",
+      "series": "overture",
+      "sourceFingerprint": "3f3d3b04a700ad69fa2270f5308dc096d08b00cab0fa412d299d1336a6875407",
+      "status": "selected",
+      "emotions": {
+        "neutral": {
+          "assetId": "3f3d3b04a700ad69:46:38ff1c5094e0",
+          "name": "Tashtego.teardrop",
+          "sourceEntryPath": "assets/other/image/47.png",
+          "sourceExpression": "teardrop",
+          "fallbackFrom": "teardrop"
+        },
+        "pleased": {
+          "assetId": "3f3d3b04a700ad69:47:56e2b8b7d98e",
+          "name": "Tashtego.smile",
+          "sourceEntryPath": "assets/other/image/48.png",
+          "sourceExpression": "smile"
+        },
+        "tense": {
+          "assetId": "3f3d3b04a700ad69:51:00569094d94d",
+          "name": "Tashtego.Angry",
+          "sourceEntryPath": "assets/other/image/52.png",
+          "sourceExpression": "angry"
+        },
+        "despair": {
+          "assetId": "3f3d3b04a700ad69:48:043e94f6e4fd",
+          "name": "Tashtego.cry",
+          "sourceEntryPath": "assets/other/image/49.png",
+          "sourceExpression": "cry"
+        }
+      }
+    },
+    {
+      "npcId": "temerosa:root2:ayase",
+      "series": "root2",
+      "sourceFingerprint": "119b1a857be6c62f87573c507d682d65562dca29bc55103dc22baca0267a1f6b",
+      "status": "selected",
+      "emotions": {
+        "neutral": {
+          "assetId": "119b1a857be6c62f:115:c3856b62c098",
+          "name": "Ayase.natural",
+          "sourceEntryPath": "assets/other/image/116.png",
+          "sourceExpression": "natural"
+        },
+        "pleased": {
+          "assetId": "119b1a857be6c62f:108:64e6858a2cf2",
+          "name": "Ayase.smile",
+          "sourceEntryPath": "assets/other/image/109.png",
+          "sourceExpression": "smile"
+        },
+        "tense": {
+          "assetId": "119b1a857be6c62f:112:badba5d4ceb3",
+          "name": "Ayase.angry",
+          "sourceEntryPath": "assets/other/image/113.png",
+          "sourceExpression": "angry"
+        },
+        "despair": {
+          "assetId": "119b1a857be6c62f:111:b4dd20d2f820",
+          "name": "Ayase.sad",
+          "sourceEntryPath": "assets/other/image/112.png",
+          "sourceExpression": "sad"
+        }
+      }
+    },
+    {
+      "npcId": "temerosa:root2:dismas",
+      "series": "root2",
+      "sourceFingerprint": "119b1a857be6c62f87573c507d682d65562dca29bc55103dc22baca0267a1f6b",
+      "status": "selected",
+      "emotions": {
+        "neutral": {
+          "assetId": "119b1a857be6c62f:164:6073ccc10c75",
+          "name": "Dismas.natural",
+          "sourceEntryPath": "assets/other/image/165.png",
+          "sourceExpression": "natural"
+        },
+        "pleased": {
+          "assetId": "119b1a857be6c62f:166:95cbb0b67f17",
+          "name": "Dismas.smile",
+          "sourceEntryPath": "assets/other/image/167.png",
+          "sourceExpression": "smile"
+        },
+        "tense": {
+          "assetId": "119b1a857be6c62f:169:03ea3cd9c771",
+          "name": "Dismas.angry",
+          "sourceEntryPath": "assets/other/image/170.png",
+          "sourceExpression": "angry"
+        },
+        "despair": {
+          "assetId": "119b1a857be6c62f:165:3efea11a8f89",
+          "name": "Dismas.sad",
+          "sourceEntryPath": "assets/other/image/166.png",
+          "sourceExpression": "sad"
+        }
+      }
+    },
+    {
+      "npcId": "temerosa:root2:hab",
+      "series": "root2",
+      "sourceFingerprint": "119b1a857be6c62f87573c507d682d65562dca29bc55103dc22baca0267a1f6b",
+      "status": "selected",
+      "emotions": {
+        "neutral": {
+          "assetId": "119b1a857be6c62f:299:2a440e062561",
+          "name": "Hab.natural",
+          "sourceEntryPath": "assets/other/image/300.png",
+          "sourceExpression": "natural"
+        },
+        "pleased": {
+          "assetId": "119b1a857be6c62f:305:6f007c95706b",
+          "name": "Hab.smile",
+          "sourceEntryPath": "assets/other/image/306.png",
+          "sourceExpression": "smile"
+        },
+        "tense": {
+          "assetId": "119b1a857be6c62f:300:1634d35e7d02",
+          "name": "Hab.angry",
+          "sourceEntryPath": "assets/other/image/301.png",
+          "sourceExpression": "angry"
+        },
+        "despair": {
+          "assetId": "119b1a857be6c62f:303:adf11587a7bc",
+          "name": "Hab.sad",
+          "sourceEntryPath": "assets/other/image/304.png",
+          "sourceExpression": "sad"
+        }
+      }
+    },
+    {
+      "npcId": "temerosa:root2:ishmael",
+      "series": "root2",
+      "sourceFingerprint": "119b1a857be6c62f87573c507d682d65562dca29bc55103dc22baca0267a1f6b",
+      "status": "selected",
+      "emotions": {
+        "neutral": {
+          "assetId": "119b1a857be6c62f:127:33eb6aeaeeaa",
+          "name": "Ismael.natural",
+          "sourceEntryPath": "assets/other/image/128.png",
+          "sourceExpression": "natural"
+        },
+        "pleased": {
+          "assetId": "119b1a857be6c62f:132:3f15c54b0a0b",
+          "name": "Ismael.smile",
+          "sourceEntryPath": "assets/other/image/133.png",
+          "sourceExpression": "smile"
+        },
+        "tense": {
+          "assetId": "119b1a857be6c62f:133:d9654bbb8ba2",
+          "name": "Ismael.angry",
+          "sourceEntryPath": "assets/other/image/134.png",
+          "sourceExpression": "angry"
+        },
+        "despair": {
+          "assetId": "119b1a857be6c62f:131:93fb137e4eaf",
+          "name": "Ismael.Sad",
+          "sourceEntryPath": "assets/other/image/132.png",
+          "sourceExpression": "sad"
+        }
+      }
+    },
+    {
+      "npcId": "temerosa:root2:kano",
+      "series": "root2",
+      "sourceFingerprint": "119b1a857be6c62f87573c507d682d65562dca29bc55103dc22baca0267a1f6b",
+      "status": "selected",
+      "emotions": {
+        "neutral": {
+          "assetId": "119b1a857be6c62f:15:6d053d54fd9c",
+          "name": "Kano.natural",
+          "sourceEntryPath": "assets/other/image/16.png",
+          "sourceExpression": "natural"
+        },
+        "pleased": {
+          "assetId": "119b1a857be6c62f:16:feb35018bdff",
+          "name": "Kano.smile",
+          "sourceEntryPath": "assets/other/image/17.png",
+          "sourceExpression": "smile"
+        },
+        "tense": {
+          "assetId": "119b1a857be6c62f:11:c4a9dfb6bd8b",
+          "name": "Kano.angry",
+          "sourceEntryPath": "assets/other/image/12.png",
+          "sourceExpression": "angry"
+        },
+        "despair": {
+          "assetId": "119b1a857be6c62f:19:2fd8bc9f6145",
+          "name": "Kano.sad",
+          "sourceEntryPath": "assets/other/image/20.png",
+          "sourceExpression": "sad"
+        }
+      }
+    },
+    {
+      "npcId": "temerosa:root2:lyla",
+      "series": "root2",
+      "sourceFingerprint": "119b1a857be6c62f87573c507d682d65562dca29bc55103dc22baca0267a1f6b",
+      "status": "selected",
+      "emotions": {
+        "neutral": {
+          "assetId": "119b1a857be6c62f:50:e7df220a120b",
+          "name": "Lyla.natural",
+          "sourceEntryPath": "assets/other/image/51.png",
+          "sourceExpression": "natural"
+        },
+        "pleased": {
+          "assetId": "119b1a857be6c62f:55:894c0342da9c",
+          "name": "Lyla.smile",
+          "sourceEntryPath": "assets/other/image/56.png",
+          "sourceExpression": "smile"
+        },
+        "tense": {
+          "assetId": "119b1a857be6c62f:54:638cfff838ff",
+          "name": "Lyla.angry",
+          "sourceEntryPath": "assets/other/image/55.png",
+          "sourceExpression": "angry"
+        },
+        "despair": {
+          "assetId": "119b1a857be6c62f:58:5304230a59e9",
+          "name": "Lyla.sad",
+          "sourceEntryPath": "assets/other/image/59.png",
+          "sourceExpression": "sad"
+        }
+      }
+    },
+    {
+      "npcId": "temerosa:root2:merry-pip",
+      "series": "root2",
+      "sourceFingerprint": "119b1a857be6c62f87573c507d682d65562dca29bc55103dc22baca0267a1f6b",
+      "status": "selected",
+      "emotions": {
+        "neutral": {
+          "assetId": "119b1a857be6c62f:261:900cb6fe9ec1",
+          "name": "Merry-pip.natural ",
+          "sourceEntryPath": "assets/other/image/262.png",
+          "sourceExpression": "natural"
+        },
+        "pleased": {
+          "assetId": "119b1a857be6c62f:262:9ee04dd22878",
+          "name": "Merry-pip.smile",
+          "sourceEntryPath": "assets/other/image/263.png",
+          "sourceExpression": "smile"
+        },
+        "tense": {
+          "assetId": "119b1a857be6c62f:268:aed5fc1e80fc",
+          "name": "Merry-pip.Angry",
+          "sourceEntryPath": "assets/other/image/269.png",
+          "sourceExpression": "angry"
+        },
+        "despair": {
+          "assetId": "119b1a857be6c62f:269:50d5e8c8248c",
+          "name": "Merry-pip.sad",
+          "sourceEntryPath": "assets/other/image/270.png",
+          "sourceExpression": "sad"
+        }
+      }
+    },
+    {
+      "npcId": "temerosa:root2:mortem",
+      "series": "root2",
+      "sourceFingerprint": "119b1a857be6c62f87573c507d682d65562dca29bc55103dc22baca0267a1f6b",
+      "status": "selected",
+      "emotions": {
+        "neutral": {
+          "assetId": "119b1a857be6c62f:8:c6d84bef928c",
+          "name": "Mortem.natural",
+          "sourceEntryPath": "assets/other/image/9.png",
+          "sourceExpression": "natural"
+        },
+        "pleased": {
+          "assetId": "119b1a857be6c62f:10:c7189ffb15a3",
+          "name": "Mortem.smile",
+          "sourceEntryPath": "assets/other/image/11.png",
+          "sourceExpression": "smile"
+        },
+        "tense": {
+          "assetId": "119b1a857be6c62f:5:9f07969aa5a7",
+          "name": "Mortem.angry",
+          "sourceEntryPath": "assets/other/image/6.png",
+          "sourceExpression": "angry"
+        },
+        "despair": {
+          "assetId": "119b1a857be6c62f:3:ff08c47cf049",
+          "name": "Mortem.sad",
+          "sourceEntryPath": "assets/other/image/4.png",
+          "sourceExpression": "sad"
+        }
+      }
+    },
+    {
+      "npcId": "temerosa:root2:nevy",
+      "series": "root2",
+      "sourceFingerprint": "119b1a857be6c62f87573c507d682d65562dca29bc55103dc22baca0267a1f6b",
+      "status": "selected",
+      "emotions": {
+        "neutral": {
+          "assetId": "119b1a857be6c62f:201:ff18f2959a46",
+          "name": "Nevy.natural",
+          "sourceEntryPath": "assets/other/image/202.png",
+          "sourceExpression": "natural"
+        },
+        "pleased": {
+          "assetId": "119b1a857be6c62f:193:bd46541225ec",
+          "name": "Nevy.smile",
+          "sourceEntryPath": "assets/other/image/194.png",
+          "sourceExpression": "smile"
+        },
+        "tense": {
+          "assetId": "119b1a857be6c62f:198:f4aea8e9510f",
+          "name": "Nevy.angry",
+          "sourceEntryPath": "assets/other/image/199.png",
+          "sourceExpression": "angry"
+        },
+        "despair": {
+          "assetId": "119b1a857be6c62f:200:047fb28bab70",
+          "name": "Nevy.sad",
+          "sourceEntryPath": "assets/other/image/201.png",
+          "sourceExpression": "sad"
+        }
+      }
+    },
+    {
+      "npcId": "temerosa:root2:nieun",
+      "series": "root2",
+      "sourceFingerprint": "119b1a857be6c62f87573c507d682d65562dca29bc55103dc22baca0267a1f6b",
+      "status": "selected",
+      "emotions": {
+        "neutral": {
+          "assetId": "119b1a857be6c62f:31:a4d254ef35c7",
+          "name": "Nieun.natural ",
+          "sourceEntryPath": "assets/other/image/32.png",
+          "sourceExpression": "natural"
+        },
+        "pleased": {
+          "assetId": "119b1a857be6c62f:32:261981b30edd",
+          "name": "Nieun.smile",
+          "sourceEntryPath": "assets/other/image/33.png",
+          "sourceExpression": "smile"
+        },
+        "tense": {
+          "assetId": "119b1a857be6c62f:36:a11697bef735",
+          "name": "Nieun.angry",
+          "sourceEntryPath": "assets/other/image/37.png",
+          "sourceExpression": "angry"
+        },
+        "despair": {
+          "assetId": "119b1a857be6c62f:37:ef544a176f79",
+          "name": "Nieun.sad",
+          "sourceEntryPath": "assets/other/image/38.png",
+          "sourceExpression": "sad"
+        }
+      }
+    },
+    {
+      "npcId": "temerosa:root2:nostalgia",
+      "series": "root2",
+      "sourceFingerprint": "119b1a857be6c62f87573c507d682d65562dca29bc55103dc22baca0267a1f6b",
+      "status": "selected",
+      "emotions": {
+        "neutral": {
+          "assetId": "119b1a857be6c62f:15:6d053d54fd9c",
+          "name": "Kano.natural",
+          "sourceEntryPath": "assets/other/image/16.png",
+          "sourceExpression": "natural"
+        },
+        "pleased": {
+          "assetId": "119b1a857be6c62f:16:feb35018bdff",
+          "name": "Kano.smile",
+          "sourceEntryPath": "assets/other/image/17.png",
+          "sourceExpression": "smile"
+        },
+        "tense": {
+          "assetId": "119b1a857be6c62f:11:c4a9dfb6bd8b",
+          "name": "Kano.angry",
+          "sourceEntryPath": "assets/other/image/12.png",
+          "sourceExpression": "angry"
+        },
+        "despair": {
+          "assetId": "119b1a857be6c62f:19:2fd8bc9f6145",
+          "name": "Kano.sad",
+          "sourceEntryPath": "assets/other/image/20.png",
+          "sourceExpression": "sad"
+        }
+      }
+    },
+    {
+      "npcId": "temerosa:root2:pale",
+      "series": "root2",
+      "sourceFingerprint": "119b1a857be6c62f87573c507d682d65562dca29bc55103dc22baca0267a1f6b",
+      "status": "selected",
+      "emotions": {
+        "neutral": {
+          "assetId": "119b1a857be6c62f:248:6dc4ccca46ed",
+          "name": "Pale.natural",
+          "sourceEntryPath": "assets/other/image/249.png",
+          "sourceExpression": "natural"
+        },
+        "pleased": {
+          "assetId": "119b1a857be6c62f:241:298792ec5ead",
+          "name": "Pale.smile",
+          "sourceEntryPath": "assets/other/image/242.png",
+          "sourceExpression": "smile"
+        },
+        "tense": {
+          "assetId": "119b1a857be6c62f:243:c9a1236ec99a",
+          "name": "Pale.angry",
+          "sourceEntryPath": "assets/other/image/244.png",
+          "sourceExpression": "angry"
+        },
+        "despair": {
+          "assetId": "119b1a857be6c62f:245:2471ffb83dd8",
+          "name": "Pale.sad",
+          "sourceEntryPath": "assets/other/image/246.png",
+          "sourceExpression": "sad"
+        }
+      }
+    },
+    {
+      "npcId": "temerosa:root2:presser",
+      "series": "root2",
+      "sourceFingerprint": "119b1a857be6c62f87573c507d682d65562dca29bc55103dc22baca0267a1f6b",
+      "status": "selected",
+      "emotions": {
+        "neutral": {
+          "assetId": "119b1a857be6c62f:182:4d083c36cf4f",
+          "name": "Presser.natural",
+          "sourceEntryPath": "assets/other/image/183.png",
+          "sourceExpression": "natural"
+        },
+        "pleased": {
+          "assetId": "119b1a857be6c62f:180:ae4c694caed6",
+          "name": "Presser.Smile",
+          "sourceEntryPath": "assets/other/image/181.png",
+          "sourceExpression": "smile"
+        },
+        "tense": {
+          "assetId": "119b1a857be6c62f:176:a9b1139818d7",
+          "name": "Presser.angry",
+          "sourceEntryPath": "assets/other/image/177.png",
+          "sourceExpression": "angry"
+        },
+        "despair": {
+          "assetId": "119b1a857be6c62f:192:abd55a5bf027",
+          "name": "Presser.sad",
+          "sourceEntryPath": "assets/other/image/193.png",
+          "sourceExpression": "sad"
+        }
+      }
+    },
+    {
+      "npcId": "temerosa:root2:reila",
+      "series": "root2",
+      "sourceFingerprint": "119b1a857be6c62f87573c507d682d65562dca29bc55103dc22baca0267a1f6b",
+      "status": "selected",
+      "emotions": {
+        "neutral": {
+          "assetId": "119b1a857be6c62f:89:6294dec31c33",
+          "name": "Reila.natural",
+          "sourceEntryPath": "assets/other/image/90.png",
+          "sourceExpression": "natural"
+        },
+        "pleased": {
+          "assetId": "119b1a857be6c62f:93:15d92aea5849",
+          "name": "Reila.smile",
+          "sourceEntryPath": "assets/other/image/94.png",
+          "sourceExpression": "smile"
+        },
+        "tense": {
+          "assetId": "119b1a857be6c62f:91:577034787747",
+          "name": "Reila.angry",
+          "sourceEntryPath": "assets/other/image/92.png",
+          "sourceExpression": "angry"
+        },
+        "despair": {
+          "assetId": "119b1a857be6c62f:88:e81548d62d44",
+          "name": "Reila.sad",
+          "sourceEntryPath": "assets/other/image/89.png",
+          "sourceExpression": "sad"
+        }
+      }
+    },
+    {
+      "npcId": "temerosa:root2:revi",
+      "series": "root2",
+      "sourceFingerprint": "119b1a857be6c62f87573c507d682d65562dca29bc55103dc22baca0267a1f6b",
+      "status": "selected",
+      "emotions": {
+        "neutral": {
+          "assetId": "119b1a857be6c62f:208:e08e3e0eb5e2",
+          "name": "Revi.natural",
+          "sourceEntryPath": "assets/other/image/209.png",
+          "sourceExpression": "natural"
+        },
+        "pleased": {
+          "assetId": "119b1a857be6c62f:208:e08e3e0eb5e2",
+          "name": "Revi.natural",
+          "sourceEntryPath": "assets/other/image/209.png",
+          "sourceExpression": "natural",
+          "fallbackFrom": "neutral"
+        },
+        "tense": {
+          "assetId": "119b1a857be6c62f:209:2683d743ab3b",
+          "name": "Revi.angry",
+          "sourceEntryPath": "assets/other/image/210.png",
+          "sourceExpression": "angry"
+        },
+        "despair": {
+          "assetId": "119b1a857be6c62f:210:9d4ee4b35a9b",
+          "name": "Revi.sad",
+          "sourceEntryPath": "assets/other/image/211.png",
+          "sourceExpression": "sad"
+        }
+      }
+    },
+    {
+      "npcId": "temerosa:root2:septendecilliono",
+      "series": "root2",
+      "sourceFingerprint": "119b1a857be6c62f87573c507d682d65562dca29bc55103dc22baca0267a1f6b",
+      "status": "selected",
+      "emotions": {
+        "neutral": {
+          "assetId": "119b1a857be6c62f:222:e1150254a7aa",
+          "name": "septendecilliono.natural",
+          "sourceEntryPath": "assets/other/image/223.png",
+          "sourceExpression": "natural"
+        },
+        "pleased": {
+          "assetId": "119b1a857be6c62f:223:b325e735e638",
+          "name": "septendecilliono.smile",
+          "sourceEntryPath": "assets/other/image/224.png",
+          "sourceExpression": "smile"
+        },
+        "tense": {
+          "assetId": "119b1a857be6c62f:225:d6f0d9dc67ef",
+          "name": "septendecilliono.angry",
+          "sourceEntryPath": "assets/other/image/226.png",
+          "sourceExpression": "angry"
+        },
+        "despair": {
+          "assetId": "119b1a857be6c62f:228:afb6443ef0f9",
+          "name": "septendecilliono.sad",
+          "sourceEntryPath": "assets/other/image/229.png",
+          "sourceExpression": "sad"
+        }
+      }
+    },
+    {
+      "npcId": "temerosa:root2:tashtego",
+      "series": "root2",
+      "sourceFingerprint": "119b1a857be6c62f87573c507d682d65562dca29bc55103dc22baca0267a1f6b",
+      "status": "selected",
+      "emotions": {
+        "neutral": {
+          "assetId": "119b1a857be6c62f:280:f5f11d63a511",
+          "name": "Tashtego.natural",
+          "sourceEntryPath": "assets/other/image/281.png",
+          "sourceExpression": "natural"
+        },
+        "pleased": {
+          "assetId": "119b1a857be6c62f:281:56e2b8b7d98e",
+          "name": "Tashtego.smile",
+          "sourceEntryPath": "assets/other/image/282.png",
+          "sourceExpression": "smile"
+        },
+        "tense": {
+          "assetId": "119b1a857be6c62f:284:8843fe592059",
+          "name": "Tashtego.angry",
+          "sourceEntryPath": "assets/other/image/285.png",
+          "sourceExpression": "angry"
+        },
+        "despair": {
+          "assetId": "119b1a857be6c62f:286:f99ba7a6d164",
+          "name": "Tashtego.sad",
+          "sourceEntryPath": "assets/other/image/287.png",
+          "sourceExpression": "sad"
+        }
+      }
+    },
+    {
+      "npcId": "temerosa:root2:wares",
+      "series": "root2",
+      "sourceFingerprint": "119b1a857be6c62f87573c507d682d65562dca29bc55103dc22baca0267a1f6b",
+      "status": "selected",
+      "emotions": {
+        "neutral": {
+          "assetId": "119b1a857be6c62f:149:4241e2878b32",
+          "name": "Wares.natural",
+          "sourceEntryPath": "assets/other/image/150.png",
+          "sourceExpression": "natural"
+        },
+        "pleased": {
+          "assetId": "119b1a857be6c62f:148:dc10782d87d2",
+          "name": "Wares.smile",
+          "sourceEntryPath": "assets/other/image/149.png",
+          "sourceExpression": "smile"
+        },
+        "tense": {
+          "assetId": "119b1a857be6c62f:150:559183bab5da",
+          "name": "Wares.angry",
+          "sourceEntryPath": "assets/other/image/151.png",
+          "sourceExpression": "angry"
+        },
+        "despair": {
+          "assetId": "119b1a857be6c62f:152:e364cbe23b2f",
+          "name": "Wares.sad",
+          "sourceEntryPath": "assets/other/image/153.png",
+          "sourceExpression": "sad"
+        }
+      }
+    },
+    {
+      "npcId": "temerosa:bestiaization:a",
+      "series": "bestiaization",
+      "sourceFingerprint": "336eb710913afbc8e95eae3e7be0f33994e169c41eefe746c9ffb300ec64e825",
+      "status": "selected",
+      "emotions": {
+        "neutral": {
+          "assetId": "336eb710913afbc8:389:d51430c6b500",
+          "name": "[A].natural ",
+          "sourceEntryPath": "assets/other/image/390.jpeg",
+          "sourceExpression": "natural"
+        },
+        "pleased": {
+          "assetId": "336eb710913afbc8:390:408d02ccaa83",
+          "name": "[A].smile",
+          "sourceEntryPath": "assets/other/image/391.jpeg",
+          "sourceExpression": "smile"
+        },
+        "tense": {
+          "assetId": "336eb710913afbc8:387:b77e9b0136c1",
+          "name": "[A].angry",
+          "sourceEntryPath": "assets/other/image/388.jpeg",
+          "sourceExpression": "angry"
+        },
+        "despair": {
+          "assetId": "336eb710913afbc8:388:a7a177558374",
+          "name": "[A].sad",
+          "sourceEntryPath": "assets/other/image/389.jpeg",
+          "sourceExpression": "sad"
+        }
+      }
+    },
+    {
+      "npcId": "temerosa:bestiaization:adesha",
+      "series": "bestiaization",
+      "sourceFingerprint": "336eb710913afbc8e95eae3e7be0f33994e169c41eefe746c9ffb300ec64e825",
+      "status": "selected",
+      "emotions": {
+        "neutral": {
+          "assetId": "336eb710913afbc8:176:7f51bd918df9",
+          "name": "Adesha.natural",
+          "sourceEntryPath": "assets/other/image/177.jpeg",
+          "sourceExpression": "natural"
+        },
+        "pleased": {
+          "assetId": "336eb710913afbc8:401:7dceff31a754",
+          "name": "Adesha.smile",
+          "sourceEntryPath": "assets/other/image/402.jpeg",
+          "sourceExpression": "smile"
+        },
+        "tense": {
+          "assetId": "336eb710913afbc8:177:3d0a397575d3",
+          "name": "Adesha.angry",
+          "sourceEntryPath": "assets/other/image/178.jpeg",
+          "sourceExpression": "angry"
+        },
+        "despair": {
+          "assetId": "336eb710913afbc8:178:12100000f0f4",
+          "name": "Adesha.sad",
+          "sourceEntryPath": "assets/other/image/179.jpeg",
+          "sourceExpression": "sad"
+        }
+      }
+    },
+    {
+      "npcId": "temerosa:bestiaization:alger",
+      "series": "bestiaization",
+      "sourceFingerprint": "336eb710913afbc8e95eae3e7be0f33994e169c41eefe746c9ffb300ec64e825",
+      "status": "selected",
+      "emotions": {
+        "neutral": {
+          "assetId": "336eb710913afbc8:319:6ff175bc3ef0",
+          "name": "Alger.natural",
+          "sourceEntryPath": "assets/other/image/320.png",
+          "sourceExpression": "natural"
+        },
+        "pleased": {
+          "assetId": "336eb710913afbc8:315:da86737ccc33",
+          "name": "Alger.smile",
+          "sourceEntryPath": "assets/other/image/316.png",
+          "sourceExpression": "smile"
+        },
+        "tense": {
+          "assetId": "336eb710913afbc8:314:83b5115f0b84",
+          "name": "Alger.angry",
+          "sourceEntryPath": "assets/other/image/315.png",
+          "sourceExpression": "angry"
+        },
+        "despair": {
+          "assetId": "336eb710913afbc8:313:85827fe6c48f",
+          "name": "Alger.sad",
+          "sourceEntryPath": "assets/other/image/314.png",
+          "sourceExpression": "sad"
+        }
+      }
+    },
+    {
+      "npcId": "temerosa:bestiaization:anna",
+      "series": "bestiaization",
+      "sourceFingerprint": "336eb710913afbc8e95eae3e7be0f33994e169c41eefe746c9ffb300ec64e825",
+      "status": "selected",
+      "emotions": {
+        "neutral": {
+          "assetId": "336eb710913afbc8:248:198283dc4452",
+          "name": "Anna.natural",
+          "sourceEntryPath": "assets/other/image/249.jpeg",
+          "sourceExpression": "natural"
+        },
+        "pleased": {
+          "assetId": "336eb710913afbc8:250:378d39c39046",
+          "name": "Anna.smile",
+          "sourceEntryPath": "assets/other/image/251.jpeg",
+          "sourceExpression": "smile"
+        },
+        "tense": {
+          "assetId": "336eb710913afbc8:252:3c66b918d87f",
+          "name": "Anna.angry",
+          "sourceEntryPath": "assets/other/image/253.jpeg",
+          "sourceExpression": "angry"
+        },
+        "despair": {
+          "assetId": "336eb710913afbc8:249:4c8b9f7b4409",
+          "name": "Anna.sad",
+          "sourceEntryPath": "assets/other/image/250.jpeg",
+          "sourceExpression": "sad"
+        }
+      }
+    },
+    {
+      "npcId": "temerosa:bestiaization:apollyon",
+      "series": "bestiaization",
+      "sourceFingerprint": "336eb710913afbc8e95eae3e7be0f33994e169c41eefe746c9ffb300ec64e825",
+      "status": "selected",
+      "emotions": {
+        "neutral": {
+          "assetId": "336eb710913afbc8:236:19a522f8c91a",
+          "name": "Apollyon.natural",
+          "sourceEntryPath": "assets/other/image/237.jpeg",
+          "sourceExpression": "natural"
+        },
+        "pleased": {
+          "assetId": "336eb710913afbc8:232:f9193674a905",
+          "name": "Apollyon.smile",
+          "sourceEntryPath": "assets/other/image/233.jpeg",
+          "sourceExpression": "smile"
+        },
+        "tense": {
+          "assetId": "336eb710913afbc8:231:73a4b1b24677",
+          "name": "Apollyon.angry",
+          "sourceEntryPath": "assets/other/image/232.jpeg",
+          "sourceExpression": "angry"
+        },
+        "despair": {
+          "assetId": "336eb710913afbc8:234:c38eca52d9f7",
+          "name": "Apollyon.sad",
+          "sourceEntryPath": "assets/other/image/235.jpeg",
+          "sourceExpression": "sad"
+        }
+      }
+    },
+    {
+      "npcId": "temerosa:bestiaization:bacikal",
+      "series": "bestiaization",
+      "sourceFingerprint": "336eb710913afbc8e95eae3e7be0f33994e169c41eefe746c9ffb300ec64e825",
+      "status": "selected",
+      "emotions": {
+        "neutral": {
+          "assetId": "336eb710913afbc8:321:66745362541e",
+          "name": "Nemo.natural",
+          "sourceEntryPath": "assets/other/image/322.png",
+          "sourceExpression": "natural"
+        },
+        "pleased": {
+          "assetId": "336eb710913afbc8:322:a0737f3124cf",
+          "name": "Nemo.smile",
+          "sourceEntryPath": "assets/other/image/323.png",
+          "sourceExpression": "smile"
+        },
+        "tense": {
+          "assetId": "336eb710913afbc8:323:fdadaf92ddb4",
+          "name": "Nemo.angry",
+          "sourceEntryPath": "assets/other/image/324.png",
+          "sourceExpression": "angry"
+        },
+        "despair": {
+          "assetId": "336eb710913afbc8:324:2a2ed519ced4",
+          "name": "Nemo.sad",
+          "sourceEntryPath": "assets/other/image/325.png",
+          "sourceExpression": "sad"
+        }
+      }
+    },
+    {
+      "npcId": "temerosa:bestiaization:bamcapis",
+      "series": "bestiaization",
+      "sourceFingerprint": "336eb710913afbc8e95eae3e7be0f33994e169c41eefe746c9ffb300ec64e825",
+      "status": "selected",
+      "emotions": {
+        "neutral": {
+          "assetId": "336eb710913afbc8:213:7d042db7be47",
+          "name": "Bamcapis.natural",
+          "sourceEntryPath": "assets/other/image/214.jpeg",
+          "sourceExpression": "natural"
+        },
+        "pleased": {
+          "assetId": "336eb710913afbc8:214:ddb73302b802",
+          "name": "Bamcapis.smile",
+          "sourceEntryPath": "assets/other/image/215.jpeg",
+          "sourceExpression": "smile"
+        },
+        "tense": {
+          "assetId": "336eb710913afbc8:215:43ad186f1fb0",
+          "name": "Bamcapis.angry",
+          "sourceEntryPath": "assets/other/image/216.jpeg",
+          "sourceExpression": "angry"
+        },
+        "despair": {
+          "assetId": "336eb710913afbc8:217:e68304ecb37f",
+          "name": "Bamcapis.sad",
+          "sourceEntryPath": "assets/other/image/218.jpeg",
+          "sourceExpression": "sad"
+        }
+      }
+    },
+    {
+      "npcId": "temerosa:bestiaization:bche",
+      "series": "bestiaization",
+      "sourceFingerprint": "336eb710913afbc8e95eae3e7be0f33994e169c41eefe746c9ffb300ec64e825",
+      "status": "selected",
+      "emotions": {
+        "neutral": {
+          "assetId": "336eb710913afbc8:123:20551d6b50e4",
+          "name": "Bche.natural",
+          "sourceEntryPath": "assets/other/image/124.jpeg",
+          "sourceExpression": "natural"
+        },
+        "pleased": {
+          "assetId": "336eb710913afbc8:118:230737880cc8",
+          "name": "Bche.smile",
+          "sourceEntryPath": "assets/other/image/119.jpeg",
+          "sourceExpression": "smile"
+        },
+        "tense": {
+          "assetId": "336eb710913afbc8:120:d2f918efa2e7",
+          "name": "Bche.angry",
+          "sourceEntryPath": "assets/other/image/121.jpeg",
+          "sourceExpression": "angry"
+        },
+        "despair": {
+          "assetId": "336eb710913afbc8:119:ff81fb79772b",
+          "name": "Bche.sad",
+          "sourceEntryPath": "assets/other/image/120.jpeg",
+          "sourceExpression": "sad"
+        }
+      }
+    },
+    {
+      "npcId": "temerosa:bestiaization:boris-leblanc",
+      "series": "bestiaization",
+      "sourceFingerprint": "336eb710913afbc8e95eae3e7be0f33994e169c41eefe746c9ffb300ec64e825",
+      "status": "unavailable",
+      "reason": "no-safe-image-candidates"
+    },
+    {
+      "npcId": "temerosa:bestiaization:cab",
+      "series": "bestiaization",
+      "sourceFingerprint": "336eb710913afbc8e95eae3e7be0f33994e169c41eefe746c9ffb300ec64e825",
+      "status": "selected",
+      "emotions": {
+        "neutral": {
+          "assetId": "336eb710913afbc8:255:1845ef0e6b74",
+          "name": "Cab.natural",
+          "sourceEntryPath": "assets/other/image/256.jpeg",
+          "sourceExpression": "natural"
+        },
+        "pleased": {
+          "assetId": "336eb710913afbc8:254:6fe301cf7078",
+          "name": "Cab.smile",
+          "sourceEntryPath": "assets/other/image/255.jpeg",
+          "sourceExpression": "smile"
+        },
+        "tense": {
+          "assetId": "336eb710913afbc8:258:6df5330e8465",
+          "name": "Cab.angry",
+          "sourceEntryPath": "assets/other/image/259.jpeg",
+          "sourceExpression": "angry"
+        },
+        "despair": {
+          "assetId": "336eb710913afbc8:257:5bed1fdbe86a",
+          "name": "Cab.sad",
+          "sourceEntryPath": "assets/other/image/258.jpeg",
+          "sourceExpression": "sad"
+        }
+      }
+    },
+    {
+      "npcId": "temerosa:bestiaization:camille",
+      "series": "bestiaization",
+      "sourceFingerprint": "336eb710913afbc8e95eae3e7be0f33994e169c41eefe746c9ffb300ec64e825",
+      "status": "selected",
+      "emotions": {
+        "neutral": {
+          "assetId": "336eb710913afbc8:113:0f9c95ea20f8",
+          "name": "Camille.natural",
+          "sourceEntryPath": "assets/other/image/114.jpeg",
+          "sourceExpression": "natural"
+        },
+        "pleased": {
+          "assetId": "336eb710913afbc8:112:8a9643912bc5",
+          "name": "Camille.smile",
+          "sourceEntryPath": "assets/other/image/113.jpeg",
+          "sourceExpression": "smile"
+        },
+        "tense": {
+          "assetId": "336eb710913afbc8:114:5748424c0b3a",
+          "name": "Camille.angry",
+          "sourceEntryPath": "assets/other/image/115.jpeg",
+          "sourceExpression": "angry"
+        },
+        "despair": {
+          "assetId": "336eb710913afbc8:116:0e54e16654a9",
+          "name": "Camille.sad",
+          "sourceEntryPath": "assets/other/image/117.jpeg",
+          "sourceExpression": "sad"
+        }
+      }
+    },
+    {
+      "npcId": "temerosa:bestiaization:cicero",
+      "series": "bestiaization",
+      "sourceFingerprint": "336eb710913afbc8e95eae3e7be0f33994e169c41eefe746c9ffb300ec64e825",
+      "status": "selected",
+      "emotions": {
+        "neutral": {
+          "assetId": "336eb710913afbc8:92:d591a759141d",
+          "name": "Cicero.Natural ",
+          "sourceEntryPath": "assets/other/image/93.jpeg",
+          "sourceExpression": "natural"
+        },
+        "pleased": {
+          "assetId": "336eb710913afbc8:89:802b600be84f",
+          "name": "Cicero.smile",
+          "sourceEntryPath": "assets/other/image/90.jpeg",
+          "sourceExpression": "smile"
+        },
+        "tense": {
+          "assetId": "336eb710913afbc8:88:1fa8def65d8e",
+          "name": "Cicero.angry",
+          "sourceEntryPath": "assets/other/image/89.jpeg",
+          "sourceExpression": "angry"
+        },
+        "despair": {
+          "assetId": "336eb710913afbc8:91:f29cd5586ea3",
+          "name": "Cicero.sad",
+          "sourceEntryPath": "assets/other/image/92.jpeg",
+          "sourceExpression": "sad"
+        }
+      }
+    },
+    {
+      "npcId": "temerosa:bestiaization:cradle",
+      "series": "bestiaization",
+      "sourceFingerprint": "336eb710913afbc8e95eae3e7be0f33994e169c41eefe746c9ffb300ec64e825",
+      "status": "selected",
+      "emotions": {
+        "neutral": {
+          "assetId": "336eb710913afbc8:219:0b283f50051c",
+          "name": "Sakabus.natural",
+          "sourceEntryPath": "assets/other/image/220.jpeg",
+          "sourceExpression": "natural"
+        },
+        "pleased": {
+          "assetId": "336eb710913afbc8:220:323d1ae17942",
+          "name": "Sakabus.smile",
+          "sourceEntryPath": "assets/other/image/221.jpeg",
+          "sourceExpression": "smile"
+        },
+        "tense": {
+          "assetId": "336eb710913afbc8:221:861057d25c7d",
+          "name": "Sakabus.angry",
+          "sourceEntryPath": "assets/other/image/222.jpeg",
+          "sourceExpression": "angry"
+        },
+        "despair": {
+          "assetId": "336eb710913afbc8:223:005e14a62699",
+          "name": "Sakabus.sad",
+          "sourceEntryPath": "assets/other/image/224.jpeg",
+          "sourceExpression": "sad"
+        }
+      }
+    },
+    {
+      "npcId": "temerosa:bestiaization:deokbae",
+      "series": "bestiaization",
+      "sourceFingerprint": "336eb710913afbc8e95eae3e7be0f33994e169c41eefe746c9ffb300ec64e825",
+      "status": "selected",
+      "emotions": {
+        "neutral": {
+          "assetId": "336eb710913afbc8:129:e547fdfa2b36",
+          "name": "Deokbae.natural",
+          "sourceEntryPath": "assets/other/image/130.jpeg",
+          "sourceExpression": "natural"
+        },
+        "pleased": {
+          "assetId": "336eb710913afbc8:124:d91d33a5244e",
+          "name": "Deokbae.smile",
+          "sourceEntryPath": "assets/other/image/125.jpeg",
+          "sourceExpression": "smile"
+        },
+        "tense": {
+          "assetId": "336eb710913afbc8:125:ebba5819367a",
+          "name": "Deokbae.angry",
+          "sourceEntryPath": "assets/other/image/126.jpeg",
+          "sourceExpression": "angry"
+        },
+        "despair": {
+          "assetId": "336eb710913afbc8:126:54ff3cb39d26",
+          "name": "Deokbae.sad",
+          "sourceEntryPath": "assets/other/image/127.jpeg",
+          "sourceExpression": "sad"
+        }
+      }
+    },
+    {
+      "npcId": "temerosa:bestiaization:diamo",
+      "series": "bestiaization",
+      "sourceFingerprint": "336eb710913afbc8e95eae3e7be0f33994e169c41eefe746c9ffb300ec64e825",
+      "status": "selected",
+      "emotions": {
+        "neutral": {
+          "assetId": "336eb710913afbc8:184:a80d95f4e736",
+          "name": "Diamo.natural",
+          "sourceEntryPath": "assets/other/image/185.jpeg",
+          "sourceExpression": "natural"
+        },
+        "pleased": {
+          "assetId": "336eb710913afbc8:185:cc2e6413415e",
+          "name": "Diamo.smile",
+          "sourceEntryPath": "assets/other/image/186.jpeg",
+          "sourceExpression": "smile"
+        },
+        "tense": {
+          "assetId": "336eb710913afbc8:187:1e15dc74f699",
+          "name": "Diamo.angry",
+          "sourceEntryPath": "assets/other/image/188.jpeg",
+          "sourceExpression": "angry"
+        },
+        "despair": {
+          "assetId": "336eb710913afbc8:189:8c117d24ab5f",
+          "name": "Diamo.sad",
+          "sourceEntryPath": "assets/other/image/190.jpeg",
+          "sourceExpression": "sad"
+        }
+      }
+    },
+    {
+      "npcId": "temerosa:bestiaization:dorsinea",
+      "series": "bestiaization",
+      "sourceFingerprint": "336eb710913afbc8e95eae3e7be0f33994e169c41eefe746c9ffb300ec64e825",
+      "status": "selected",
+      "emotions": {
+        "neutral": {
+          "assetId": "336eb710913afbc8:307:a88228419e3c",
+          "name": "Dorsinea.Natural ",
+          "sourceEntryPath": "assets/other/image/308.png",
+          "sourceExpression": "natural"
+        },
+        "pleased": {
+          "assetId": "336eb710913afbc8:308:9cb36af9ec23",
+          "name": "Dorsinea.smile",
+          "sourceEntryPath": "assets/other/image/309.png",
+          "sourceExpression": "smile"
+        },
+        "tense": {
+          "assetId": "336eb710913afbc8:310:514689106f2b",
+          "name": "Dorsinea.angry",
+          "sourceEntryPath": "assets/other/image/311.png",
+          "sourceExpression": "angry"
+        },
+        "despair": {
+          "assetId": "336eb710913afbc8:307:a88228419e3c",
+          "name": "Dorsinea.Natural ",
+          "sourceEntryPath": "assets/other/image/308.png",
+          "sourceExpression": "natural",
+          "fallbackFrom": "neutral"
+        }
+      }
+    },
+    {
+      "npcId": "temerosa:bestiaization:echo",
+      "series": "bestiaization",
+      "sourceFingerprint": "336eb710913afbc8e95eae3e7be0f33994e169c41eefe746c9ffb300ec64e825",
+      "status": "selected",
+      "emotions": {
+        "neutral": {
+          "assetId": "336eb710913afbc8:196:9bd125edc49b",
+          "name": "Echo.natural",
+          "sourceEntryPath": "assets/other/image/197.jpeg",
+          "sourceExpression": "natural"
+        },
+        "pleased": {
+          "assetId": "336eb710913afbc8:199:cc8dc760160f",
+          "name": "Echo.smile",
+          "sourceEntryPath": "assets/other/image/200.jpeg",
+          "sourceExpression": "smile"
+        },
+        "tense": {
+          "assetId": "336eb710913afbc8:198:905c697046b6",
+          "name": "Echo.angry",
+          "sourceEntryPath": "assets/other/image/199.jpeg",
+          "sourceExpression": "angry"
+        },
+        "despair": {
+          "assetId": "336eb710913afbc8:201:ebc60641fe4f",
+          "name": "Echo.sad",
+          "sourceEntryPath": "assets/other/image/202.jpeg",
+          "sourceExpression": "sad"
+        }
+      }
+    },
+    {
+      "npcId": "temerosa:bestiaization:esther",
+      "series": "bestiaization",
+      "sourceFingerprint": "336eb710913afbc8e95eae3e7be0f33994e169c41eefe746c9ffb300ec64e825",
+      "status": "selected",
+      "emotions": {
+        "neutral": {
+          "assetId": "336eb710913afbc8:242:130b5d325377",
+          "name": "Esther.natural",
+          "sourceEntryPath": "assets/other/image/243.jpeg",
+          "sourceExpression": "natural"
+        },
+        "pleased": {
+          "assetId": "336eb710913afbc8:244:ed44bf310170",
+          "name": "Esther.smile",
+          "sourceEntryPath": "assets/other/image/245.jpeg",
+          "sourceExpression": "smile"
+        },
+        "tense": {
+          "assetId": "336eb710913afbc8:246:5bb75c3737fd",
+          "name": "Esther.angry",
+          "sourceEntryPath": "assets/other/image/247.jpeg",
+          "sourceExpression": "angry"
+        },
+        "despair": {
+          "assetId": "336eb710913afbc8:243:3365fdb99b1c",
+          "name": "Esther.sad",
+          "sourceEntryPath": "assets/other/image/244.jpeg",
+          "sourceExpression": "sad"
+        }
+      }
+    },
+    {
+      "npcId": "temerosa:bestiaization:female",
+      "series": "bestiaization",
+      "sourceFingerprint": "336eb710913afbc8e95eae3e7be0f33994e169c41eefe746c9ffb300ec64e825",
+      "status": "selected",
+      "emotions": {
+        "neutral": {
+          "assetId": "336eb710913afbc8:409:09c9d4691b2f",
+          "name": "Female.natural",
+          "sourceEntryPath": "assets/other/image/410.jpeg",
+          "sourceExpression": "natural"
+        },
+        "pleased": {
+          "assetId": "336eb710913afbc8:412:dd2a14de33d9",
+          "name": "Female.blush",
+          "sourceEntryPath": "assets/other/image/413.jpeg",
+          "sourceExpression": "blush"
+        },
+        "tense": {
+          "assetId": "336eb710913afbc8:414:2835cf387fc6",
+          "name": "Female.angry",
+          "sourceEntryPath": "assets/other/image/415.jpeg",
+          "sourceExpression": "angry"
+        },
+        "despair": {
+          "assetId": "336eb710913afbc8:410:71cf2abea435",
+          "name": "Female.sad",
+          "sourceEntryPath": "assets/other/image/411.jpeg",
+          "sourceExpression": "sad"
+        }
+      }
+    },
+    {
+      "npcId": "temerosa:bestiaization:flask",
+      "series": "bestiaization",
+      "sourceFingerprint": "336eb710913afbc8e95eae3e7be0f33994e169c41eefe746c9ffb300ec64e825",
+      "status": "selected",
+      "emotions": {
+        "neutral": {
+          "assetId": "336eb710913afbc8:204:bbc710aed202",
+          "name": "Flask.natural",
+          "sourceEntryPath": "assets/other/image/205.jpeg",
+          "sourceExpression": "natural"
+        },
+        "pleased": {
+          "assetId": "336eb710913afbc8:415:eace85f0dda6",
+          "name": "Flask.smile",
+          "sourceEntryPath": "assets/other/image/416.jpeg",
+          "sourceExpression": "smile"
+        },
+        "tense": {
+          "assetId": "336eb710913afbc8:203:2dbf56c0d088",
+          "name": "Flask.angry",
+          "sourceEntryPath": "assets/other/image/204.jpeg",
+          "sourceExpression": "angry"
+        },
+        "despair": {
+          "assetId": "336eb710913afbc8:205:effb6f1bf615",
+          "name": "Flask.sad",
+          "sourceEntryPath": "assets/other/image/206.jpeg",
+          "sourceExpression": "sad"
+        }
+      }
+    },
+    {
+      "npcId": "temerosa:bestiaization:francis",
+      "series": "bestiaization",
+      "sourceFingerprint": "336eb710913afbc8e95eae3e7be0f33994e169c41eefe746c9ffb300ec64e825",
+      "status": "selected",
+      "emotions": {
+        "neutral": {
+          "assetId": "336eb710913afbc8:278:0e9a888b0ff2",
+          "name": "Francis.natural",
+          "sourceEntryPath": "assets/other/image/279.png",
+          "sourceExpression": "natural"
+        },
+        "pleased": {
+          "assetId": "336eb710913afbc8:278:0e9a888b0ff2",
+          "name": "Francis.natural",
+          "sourceEntryPath": "assets/other/image/279.png",
+          "sourceExpression": "natural",
+          "fallbackFrom": "neutral"
+        },
+        "tense": {
+          "assetId": "336eb710913afbc8:280:5670769f50e6",
+          "name": "Francis.angry",
+          "sourceEntryPath": "assets/other/image/281.png",
+          "sourceExpression": "angry"
+        },
+        "despair": {
+          "assetId": "336eb710913afbc8:281:e5a07c0a66b0",
+          "name": "Francis.sad",
+          "sourceEntryPath": "assets/other/image/282.png",
+          "sourceExpression": "sad"
+        }
+      }
+    },
+    {
+      "npcId": "temerosa:bestiaization:gestas",
+      "series": "bestiaization",
+      "sourceFingerprint": "336eb710913afbc8e95eae3e7be0f33994e169c41eefe746c9ffb300ec64e825",
+      "status": "unavailable",
+      "reason": "no-safe-image-candidates"
+    },
+    {
+      "npcId": "temerosa:bestiaization:habwen",
+      "series": "bestiaization",
+      "sourceFingerprint": "336eb710913afbc8e95eae3e7be0f33994e169c41eefe746c9ffb300ec64e825",
+      "status": "selected",
+      "emotions": {
+        "neutral": {
+          "assetId": "336eb710913afbc8:365:d5d5c84a645b",
+          "name": "Habwen.natural",
+          "sourceEntryPath": "assets/other/image/366.jpeg",
+          "sourceExpression": "natural"
+        },
+        "pleased": {
+          "assetId": "336eb710913afbc8:369:c9018c12f833",
+          "name": "Habwen.smile",
+          "sourceEntryPath": "assets/other/image/370.jpeg",
+          "sourceExpression": "smile"
+        },
+        "tense": {
+          "assetId": "336eb710913afbc8:367:1d511a2e719e",
+          "name": "Habwen.angry",
+          "sourceEntryPath": "assets/other/image/368.jpeg",
+          "sourceExpression": "angry"
+        },
+        "despair": {
+          "assetId": "336eb710913afbc8:366:cb227c56e33a",
+          "name": "Habwen.sad",
+          "sourceEntryPath": "assets/other/image/367.jpeg",
+          "sourceExpression": "sad"
+        }
+      }
+    },
+    {
+      "npcId": "temerosa:bestiaization:hiro",
+      "series": "bestiaization",
+      "sourceFingerprint": "336eb710913afbc8e95eae3e7be0f33994e169c41eefe746c9ffb300ec64e825",
+      "status": "selected",
+      "emotions": {
+        "neutral": {
+          "assetId": "336eb710913afbc8:162:ff149a870d57",
+          "name": "Hiro.natural",
+          "sourceEntryPath": "assets/other/image/163.jpeg",
+          "sourceExpression": "natural"
+        },
+        "pleased": {
+          "assetId": "336eb710913afbc8:163:7221d4186f6f",
+          "name": "Hiro.smile",
+          "sourceEntryPath": "assets/other/image/164.jpeg",
+          "sourceExpression": "smile"
+        },
+        "tense": {
+          "assetId": "336eb710913afbc8:164:bfe2991e65ce",
+          "name": "Hiro.angry",
+          "sourceEntryPath": "assets/other/image/165.jpeg",
+          "sourceExpression": "angry"
+        },
+        "despair": {
+          "assetId": "336eb710913afbc8:165:6a8d71be86ff",
+          "name": "Hiro.sad",
+          "sourceEntryPath": "assets/other/image/166.jpeg",
+          "sourceExpression": "sad"
+        }
+      }
+    },
+    {
+      "npcId": "temerosa:bestiaization:iweleth",
+      "series": "bestiaization",
+      "sourceFingerprint": "336eb710913afbc8e95eae3e7be0f33994e169c41eefe746c9ffb300ec64e825",
+      "status": "unavailable",
+      "reason": "no-safe-image-candidates"
+    },
+    {
+      "npcId": "temerosa:bestiaization:jia",
+      "series": "bestiaization",
+      "sourceFingerprint": "336eb710913afbc8e95eae3e7be0f33994e169c41eefe746c9ffb300ec64e825",
+      "status": "selected",
+      "emotions": {
+        "neutral": {
+          "assetId": "336eb710913afbc8:359:4d5463505207",
+          "name": "Jia.natural",
+          "sourceEntryPath": "assets/other/image/360.jpeg",
+          "sourceExpression": "natural"
+        },
+        "pleased": {
+          "assetId": "336eb710913afbc8:363:069b5ec35a47",
+          "name": "Jia.smile",
+          "sourceEntryPath": "assets/other/image/364.jpeg",
+          "sourceExpression": "smile"
+        },
+        "tense": {
+          "assetId": "336eb710913afbc8:362:a0f202ffedf4",
+          "name": "Jia.angry",
+          "sourceEntryPath": "assets/other/image/363.jpeg",
+          "sourceExpression": "angry"
+        },
+        "despair": {
+          "assetId": "336eb710913afbc8:360:25515c4a0f0e",
+          "name": "Jia.sad",
+          "sourceEntryPath": "assets/other/image/361.jpeg",
+          "sourceExpression": "sad"
+        }
+      }
+    },
+    {
+      "npcId": "temerosa:bestiaization:katrinka",
+      "series": "bestiaization",
+      "sourceFingerprint": "336eb710913afbc8e95eae3e7be0f33994e169c41eefe746c9ffb300ec64e825",
+      "status": "selected",
+      "emotions": {
+        "neutral": {
+          "assetId": "336eb710913afbc8:136:a603f0b20df5",
+          "name": "Katrinka.natural",
+          "sourceEntryPath": "assets/other/image/137.jpeg",
+          "sourceExpression": "natural"
+        },
+        "pleased": {
+          "assetId": "336eb710913afbc8:141:261794587902",
+          "name": "Katrinka.smile",
+          "sourceEntryPath": "assets/other/image/142.jpeg",
+          "sourceExpression": "smile"
+        },
+        "tense": {
+          "assetId": "336eb710913afbc8:137:18758c63c9ff",
+          "name": "Katrinka.angry",
+          "sourceEntryPath": "assets/other/image/138.jpeg",
+          "sourceExpression": "angry"
+        },
+        "despair": {
+          "assetId": "336eb710913afbc8:139:fd0535bf7251",
+          "name": "Katrinka.sad",
+          "sourceEntryPath": "assets/other/image/140.jpeg",
+          "sourceExpression": "sad"
+        }
+      }
+    },
+    {
+      "npcId": "temerosa:bestiaization:kreva",
+      "series": "bestiaization",
+      "sourceFingerprint": "336eb710913afbc8e95eae3e7be0f33994e169c41eefe746c9ffb300ec64e825",
+      "status": "selected",
+      "emotions": {
+        "neutral": {
+          "assetId": "336eb710913afbc8:111:864cacdff1df",
+          "name": "Kreva.natural",
+          "sourceEntryPath": "assets/other/image/112.jpeg",
+          "sourceExpression": "natural"
+        },
+        "pleased": {
+          "assetId": "336eb710913afbc8:109:0828ddddcfe2",
+          "name": "Kreva.smile",
+          "sourceEntryPath": "assets/other/image/110.jpeg",
+          "sourceExpression": "smile"
+        },
+        "tense": {
+          "assetId": "336eb710913afbc8:110:44fcba8e3a0e",
+          "name": "Kreva.angry",
+          "sourceEntryPath": "assets/other/image/111.jpeg",
+          "sourceExpression": "angry"
+        },
+        "despair": {
+          "assetId": "336eb710913afbc8:108:e3940f30e26a",
+          "name": "Kreva.sad",
+          "sourceEntryPath": "assets/other/image/109.jpeg",
+          "sourceExpression": "sad"
+        }
+      }
+    },
+    {
+      "npcId": "temerosa:bestiaization:kudryavka",
+      "series": "bestiaization",
+      "sourceFingerprint": "336eb710913afbc8e95eae3e7be0f33994e169c41eefe746c9ffb300ec64e825",
+      "status": "unavailable",
+      "reason": "no-safe-image-candidates"
+    },
+    {
+      "npcId": "temerosa:bestiaization:leviathan",
+      "series": "bestiaization",
+      "sourceFingerprint": "336eb710913afbc8e95eae3e7be0f33994e169c41eefe746c9ffb300ec64e825",
+      "status": "unavailable",
+      "reason": "no-safe-image-candidates"
+    },
+    {
+      "npcId": "temerosa:bestiaization:levillotte",
+      "series": "bestiaization",
+      "sourceFingerprint": "336eb710913afbc8e95eae3e7be0f33994e169c41eefe746c9ffb300ec64e825",
+      "status": "selected",
+      "emotions": {
+        "neutral": {
+          "assetId": "336eb710913afbc8:170:2875189aff1d",
+          "name": "Levillotte.natural",
+          "sourceEntryPath": "assets/other/image/171.jpeg",
+          "sourceExpression": "natural"
+        },
+        "pleased": {
+          "assetId": "336eb710913afbc8:171:7e0f7051cb59",
+          "name": "Levillotte.smile",
+          "sourceEntryPath": "assets/other/image/172.jpeg",
+          "sourceExpression": "smile"
+        },
+        "tense": {
+          "assetId": "336eb710913afbc8:173:51aed53ec34c",
+          "name": "Levillotte.angry",
+          "sourceEntryPath": "assets/other/image/174.jpeg",
+          "sourceExpression": "angry"
+        },
+        "despair": {
+          "assetId": "336eb710913afbc8:174:42a9102f75d0",
+          "name": "Levillotte.sad",
+          "sourceEntryPath": "assets/other/image/175.jpeg",
+          "sourceExpression": "sad"
+        }
+      }
+    },
+    {
+      "npcId": "temerosa:bestiaization:lilim",
+      "series": "bestiaization",
+      "sourceFingerprint": "336eb710913afbc8e95eae3e7be0f33994e169c41eefe746c9ffb300ec64e825",
+      "status": "selected",
+      "emotions": {
+        "neutral": {
+          "assetId": "336eb710913afbc8:266:dc0a54b31c4b",
+          "name": "Lilim.natural",
+          "sourceEntryPath": "assets/other/image/267.jpeg",
+          "sourceExpression": "natural"
+        },
+        "pleased": {
+          "assetId": "336eb710913afbc8:267:eeaf9a46fca1",
+          "name": "Lilim.smile",
+          "sourceEntryPath": "assets/other/image/268.jpeg",
+          "sourceExpression": "smile"
+        },
+        "tense": {
+          "assetId": "336eb710913afbc8:270:4ec8fa6acf75",
+          "name": "Lilim.angry",
+          "sourceEntryPath": "assets/other/image/271.jpeg",
+          "sourceExpression": "angry"
+        },
+        "despair": {
+          "assetId": "336eb710913afbc8:268:52cdc56283d9",
+          "name": "Lilim.sad",
+          "sourceEntryPath": "assets/other/image/269.jpeg",
+          "sourceExpression": "sad"
+        }
+      }
+    },
+    {
+      "npcId": "temerosa:bestiaization:limet",
+      "series": "bestiaization",
+      "sourceFingerprint": "336eb710913afbc8e95eae3e7be0f33994e169c41eefe746c9ffb300ec64e825",
+      "status": "selected",
+      "emotions": {
+        "neutral": {
+          "assetId": "336eb710913afbc8:273:c113cdee928d",
+          "name": "Limet.natural",
+          "sourceEntryPath": "assets/other/image/274.png",
+          "sourceExpression": "natural"
+        },
+        "pleased": {
+          "assetId": "336eb710913afbc8:274:1989defe25ce",
+          "name": "Limet.smile",
+          "sourceEntryPath": "assets/other/image/275.png",
+          "sourceExpression": "smile"
+        },
+        "tense": {
+          "assetId": "336eb710913afbc8:277:289af1b3d0cb",
+          "name": "Limet.angry",
+          "sourceEntryPath": "assets/other/image/278.png",
+          "sourceExpression": "angry"
+        },
+        "despair": {
+          "assetId": "336eb710913afbc8:275:0c9cfd0de0f5",
+          "name": "Limet.sad",
+          "sourceEntryPath": "assets/other/image/276.png",
+          "sourceExpression": "sad"
+        }
+      }
+    },
+    {
+      "npcId": "temerosa:bestiaization:lyla",
+      "series": "bestiaization",
+      "sourceFingerprint": "336eb710913afbc8e95eae3e7be0f33994e169c41eefe746c9ffb300ec64e825",
+      "status": "selected",
+      "emotions": {
+        "neutral": {
+          "assetId": "336eb710913afbc8:296:e7df220a120b",
+          "name": "Lyla.natural",
+          "sourceEntryPath": "assets/other/image/297.png",
+          "sourceExpression": "natural"
+        },
+        "pleased": {
+          "assetId": "336eb710913afbc8:291:894c0342da9c",
+          "name": "Lyla.smile",
+          "sourceEntryPath": "assets/other/image/292.png",
+          "sourceExpression": "smile"
+        },
+        "tense": {
+          "assetId": "336eb710913afbc8:295:638cfff838ff",
+          "name": "Lyla.angry",
+          "sourceEntryPath": "assets/other/image/296.png",
+          "sourceExpression": "angry"
+        },
+        "despair": {
+          "assetId": "336eb710913afbc8:292:5304230a59e9",
+          "name": "Lyla.sad",
+          "sourceEntryPath": "assets/other/image/293.png",
+          "sourceExpression": "sad"
+        }
+      }
+    },
+    {
+      "npcId": "temerosa:bestiaization:machina",
+      "series": "bestiaization",
+      "sourceFingerprint": "336eb710913afbc8e95eae3e7be0f33994e169c41eefe746c9ffb300ec64e825",
+      "status": "selected",
+      "emotions": {
+        "neutral": {
+          "assetId": "336eb710913afbc8:130:13a03a1dbad7",
+          "name": "Machina.natural",
+          "sourceEntryPath": "assets/other/image/131.jpeg",
+          "sourceExpression": "natural"
+        },
+        "pleased": {
+          "assetId": "336eb710913afbc8:131:f0963954f63e",
+          "name": "Machina.smile",
+          "sourceEntryPath": "assets/other/image/132.jpeg",
+          "sourceExpression": "smile"
+        },
+        "tense": {
+          "assetId": "336eb710913afbc8:133:2556310773d7",
+          "name": "Machina.angry",
+          "sourceEntryPath": "assets/other/image/134.jpeg",
+          "sourceExpression": "angry"
+        },
+        "despair": {
+          "assetId": "336eb710913afbc8:134:6c95e0972663",
+          "name": "Machina.sad",
+          "sourceEntryPath": "assets/other/image/135.jpeg",
+          "sourceExpression": "sad"
+        }
+      }
+    },
+    {
+      "npcId": "temerosa:bestiaization:male",
+      "series": "bestiaization",
+      "sourceFingerprint": "336eb710913afbc8e95eae3e7be0f33994e169c41eefe746c9ffb300ec64e825",
+      "status": "selected",
+      "emotions": {
+        "neutral": {
+          "assetId": "336eb710913afbc8:408:46bc15cd01c8",
+          "name": "Male.natural",
+          "sourceEntryPath": "assets/other/image/409.jpeg",
+          "sourceExpression": "natural"
+        },
+        "pleased": {
+          "assetId": "336eb710913afbc8:404:1d403a5be840",
+          "name": "Male.smile",
+          "sourceEntryPath": "assets/other/image/405.jpeg",
+          "sourceExpression": "smile"
+        },
+        "tense": {
+          "assetId": "336eb710913afbc8:403:56f1a91b6741",
+          "name": "Male.surprised",
+          "sourceEntryPath": "assets/other/image/404.jpeg",
+          "sourceExpression": "surprised"
+        },
+        "despair": {
+          "assetId": "336eb710913afbc8:407:4e68e6b51ab4",
+          "name": "Male.sad",
+          "sourceEntryPath": "assets/other/image/408.jpeg",
+          "sourceExpression": "sad"
+        }
+      }
+    },
+    {
+      "npcId": "temerosa:bestiaization:maryhub",
+      "series": "bestiaization",
+      "sourceFingerprint": "336eb710913afbc8e95eae3e7be0f33994e169c41eefe746c9ffb300ec64e825",
+      "status": "selected",
+      "emotions": {
+        "neutral": {
+          "assetId": "336eb710913afbc8:330:5ee28fd49cb2",
+          "name": "Maryhub_closed_eyes.natural",
+          "sourceEntryPath": "assets/other/image/331.jpeg",
+          "sourceExpression": "natural"
+        },
+        "pleased": {
+          "assetId": "336eb710913afbc8:329:f08c89a5e135",
+          "name": "Maryhub_closed_eyes.smile",
+          "sourceEntryPath": "assets/other/image/330.jpeg",
+          "sourceExpression": "smile"
+        },
+        "tense": {
+          "assetId": "336eb710913afbc8:334:9210dade3e35",
+          "name": "Maryhub_closed_eyes.angry",
+          "sourceEntryPath": "assets/other/image/335.jpeg",
+          "sourceExpression": "angry"
+        },
+        "despair": {
+          "assetId": "336eb710913afbc8:331:3b420d663021",
+          "name": "Maryhub_closed_eyes.sad",
+          "sourceEntryPath": "assets/other/image/332.jpeg",
+          "sourceExpression": "sad"
+        }
+      }
+    },
+    {
+      "npcId": "temerosa:bestiaization:morsisa",
+      "series": "bestiaization",
+      "sourceFingerprint": "336eb710913afbc8e95eae3e7be0f33994e169c41eefe746c9ffb300ec64e825",
+      "status": "selected",
+      "emotions": {
+        "neutral": {
+          "assetId": "336eb710913afbc8:190:50bdf0f6ff18",
+          "name": "Morsisa.natural",
+          "sourceEntryPath": "assets/other/image/191.jpeg",
+          "sourceExpression": "natural"
+        },
+        "pleased": {
+          "assetId": "336eb710913afbc8:194:f09d36586b57",
+          "name": "Morsisa.smile",
+          "sourceEntryPath": "assets/other/image/195.jpeg",
+          "sourceExpression": "smile"
+        },
+        "tense": {
+          "assetId": "336eb710913afbc8:191:c182984681aa",
+          "name": "Morsisa.angry",
+          "sourceEntryPath": "assets/other/image/192.jpeg",
+          "sourceExpression": "angry"
+        },
+        "despair": {
+          "assetId": "336eb710913afbc8:195:effa331e7b62",
+          "name": "Morsisa.sad",
+          "sourceEntryPath": "assets/other/image/196.jpeg",
+          "sourceExpression": "sad"
+        }
+      }
+    },
+    {
+      "npcId": "temerosa:bestiaization:nayuta",
+      "series": "bestiaization",
+      "sourceFingerprint": "336eb710913afbc8e95eae3e7be0f33994e169c41eefe746c9ffb300ec64e825",
+      "status": "selected",
+      "emotions": {
+        "neutral": {
+          "assetId": "336eb710913afbc8:353:8a98ebb05537",
+          "name": "Nayuta.natural",
+          "sourceEntryPath": "assets/other/image/354.jpeg",
+          "sourceExpression": "natural"
+        },
+        "pleased": {
+          "assetId": "336eb710913afbc8:354:d7eb86f2bb37",
+          "name": "Nayuta.smile",
+          "sourceEntryPath": "assets/other/image/355.jpeg",
+          "sourceExpression": "smile"
+        },
+        "tense": {
+          "assetId": "336eb710913afbc8:356:bc0aecd5f9a6",
+          "name": "Nayuta.angry",
+          "sourceEntryPath": "assets/other/image/357.jpeg",
+          "sourceExpression": "angry"
+        },
+        "despair": {
+          "assetId": "336eb710913afbc8:355:72308b606a79",
+          "name": "Nayuta.sad",
+          "sourceEntryPath": "assets/other/image/356.jpeg",
+          "sourceExpression": "sad"
+        }
+      }
+    },
+    {
+      "npcId": "temerosa:bestiaization:nemo-slaughter-orbit",
+      "series": "bestiaization",
+      "sourceFingerprint": "336eb710913afbc8e95eae3e7be0f33994e169c41eefe746c9ffb300ec64e825",
+      "status": "selected",
+      "emotions": {
+        "neutral": {
+          "assetId": "336eb710913afbc8:321:66745362541e",
+          "name": "Nemo.natural",
+          "sourceEntryPath": "assets/other/image/322.png",
+          "sourceExpression": "natural"
+        },
+        "pleased": {
+          "assetId": "336eb710913afbc8:322:a0737f3124cf",
+          "name": "Nemo.smile",
+          "sourceEntryPath": "assets/other/image/323.png",
+          "sourceExpression": "smile"
+        },
+        "tense": {
+          "assetId": "336eb710913afbc8:323:fdadaf92ddb4",
+          "name": "Nemo.angry",
+          "sourceEntryPath": "assets/other/image/324.png",
+          "sourceExpression": "angry"
+        },
+        "despair": {
+          "assetId": "336eb710913afbc8:324:2a2ed519ced4",
+          "name": "Nemo.sad",
+          "sourceEntryPath": "assets/other/image/325.png",
+          "sourceExpression": "sad"
+        }
+      }
+    },
+    {
+      "npcId": "temerosa:bestiaization:nieun",
+      "series": "bestiaization",
+      "sourceFingerprint": "336eb710913afbc8e95eae3e7be0f33994e169c41eefe746c9ffb300ec64e825",
+      "status": "selected",
+      "emotions": {
+        "neutral": {
+          "assetId": "336eb710913afbc8:346:00738a8c31ee",
+          "name": "Nieun.natural",
+          "sourceEntryPath": "assets/other/image/347.png",
+          "sourceExpression": "natural"
+        },
+        "pleased": {
+          "assetId": "336eb710913afbc8:341:c89d41a29498",
+          "name": "Nieun.smile ",
+          "sourceEntryPath": "assets/other/image/342.png",
+          "sourceExpression": "smile"
+        },
+        "tense": {
+          "assetId": "336eb710913afbc8:342:a11697bef735",
+          "name": "Nieun.angry",
+          "sourceEntryPath": "assets/other/image/343.png",
+          "sourceExpression": "angry"
+        },
+        "despair": {
+          "assetId": "336eb710913afbc8:343:ef544a176f79",
+          "name": "Nieun.sad",
+          "sourceEntryPath": "assets/other/image/344.png",
+          "sourceExpression": "sad"
+        }
+      }
+    },
+    {
+      "npcId": "temerosa:bestiaization:nieun-pluto",
+      "series": "bestiaization",
+      "sourceFingerprint": "336eb710913afbc8e95eae3e7be0f33994e169c41eefe746c9ffb300ec64e825",
+      "status": "selected",
+      "emotions": {
+        "neutral": {
+          "assetId": "336eb710913afbc8:350:bca4d264a2b3",
+          "name": "Nieun_Pluto.natural",
+          "sourceEntryPath": "assets/other/image/351.png",
+          "sourceExpression": "natural"
+        },
+        "pleased": {
+          "assetId": "336eb710913afbc8:348:f21fee47f261",
+          "name": "Nieun_Pluto.smile",
+          "sourceEntryPath": "assets/other/image/349.png",
+          "sourceExpression": "smile"
+        },
+        "tense": {
+          "assetId": "336eb710913afbc8:349:13e7f2a3f2e8",
+          "name": "Nieun_Pluto.angry",
+          "sourceEntryPath": "assets/other/image/350.png",
+          "sourceExpression": "angry"
+        },
+        "despair": {
+          "assetId": "336eb710913afbc8:352:fe5c2996b1f1",
+          "name": "Nieun_pluto.sad",
+          "sourceEntryPath": "assets/other/image/353.png",
+          "sourceExpression": "sad"
+        }
+      }
+    },
+    {
+      "npcId": "temerosa:bestiaization:nostalgia",
+      "series": "bestiaization",
+      "sourceFingerprint": "336eb710913afbc8e95eae3e7be0f33994e169c41eefe746c9ffb300ec64e825",
+      "status": "selected",
+      "emotions": {
+        "neutral": {
+          "assetId": "336eb710913afbc8:225:83a9479b737a",
+          "name": "Nostalgia.natural",
+          "sourceEntryPath": "assets/other/image/226.jpeg",
+          "sourceExpression": "natural"
+        },
+        "pleased": {
+          "assetId": "336eb710913afbc8:226:f407b0840ee4",
+          "name": "Nostalgia.smile",
+          "sourceEntryPath": "assets/other/image/227.jpeg",
+          "sourceExpression": "smile"
+        },
+        "tense": {
+          "assetId": "336eb710913afbc8:228:7f1d0068528f",
+          "name": "Nostalgia.angry",
+          "sourceEntryPath": "assets/other/image/229.jpeg",
+          "sourceExpression": "angry"
+        },
+        "despair": {
+          "assetId": "336eb710913afbc8:227:7be26b52cc53",
+          "name": "Nostalgia.sad",
+          "sourceEntryPath": "assets/other/image/228.jpeg",
+          "sourceExpression": "sad"
+        }
+      }
+    },
+    {
+      "npcId": "temerosa:bestiaization:phaeo",
+      "series": "bestiaization",
+      "sourceFingerprint": "336eb710913afbc8e95eae3e7be0f33994e169c41eefe746c9ffb300ec64e825",
+      "status": "selected",
+      "emotions": {
+        "neutral": {
+          "assetId": "336eb710913afbc8:94:379af9585e8c",
+          "name": "Phaeo.Natural ",
+          "sourceEntryPath": "assets/other/image/95.jpeg",
+          "sourceExpression": "natural"
+        },
+        "pleased": {
+          "assetId": "336eb710913afbc8:99:00fe1ca3feec",
+          "name": "Phaeo.smile",
+          "sourceEntryPath": "assets/other/image/100.jpeg",
+          "sourceExpression": "smile"
+        },
+        "tense": {
+          "assetId": "336eb710913afbc8:98:bf2ca5dd94fc",
+          "name": "Phaeo.angry",
+          "sourceEntryPath": "assets/other/image/99.jpeg",
+          "sourceExpression": "angry"
+        },
+        "despair": {
+          "assetId": "336eb710913afbc8:97:380ce0d5ed37",
+          "name": "Phaeo.sad",
+          "sourceEntryPath": "assets/other/image/98.jpeg",
+          "sourceExpression": "sad"
+        }
+      }
+    },
+    {
+      "npcId": "temerosa:bestiaization:raven",
+      "series": "bestiaization",
+      "sourceFingerprint": "336eb710913afbc8e95eae3e7be0f33994e169c41eefe746c9ffb300ec64e825",
+      "status": "selected",
+      "emotions": {
+        "neutral": {
+          "assetId": "336eb710913afbc8:384:89d6d2ec01db",
+          "name": "Raven.natural",
+          "sourceEntryPath": "assets/other/image/385.jpeg",
+          "sourceExpression": "natural"
+        },
+        "pleased": {
+          "assetId": "336eb710913afbc8:379:2baa3e2ce204",
+          "name": "Raven.smile",
+          "sourceEntryPath": "assets/other/image/380.jpeg",
+          "sourceExpression": "smile"
+        },
+        "tense": {
+          "assetId": "336eb710913afbc8:380:c1971da12d92",
+          "name": "Raven.angry",
+          "sourceEntryPath": "assets/other/image/381.jpeg",
+          "sourceExpression": "angry"
+        },
+        "despair": {
+          "assetId": "336eb710913afbc8:383:044fbf9112cd",
+          "name": "Raven.sad",
+          "sourceEntryPath": "assets/other/image/384.jpeg",
+          "sourceExpression": "sad"
+        }
+      }
+    },
+    {
+      "npcId": "temerosa:bestiaization:renoa",
+      "series": "bestiaization",
+      "sourceFingerprint": "336eb710913afbc8e95eae3e7be0f33994e169c41eefe746c9ffb300ec64e825",
+      "status": "selected",
+      "emotions": {
+        "neutral": {
+          "assetId": "336eb710913afbc8:287:41a215582111",
+          "name": "Renoa.natural",
+          "sourceEntryPath": "assets/other/image/288.png",
+          "sourceExpression": "natural"
+        },
+        "pleased": {
+          "assetId": "336eb710913afbc8:371:2e72f12feec6",
+          "name": "Renoa.smile",
+          "sourceEntryPath": "assets/other/image/372.png",
+          "sourceExpression": "smile"
+        },
+        "tense": {
+          "assetId": "336eb710913afbc8:288:07377a531f24",
+          "name": "Renoa.angry",
+          "sourceEntryPath": "assets/other/image/289.png",
+          "sourceExpression": "angry"
+        },
+        "despair": {
+          "assetId": "336eb710913afbc8:284:6b6abb6873f2",
+          "name": "Renoa.sad",
+          "sourceEntryPath": "assets/other/image/285.png",
+          "sourceExpression": "sad"
+        }
+      }
+    },
+    {
+      "npcId": "temerosa:bestiaization:riel",
+      "series": "bestiaization",
+      "sourceFingerprint": "336eb710913afbc8e95eae3e7be0f33994e169c41eefe746c9ffb300ec64e825",
+      "status": "selected",
+      "emotions": {
+        "neutral": {
+          "assetId": "336eb710913afbc8:304:abae1a37baa5",
+          "name": "Riel.natural",
+          "sourceEntryPath": "assets/other/image/305.png",
+          "sourceExpression": "natural"
+        },
+        "pleased": {
+          "assetId": "336eb710913afbc8:299:a61c9f86a6bb",
+          "name": "Riel.smile",
+          "sourceEntryPath": "assets/other/image/300.png",
+          "sourceExpression": "smile"
+        },
+        "tense": {
+          "assetId": "336eb710913afbc8:300:b0ea479dbca2",
+          "name": "Riel.angry",
+          "sourceEntryPath": "assets/other/image/301.png",
+          "sourceExpression": "angry"
+        },
+        "despair": {
+          "assetId": "336eb710913afbc8:301:6c55be0d9d92",
+          "name": "Riel.sad",
+          "sourceEntryPath": "assets/other/image/302.png",
+          "sourceExpression": "sad"
+        }
+      }
+    },
+    {
+      "npcId": "temerosa:bestiaization:sakabus",
+      "series": "bestiaization",
+      "sourceFingerprint": "336eb710913afbc8e95eae3e7be0f33994e169c41eefe746c9ffb300ec64e825",
+      "status": "selected",
+      "emotions": {
+        "neutral": {
+          "assetId": "336eb710913afbc8:219:0b283f50051c",
+          "name": "Sakabus.natural",
+          "sourceEntryPath": "assets/other/image/220.jpeg",
+          "sourceExpression": "natural"
+        },
+        "pleased": {
+          "assetId": "336eb710913afbc8:220:323d1ae17942",
+          "name": "Sakabus.smile",
+          "sourceEntryPath": "assets/other/image/221.jpeg",
+          "sourceExpression": "smile"
+        },
+        "tense": {
+          "assetId": "336eb710913afbc8:221:861057d25c7d",
+          "name": "Sakabus.angry",
+          "sourceEntryPath": "assets/other/image/222.jpeg",
+          "sourceExpression": "angry"
+        },
+        "despair": {
+          "assetId": "336eb710913afbc8:223:005e14a62699",
+          "name": "Sakabus.sad",
+          "sourceEntryPath": "assets/other/image/224.jpeg",
+          "sourceExpression": "sad"
+        }
+      }
+    },
+    {
+      "npcId": "temerosa:bestiaization:sherirus",
+      "series": "bestiaization",
+      "sourceFingerprint": "336eb710913afbc8e95eae3e7be0f33994e169c41eefe746c9ffb300ec64e825",
+      "status": "unavailable",
+      "reason": "no-safe-image-candidates"
+    },
+    {
+      "npcId": "temerosa:bestiaization:snow-rim",
+      "series": "bestiaization",
+      "sourceFingerprint": "336eb710913afbc8e95eae3e7be0f33994e169c41eefe746c9ffb300ec64e825",
+      "status": "selected",
+      "emotions": {
+        "neutral": {
+          "assetId": "336eb710913afbc8:207:6340f73c25aa",
+          "name": "Snow Rim.natural ",
+          "sourceEntryPath": "assets/other/image/208.jpeg",
+          "sourceExpression": "natural"
+        },
+        "pleased": {
+          "assetId": "336eb710913afbc8:211:cc7b160892ad",
+          "name": "Snow Rim.smile",
+          "sourceEntryPath": "assets/other/image/212.jpeg",
+          "sourceExpression": "smile"
+        },
+        "tense": {
+          "assetId": "336eb710913afbc8:212:6cace87c2085",
+          "name": "Snow Rim.angry",
+          "sourceEntryPath": "assets/other/image/213.jpeg",
+          "sourceExpression": "angry"
+        },
+        "despair": {
+          "assetId": "336eb710913afbc8:208:4ea3666a1429",
+          "name": "Snow Rim.sad",
+          "sourceEntryPath": "assets/other/image/209.jpeg",
+          "sourceExpression": "sad"
+        }
+      }
+    },
+    {
+      "npcId": "temerosa:bestiaization:spiril",
+      "series": "bestiaization",
+      "sourceFingerprint": "336eb710913afbc8e95eae3e7be0f33994e169c41eefe746c9ffb300ec64e825",
+      "status": "selected",
+      "emotions": {
+        "neutral": {
+          "assetId": "336eb710913afbc8:396:3511efbf0ec4",
+          "name": "Spiril.natural",
+          "sourceEntryPath": "assets/other/image/397.jpeg",
+          "sourceExpression": "natural"
+        },
+        "pleased": {
+          "assetId": "336eb710913afbc8:395:ee5fea731219",
+          "name": "Spiril.smile",
+          "sourceEntryPath": "assets/other/image/396.jpeg",
+          "sourceExpression": "smile"
+        },
+        "tense": {
+          "assetId": "336eb710913afbc8:393:2b0514dd82c0",
+          "name": "Spiril.angry",
+          "sourceEntryPath": "assets/other/image/394.jpeg",
+          "sourceExpression": "angry"
+        },
+        "despair": {
+          "assetId": "336eb710913afbc8:394:a9f16288023f",
+          "name": "Spiril.sad",
+          "sourceEntryPath": "assets/other/image/395.jpeg",
+          "sourceExpression": "sad"
+        }
+      }
+    },
+    {
+      "npcId": "temerosa:bestiaization:strelka",
+      "series": "bestiaization",
+      "sourceFingerprint": "336eb710913afbc8e95eae3e7be0f33994e169c41eefe746c9ffb300ec64e825",
+      "status": "selected",
+      "emotions": {
+        "neutral": {
+          "assetId": "336eb710913afbc8:237:81c8bf3929fe",
+          "name": "Strelka.natural",
+          "sourceEntryPath": "assets/other/image/238.jpeg",
+          "sourceExpression": "natural"
+        },
+        "pleased": {
+          "assetId": "336eb710913afbc8:239:bfd8da55c5ae",
+          "name": "Strelka.blush",
+          "sourceEntryPath": "assets/other/image/240.jpeg",
+          "sourceExpression": "blush"
+        },
+        "tense": {
+          "assetId": "336eb710913afbc8:241:7056138a2eda",
+          "name": "Strelka.angry",
+          "sourceEntryPath": "assets/other/image/242.jpeg",
+          "sourceExpression": "angry"
+        },
+        "despair": {
+          "assetId": "336eb710913afbc8:238:b13830c20ac1",
+          "name": "Strelka.sad",
+          "sourceEntryPath": "assets/other/image/239.jpeg",
+          "sourceExpression": "sad"
+        }
+      }
+    },
+    {
+      "npcId": "temerosa:bestiaization:temute",
+      "series": "bestiaization",
+      "sourceFingerprint": "336eb710913afbc8e95eae3e7be0f33994e169c41eefe746c9ffb300ec64e825",
+      "status": "selected",
+      "emotions": {
+        "neutral": {
+          "assetId": "336eb710913afbc8:152:3cf1b73cb80a",
+          "name": "Tumit-Tu.natural",
+          "sourceEntryPath": "assets/other/image/153.jpeg",
+          "sourceExpression": "natural"
+        },
+        "pleased": {
+          "assetId": "336eb710913afbc8:155:7d1c81cd9f6a",
+          "name": "Tumit-Tu.smile",
+          "sourceEntryPath": "assets/other/image/156.jpeg",
+          "sourceExpression": "smile"
+        },
+        "tense": {
+          "assetId": "336eb710913afbc8:150:e4f9030dde40",
+          "name": "Tumit-Tu.angry",
+          "sourceEntryPath": "assets/other/image/151.jpeg",
+          "sourceExpression": "angry"
+        },
+        "despair": {
+          "assetId": "336eb710913afbc8:149:0900fecabfb9",
+          "name": "Tumit-Tu.sad",
+          "sourceEntryPath": "assets/other/image/150.jpeg",
+          "sourceExpression": "sad"
+        }
+      }
+    },
+    {
+      "npcId": "temerosa:bestiaization:traver",
+      "series": "bestiaization",
+      "sourceFingerprint": "336eb710913afbc8e95eae3e7be0f33994e169c41eefe746c9ffb300ec64e825",
+      "status": "selected",
+      "emotions": {
+        "neutral": {
+          "assetId": "336eb710913afbc8:100:5ae9a050ebb5",
+          "name": "Traver.natural",
+          "sourceEntryPath": "assets/other/image/101.jpeg",
+          "sourceExpression": "natural"
+        },
+        "pleased": {
+          "assetId": "336eb710913afbc8:101:0ba12af55408",
+          "name": "Traver.smile",
+          "sourceEntryPath": "assets/other/image/102.jpeg",
+          "sourceExpression": "smile"
+        },
+        "tense": {
+          "assetId": "336eb710913afbc8:104:fcc6b38032cc",
+          "name": "Traver.angry",
+          "sourceEntryPath": "assets/other/image/105.jpeg",
+          "sourceExpression": "angry"
+        },
+        "despair": {
+          "assetId": "336eb710913afbc8:103:a3aeac466a41",
+          "name": "Traver.sas",
+          "sourceEntryPath": "assets/other/image/104.jpeg",
+          "sourceExpression": "sad"
+        }
+      }
+    },
+    {
+      "npcId": "temerosa:bestiaization:ttaengchil",
+      "series": "bestiaization",
+      "sourceFingerprint": "336eb710913afbc8e95eae3e7be0f33994e169c41eefe746c9ffb300ec64e825",
+      "status": "selected",
+      "emotions": {
+        "neutral": {
+          "assetId": "336eb710913afbc8:142:61111bcf6cb4",
+          "name": "Ttaengchil.natural",
+          "sourceEntryPath": "assets/other/image/143.jpeg",
+          "sourceExpression": "natural"
+        },
+        "pleased": {
+          "assetId": "336eb710913afbc8:143:e04010416ec7",
+          "name": "Ttaengchil.smile",
+          "sourceEntryPath": "assets/other/image/144.jpeg",
+          "sourceExpression": "smile"
+        },
+        "tense": {
+          "assetId": "336eb710913afbc8:147:2c60311ac867",
+          "name": "Ttaengchil.angry",
+          "sourceEntryPath": "assets/other/image/148.jpeg",
+          "sourceExpression": "angry"
+        },
+        "despair": {
+          "assetId": "336eb710913afbc8:145:a0049d81a793",
+          "name": "Ttaengchil.sad",
+          "sourceEntryPath": "assets/other/image/146.jpeg",
+          "sourceExpression": "sad"
+        }
+      }
+    },
+    {
+      "npcId": "temerosa:bestiaization:tumit-tu",
+      "series": "bestiaization",
+      "sourceFingerprint": "336eb710913afbc8e95eae3e7be0f33994e169c41eefe746c9ffb300ec64e825",
+      "status": "selected",
+      "emotions": {
+        "neutral": {
+          "assetId": "336eb710913afbc8:136:a603f0b20df5",
+          "name": "Katrinka.natural",
+          "sourceEntryPath": "assets/other/image/137.jpeg",
+          "sourceExpression": "natural"
+        },
+        "pleased": {
+          "assetId": "336eb710913afbc8:141:261794587902",
+          "name": "Katrinka.smile",
+          "sourceEntryPath": "assets/other/image/142.jpeg",
+          "sourceExpression": "smile"
+        },
+        "tense": {
+          "assetId": "336eb710913afbc8:137:18758c63c9ff",
+          "name": "Katrinka.angry",
+          "sourceEntryPath": "assets/other/image/138.jpeg",
+          "sourceExpression": "angry"
+        },
+        "despair": {
+          "assetId": "336eb710913afbc8:139:fd0535bf7251",
+          "name": "Katrinka.sad",
+          "sourceEntryPath": "assets/other/image/140.jpeg",
+          "sourceExpression": "sad"
+        }
+      }
+    },
+    {
+      "npcId": "temerosa:bestiaization:yul",
+      "series": "bestiaization",
+      "sourceFingerprint": "336eb710913afbc8e95eae3e7be0f33994e169c41eefe746c9ffb300ec64e825",
+      "status": "selected",
+      "emotions": {
+        "neutral": {
+          "assetId": "336eb710913afbc8:85:6d92277c56ac",
+          "name": "Yul.natural",
+          "sourceEntryPath": "assets/other/image/86.jpeg",
+          "sourceExpression": "natural"
+        },
+        "pleased": {
+          "assetId": "336eb710913afbc8:87:6020e3f6e06a",
+          "name": "Yul.smile",
+          "sourceEntryPath": "assets/other/image/88.jpeg",
+          "sourceExpression": "smile"
+        },
+        "tense": {
+          "assetId": "336eb710913afbc8:84:430cc71d717c",
+          "name": "Yul.angry",
+          "sourceEntryPath": "assets/other/image/85.jpeg",
+          "sourceExpression": "angry"
+        },
+        "despair": {
+          "assetId": "336eb710913afbc8:82:ddd546e60005",
+          "name": "Yul.sad",
+          "sourceEntryPath": "assets/other/image/83.jpeg",
+          "sourceExpression": "sad"
+        }
+      }
+    },
+    {
+      "npcId": "temerosa:finale:a",
+      "series": "finale",
+      "sourceFingerprint": "26b083d4c9dfba1ce93192b63f8e2666481cb2582ce1ba25a9f31a5f969717c2",
+      "status": "selected",
+      "emotions": {
+        "neutral": {
+          "assetId": "26b083d4c9dfba1c:859:818e05bb8da6",
+          "name": "[A]_standing",
+          "sourceEntryPath": "assets/other/image/[A]_standing_1.png",
+          "sourceExpression": "standing"
+        },
+        "pleased": {
+          "assetId": "26b083d4c9dfba1c:853:8b141850402c",
+          "name": "[A]_smile",
+          "sourceEntryPath": "assets/other/image/[A]_smile_1.png",
+          "sourceExpression": "smile"
+        },
+        "tense": {
+          "assetId": "26b083d4c9dfba1c:841:535b9eef9ec8",
+          "name": "[A]_angry",
+          "sourceEntryPath": "assets/other/image/[A]_angry.png",
+          "sourceExpression": "angry"
+        },
+        "despair": {
+          "assetId": "26b083d4c9dfba1c:851:e907ce54c454",
+          "name": "[A]_sad",
+          "sourceEntryPath": "assets/other/image/[A]_sad.png",
+          "sourceExpression": "sad"
+        }
+      }
+    },
+    {
+      "npcId": "temerosa:finale:aberrant-mia",
+      "series": "finale",
+      "sourceFingerprint": "26b083d4c9dfba1ce93192b63f8e2666481cb2582ce1ba25a9f31a5f969717c2",
+      "status": "selected",
+      "emotions": {
+        "neutral": {
+          "assetId": "26b083d4c9dfba1c:739:cfcea43b297a",
+          "name": "Aberrant_MIA_standing",
+          "sourceEntryPath": "assets/other/image/Aberrant_MIA_standing_1.png",
+          "sourceExpression": "standing"
+        },
+        "pleased": {
+          "assetId": "26b083d4c9dfba1c:732:1fd30ba95832",
+          "name": "Aberrant_MIA_smile",
+          "sourceEntryPath": "assets/other/image/Aberrant_MIA_smile_1.png",
+          "sourceExpression": "smile"
+        },
+        "tense": {
+          "assetId": "26b083d4c9dfba1c:721:5f8672579093",
+          "name": "Aberrant_MIA_angry",
+          "sourceEntryPath": "assets/other/image/Aberrant_MIA_angry.png",
+          "sourceExpression": "angry"
+        },
+        "despair": {
+          "assetId": "26b083d4c9dfba1c:938:8843beb8b32c",
+          "name": "Aberrant_MIA_sad",
+          "sourceEntryPath": "assets/other/image/Aberrant_MIA_sad.png",
+          "sourceExpression": "sad"
+        }
+      }
+    },
+    {
+      "npcId": "temerosa:finale:al2zus",
+      "series": "finale",
+      "sourceFingerprint": "26b083d4c9dfba1ce93192b63f8e2666481cb2582ce1ba25a9f31a5f969717c2",
+      "status": "selected",
+      "emotions": {
+        "neutral": {
+          "assetId": "26b083d4c9dfba1c:837:a2a1e06c6d81",
+          "name": "Al2zus_standing",
+          "sourceEntryPath": "assets/other/image/Al2zus_standing_1.png",
+          "sourceExpression": "standing"
+        },
+        "pleased": {
+          "assetId": "26b083d4c9dfba1c:834:2ffbc7489e22",
+          "name": "Al2zus_smile",
+          "sourceEntryPath": "assets/other/image/Al2zus_smile_1.png",
+          "sourceExpression": "smile"
+        },
+        "tense": {
+          "assetId": "26b083d4c9dfba1c:822:c1dc8cd3bbc2",
+          "name": "Al2zus_angry",
+          "sourceEntryPath": "assets/other/image/Al2zus_angry.png",
+          "sourceExpression": "angry"
+        },
+        "despair": {
+          "assetId": "26b083d4c9dfba1c:832:5b5e18743238",
+          "name": "Al2zus_sad",
+          "sourceEntryPath": "assets/other/image/Al2zus_sad_1.png",
+          "sourceExpression": "sad"
+        }
+      }
+    },
+    {
+      "npcId": "temerosa:finale:alger",
+      "series": "finale",
+      "sourceFingerprint": "26b083d4c9dfba1ce93192b63f8e2666481cb2582ce1ba25a9f31a5f969717c2",
+      "status": "selected",
+      "emotions": {
+        "neutral": {
+          "assetId": "26b083d4c9dfba1c:408:431eb2e74f03",
+          "name": "Alger_standing",
+          "sourceEntryPath": "assets/other/image/Alger_standing_1.png",
+          "sourceExpression": "standing"
+        },
+        "pleased": {
+          "assetId": "26b083d4c9dfba1c:405:b2999daaade5",
+          "name": "Alger_smile",
+          "sourceEntryPath": "assets/other/image/Alger_smile.png",
+          "sourceExpression": "smile"
+        },
+        "tense": {
+          "assetId": "26b083d4c9dfba1c:395:d5b21db5fe4b",
+          "name": "Alger_angry",
+          "sourceEntryPath": "assets/other/image/Alger_angry.png",
+          "sourceExpression": "angry"
+        },
+        "despair": {
+          "assetId": "26b083d4c9dfba1c:394:dfd434045199",
+          "name": "Alger_sad",
+          "sourceEntryPath": "assets/other/image/Alger_sad_1.png",
+          "sourceExpression": "sad"
+        }
+      }
+    },
+    {
+      "npcId": "temerosa:finale:apollyon",
+      "series": "finale",
+      "sourceFingerprint": "26b083d4c9dfba1ce93192b63f8e2666481cb2582ce1ba25a9f31a5f969717c2",
+      "status": "selected",
+      "emotions": {
+        "neutral": {
+          "assetId": "26b083d4c9dfba1c:428:3197bffa6c7d",
+          "name": "Apollyon_standing",
+          "sourceEntryPath": "assets/other/image/Apollyon_standing.png",
+          "sourceExpression": "standing"
+        },
+        "pleased": {
+          "assetId": "26b083d4c9dfba1c:425:0c51b94eb669",
+          "name": "Apollyon_smile",
+          "sourceEntryPath": "assets/other/image/Apollyon_smile_1.png",
+          "sourceExpression": "smile"
+        },
+        "tense": {
+          "assetId": "26b083d4c9dfba1c:415:ba56288c4815",
+          "name": "Apollyon_angry",
+          "sourceEntryPath": "assets/other/image/Apollyon_angry_1.png",
+          "sourceExpression": "angry"
+        },
+        "despair": {
+          "assetId": "26b083d4c9dfba1c:423:ee502e27f39e",
+          "name": "Apollyon_sad",
+          "sourceEntryPath": "assets/other/image/Apollyon_sad_1.png",
+          "sourceExpression": "sad"
+        }
+      }
+    },
+    {
+      "npcId": "temerosa:finale:bacikal",
+      "series": "finale",
+      "sourceFingerprint": "26b083d4c9dfba1ce93192b63f8e2666481cb2582ce1ba25a9f31a5f969717c2",
+      "status": "selected",
+      "emotions": {
+        "neutral": {
+          "assetId": "26b083d4c9dfba1c:478:0b39ed3d6411",
+          "name": "Bacikal_standing",
+          "sourceEntryPath": "assets/other/image/Bacikal_standing_1.png",
+          "sourceExpression": "standing"
+        },
+        "pleased": {
+          "assetId": "26b083d4c9dfba1c:474:b20efd54fa95",
+          "name": "Bacikal_smile",
+          "sourceEntryPath": "assets/other/image/Bacikal_smile.png",
+          "sourceExpression": "smile"
+        },
+        "tense": {
+          "assetId": "26b083d4c9dfba1c:459:ae6a2fd96504",
+          "name": "Bacikal_angry",
+          "sourceEntryPath": "assets/other/image/Bacikal_angry_1.png",
+          "sourceExpression": "angry"
+        },
+        "despair": {
+          "assetId": "26b083d4c9dfba1c:472:b92b51b07eaf",
+          "name": "Bacikal_sad",
+          "sourceEntryPath": "assets/other/image/Bacikal_sad_1.png",
+          "sourceExpression": "sad"
+        }
+      }
+    },
+    {
+      "npcId": "temerosa:finale:bamcapis",
+      "series": "finale",
+      "sourceFingerprint": "26b083d4c9dfba1ce93192b63f8e2666481cb2582ce1ba25a9f31a5f969717c2",
+      "status": "selected",
+      "emotions": {
+        "neutral": {
+          "assetId": "26b083d4c9dfba1c:262:09eb1bc1b9d8",
+          "name": "Bamcapis_standing",
+          "sourceEntryPath": "assets/other/image/Bamcapis_standing_1.png",
+          "sourceExpression": "standing"
+        },
+        "pleased": {
+          "assetId": "26b083d4c9dfba1c:256:89fa03b0d2fa",
+          "name": "Bamcapis_smile",
+          "sourceEntryPath": "assets/other/image/Bamcapis_smile_1.png",
+          "sourceExpression": "smile"
+        },
+        "tense": {
+          "assetId": "26b083d4c9dfba1c:236:42e6d74fda45",
+          "name": "Bamcapis_angry",
+          "sourceEntryPath": "assets/other/image/Bamcapis_angry_1.png",
+          "sourceExpression": "angry"
+        },
+        "despair": {
+          "assetId": "26b083d4c9dfba1c:252:95d972de7119",
+          "name": "Bamcapis_sad",
+          "sourceEntryPath": "assets/other/image/Bamcapis_sad_1.png",
+          "sourceExpression": "sad"
+        }
+      }
+    },
+    {
+      "npcId": "temerosa:finale:beta",
+      "series": "finale",
+      "sourceFingerprint": "26b083d4c9dfba1ce93192b63f8e2666481cb2582ce1ba25a9f31a5f969717c2",
+      "status": "selected",
+      "emotions": {
+        "neutral": {
+          "assetId": "26b083d4c9dfba1c:604:176444040c04",
+          "name": "Beta_standing",
+          "sourceEntryPath": "assets/other/image/Beta_standing_1.png",
+          "sourceExpression": "standing"
+        },
+        "pleased": {
+          "assetId": "26b083d4c9dfba1c:596:28460e268109",
+          "name": "Beta_smile",
+          "sourceEntryPath": "assets/other/image/Beta_smile_1.png",
+          "sourceExpression": "smile"
+        },
+        "tense": {
+          "assetId": "26b083d4c9dfba1c:575:5520cc0c6fda",
+          "name": "Beta_angry",
+          "sourceEntryPath": "assets/other/image/Beta_angry_1.png",
+          "sourceExpression": "angry"
+        },
+        "despair": {
+          "assetId": "26b083d4c9dfba1c:593:eb3c5aea0035",
+          "name": "Beta_sad",
+          "sourceEntryPath": "assets/other/image/Beta_sad_1.png",
+          "sourceExpression": "sad"
+        }
+      }
+    },
+    {
+      "npcId": "temerosa:finale:car5p3",
+      "series": "finale",
+      "sourceFingerprint": "26b083d4c9dfba1ce93192b63f8e2666481cb2582ce1ba25a9f31a5f969717c2",
+      "status": "selected",
+      "emotions": {
+        "neutral": {
+          "assetId": "26b083d4c9dfba1c:816:f14f4a3bbfc4",
+          "name": "CAR5P3_standing",
+          "sourceEntryPath": "assets/other/image/CAR5P3_standing_1.png",
+          "sourceExpression": "standing"
+        },
+        "pleased": {
+          "assetId": "26b083d4c9dfba1c:813:f1ff09a8cbbb",
+          "name": "CAR5P3_smile",
+          "sourceEntryPath": "assets/other/image/CAR5P3_smile.png",
+          "sourceExpression": "smile"
+        },
+        "tense": {
+          "assetId": "26b083d4c9dfba1c:803:cff3dcd2d6ac",
+          "name": "CAR5P3_angry",
+          "sourceEntryPath": "assets/other/image/CAR5P3_angry.png",
+          "sourceExpression": "angry"
+        },
+        "despair": {
+          "assetId": "26b083d4c9dfba1c:812:ae6446564591",
+          "name": "CAR5P3_sad",
+          "sourceEntryPath": "assets/other/image/CAR5P3_sad_1.png",
+          "sourceExpression": "sad"
+        }
+      }
+    },
+    {
+      "npcId": "temerosa:finale:echo",
+      "series": "finale",
+      "sourceFingerprint": "26b083d4c9dfba1ce93192b63f8e2666481cb2582ce1ba25a9f31a5f969717c2",
+      "status": "selected",
+      "emotions": {
+        "neutral": {
+          "assetId": "26b083d4c9dfba1c:386:e48ab4b213be",
+          "name": "Echo_standing",
+          "sourceEntryPath": "assets/other/image/Echo_standing_1.png",
+          "sourceExpression": "standing"
+        },
+        "pleased": {
+          "assetId": "26b083d4c9dfba1c:382:808ca8dc2f13",
+          "name": "Echo_smile",
+          "sourceEntryPath": "assets/other/image/Echo_smile.png",
+          "sourceExpression": "smile"
+        },
+        "tense": {
+          "assetId": "26b083d4c9dfba1c:372:9adc08ba5e64",
+          "name": "Echo_angry",
+          "sourceEntryPath": "assets/other/image/Echo_angry_1.png",
+          "sourceExpression": "angry"
+        },
+        "despair": {
+          "assetId": "26b083d4c9dfba1c:391:8569354e9094",
+          "name": "Echo_sad",
+          "sourceEntryPath": "assets/other/image/Echo_sad_1.png",
+          "sourceExpression": "sad"
+        }
+      }
+    },
+    {
+      "npcId": "temerosa:finale:flask",
+      "series": "finale",
+      "sourceFingerprint": "26b083d4c9dfba1ce93192b63f8e2666481cb2582ce1ba25a9f31a5f969717c2",
+      "status": "selected",
+      "emotions": {
+        "neutral": {
+          "assetId": "26b083d4c9dfba1c:326:5d152d731057",
+          "name": "Real_Flask_standing",
+          "sourceEntryPath": "assets/other/image/Real_Flask_standing.png",
+          "sourceExpression": "standing"
+        },
+        "pleased": {
+          "assetId": "26b083d4c9dfba1c:316:8c089b494602",
+          "name": "Real_Flask_smile",
+          "sourceEntryPath": "assets/other/image/Real_Flask_smile_1.png",
+          "sourceExpression": "smile"
+        },
+        "tense": {
+          "assetId": "26b083d4c9dfba1c:299:323c854cb180",
+          "name": "Real_Flask_angry",
+          "sourceEntryPath": "assets/other/image/Real_Flask_angry_1.png",
+          "sourceExpression": "angry"
+        },
+        "despair": {
+          "assetId": "26b083d4c9dfba1c:314:64a5b58f22ae",
+          "name": "Real_Flask_sad",
+          "sourceEntryPath": "assets/other/image/Real_Flask_sad_1.png",
+          "sourceExpression": "sad"
+        }
+      }
+    },
+    {
+      "npcId": "temerosa:finale:flask-impostor",
+      "series": "finale",
+      "sourceFingerprint": "26b083d4c9dfba1ce93192b63f8e2666481cb2582ce1ba25a9f31a5f969717c2",
+      "status": "selected",
+      "emotions": {
+        "neutral": {
+          "assetId": "26b083d4c9dfba1c:408:431eb2e74f03",
+          "name": "Alger_standing",
+          "sourceEntryPath": "assets/other/image/Alger_standing_1.png",
+          "sourceExpression": "standing"
+        },
+        "pleased": {
+          "assetId": "26b083d4c9dfba1c:405:b2999daaade5",
+          "name": "Alger_smile",
+          "sourceEntryPath": "assets/other/image/Alger_smile.png",
+          "sourceExpression": "smile"
+        },
+        "tense": {
+          "assetId": "26b083d4c9dfba1c:395:d5b21db5fe4b",
+          "name": "Alger_angry",
+          "sourceEntryPath": "assets/other/image/Alger_angry.png",
+          "sourceExpression": "angry"
+        },
+        "despair": {
+          "assetId": "26b083d4c9dfba1c:394:dfd434045199",
+          "name": "Alger_sad",
+          "sourceEntryPath": "assets/other/image/Alger_sad_1.png",
+          "sourceExpression": "sad"
+        }
+      }
+    },
+    {
+      "npcId": "temerosa:finale:jia",
+      "series": "finale",
+      "sourceFingerprint": "26b083d4c9dfba1ce93192b63f8e2666481cb2582ce1ba25a9f31a5f969717c2",
+      "status": "selected",
+      "emotions": {
+        "neutral": {
+          "assetId": "26b083d4c9dfba1c:796:2806ce5e90ec",
+          "name": "Jia_standing",
+          "sourceEntryPath": "assets/other/image/Jia_standing_1.png",
+          "sourceExpression": "standing"
+        },
+        "pleased": {
+          "assetId": "26b083d4c9dfba1c:789:4862c73f27d8",
+          "name": "Jia_smile",
+          "sourceEntryPath": "assets/other/image/Jia_smile_1.png",
+          "sourceExpression": "smile"
+        },
+        "tense": {
+          "assetId": "26b083d4c9dfba1c:771:8901d196b310",
+          "name": "Jia_angry",
+          "sourceEntryPath": "assets/other/image/Jia_angry_1.png",
+          "sourceExpression": "angry"
+        },
+        "despair": {
+          "assetId": "26b083d4c9dfba1c:787:39cdf813c476",
+          "name": "Jia_sad",
+          "sourceEntryPath": "assets/other/image/Jia_sad.png",
+          "sourceExpression": "sad"
+        }
+      }
+    },
+    {
+      "npcId": "temerosa:finale:kano",
+      "series": "finale",
+      "sourceFingerprint": "26b083d4c9dfba1ce93192b63f8e2666481cb2582ce1ba25a9f31a5f969717c2",
+      "status": "selected",
+      "emotions": {
+        "neutral": {
+          "assetId": "26b083d4c9dfba1c:683:05c8046302d0",
+          "name": "Kano_standing",
+          "sourceEntryPath": "assets/other/image/Kano_standing_1.png",
+          "sourceExpression": "standing"
+        },
+        "pleased": {
+          "assetId": "26b083d4c9dfba1c:680:f2a78923acbe",
+          "name": "Kano_smile",
+          "sourceEntryPath": "assets/other/image/Kano_smile.png",
+          "sourceExpression": "smile"
+        },
+        "tense": {
+          "assetId": "26b083d4c9dfba1c:667:e5240c2d148f",
+          "name": "Kano_angry",
+          "sourceEntryPath": "assets/other/image/Kano_angry_1.png",
+          "sourceExpression": "angry"
+        },
+        "despair": {
+          "assetId": "26b083d4c9dfba1c:679:20428c245e5f",
+          "name": "Kano_sad",
+          "sourceEntryPath": "assets/other/image/Kano_sad_1.png",
+          "sourceExpression": "sad"
+        }
+      }
+    },
+    {
+      "npcId": "temerosa:finale:lilim",
+      "series": "finale",
+      "sourceFingerprint": "26b083d4c9dfba1ce93192b63f8e2666481cb2582ce1ba25a9f31a5f969717c2",
+      "status": "selected",
+      "emotions": {
+        "neutral": {
+          "assetId": "26b083d4c9dfba1c:520:1e40561c0681",
+          "name": "Lilim_standing",
+          "sourceEntryPath": "assets/other/image/Lilim_standing_1.png",
+          "sourceExpression": "standing"
+        },
+        "pleased": {
+          "assetId": "26b083d4c9dfba1c:516:ee706aa13fdc",
+          "name": "Lilim_smile",
+          "sourceEntryPath": "assets/other/image/Lilim_smile.png",
+          "sourceExpression": "smile"
+        },
+        "tense": {
+          "assetId": "26b083d4c9dfba1c:504:d259e1772674",
+          "name": "Lilim_angry",
+          "sourceEntryPath": "assets/other/image/Lilim_angry_1.png",
+          "sourceExpression": "angry"
+        },
+        "despair": {
+          "assetId": "26b083d4c9dfba1c:514:ae3136817334",
+          "name": "Lilim_sad",
+          "sourceEntryPath": "assets/other/image/Lilim_sad_1.png",
+          "sourceExpression": "sad"
+        }
+      }
+    },
+    {
+      "npcId": "temerosa:finale:limet",
+      "series": "finale",
+      "sourceFingerprint": "26b083d4c9dfba1ce93192b63f8e2666481cb2582ce1ba25a9f31a5f969717c2",
+      "status": "selected",
+      "emotions": {
+        "neutral": {
+          "assetId": "26b083d4c9dfba1c:551:785f512b1b6b",
+          "name": "Limet_standing",
+          "sourceEntryPath": "assets/other/image/Limet_standing.png",
+          "sourceExpression": "standing"
+        },
+        "pleased": {
+          "assetId": "26b083d4c9dfba1c:548:46451b004432",
+          "name": "Limet_smile",
+          "sourceEntryPath": "assets/other/image/Limet_smile_1.png",
+          "sourceExpression": "smile"
+        },
+        "tense": {
+          "assetId": "26b083d4c9dfba1c:527:3b345d6d2e3a",
+          "name": "Limet_angry",
+          "sourceEntryPath": "assets/other/image/Limet_angry_1.png",
+          "sourceExpression": "angry"
+        },
+        "despair": {
+          "assetId": "26b083d4c9dfba1c:545:207282911e61",
+          "name": "Limet_sad",
+          "sourceEntryPath": "assets/other/image/Limet_sad_1.png",
+          "sourceExpression": "sad"
+        }
+      }
+    },
+    {
+      "npcId": "temerosa:finale:mascot",
+      "series": "finale",
+      "sourceFingerprint": "26b083d4c9dfba1ce93192b63f8e2666481cb2582ce1ba25a9f31a5f969717c2",
+      "status": "selected",
+      "emotions": {
+        "neutral": {
+          "assetId": "26b083d4c9dfba1c:496:370fbb87b04a",
+          "name": "Mascot_standing",
+          "sourceEntryPath": "assets/other/image/Mascot_standing_1.png",
+          "sourceExpression": "standing"
+        },
+        "pleased": {
+          "assetId": "26b083d4c9dfba1c:493:4c318dd9462f",
+          "name": "Mascot_smile",
+          "sourceEntryPath": "assets/other/image/Mascot_smile.png",
+          "sourceExpression": "smile"
+        },
+        "tense": {
+          "assetId": "26b083d4c9dfba1c:484:34cb616b6493",
+          "name": "Mascot_angry",
+          "sourceEntryPath": "assets/other/image/Mascot_angry_1.png",
+          "sourceExpression": "angry"
+        },
+        "despair": {
+          "assetId": "26b083d4c9dfba1c:492:7fe28e048cee",
+          "name": "Mascot_sad",
+          "sourceEntryPath": "assets/other/image/Mascot_sad.png",
+          "sourceExpression": "sad"
+        }
+      }
+    },
+    {
+      "npcId": "temerosa:finale:mia",
+      "series": "finale",
+      "sourceFingerprint": "26b083d4c9dfba1ce93192b63f8e2666481cb2582ce1ba25a9f31a5f969717c2",
+      "status": "selected",
+      "emotions": {
+        "neutral": {
+          "assetId": "26b083d4c9dfba1c:765:a0f05262faab",
+          "name": "MIA_standing",
+          "sourceEntryPath": "assets/other/image/MIA_standing_1.png",
+          "sourceExpression": "standing"
+        },
+        "pleased": {
+          "assetId": "26b083d4c9dfba1c:759:a9df1cdd2607",
+          "name": "MIA_smile",
+          "sourceEntryPath": "assets/other/image/MIA_smile_1.png",
+          "sourceExpression": "smile"
+        },
+        "tense": {
+          "assetId": "26b083d4c9dfba1c:747:6fede2a24f58",
+          "name": "MIA_angry",
+          "sourceEntryPath": "assets/other/image/MIA_angry_1.png",
+          "sourceExpression": "angry"
+        },
+        "despair": {
+          "assetId": "26b083d4c9dfba1c:757:0d1f58ced77e",
+          "name": "MIA_sad",
+          "sourceEntryPath": "assets/other/image/MIA_sad.png",
+          "sourceExpression": "sad"
+        }
+      }
+    },
+    {
+      "npcId": "temerosa:finale:nantucket",
+      "series": "finale",
+      "sourceFingerprint": "26b083d4c9dfba1ce93192b63f8e2666481cb2582ce1ba25a9f31a5f969717c2",
+      "status": "selected",
+      "emotions": {
+        "neutral": {
+          "assetId": "26b083d4c9dfba1c:658:40d55cae9600",
+          "name": "Nantucket_standing",
+          "sourceEntryPath": "assets/other/image/Nantucket_standing_1.png",
+          "sourceExpression": "standing"
+        },
+        "pleased": {
+          "assetId": "26b083d4c9dfba1c:654:f28ce1b3b421",
+          "name": "Nantucket_smile",
+          "sourceEntryPath": "assets/other/image/Nantucket_smile_1.png",
+          "sourceExpression": "smile"
+        },
+        "tense": {
+          "assetId": "26b083d4c9dfba1c:641:0ed8b25c38be",
+          "name": "Nantucket_angry",
+          "sourceEntryPath": "assets/other/image/Nantucket_angry_1.png",
+          "sourceExpression": "angry"
+        },
+        "despair": {
+          "assetId": "26b083d4c9dfba1c:652:89736d4b4321",
+          "name": "Nantucket_sad",
+          "sourceEntryPath": "assets/other/image/Nantucket_sad.png",
+          "sourceExpression": "sad"
+        }
+      }
+    },
+    {
+      "npcId": "temerosa:finale:nayuta",
+      "series": "finale",
+      "sourceFingerprint": "26b083d4c9dfba1ce93192b63f8e2666481cb2582ce1ba25a9f31a5f969717c2",
+      "status": "selected",
+      "emotions": {
+        "neutral": {
+          "assetId": "26b083d4c9dfba1c:454:f154f983fb72",
+          "name": "Nayuta_standing",
+          "sourceEntryPath": "assets/other/image/Nayuta_standing_1.png",
+          "sourceExpression": "standing"
+        },
+        "pleased": {
+          "assetId": "26b083d4c9dfba1c:452:2c7b031c5f20",
+          "name": "Nayuta_smile",
+          "sourceEntryPath": "assets/other/image/Nayuta_smile_1.png",
+          "sourceExpression": "smile"
+        },
+        "tense": {
+          "assetId": "26b083d4c9dfba1c:446:3122654a1f0e",
+          "name": "Nayuta_angry",
+          "sourceEntryPath": "assets/other/image/Nayuta_angry.png",
+          "sourceExpression": "angry"
+        },
+        "despair": {
+          "assetId": "26b083d4c9dfba1c:450:69eaac169237",
+          "name": "Nayuta_sad",
+          "sourceEntryPath": "assets/other/image/Nayuta_sad.png",
+          "sourceExpression": "sad"
+        }
+      }
+    },
+    {
+      "npcId": "temerosa:finale:nieun",
+      "series": "finale",
+      "sourceFingerprint": "26b083d4c9dfba1ce93192b63f8e2666481cb2582ce1ba25a9f31a5f969717c2",
+      "status": "selected",
+      "emotions": {
+        "neutral": {
+          "assetId": "26b083d4c9dfba1c:933:b8e12d56bd6c",
+          "name": "Nieun_standing",
+          "sourceEntryPath": "assets/other/image/Nieun_standing.png",
+          "sourceExpression": "standing"
+        },
+        "pleased": {
+          "assetId": "26b083d4c9dfba1c:929:a9d68d42c684",
+          "name": "Nieun_smile",
+          "sourceEntryPath": "assets/other/image/Nieun_smile_1.png",
+          "sourceExpression": "smile"
+        },
+        "tense": {
+          "assetId": "26b083d4c9dfba1c:910:9e7148fd0c6e",
+          "name": "Nieun_angry",
+          "sourceEntryPath": "assets/other/image/Nieun_angry_1.png",
+          "sourceExpression": "angry"
+        },
+        "despair": {
+          "assetId": "26b083d4c9dfba1c:926:6800407e75e1",
+          "name": "Nieun_sad",
+          "sourceEntryPath": "assets/other/image/Nieun_sad_1.png",
+          "sourceExpression": "sad"
+        }
+      }
+    },
+    {
+      "npcId": "temerosa:finale:nostalgia",
+      "series": "finale",
+      "sourceFingerprint": "26b083d4c9dfba1ce93192b63f8e2666481cb2582ce1ba25a9f31a5f969717c2",
+      "status": "selected",
+      "emotions": {
+        "neutral": {
+          "assetId": "26b083d4c9dfba1c:632:7ee7a54fabaf",
+          "name": "Nostalgia_standing",
+          "sourceEntryPath": "assets/other/image/Nostalgia_standing_1.png",
+          "sourceExpression": "standing"
+        },
+        "pleased": {
+          "assetId": "26b083d4c9dfba1c:629:68a6e5cef83a",
+          "name": "Nostalgia_smile",
+          "sourceEntryPath": "assets/other/image/Nostalgia_smile.png",
+          "sourceExpression": "smile"
+        },
+        "tense": {
+          "assetId": "26b083d4c9dfba1c:613:bf5e409a9fe1",
+          "name": "Nostalgia_angry",
+          "sourceEntryPath": "assets/other/image/Nostalgia_angry_1.png",
+          "sourceExpression": "angry"
+        },
+        "despair": {
+          "assetId": "26b083d4c9dfba1c:626:174be06c9fe4",
+          "name": "Nostalgia_sad",
+          "sourceEntryPath": "assets/other/image/Nostalgia_sad_1.png",
+          "sourceExpression": "sad"
+        }
+      }
+    },
+    {
+      "npcId": "temerosa:finale:pale",
+      "series": "finale",
+      "sourceFingerprint": "26b083d4c9dfba1ce93192b63f8e2666481cb2582ce1ba25a9f31a5f969717c2",
+      "status": "selected",
+      "emotions": {
+        "neutral": {
+          "assetId": "26b083d4c9dfba1c:225:f5b26c16dbe9",
+          "name": "Pale_standing",
+          "sourceEntryPath": "assets/other/image/Pale_standing_1.png",
+          "sourceExpression": "standing"
+        },
+        "pleased": {
+          "assetId": "26b083d4c9dfba1c:216:51af78dc8e75",
+          "name": "Pale_smile",
+          "sourceEntryPath": "assets/other/image/Pale_smile_1.png",
+          "sourceExpression": "smile"
+        },
+        "tense": {
+          "assetId": "26b083d4c9dfba1c:196:885a82e4e6b3",
+          "name": "Pale_angry",
+          "sourceEntryPath": "assets/other/image/Pale_angry_1.png",
+          "sourceExpression": "angry"
+        },
+        "despair": {
+          "assetId": "26b083d4c9dfba1c:210:9f8980e59d7e",
+          "name": "Pale_sad",
+          "sourceEntryPath": "assets/other/image/Pale_sad_1.png",
+          "sourceExpression": "sad"
+        }
+      }
+    },
+    {
+      "npcId": "temerosa:finale:renoa",
+      "series": "finale",
+      "sourceFingerprint": "26b083d4c9dfba1ce93192b63f8e2666481cb2582ce1ba25a9f31a5f969717c2",
+      "status": "selected",
+      "emotions": {
+        "neutral": {
+          "assetId": "26b083d4c9dfba1c:408:431eb2e74f03",
+          "name": "Alger_standing",
+          "sourceEntryPath": "assets/other/image/Alger_standing_1.png",
+          "sourceExpression": "standing"
+        },
+        "pleased": {
+          "assetId": "26b083d4c9dfba1c:405:b2999daaade5",
+          "name": "Alger_smile",
+          "sourceEntryPath": "assets/other/image/Alger_smile.png",
+          "sourceExpression": "smile"
+        },
+        "tense": {
+          "assetId": "26b083d4c9dfba1c:395:d5b21db5fe4b",
+          "name": "Alger_angry",
+          "sourceEntryPath": "assets/other/image/Alger_angry.png",
+          "sourceExpression": "angry"
+        },
+        "despair": {
+          "assetId": "26b083d4c9dfba1c:394:dfd434045199",
+          "name": "Alger_sad",
+          "sourceEntryPath": "assets/other/image/Alger_sad_1.png",
+          "sourceExpression": "sad"
+        }
+      }
+    },
+    {
+      "npcId": "temerosa:finale:shino",
+      "series": "finale",
+      "sourceFingerprint": "26b083d4c9dfba1ce93192b63f8e2666481cb2582ce1ba25a9f31a5f969717c2",
+      "status": "selected",
+      "emotions": {
+        "neutral": {
+          "assetId": "26b083d4c9dfba1c:896:55de1d3a5243",
+          "name": "Shino_standing",
+          "sourceEntryPath": "assets/other/image/Shino_standing_1.png",
+          "sourceExpression": "standing"
+        },
+        "pleased": {
+          "assetId": "26b083d4c9dfba1c:888:008ba69a653b",
+          "name": "Shino_smile",
+          "sourceEntryPath": "assets/other/image/Shino_smile_1.png",
+          "sourceExpression": "smile"
+        },
+        "tense": {
+          "assetId": "26b083d4c9dfba1c:867:426cc567b096",
+          "name": "Shino_angry",
+          "sourceEntryPath": "assets/other/image/Shino_angry_1.png",
+          "sourceExpression": "angry"
+        },
+        "despair": {
+          "assetId": "26b083d4c9dfba1c:883:60cba1317a4e",
+          "name": "Shino_sad",
+          "sourceEntryPath": "assets/other/image/Shino_sad_1.png",
+          "sourceExpression": "sad"
+        }
+      }
+    },
+    {
+      "npcId": "temerosa:finale:silentium",
+      "series": "finale",
+      "sourceFingerprint": "26b083d4c9dfba1ce93192b63f8e2666481cb2582ce1ba25a9f31a5f969717c2",
+      "status": "selected",
+      "emotions": {
+        "neutral": {
+          "assetId": "26b083d4c9dfba1c:551:785f512b1b6b",
+          "name": "Limet_standing",
+          "sourceEntryPath": "assets/other/image/Limet_standing.png",
+          "sourceExpression": "standing"
+        },
+        "pleased": {
+          "assetId": "26b083d4c9dfba1c:548:46451b004432",
+          "name": "Limet_smile",
+          "sourceEntryPath": "assets/other/image/Limet_smile_1.png",
+          "sourceExpression": "smile"
+        },
+        "tense": {
+          "assetId": "26b083d4c9dfba1c:527:3b345d6d2e3a",
+          "name": "Limet_angry",
+          "sourceEntryPath": "assets/other/image/Limet_angry_1.png",
+          "sourceExpression": "angry"
+        },
+        "despair": {
+          "assetId": "26b083d4c9dfba1c:545:207282911e61",
+          "name": "Limet_sad",
+          "sourceEntryPath": "assets/other/image/Limet_sad_1.png",
+          "sourceExpression": "sad"
+        }
+      }
+    },
+    {
+      "npcId": "temerosa:finale:tashtego",
+      "series": "finale",
+      "sourceFingerprint": "26b083d4c9dfba1ce93192b63f8e2666481cb2582ce1ba25a9f31a5f969717c2",
+      "status": "selected",
+      "emotions": {
+        "neutral": {
+          "assetId": "26b083d4c9dfba1c:292:b159d0a8ba05",
+          "name": "Tashtego_standing",
+          "sourceEntryPath": "assets/other/image/Tashtego_standing_1.png",
+          "sourceExpression": "standing"
+        },
+        "pleased": {
+          "assetId": "26b083d4c9dfba1c:288:218b0a395173",
+          "name": "Tashtego_smile",
+          "sourceEntryPath": "assets/other/image/Tashtego_smile_1.png",
+          "sourceExpression": "smile"
+        },
+        "tense": {
+          "assetId": "26b083d4c9dfba1c:269:a0e405d97cea",
+          "name": "Tashtego_angry",
+          "sourceEntryPath": "assets/other/image/Tashtego_angry_1.png",
+          "sourceExpression": "angry"
+        },
+        "despair": {
+          "assetId": "26b083d4c9dfba1c:296:535b7d71d4e4",
+          "name": "Tashtego_sad",
+          "sourceEntryPath": "assets/other/image/Tashtego_sad_1.png",
+          "sourceExpression": "sad"
+        }
+      }
+    },
+    {
+      "npcId": "temerosa:finale:ttaengchil",
+      "series": "finale",
+      "sourceFingerprint": "26b083d4c9dfba1ce93192b63f8e2666481cb2582ce1ba25a9f31a5f969717c2",
+      "status": "selected",
+      "emotions": {
+        "neutral": {
+          "assetId": "26b083d4c9dfba1c:568:81cbcaa50dd0",
+          "name": "Ttaengchil_standing",
+          "sourceEntryPath": "assets/other/image/Ttaengchil_standing_1.png",
+          "sourceExpression": "standing"
+        },
+        "pleased": {
+          "assetId": "26b083d4c9dfba1c:566:19b833580752",
+          "name": "Ttaengchil_smile",
+          "sourceEntryPath": "assets/other/image/Ttaengchil_smile_1.png",
+          "sourceExpression": "smile"
+        },
+        "tense": {
+          "assetId": "26b083d4c9dfba1c:559:403f6854539a",
+          "name": "Ttaengchil_angry",
+          "sourceEntryPath": "assets/other/image/Ttaengchil_angry.png",
+          "sourceExpression": "angry"
+        },
+        "despair": {
+          "assetId": "26b083d4c9dfba1c:564:49e3a74d117b",
+          "name": "Ttaengchil_sad",
+          "sourceEntryPath": "assets/other/image/Ttaengchil_sad_1.png",
+          "sourceExpression": "sad"
+        }
+      }
+    },
+    {
+      "npcId": "temerosa:finale:wares",
+      "series": "finale",
+      "sourceFingerprint": "26b083d4c9dfba1ce93192b63f8e2666481cb2582ce1ba25a9f31a5f969717c2",
+      "status": "selected",
+      "emotions": {
+        "neutral": {
+          "assetId": "26b083d4c9dfba1c:359:06f1a5287efd",
+          "name": "Wares_standing",
+          "sourceEntryPath": "assets/other/image/Wares_standing_1.png",
+          "sourceExpression": "standing"
+        },
+        "pleased": {
+          "assetId": "26b083d4c9dfba1c:354:249610dca491",
+          "name": "Wares_smile",
+          "sourceEntryPath": "assets/other/image/Wares_smile_1.png",
+          "sourceExpression": "smile"
+        },
+        "tense": {
+          "assetId": "26b083d4c9dfba1c:337:c4751d0771d7",
+          "name": "Wares_angry",
+          "sourceEntryPath": "assets/other/image/Wares_angry_1.png",
+          "sourceExpression": "angry"
+        },
+        "despair": {
+          "assetId": "26b083d4c9dfba1c:351:8d7b9695aa52",
+          "name": "Wares_sad",
+          "sourceEntryPath": "assets/other/image/Wares_sad_1.png",
+          "sourceExpression": "sad"
+        }
+      }
+    }
+  ]
+}
