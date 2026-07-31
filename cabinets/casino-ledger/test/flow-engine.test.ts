@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   casinoDayPlan,
   casinoUtcSecondAtKstDay,
+  houseBalanceAt,
   npcBalanceAt,
   npcFlowEconomyDay,
   TEMEROSA_NPC_GAMBLING_PROFILES,
@@ -35,6 +36,18 @@ const contract: NpcLedgerContract = Object.freeze({
   epochKstDay: 20_667,
   profiles: Object.freeze([gambler]),
   externalIncomeProfiles: Object.freeze([income]),
+  behaviors: Object.freeze([Object.freeze({
+    npcId: gambler.id,
+    riskAppetite: gambler.riskAppetite,
+    stakeAggression: gambler.riskAppetite,
+    lossChasing: gambler.lossChasing,
+    stopLossDiscipline: gambler.discipline,
+    takeProfitDiscipline: gambler.discipline,
+    visitsPerDay: Object.freeze({ min: 1, max: 1 }),
+    roundsPerVisit: Object.freeze({ min: 4, max: 4 }),
+    skills: Object.freeze({ "temerosa-slot": 0.5 }),
+    preferredTables: Object.freeze([{ tableId: "temerosa-slot" as const, weight: 1 }]),
+  })]),
   profitHistory: Object.freeze([]),
 });
 
@@ -44,6 +57,8 @@ describe("flow economy engine integration", () => {
     const settlement = plan.sessions[gambler.id]!.find((session) => session.resultKind === "casino-top-up")!;
     expect(settlement.delta).toBe(npcFlowEconomyDay(income, contract.epochKstDay).casinoTopUp);
     expect(settlement.minuteOfDay).toBe(600);
+    expect(plan.visits.length).toBeLessThanOrEqual(1);
+    for (const visit of plan.visits) expect(plan.matches.filter((match) => match.visitId === visit.visitId).length).toBeLessThanOrEqual(4);
   });
 
   it("does not expose the top-up in the balance before its personal settlement", () => {
@@ -56,6 +71,13 @@ describe("flow economy engine integration", () => {
   it("rejects a 1.2 contract without one income profile per gambler", () => {
     const invalid = { ...contract, externalIncomeProfiles: Object.freeze([]) } satisfies NpcLedgerContract;
     expect(() => casinoDayPlan([gambler], 0, { [gambler.id]: 0 }, invalid)).toThrow("npc_ledger_missing_flow_income_profile:flow-test");
+  });
+
+  it("charges activity-based house operations every completed flow-economy day", () => {
+    const endOfDay = fixedClock(casinoUtcSecondAtKstDay(contract.epochKstDay + 1) - 1);
+    const house = houseBalanceAt([gambler], endOfDay, contract);
+    expect(house.operatingExpenses).toBeGreaterThan(0);
+    expect(house.curtailedOperatingExpenses).toBe(0);
   });
 });
 

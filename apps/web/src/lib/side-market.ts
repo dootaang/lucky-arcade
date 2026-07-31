@@ -2,10 +2,9 @@ import {
   CASINO_SPECTATOR_MARKET_CONTRACT,
   CASINO_SPECTATOR_PRICING_VERSION,
   TEMEROSA_HOUSE_ACCOUNT_ID,
-  TEMEROSA_NPC_GAMBLING_PROFILES,
-  TEMEROSA_NPC_LEDGER_CONTRACT,
   casinoMarketCredit,
   casinoSpectatorMarketByIdAt,
+  temerosaCasinoLedgerAtUtcSecond,
   type CasinoSpectatorMarket,
 } from "@lucky-arcade/casino-ledger";
 import { assertCasinoMarketQuote, type CasinoMarketQuote, type WagerMultiplier } from "@lucky-arcade/engine";
@@ -37,7 +36,8 @@ export async function reserveSideMarketWager(input: {
   multiplier: WagerMultiplier;
 }): Promise<{ walletBalance: number; wager: GameWagerReceipt }> {
   const now = await casinoCurrentSecond();
-  const rawMarket = casinoSpectatorMarketByIdAt(TEMEROSA_NPC_GAMBLING_PROFILES, fixedClock(now), TEMEROSA_NPC_LEDGER_CONTRACT, input.market.marketId);
+  const ledger=temerosaCasinoLedgerAtUtcSecond(now);
+  const rawMarket = casinoSpectatorMarketByIdAt(ledger.profiles, fixedClock(now), ledger.contract, input.market.marketId);
   if (!rawMarket || rawMarket.phase !== "open" || now < rawMarket.opensAtUtcSecond || now >= rawMarket.closesAtUtcSecond) throw new Error("side_market_closed");
   const { resolveCasinoSideMarketOffer } = await import("./casino-side-market-replay.ts");
   const market = await resolveCasinoSideMarketOffer(rawMarket);
@@ -88,7 +88,8 @@ export async function reconcileSideMarketWagers(nowUtcSecond?: number): Promise<
       continue;
     }
     if (now < choice.settlesAtUtcSecond) continue;
-    const market = casinoSpectatorMarketByIdAt(TEMEROSA_NPC_GAMBLING_PROFILES, clock, TEMEROSA_NPC_LEDGER_CONTRACT, choice.marketId);
+    const ledger=temerosaCasinoLedgerAtUtcSecond(choice.closesAtUtcSecond-1);
+    const market = casinoSpectatorMarketByIdAt(ledger.profiles, clock, ledger.contract, choice.marketId);
     if (!market || market.phase !== "settled") {
       await invalidateWager({ wagerId: wager.wagerId, reason: "outcome-unavailable" });
       continue;

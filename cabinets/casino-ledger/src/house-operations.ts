@@ -4,26 +4,20 @@ import {
   createCasinoTransaction,
   type CasinoTransaction,
 } from "./economy.ts";
+import type { CasinoDayPlan,HouseOperatingCostPolicy } from "./contracts.ts";
 
 export const HOUSE_OPERATIONS_CONTRACT = "house-operations/2.0" as const;
-
-export interface HouseOperatingCostPolicy {
-  baseFacilityCost: number;
-  activeTableHourCost: number;
-  perHundredRoundsCost: number;
-  positiveGamingRevenueRateBps: number;
-  protectedReserve: number;
-  settlementSecondOfDay: number;
-}
 
 export const DEFAULT_HOUSE_OPERATING_COST_POLICY: Readonly<HouseOperatingCostPolicy> = Object.freeze({
   baseFacilityCost: 60,
   activeTableHourCost: 8,
-  perHundredRoundsCost: 20,
-  positiveGamingRevenueRateBps: 2_000,
+  perHundredRoundsCost: 60,
+  positiveGamingRevenueRateBps: 4_500,
   protectedReserve: 50_000,
   settlementSecondOfDay: 23 * 3_600 + 50 * 60,
 });
+
+export type { HouseOperatingCostPolicy } from "./contracts.ts";
 
 export interface HouseDailyActivity {
   absoluteKstDay: number;
@@ -100,6 +94,32 @@ export function houseMaximumExposure(input: {
   return Math.max(0, input.houseBalance - input.reservedLiability - protectedReserve);
 }
 
+export function houseDailyActivityFromPlan(input: {
+  absoluteKstDay: number;
+  houseBalance: number;
+  reservedLiability: number;
+  plan: CasinoDayPlan;
+  throughSecondOfDay?: number;
+}): HouseDailyActivity {
+  const through = input.throughSecondOfDay ?? 86_399;
+  if (!Number.isSafeInteger(through) || through < 0 || through >= 86_400) throw new Error("house_activity_invalid_cutoff");
+  const activeTableSeconds = input.plan.visits.reduce((total, visit) => {
+    const end = Math.min(visit.endsAtSecondOfDay, through);
+    return total + Math.max(0, end - visit.startedAtSecondOfDay);
+  }, 0);
+  const settledRoundCount = input.plan.matches.filter((match) => match.settlesAtSecondOfDay <= through).length;
+  const grossGamingRevenue = Object.values(input.plan.sessions).flat().reduce((total, session) =>
+    session.secondOfDay <= through && isHouseTableId(session.tableId) ? total + Math.max(0, -session.delta) : total, 0);
+  return Object.freeze({
+    absoluteKstDay: input.absoluteKstDay,
+    houseBalance: input.houseBalance,
+    reservedLiability: input.reservedLiability,
+    activeTableSeconds,
+    settledRoundCount,
+    grossGamingRevenue,
+  });
+}
+
 function assertActivity(activity: HouseDailyActivity): void {
   for (const value of [activity.absoluteKstDay, activity.houseBalance, activity.reservedLiability, activity.activeTableSeconds, activity.settledRoundCount, activity.grossGamingRevenue]) {
     if (!Number.isSafeInteger(value)) throw new Error("house_activity_invalid");
@@ -112,4 +132,8 @@ function assertPolicy(policy: Readonly<HouseOperatingCostPolicy>): void {
     if (!Number.isSafeInteger(value) || value < 0) throw new Error("house_operating_policy_invalid");
   }
   if (policy.positiveGamingRevenueRateBps > 10_000 || policy.settlementSecondOfDay >= 86_400) throw new Error("house_operating_policy_invalid");
+}
+
+function isHouseTableId(tableId: string): boolean {
+  return tableId === "temerosa-slot" || tableId === "temerosa-high-low";
 }

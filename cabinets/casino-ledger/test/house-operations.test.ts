@@ -21,10 +21,10 @@ describe("activity-based house operations", () => {
     expect(plan).toMatchObject({
       fixedCost: 60,
       activeTableCost: 40,
-      roundCost: 70,
-      revenueCost: 400,
-      assessedAmount: 570,
-      paidAmount: 570,
+      roundCost: 210,
+      revenueCost: 900,
+      assessedAmount: 1_210,
+      paidAmount: 1_210,
       curtailedAmount: 0,
     });
   });

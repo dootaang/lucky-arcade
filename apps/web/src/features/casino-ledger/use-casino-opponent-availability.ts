@@ -1,4 +1,4 @@
-import { casinoPresenceAt, casinoSpectatorMarketPresencesAt, casinoSpectatorMarketsAt, npcAvailability, TEMEROSA_NPC_GAMBLING_PROFILES, TEMEROSA_NPC_LEDGER_CONTRACT } from "@lucky-arcade/casino-ledger";
+import { casinoPresenceAt, casinoSpectatorMarketPresencesAt, casinoSpectatorMarketsAt, npcAvailability, temerosaCasinoLedgerAtUtcSecond } from "@lucky-arcade/casino-ledger";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { casinoClockFromSample, deviceCasinoClockSample, type CasinoClockSample } from "../../lib/casino-clock.ts";
 import { loadTemerosaCasinoManifest } from "../../lib/temerosa-content.ts";
@@ -47,18 +47,19 @@ export function useCasinoOpponentAvailability(scope: string): {
   }, [clock, held, now, revision, scope]);
 
   const opponents = useMemo(() => {
+    const ledger=temerosaCasinoLedgerAtUtcSecond(now);
     if (!clock) {
-      return Object.freeze(Object.fromEntries(TEMEROSA_NPC_GAMBLING_PROFILES.map((profile) => [
+      return Object.freeze(Object.fromEntries(ledger.profiles.map((profile) => [
         profile.id,
         Object.freeze({ available: false, label: "카지노 일정 확인 중" }),
       ])));
     }
-    const basePresences = casinoPresenceAt(TEMEROSA_NPC_GAMBLING_PROFILES, clock, TEMEROSA_NPC_LEDGER_CONTRACT);
-    const marketPresences = casinoSpectatorMarketPresencesAt(casinoSpectatorMarketsAt(TEMEROSA_NPC_GAMBLING_PROFILES, clock, TEMEROSA_NPC_LEDGER_CONTRACT, 4), now);
+    const basePresences = casinoPresenceAt(ledger.profiles, clock, ledger.contract);
+    const marketPresences = casinoSpectatorMarketPresencesAt(casinoSpectatorMarketsAt(ledger.profiles, clock, ledger.contract, 4), now);
     const marketIds = new Set(marketPresences.map((presence) => presence.npcId));
     const publicAvailability = npcAvailability([...basePresences.filter((presence) => !marketIds.has(presence.npcId)), ...marketPresences]);
     const heldIds = new Set(held.filter((invite) => invite.expiresAtUtcSecond > now).map((invite) => invite.npcId));
-    return Object.freeze(Object.fromEntries(TEMEROSA_NPC_GAMBLING_PROFILES.map((profile) => {
+    return Object.freeze(Object.fromEntries(ledger.profiles.map((profile) => {
       const status = publicAvailability[profile.id]!;
       if (status.available && heldIds.has(profile.id)) return [profile.id, Object.freeze({ available: true, label: "초대 수락" })];
       if (status.available) return [profile.id, Object.freeze({ available: true, label: "이용 가능" })];

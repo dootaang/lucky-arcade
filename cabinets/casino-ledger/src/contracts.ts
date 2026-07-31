@@ -105,6 +105,15 @@ export interface CasinoNpcBehavior {
   preferredTables: readonly NpcTableWeight[];
 }
 
+export interface HouseOperatingCostPolicy {
+  baseFacilityCost: number;
+  activeTableHourCost: number;
+  perHundredRoundsCost: number;
+  positiveGamingRevenueRateBps: number;
+  protectedReserve: number;
+  settlementSecondOfDay: number;
+}
+
 export interface NpcVisit {
   visitId: string;
   tableId: CasinoTableId;
@@ -181,6 +190,9 @@ export interface NpcLedgerContract {
   /** First casino calendar day, counted at KST midnight. */
   epochKstDay: number;
   profiles: readonly NpcGamblingProfile[];
+  /** Exact house close carried into this epoch. Legacy contracts default to 150,000 P. */
+  houseOpeningBalance?: number;
+  houseOperatingPolicy?: Readonly<HouseOperatingCostPolicy>;
   /** Required by npc-ledger/1.2; ignored by frozen legacy contracts. */
   externalIncomeProfiles?: readonly NpcExternalIncomeProfile[];
   /** Optional authored overrides. Existing NpcGamblingProfile fields remain the fallback. */

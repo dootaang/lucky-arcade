@@ -104,7 +104,7 @@ export function casinoDayPlan(
     for(const profile of participants){const key=`${draft.visitId}:${profile.id}`;if(!visitOpening.has(key))visitOpening.set(key,balances[profile.id]!);}
     if (draft.tableId === "temerosa-old-maid") {
       if (participants.length < 2 || !participants.every((profile) => policyAllowsPaid(profile, balances[profile.id]!, visitOpening.get(`${draft.visitId}:${profile.id}`)!,rng))) continue;
-      const terms = chooseOldMaidExposure(participants, balances, rng);
+      const terms = chooseOldMaidExposure(participants, balances, rng,contract.version==="npc-ledger/1.2");
       if (terms.exposure === 0) continue;
       settlePaidOldMaid(draft, participants, balances, output, terms.stake, terms.multiplier, terms.exposure, rng);
       matches.push(matchFromDraft(draft, terms.stake, terms.multiplier));
@@ -112,7 +112,7 @@ export function casinoDayPlan(
     }
     if (!participants.every((profile) => policyAllowsPaid(profile, balances[profile.id]!, visitOpening.get(`${draft.visitId}:${profile.id}`)!,rng))) continue;
     const reference=Object.fromEntries(participants.map((profile)=>[profile.id,visitOpening.get(`${draft.visitId}:${profile.id}`)!]));
-    const terms = chooseSharedExposure(participants, balances, reference, rng);
+    const terms = chooseSharedExposure(participants, balances, reference, rng,contract.version==="npc-ledger/1.2");
     if (terms.exposure === 0) continue;
     if (draft.tableId === "temerosa-slot") {
       settleSlot(draft, participants[0]!, balances, output, terms.stake, terms.multiplier, rng);
@@ -291,10 +291,12 @@ function createIntents(profiles: readonly NpcGamblingProfile[], dayIndex: number
     const prefix = `${contract.seedVersion}:${profile.id}:${dayIndex}`;
     const scheduleRng = new XorShift32(`${prefix}:schedule`);
     const tableRng = new XorShift32(`${prefix}:tables`);
-    const count = randomInteger(profile.sessionsPerDay.min, profile.sessionsPerDay.max, scheduleRng);
+    const behavior=contract.behaviors?.find((entry)=>entry.npcId===profile.id);
+    const visitRange=behavior?.visitsPerDay??profile.sessionsPerDay;
+    const count = randomInteger(visitRange.min, visitRange.max, scheduleRng);
     return sessionSchedule(profile, count, scheduleRng).map((minute, ordinal) => {
       const second=minute*60+randomInteger(0,59,scheduleRng);
-      return { npcId: profile.id, second, ordinal, tableId: weightedTable(profile, tableRng, dayIndex, second) };
+      return { npcId: profile.id, second, ordinal, tableId: weightedTable(profile, tableRng, dayIndex, second,behavior?.preferredTables) };
     });
   }).sort((a,b) => a.second-b.second || compareText(a.npcId,b.npcId) || a.ordinal-b.ordinal);
 }
@@ -303,8 +305,10 @@ function createMatchDrafts(visit: NpcVisit, dayIndex: number, contract: NpcLedge
   const rng = new XorShift32(`${contract.seedVersion}:${dayIndex}:${visit.visitId}:matches`);
   const range = MATCH_SECONDS[visit.tableId];
   const output: MatchDraft[] = [];
+  const behavior=contract.behaviors?.find((entry)=>entry.npcId===visit.participantIds[0]);
+  const desiredRounds=behavior?randomInteger(behavior.roundsPerVisit.min,behavior.roundsPerVisit.max,rng):Number.MAX_SAFE_INTEGER;
   let starts = visit.startedAtSecondOfDay + randomInteger(12,24,rng);
-  while (starts + range[0] <= visit.endsAtSecondOfDay - 8) {
+  while (output.length<desiredRounds&&starts + range[0] <= visit.endsAtSecondOfDay - 8) {
     const settles = Math.min(visit.endsAtSecondOfDay - 8, starts + randomInteger(range[0],range[1],rng));
     if (settles <= starts) break;
     const matchId = `${visit.visitId}:match:${output.length}`;
@@ -419,9 +423,9 @@ function addSession(
   }));
 }
 
-function chooseSharedExposure(profiles: readonly NpcGamblingProfile[], balances: Readonly<Record<string,number>>, dayOpening: Readonly<Record<string,number>>, rng: XorShift32): {stake: Exclude<NpcStake,0>; multiplier: WagerMultiplier; exposure:number} {
+function chooseSharedExposure(profiles: readonly NpcGamblingProfile[], balances: Readonly<Record<string,number>>, dayOpening: Readonly<Record<string,number>>, rng: XorShift32,allowMinimum:boolean): {stake: Exclude<NpcStake,0>; multiplier: WagerMultiplier; exposure:number} {
   const initiator = profiles[0]!;
-  const maximum = Math.min(...profiles.map((profile) => Math.floor(Math.min(balances[profile.id]!, Math.max(0, balances[profile.id]! * profile.maxExposureRatio)))));
+  const maximum = Math.min(...profiles.map((profile) => allowMinimum?affordableMaximumExposure(profile,balances[profile.id]!,20):Math.floor(Math.min(balances[profile.id]!,Math.max(0,balances[profile.id]!*profile.maxExposureRatio)))));
   const stakes = PAID_STAKES.filter((stake) => stake*2 <= maximum);
   if (stakes.length === 0) return { stake:10, multiplier:2, exposure:0 };
   const pnl = balances[initiator.id]!-dayOpening[initiator.id]!;
@@ -434,15 +438,17 @@ function chooseSharedExposure(profiles: readonly NpcGamblingProfile[], balances:
   return { stake, multiplier, exposure:stake*multiplier };
 }
 
-function chooseOldMaidExposure(profiles: readonly NpcGamblingProfile[], balances: Readonly<Record<string,number>>, rng: XorShift32): {stake:Exclude<NpcStake,0>;multiplier:WagerMultiplier;exposure:number} {
+function chooseOldMaidExposure(profiles: readonly NpcGamblingProfile[], balances: Readonly<Record<string,number>>, rng: XorShift32,allowMinimum:boolean): {stake:Exclude<NpcStake,0>;multiplier:WagerMultiplier;exposure:number} {
   const lossUnits = profiles.length >= 4 ? 1.5 : 1;
-  const maximum = Math.min(...profiles.map((profile) => Math.floor(Math.min(balances[profile.id]!, balances[profile.id]!*profile.maxExposureRatio))));
+  const minimumExposure=Math.round(10*2*lossUnits);
+  const maximum = Math.min(...profiles.map((profile) => allowMinimum?affordableMaximumExposure(profile,balances[profile.id]!,minimumExposure):Math.floor(Math.min(balances[profile.id]!,balances[profile.id]!*profile.maxExposureRatio))));
   const choices = PAID_STAKES.flatMap((stake) => WAGER_MULTIPLIERS.map((multiplier) => ({stake,multiplier,exposure:Math.round(stake*multiplier*lossUnits)})))
     .filter((choice) => choice.exposure <= maximum);
   if (choices.length === 0) return {stake:10,multiplier:2,exposure:0};
   const weights = choices.map((choice) => 1 + choice.stake/50 + (choice.multiplier-2)*profiles[0]!.riskAppetite);
   return choices[drawWeightedIndex(weights,rng)]!;
 }
+function affordableMaximumExposure(profile:NpcGamblingProfile,balance:number,minimumExposure:number):number{return balance<minimumExposure?0:Math.floor(Math.min(balance,Math.max(minimumExposure,balance*profile.maxExposureRatio)));}
 
 function policyAllowsPaid(profile: NpcGamblingProfile, balance: number, opening: number, rng:XorShift32): boolean {
   if (balance < 20) return false;
@@ -487,11 +493,11 @@ function sessionSchedule(profile:NpcGamblingProfile,count:number,rng:XorShift32)
   if(values.size!==count) throw new Error("npc_ledger_insufficient_schedule");
   return [...values].sort((a,b)=>a-b);
 }
-function weightedTable(profile:NpcGamblingProfile,rng:XorShift32,dayIndex:number,secondOfDay:number):CasinoTableId {
+function weightedTable(profile:NpcGamblingProfile,rng:XorShift32,dayIndex:number,secondOfDay:number,preferredTables:readonly {tableId:CasinoTableId;weight:number}[]=profile.tables):CasinoTableId {
   /* Release-day visits before opening preserve every already-observed v1.0
      settlement. Later visits can enter the newly public table immediately. */
   const beforeOpening=dayIndex===0&&secondOfDay<FIVE_CARD_DRAW_OPENING_SECOND_OF_DAY;
-  const tables=beforeOpening?profile.tables.filter((entry)=>entry.tableId!=="temerosa-five-card-draw"):profile.tables;
+  const tables=beforeOpening?preferredTables.filter((entry)=>entry.tableId!=="temerosa-five-card-draw"):preferredTables;
   return tables[drawWeightedIndex(tables.map((entry)=>entry.weight),rng)]!.tableId;
 }
 function incomeSessionsForDay(profiles:readonly NpcGamblingProfile[],dayIndex:number,contract:NpcLedgerContract):Readonly<Record<string,NpcSession>> {
@@ -525,6 +531,7 @@ function normalizedUtcSecond(clock:CasinoClock):number {
 function compareText(a:string,b:string):number{return a<b?-1:a>b?1:0;}
 function validateDay(profiles:readonly NpcGamblingProfile[],dayIndex:number,openings:Readonly<Record<string,number>>,contract:NpcLedgerContract):void {
   if(!["npc-ledger/1.0","npc-ledger/1.1","npc-ledger/1.2"].includes(contract.version)||!["npc-ledger/0.9","casino-flow/1.0"].includes(contract.seedVersion)||!Number.isSafeInteger(contract.epochKstDay)||!Number.isSafeInteger(dayIndex)||dayIndex<0)throw new Error("npc_ledger_invalid_contract");
+  if(contract.houseOpeningBalance!==undefined&&(!Number.isSafeInteger(contract.houseOpeningBalance)||contract.houseOpeningBalance<0))throw new Error("npc_ledger_invalid_contract");
   if(contract.version!=="npc-ledger/1.2"&&contract.seedVersion!=="npc-ledger/0.9")throw new Error("npc_ledger_invalid_contract");
   if(contract.version==="npc-ledger/1.2"){
     const incomeProfiles=contract.externalIncomeProfiles??[];
@@ -532,6 +539,14 @@ function validateDay(profiles:readonly NpcGamblingProfile[],dayIndex:number,open
     for(const incomeProfile of incomeProfiles){assertNpcExternalIncomeProfile(incomeProfile);if(ids.has(incomeProfile.npcId))throw new Error(`npc_ledger_duplicate_flow_income_profile:${incomeProfile.npcId}`);ids.add(incomeProfile.npcId);}
     for(const profile of profiles)if(!ids.has(profile.id))throw new Error(`npc_ledger_missing_flow_income_profile:${profile.id}`);
     for(const id of ids)if(!profiles.some((profile)=>profile.id===id))throw new Error(`npc_ledger_orphan_flow_income_profile:${id}`);
+    const behaviorIds=new Set<string>();
+    for(const behavior of contract.behaviors??[]){
+      if(!behavior.npcId||behaviorIds.has(behavior.npcId)||!profiles.some((profile)=>profile.id===behavior.npcId))throw new Error(`npc_ledger_invalid_behavior:${behavior.npcId}`);
+      behaviorIds.add(behavior.npcId);
+      for(const value of [behavior.riskAppetite,behavior.stakeAggression,behavior.lossChasing,behavior.stopLossDiscipline,behavior.takeProfitDiscipline,...Object.values(behavior.skills)])if(value===undefined||!(value>=0&&value<=1))throw new Error(`npc_ledger_invalid_behavior:${behavior.npcId}`);
+      for(const range of [behavior.visitsPerDay,behavior.roundsPerVisit])if(!Number.isSafeInteger(range.min)||!Number.isSafeInteger(range.max)||range.min<1||range.min>range.max)throw new Error(`npc_ledger_invalid_behavior:${behavior.npcId}`);
+      if(behavior.preferredTables.length===0||behavior.preferredTables.some((entry)=>!Number.isSafeInteger(entry.weight)||entry.weight<=0))throw new Error(`npc_ledger_invalid_behavior:${behavior.npcId}`);
+    }
   }
   if(profiles.length===0||new Set(profiles.map((p)=>p.id)).size!==profiles.length||profiles.some((profile)=>!contract.profiles.some((entry)=>entry.id===profile.id)))throw new Error("npc_ledger_invalid_profiles");
   for(const profile of profiles){

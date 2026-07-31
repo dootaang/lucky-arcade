@@ -1,8 +1,7 @@
 import {
   TEMEROSA_HOUSE_ACCOUNT_ID,
-  TEMEROSA_NPC_GAMBLING_PROFILES,
-  TEMEROSA_NPC_LEDGER_CONTRACT,
   casinoJournalAccountDelta,
+  temerosaCasinoLedgerAtUtcSecond,
   type CasinoInternalAccountId,
 } from "@lucky-arcade/casino-ledger";
 import { casinoClockFromSample, deviceCasinoClockSample, rememberCasinoClockSecond, stabilizeCasinoClockSample } from "./casino-clock.ts";
@@ -53,7 +52,8 @@ export async function casinoCounterpartyContexts(
   const casinoOccurredAtSecond = clock.utcSecond();
   rememberCasinoClockSecond(casinoOccurredAtSecond);
   const journal = (await listCasinoTransactions()).filter((transaction) => transaction.occurredAtCasinoSecond <= casinoOccurredAtSecond);
-  const worldline = personalCasinoWorldlineAt(TEMEROSA_NPC_GAMBLING_PROFILES, clock, TEMEROSA_NPC_LEDGER_CONTRACT, journal);
+  const ledger=temerosaCasinoLedgerAtUtcSecond(casinoOccurredAtSecond);
+  const worldline = personalCasinoWorldlineAt(ledger.profiles, clock, ledger.contract, journal);
 
   return Object.freeze(Object.fromEntries(accountIds.map((accountId) => {
     const localDelta = casinoJournalAccountDelta(journal, accountId);
