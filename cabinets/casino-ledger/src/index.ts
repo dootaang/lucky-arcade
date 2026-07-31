@@ -10,3 +10,4 @@ export * from "./presentation.ts";
 export * from "./presentation-time.ts";
 export * from "./rounds.ts";
 export * from "./temerosa-profiles.ts";
+export * from "./temerosa-series-migration.ts";

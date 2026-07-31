@@ -18,6 +18,7 @@
     "content:temerosa:audit": "pnpm --filter @lucky-arcade/content-cli temerosa:audit --",
     "content:temerosa:expressions": "pnpm --filter @lucky-arcade/content-cli temerosa:expressions --",
     "content:temerosa:casino:inventory": "pnpm --filter @lucky-arcade/content-cli temerosa:casino:inventory --",
+    "content:temerosa:series:npcs": "pnpm --filter @lucky-arcade/content-cli temerosa:series:npcs --",
     "content:temerosa:casino:compile": "pnpm --filter @lucky-arcade/content-cli temerosa:casino:assets:compile --",
     "content:temerosa:casino:audit": "pnpm --filter @lucky-arcade/content-cli temerosa:casino:assets:audit --",
     "content:temerosa:favorite:compile": "pnpm --filter @lucky-arcade/content-cli temerosa:favorite:compile --",
