@@ -62,8 +62,9 @@ export function reduceMatchPairs(faces: readonly MatchPairsFace[], opponents: re
   if (action.type === "start") {
     assert(state.status === "ready", MATCH_PAIRS_ERRORS.startInvalid); assertNonEmpty(action.seed, MATCH_PAIRS_ERRORS.invalidSeed);
     if (state.mode === "play") {
-      assertNonEmpty(action.wagerId ?? "", MATCH_PAIRS_ERRORS.startInvalid);
-      assert(action.stake === 10 || action.stake === 50 || action.stake === 200, MATCH_PAIRS_ERRORS.startInvalid);
+      const free = action.wagerId === undefined && action.stake === undefined;
+      const wagered = typeof action.wagerId === "string" && action.wagerId.length > 0 && (action.stake === 10 || action.stake === 50 || action.stake === 200);
+      assert(free || wagered, MATCH_PAIRS_ERRORS.startInvalid);
     } else assert(action.wagerId === undefined && action.stake === undefined, MATCH_PAIRS_ERRORS.startInvalid);
     const started = createMatchPairsState(faces, opponents, state.packVersion, action.seed, state.difficulty, state.opponentIds.npc, state.sessionId, state.mode, state.opponentIds.player ?? undefined, state.focus);
     return recordAction({ ...started, sequence: state.sequence, status: "playing", wagerId: action.wagerId ?? null, stake: action.stake ?? null }, action, state.history);

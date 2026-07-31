@@ -53,23 +53,28 @@ describe("casino card cores", () => {
   it("pays the audited high-low curve instead of the inflationary powers-of-two curve", () => {
     const state = { ...started("high-low", "high-low-cashout"), currentCard: "spades-5", deck: ["hearts-6"], cursor: 0 };
     const hit = reduceCasinoCard(state, { type: "guess", direction: "higher" });
-    expect(HIGH_LOW_RETURN_MULTIPLIERS).toEqual([1.3, 1.9, 2.7, 4, 5.5]);
-    expect(reduceCasinoCard(hit, { type: "cash_out" })).toMatchObject({ status: "complete", outcome: "win", creditAmount: 13 });
+    expect(HIGH_LOW_RETURN_MULTIPLIERS).toEqual([1.1, 1.6, 2.2, 3.2, 4.5]);
+    expect(reduceCasinoCard(hit, { type: "cash_out" })).toMatchObject({ status: "complete", outcome: "win", creditAmount: 11 });
   });
 
-  it("keeps optimal five-step high-low play below break-even across 20,000 seeds", () => {
+  it("keeps an adversarial legal stop/continue policy below break-even across 50,000 seeds", () => {
     let returned = 0;
-    const runs = 20_000;
+    const runs = 50_000;
     for (let seed = 0; seed < runs; seed += 1) {
       let state = started("high-low", `rtp-${seed}`);
       while (state.status !== "complete") {
-        const direction = rankValue(state.currentCard!) >= 8 ? "lower" : "higher";
+        const rank = rankValue(state.currentCard!);
+        if (state.streak > 0 && !adversarialHighLowContinues(rank, state.streak)) {
+          state = reduceCasinoCard(state, { type: "cash_out" });
+          continue;
+        }
+        const direction = rank >= 8 ? "lower" : "higher";
         state = reduceCasinoCard(state, { type: "guess", direction });
       }
       returned += state.creditAmount;
     }
     const returnRate = returned / (runs * 10);
-    expect(returnRate).toBeGreaterThan(.88);
+    expect(returnRate).toBeGreaterThan(.9);
     expect(returnRate).toBeLessThan(.98);
   });
 
@@ -138,6 +143,13 @@ describe("casino card cores", () => {
 
 function started(gameId: CasinoCardGameId, seed: string): CasinoCardState {
   return reduceCasinoCard(createCasinoCardState(gameId), { type: "start", seed, stake: 10, reservedAmount: 10 * CASINO_GAME_INFO[gameId].maxExposure, wagerId: `wager-${gameId}` });
+}
+
+/** A simple public-information policy discovered by the economy audit. */
+function adversarialHighLowContinues(rank: number, streak: number): boolean {
+  if (streak === 1) return rank <= 6 || rank >= 10;
+  if (streak === 2 || streak === 3) return rank <= 5 || rank >= 11;
+  return rank <= 4 || rank >= 12;
 }
 
 function play(gameId: CasinoCardGameId, seed: string): { state: CasinoCardState; steps: number } {

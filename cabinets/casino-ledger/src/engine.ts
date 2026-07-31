@@ -26,7 +26,10 @@ const MINUTES_PER_DAY = 1_440;
 const SECONDS_PER_DAY = CASINO_SECONDS_PER_DAY;
 const MAX_SAFE_BALANCE = 1_000_000_000;
 const PAID_STAKES = [10, 50, 200] as const;
-const HIGH_LOW_RETURN_MULTIPLIERS = [1.3, 1.9, 2.7, 4, 5.5] as const;
+const LEGACY_HIGH_LOW_RETURN_MULTIPLIERS = [1.3, 1.9, 2.7, 4, 5.5] as const;
+const AUDITED_HIGH_LOW_RETURN_MULTIPLIERS = [1.1, 1.6, 2.2, 3.2, 4.5] as const;
+/** 2026-08-01 KST. Never rewrite already observed NPC history in place. */
+const AUDITED_HIGH_LOW_OPENING_KST_DAY = 20_666;
 const PAYLINES = [[0,1,2],[3,4,5],[6,7,8],[0,4,8],[6,4,2]] as const;
 const VISIT_SECONDS = Object.freeze({
   "temerosa-slot": [2_700, 5_400],
@@ -113,7 +116,7 @@ export function casinoDayPlan(
     if (draft.tableId === "temerosa-slot") {
       settleSlot(draft, participants[0]!, balances, output, terms.stake, terms.multiplier, rng);
     } else if (draft.tableId === "temerosa-high-low") {
-      settleHighLow(draft, participants[0]!, balances, output, terms.stake, terms.multiplier, rng);
+      settleHighLow(draft, participants[0]!, balances, output, terms.stake, terms.multiplier, rng, contract.epochKstDay + dayIndex >= AUDITED_HIGH_LOW_OPENING_KST_DAY);
     } else {
       settlePvp(draft, draft.tableId, participants, balances, output, terms.stake, terms.multiplier, rng);
     }
@@ -357,10 +360,12 @@ function settleSlot(plan: MatchDraft, profile: NpcGamblingProfile, balances: Rec
   addSession(profile.id, plan, stake, exposure, credit, `lines-${lines}`, "temerosa-slot-paytable/0.3", balances, output);
 }
 
-function settleHighLow(plan: MatchDraft, profile: NpcGamblingProfile, balances: Record<string,number>, output: Record<string,NpcSession[]>, stake: Exclude<NpcStake,0>, multiplier: WagerMultiplier, rng: XorShift32): void {
+function settleHighLow(plan: MatchDraft, profile: NpcGamblingProfile, balances: Record<string,number>, output: Record<string,NpcSession[]>, stake: Exclude<NpcStake,0>, multiplier: WagerMultiplier, rng: XorShift32, auditedPaytable: boolean): void {
+  const returns = auditedPaytable ? AUDITED_HIGH_LOW_RETURN_MULTIPLIERS : LEGACY_HIGH_LOW_RETURN_MULTIPLIERS;
+  const termsVersion = auditedPaytable ? "temerosa-high-low-paytable/0.4" : "temerosa-high-low-paytable/0.3";
   const exposure = stake * multiplier;
   let currentRank = randomInteger(2, 14, rng);
-  for (let streak = 1; streak <= HIGH_LOW_RETURN_MULTIPLIERS.length; streak += 1) {
+  for (let streak = 1; streak <= returns.length; streak += 1) {
     const higherChance = (14 - currentRank) / 13;
     const lowerChance = (currentRank - 2) / 13;
     const optimalHigher = higherChance >= lowerChance;
@@ -369,13 +374,13 @@ function settleHighLow(plan: MatchDraft, profile: NpcGamblingProfile, balances: 
     const nextRank = randomInteger(2, 14, rng);
     const correct = guessesHigher ? nextRank > currentRank : nextRank < currentRank;
     if (!correct) {
-      addSession(profile.id, plan, stake, exposure, 0, `loss-${streak}`, "temerosa-high-low-paytable/0.3", balances, output);
+      addSession(profile.id, plan, stake, exposure, 0, `loss-${streak}`, termsVersion, balances, output);
       return;
     }
     currentRank = nextRank;
-    const baseCredit = Math.round(stake * HIGH_LOW_RETURN_MULTIPLIERS[streak - 1]!);
-    if (streak === HIGH_LOW_RETURN_MULTIPLIERS.length || !highLowContinues(profile, currentRank, streak, rng)) {
-      addSession(profile.id, plan, stake, exposure, baseCredit * multiplier, `cashout-${streak}`, "temerosa-high-low-paytable/0.3", balances, output);
+    const baseCredit = Math.round(stake * returns[streak - 1]!);
+    if (streak === returns.length || !highLowContinues(profile, currentRank, streak, rng)) {
+      addSession(profile.id, plan, stake, exposure, baseCredit * multiplier, `cashout-${streak}`, termsVersion, balances, output);
       return;
     }
   }

@@ -37,7 +37,7 @@ const registrations: readonly WebCabinetRegistration[] = [
     load: async () => { const module = await import("../features/five-card-draw/five-card-draw-view.tsx"); return { default: module.default }; },
   },
   {
-    manifest: { id: "temerosa-high-low", version: "casino-cards/0.3", title: "하이로우", description: "워어즈가 펼치는 다음 카드가 더 높을지 낮을지 맞히고 배당을 쌓는다.", requiredCapabilities: [], sessionKind: "instant", launchKind: "built-in", resumeLabel: "하이로우로 돌아가기", estimatedMinutes: { min: 1, max: 2 }, entry: "wager", wagerTiers: [10, 50, 200] },
+    manifest: { id: "temerosa-high-low", version: "casino-cards/0.4", title: "하이로우", description: "워어즈가 펼치는 다음 카드가 더 높을지 낮을지 맞히고 배당을 쌓는다.", requiredCapabilities: [], sessionKind: "instant", launchKind: "built-in", resumeLabel: "하이로우로 돌아가기", estimatedMinutes: { min: 1, max: 2 }, entry: "wager", wagerTiers: [10, 50, 200] },
     openingRank: null, badge: "빠른 테이블", load: async () => { const module = await import("../features/casino-cards/casino-card-view.tsx"); return { default: ({ onExit }) => <module.default gameId="high-low" onExit={onExit} /> }; },
   },
   {
@@ -84,7 +84,7 @@ const registrations: readonly WebCabinetRegistration[] = [
     manifest: {
       id: "temerosa-match-pairs", version: "match-pairs/0.4", title: "짝맞추기",
       description: "이름 없이 그림만 보고 같은 얼굴 두 장을 찾는 기억 게임.", requiredCapabilities: [],
-      sessionKind: "repeat", launchKind: "built-in", resumeLabel: "짝맞추기 이어하기", estimatedMinutes: { min: 1, max: 3 }, entry: "wager", wagerTiers: [10, 50, 200],
+      sessionKind: "repeat", launchKind: "built-in", resumeLabel: "짝맞추기 이어하기", estimatedMinutes: { min: 1, max: 3 }, entry: "free",
     },
     openingRank: null, badge: "기억 테이블",
     load: async () => { const module = await import("../features/match-pairs/match-pairs-view.tsx"); return { default: ({ onExit }) => <module.default onExit={onExit} /> }; },

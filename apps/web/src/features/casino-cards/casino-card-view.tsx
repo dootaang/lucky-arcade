@@ -26,7 +26,7 @@ interface HouseDealer {
 }
 
 export default function CasinoCardView({ gameId, onExit }: { gameId: CasinoCardGameId; onExit(): void }) {
-  const info = CASINO_GAME_INFO[gameId], cabinetId = `temerosa-${gameId}`, sessionId = `${cabinetId}:table-1`, termsVersion = `${cabinetId}-paytable/0.3`;
+  const info = CASINO_GAME_INFO[gameId], cabinetId = `temerosa-${gameId}`, sessionId = `${cabinetId}:table-1`, termsVersion = `${cabinetId}-paytable/0.4`;
   const [ready, setReady] = useState<{ state: CasinoCardState; atlas: CourtAtlas; multiplier: WagerMultiplier; dealer?: HouseDealer } | null>(null), [balance, setBalance] = useState(0), [busy, setBusy] = useState(false), [error, setError] = useState("");
   const stateRef = useRef<CasinoCardState | null>(null);
 
@@ -90,7 +90,7 @@ function isStake(value: number): value is CasinoCardStake { return value === 10 
 function validReceipt(receipt: GameWagerReceipt, baseExposure: number): boolean { try { wagerMultiplierFromExposure(receipt.stake, receipt.reservedAmount, baseExposure); return isStake(receipt.stake); } catch { return false; } }
 function leveragedCredit(state: CasinoCardState, receipt: GameWagerReceipt, baseExposure: number): number { return leveragedWagerCredit(state.reservedAmount, casinoCardCredit(state), wagerMultiplierFromExposure(receipt.stake, receipt.reservedAmount, baseExposure)); }
 function maximumCasinoCardCredit(gameId: CasinoCardGameId, stake: CasinoCardStake): number {
-  if (gameId === "high-low") return Math.round(stake * 5.5);
+  if (gameId === "high-low") return Math.round(stake * 4.5);
   if (gameId === "blackjack") return Math.floor(stake * 2.5);
   if (gameId === "texas-holdem") return stake * 16;
   return stake * 2;

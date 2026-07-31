@@ -24,7 +24,7 @@ describe("public cabinet visibility", () => {
   it("keeps hidden cabinets out of resume and lookup UI", () => {
     expect(getCabinetRegistration("temerosa-old-maid")?.manifest.title).toContain("도둑잡기");
     expect(getCabinetRegistration("temerosa-slot")?.manifest.entry).toBe("wager");
-    expect(getCabinetRegistration("temerosa-high-low")?.manifest.version).toBe("casino-cards/0.3");
+    expect(getCabinetRegistration("temerosa-high-low")?.manifest.version).toBe("casino-cards/0.4");
     expect(getCabinetRegistration("indian-poker")?.manifest.description).toContain("5·7라운드");
     expect(getCabinetRegistration("temerosa-texas-holdem")).toBeUndefined();
     expect(getCabinetRegistration("temerosa-five-card-draw")?.manifest.version).toBe("temerosa-five-card-draw-wager/1.0");

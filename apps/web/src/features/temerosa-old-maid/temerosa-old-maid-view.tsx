@@ -8,8 +8,8 @@ import { loadTemerosaCasinoAssets } from "../../lib/temerosa-content.ts";
 import { loadMatchSummary, recordOldMaidCompletion, type MatchSummary } from "../../lib/match-history.ts";
 import { readCollection, unlockCollectionItem } from "../../lib/collection.ts";
 import { grantOldMaidCompletion, reconcileLatestOldMaidRankReward } from "../../lib/wallet.ts";
-import { invalidatePrediction, listPredictions, PREDICTION_MULTIPLIERS, PREDICTION_STAKES, reservePrediction, settlePrediction } from "../../lib/wager.ts";
-import type { CollectionSnapshot, PredictionMultiplier, PredictionStake, SpectatorPrediction, WalletSnapshot } from "@lucky-arcade/persistence";
+import { invalidatePrediction, listPredictions, settlePrediction } from "../../lib/wager.ts";
+import type { CollectionSnapshot, SpectatorPrediction, WalletSnapshot } from "@lucky-arcade/persistence";
 import { useCasinoOpponentAvailability } from "../casino-ledger/use-casino-opponent-availability.ts";
 
 const SESSION = "temerosa-old-maid:table-1";
@@ -80,16 +80,6 @@ export default function TemerosaOldMaidView({ onExit }: { onExit(): void }) {
     }
   }
 
-  async function startPrediction(input: { seed: string; mode: OldMaidState["mode"]; characterIds: readonly string[]; market: "joker-holder" | "first-place"; predictedCharacterId: string; stake: number; multiplier: number }): Promise<"reserved" | "replay"> {
-    const outcomeKey = predictionOutcomeKey({ seed: input.seed, mode: input.mode, characters: { "cpu-1": input.characterIds[0] as string, "cpu-2": input.characterIds[1] as string, "cpu-3": input.characterIds[2] as string }, spectatorCharacterId: input.mode === "spectate" ? input.characterIds[3] as string : null });
-    const existing = (await listPredictions()).find((prediction) => prediction.outcomeKey === outcomeKey);
-    if (existing) { setActivePrediction(existing); return existing.status === "reserved" ? "reserved" : "replay"; }
-    const result = await reservePrediction({ outcomeKey, market: input.market, predictedCharacterId: input.predictedCharacterId, stake: input.stake as PredictionStake, multiplier: input.multiplier as PredictionMultiplier });
-    setWallet(result.wallet);
-    setActivePrediction(result.prediction);
-    return "reserved";
-  }
-
   async function settleCurrentPrediction(state: OldMaidState): Promise<void> {
     const outcome = oldMaidOutcome(state);
     if (!outcome) return;
@@ -108,7 +98,7 @@ export default function TemerosaOldMaidView({ onExit }: { onExit(): void }) {
 
   if (error) return <main className="game-shell"><div className="game-loading">도둑잡기 카드를 불러오지 못했습니다.<button onClick={() => window.location.reload()}>다시 불러오기</button><button onClick={onExit}>오락실로 돌아가기</button></div></main>;
   if (!ready) return <main className="game-shell"><div className="game-loading">도둑잡기 카드와 캐릭터 표정을 불러오고 있습니다…</div></main>;
-  const economy = wallet && collection ? { balance: wallet.balance, award, unlockedFaceIds: collection.unlockedFaceIds, onUnlock: async () => { const result = await unlockCollectionItem(COLLECTION, ready.cartridge.faces.map((face) => face.id)); setWallet(result.wallet); setCollection(result.collection); }, prediction: { stakes: PREDICTION_STAKES, multipliers: PREDICTION_MULTIPLIERS, active: activePrediction, onStart: startPrediction, onClear: () => setActivePrediction(null) } } : undefined;
+  const economy = wallet && collection ? { balance: wallet.balance, award, unlockedFaceIds: collection.unlockedFaceIds, onUnlock: async () => { const result = await unlockCollectionItem(COLLECTION, ready.cartridge.faces.map((face) => face.id)); setWallet(result.wallet); setCollection(result.collection); } } : undefined;
   return <OldMaidScreen cartridge={ready.cartridge} thumbAssets={ready.thumbAssets} assets={ready.assets} detailAssets={ready.detailAssets} initialState={ready.state} matchSummary={matchSummary} {...(economy ? { economy } : {})} opponentAvailability={availability.opponents} onOpponentSelectionChange={availability.holdOpponents} onPersist={persist} onExit={onExit} />;
 }
 

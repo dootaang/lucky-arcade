@@ -4,6 +4,7 @@ export * from "./economy.ts";
 export * from "./engine.ts";
 export * from "./house.ts";
 export * from "./live-tape.ts";
+export * from "./markets.ts";
 export * from "./presence.ts";
 export * from "./presentation.ts";
 export * from "./presentation-time.ts";

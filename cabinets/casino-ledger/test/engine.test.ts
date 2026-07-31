@@ -121,19 +121,20 @@ describe("casino ledger 1.0 KST economy", () => {
     expect(depleted[right.id]).toEqual([]);
   });
 
-  it("runs high-low with the public 0.3 paytable and both cashouts and losses",()=>{
+  it("runs high-low with the audited public 0.4 paytable and both cashouts and losses",()=>{
     let balances=openings();let cashouts=0,losses=0;
     for(let day=0;day<90;day++){
       const sessions=casinoDaySessions(profiles,day,balances,contract);
       for(const profile of profiles)for(const session of sessions[profile.id]??[]){
         if(session.tableId!=="temerosa-high-low")continue;
-        expect(session.termsVersion).toBe("temerosa-high-low-paytable/0.3");
+        const audited=contract.epochKstDay+day>=20_666;
+        expect(session.termsVersion).toBe(audited?"temerosa-high-low-paytable/0.4":"temerosa-high-low-paytable/0.3");
         const leverage=session.reservedAmount/session.stake;
         expect([2,3,4,5]).toContain(leverage);
         if(session.resultKind.startsWith("loss-")){losses++;expect(session.creditAmount).toBe(0);expect(session.delta).toBe(-session.reservedAmount);}
         else{
           cashouts++;const streak=Number(session.resultKind.replace("cashout-",""));
-          const returns=[1.3,1.9,2.7,4,5.5] as const;
+          const returns=audited?[1.1,1.6,2.2,3.2,4.5] as const:[1.3,1.9,2.7,4,5.5] as const;
           expect(session.creditAmount).toBe(Math.round(session.stake*returns[streak-1]!)*leverage);
           expect(session.delta).toBe(session.creditAmount-session.reservedAmount);
         }

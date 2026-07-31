@@ -16,6 +16,7 @@ export type CasinoTableId =
 
 export type CasinoLedgerSourceId = CasinoTableId
   | "npc-income"
+  | "temerosa-side-market"
   | "temerosa-blackjack"
   | "temerosa-doubt"
   | "temerosa-one-card"

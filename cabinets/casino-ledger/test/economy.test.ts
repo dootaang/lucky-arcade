@@ -37,11 +37,11 @@ describe("casino economy 1.0", () => {
     });
     const settlement = settleCasinoEscrow({
       reservation, idempotencyKey: "high-low-1:settle", occurredAtCasinoSecond: 200,
-      credits: { [LOCAL_PLAYER_ACCOUNT_ID]: 5_500 }, resultKey: "cashout-5",
+      credits: { [LOCAL_PLAYER_ACCOUNT_ID]: 4_500, [TEMEROSA_HOUSE_ACCOUNT_ID]: 1_000 }, resultKey: "cashout-5",
     });
     const balances = applyCasinoTransactions({ [LOCAL_PLAYER_ACCOUNT_ID]: 1_000, [TEMEROSA_HOUSE_ACCOUNT_ID]: 150_000 }, [reservation.transaction, settlement]);
-    expect(balances[LOCAL_PLAYER_ACCOUNT_ID]).toBe(5_500);
-    expect(balances[TEMEROSA_HOUSE_ACCOUNT_ID]).toBe(145_500);
+    expect(balances[LOCAL_PLAYER_ACCOUNT_ID]).toBe(4_500);
+    expect(balances[TEMEROSA_HOUSE_ACCOUNT_ID]).toBe(146_500);
     expect(internalMoneySupply(balances)).toBe(151_000);
   });
 

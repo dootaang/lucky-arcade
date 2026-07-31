@@ -92,7 +92,9 @@ export default function FiveCardDrawView({ onExit }: { onExit(): void }) {
       const pending = reserved.find((receipt) => receiptMatchesState(receipt, restored.state));
       for (const receipt of reserved) {
         if (receipt === pending) continue;
-        nextBalance = (await invalidateWager({ wagerId: receipt.wagerId, reason: receipt.termsVersion === FIVE_CARD_DRAW_TERMS_VERSION ? "corrupt-state" : "version-mismatch" })).wallet.balance;
+        nextBalance = receipt.termsVersion === FIVE_CARD_DRAW_TERMS_VERSION
+          ? (await settleUnrecoverableHand(receipt)).wallet.balance
+          : (await invalidateWager({ wagerId: receipt.wagerId, reason: "version-mismatch" })).wallet.balance;
       }
       if (restored.state.phase !== "ready" && restored.state.phase !== "complete" && !pending) restored = freshEnvelope(opponents);
       const restoredResult=restored.state.result;
@@ -151,6 +153,10 @@ export default function FiveCardDrawView({ onExit }: { onExit(): void }) {
 
   function update(nextEnvelope: FiveCardDrawEnvelope): void {
     writeEnvelope(nextEnvelope);
+    commitEnvelope(nextEnvelope);
+  }
+
+  function commitEnvelope(nextEnvelope: FiveCardDrawEnvelope): void {
     setReady((current) => {
       if (!current) return current;
       const next = { ...current, envelope: nextEnvelope };
@@ -188,10 +194,13 @@ export default function FiveCardDrawView({ onExit }: { onExit(): void }) {
       const fresh = createFiveCardDrawState(context, dealerIndex);
       const state = reduceFiveCardDraw(fresh, { type: "start", seed: crypto.randomUUID(), stake });
       const series=createFiveCardDrawSeries(context,targetHands,stake);
-      await reserveHand(state);
+      const nextEnvelope={...current.envelope,state,series};
+      // Durable state is written before money moves. A blocked store cannot create a refundable live hand.
+      writeEnvelope(nextEnvelope);
+      try{await reserveHand(state);}catch(cause){writeEnvelope(current.envelope);throw cause;}
       setAutoContinue(targetHands>1);
       availability.holdOpponents(selected.map((opponent)=>opponent.id));
-      update({ ...current.envelope, state,series });
+      commitEnvelope(nextEnvelope);
     } catch (cause) { setError(wagerError(cause,"대국을 시작하지 못했습니다.")); }
     finally { setBusy(false); }
   }
@@ -207,8 +216,10 @@ export default function FiveCardDrawView({ onExit }: { onExit(): void }) {
       const context={sessionId:series.sessionId,opponents:state.context.opponents,sessionRead:fiveCardDrawSessionRead(series.memory)};
       const fresh=createFiveCardDrawState(context,state.dealerIndex+1);
       const next=reduceFiveCardDraw(fresh,{type:"start",seed:crypto.randomUUID(),stake:series.stake});
-      await reserveHand(next);
-      update({...current.envelope,state:next,series:continueFiveCardDrawSeries(series)});
+      const nextEnvelope={...current.envelope,state:next,series:continueFiveCardDrawSeries(series)};
+      writeEnvelope(nextEnvelope);
+      try{await reserveHand(next);}catch(cause){writeEnvelope(current.envelope);throw cause;}
+      commitEnvelope(nextEnvelope);
     }catch(cause){setError(wagerError(cause,"다음 판을 시작하지 못했습니다."));setAutoContinue(false);}
     finally{setBusy(false);}
   }
@@ -339,7 +350,7 @@ function readEnvelope(opponents: readonly FiveCardDrawOpponentView[]): FiveCardD
 }
 
 function writeEnvelope(envelope: FiveCardDrawEnvelope): void {
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(envelope)); } catch { /* the current hand can continue in memory */ }
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(envelope));
 }
 
 function readBeginner(): boolean {
@@ -353,6 +364,19 @@ function stripPresentation(opponent: FiveCardDrawOpponentView): FiveCardDrawOppo
 function receiptMatchesState(receipt:GameWagerReceipt,state:FiveCardDrawState):boolean{
   return receipt.cabinetId==="temerosa-five-card-draw"&&receipt.sessionId===SESSION&&receipt.termsVersion===FIVE_CARD_DRAW_TERMS_VERSION
     &&state.seed!==null&&receipt.outcomeKey===`${FIVE_CARD_DRAW_TERMS_VERSION}:${state.seed}`;
+}
+
+/**
+ * Missing current-contract state is not refundable: otherwise deleting browser
+ * storage after seeing a bad hand becomes a free option. Every counterparty gets
+ * its reservation back and shares the player's exposed amount deterministically.
+ */
+async function settleUnrecoverableHand(receipt:GameWagerReceipt){
+  const reservations=receipt.counterpartyReservations;
+  if(!reservations||Object.keys(reservations).length===0)throw new Error("five_card_draw_counterparties_missing");
+  const ids=Object.keys(reservations).sort(),share=Math.floor(receipt.reservedAmount/ids.length),remainder=receipt.reservedAmount-share*ids.length;
+  const counterpartyCredits=Object.fromEntries(ids.map((id,index)=>[id,reservations[id]!+share+(index<remainder?1:0)]));
+  return settleWager({wagerId:receipt.wagerId,settlementSequence:0,resultKey:"unrecoverable-state-forfeit",creditAmount:0,counterpartyCredits});
 }
 
 function wagerError(cause:unknown,fallback:string):string{

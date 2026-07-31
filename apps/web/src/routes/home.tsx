@@ -95,7 +95,7 @@ export function Home({ privatePreview = false }: { privatePreview?: boolean }) {
 
       {recentPlay && recentCabinet && <section className="resume-hero" aria-label="이어하기"><div className="resume-icon"><IconClockPlay /></div><div><span className="eyebrow">최근 플레이 · {timeAgo(recentPlay.updatedAt)}</span><h2>{recentVenue ? `${recentVenue.title} · ${recentCabinet.manifest.title.replace("테메로세 ", "")}` : recentPlay.title}</h2><p>{recentPlay.progressLabel} · 저장된 자리로 바로 돌아갑니다.</p></div><button onClick={() => { const card = recentPlay.cardFingerprint ? cards.find((item) => item.fingerprint === recentPlay.cardFingerprint) : undefined; if (card) setSelected(card); openCabinet(recentPlay.cabinetId); }}><IconPlayerPlay /> {recentCabinet.manifest.resumeLabel}</button></section>}
 
-      {privatePreview ? <DeveloperLobby cards={cards} selected={selected} onImported={imported} onSelect={setSelected} onPlay={openCabinet} /> : venueId ? venue ? <VenueFloor venue={venue} balance={balance} onPlay={openCabinet} onPreview={(id) => navigate(`/preview/${encodeURIComponent(id)}`)} /> : <NotFound onLobby={() => navigate("/")} /> : <VenueLobby onEnter={(id) => navigate(`/venues/${id}`)} />}
+      {privatePreview ? <DeveloperLobby cards={cards} selected={selected} onImported={imported} onSelect={setSelected} onPlay={openCabinet} /> : venueId ? venue ? <VenueFloor venue={venue} balance={balance} onBalanceChange={setBalance} onPlay={openCabinet} onPreview={(id) => navigate(`/preview/${encodeURIComponent(id)}`)} /> : <NotFound onLobby={() => navigate("/")} /> : <VenueLobby onEnter={(id) => navigate(`/venues/${id}`)} />}
     </main>
   </div>;
 }
@@ -108,15 +108,12 @@ function VenueCard({ venue, eager, onEnter }: { venue: VenueManifest; eager: boo
   return <article className="venue-card"><picture className="venue-art"><source media="(max-width: 600px)" srcSet={venue.heroImage.sm.src} width={venue.heroImage.sm.width} height={venue.heroImage.sm.height} /><img src={venue.heroImage.md.src} width={venue.heroImage.md.width} height={venue.heroImage.md.height} alt={venue.heroImage.alt} loading={eager ? "eager" : "lazy"} fetchPriority={eager ? "high" : "auto"} onError={(event) => { event.currentTarget.hidden = true; }} /></picture><div className="venue-card-copy"><span className="eyebrow">Open Venue</span><h3>{venue.title}</h3><p>{venue.tagline}</p><button onClick={onEnter}>{venue.entryLabel}<IconPlayerPlay size={18} /></button></div></article>;
 }
 
-const plannedTables = [
-  { group: "관전", title: "관전석" },
-  { group: "교환소", title: "알제의 교환소" },
-] as const;
+const plannedTables = [{ group: "교환소", title: "알제의 교환소" }] as const;
 
 /** A suit stamped on each table, so a bare card still reads as a casino table. */
 const TABLE_SUITS: Record<string, string> = { "temerosa-old-maid": "♠", "temerosa-match-pairs": "♥", "temerosa-slot": "♦", "indian-poker": "♦", "temerosa-high-low": "♠", "temerosa-blackjack": "♣", "temerosa-doubt": "♦", "temerosa-one-card": "♥", "temerosa-texas-holdem": "♠", "temerosa-five-card-draw": "♣", "temerosa-video-poker": "♦", "lucky-derby-lab": "♠", "temerosa-margin": "♥", "temerosa-favorite-cup": "♥", "temerosa-echo-memory": "♣", "temerosa-pequod-expedition": "♠", "관전석": "♠", "알제의 교환소": "♦" };
 
-function VenueFloor({ venue, balance, onPlay, onPreview }: { venue: VenueManifest; balance: number; onPlay(id: string): void; onPreview(id: string): void }) {
+function VenueFloor({ venue, balance, onPlay, onPreview, onBalanceChange }: { venue: VenueManifest; balance: number; onPlay(id: string): void; onPreview(id: string): void; onBalanceChange(balance: number): void }) {
   const tables = venue.tables.flatMap((table) => {
     const entry = getCabinetRegistration(table.cabinetId, true);
     return entry ? [{ entry, status: table.status }] : [];
@@ -127,7 +124,7 @@ function VenueFloor({ venue, balance, onPlay, onPreview }: { venue: VenueManifes
     <span className="floor-backdrop ca-tableau" aria-hidden="true" />
     <span className="ca-spotlight" aria-hidden="true" />
     <header><span className="eyebrow">여백의 카지노 플로어</span><h2 id="floor-heading" className="ca-serif">테이블을 골라주세요</h2><p>현재 실제로 운영 중인 테이블만 입장할 수 있습니다.</p></header>
-    <Suspense fallback={<section className="casino-ledger-loading ca-label">원장 정리 중…</section>}><CasinoLedgerView userBalance={balance} onPlay={onPlay} tables={playable.map(({ entry }) => ({
+    <Suspense fallback={<section className="casino-ledger-loading ca-label">원장 정리 중…</section>}><CasinoLedgerView userBalance={balance} onBalanceChange={onBalanceChange} onPlay={onPlay} tables={playable.map(({ entry }) => ({
       id: entry.manifest.id as CasinoTableId,
       title: entry.manifest.title.replace("테메로세 ", ""),
       suit: TABLE_SUITS[entry.manifest.id] ?? "♠",

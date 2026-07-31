@@ -23,7 +23,7 @@ export function latestCasinoSettlementsAt(
   const canonical = activities.slice(0, limit)
     .flatMap((entry) => npcSessionSettlements(entry.npcId, entry.utcSecond, entry.session));
   return Object.freeze([...canonical, ...journalSettlements]
-    .filter((entry) => entry.utcSecond <= currentUtcSecond)
+    .filter((entry) => entry.utcSecond <= currentUtcSecond && entry.npcId !== "house:temerosa")
     .toSorted((left, right) => right.utcSecond - left.utcSecond || compareText(left.roundId, right.roundId))
     .slice(0, limit));
 }

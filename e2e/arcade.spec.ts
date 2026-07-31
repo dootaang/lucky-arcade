@@ -86,7 +86,7 @@ test("opens the sole public Venue with six open tables and every built-in previe
   await expect(page.locator(".table-card.playable").filter({ hasText: "하이로우" })).toContainText("10 P부터");
   await expect(page.locator(".table-card.playable").filter({ hasText: "파이브 카드 드로 포커" }).getByRole("button", { name: "시작", exact: true })).toBeVisible();
   await expect(page.locator(".table-card.coming-soon").filter({ hasText: "텍사스 홀덤" })).toContainText("개장 준비 중");
-  await expect(page.locator(".table-card.coming-soon")).toHaveCount(12);
+  await expect(page.locator(".table-card.coming-soon")).toHaveCount(11);
   await expect(page.locator(".table-card.coming-soon .admin-preview-entry")).toHaveCount(10);
   await expect(page.locator(".table-card.coming-soon").filter({ hasText: "비디오 포커" }).getByRole("button", { name: "관리자 시험 입장" })).toBeVisible();
   await page.locator(".table-card.playable").filter({ hasText: "도둑잡기" }).getByRole("button", { name: "시작", exact: true }).click();
@@ -99,6 +99,9 @@ test("loads the living ledger lazily and reuses the casino manifest in a game", 
     if (request.url().includes("/content/temerosa-margin/0.8.0/manifest.json")) casinoManifestRequests += 1;
   });
   await page.goto("/venues/temerosa-casino");
+  await expect(page.locator(".casino-side-market")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "통합 관전 사이드 베팅" })).toBeVisible();
+  expect(await page.locator(".side-market-outcomes button").count()).toBeGreaterThan(1);
   await expect(page.locator(".casino-ledger-board caption")).toContainText("명예의 전당");
   await expect(page.getByRole("button", { name: /^(최근 손익|최근 \d+일 손익|7일 손익)$/ })).toHaveAttribute("aria-pressed", "true");
   await page.getByRole("button", { name: "잔고", exact: true }).click();
@@ -144,6 +147,51 @@ test("loads the living ledger lazily and reuses the casino manifest in a game", 
   await page.locator(".table-card.playable").filter({ hasText: "슬롯 777" }).getByRole("button", { name: "시작", exact: true }).click();
   await expect(page.getByRole("heading", { name: "슬롯 777", exact: true })).toBeVisible();
   expect(casinoManifestRequests).toBe(1);
+});
+
+test("reserves, restores, and settles one integrated spectator market receipt", async ({ page }, testInfo) => {
+  test.skip(testInfo.project.metadata.mobile === true);
+  let casinoEpoch = Date.parse("2026-07-31T06:00:30Z");
+  await page.route("**/content/temerosa-margin/0.8.0/manifest.json", async (route) => {
+    const response = await route.fetch();
+    await route.fulfill({ response, headers: { ...response.headers(), date: new Date(casinoEpoch).toUTCString(), age: "0", "cache-control": "no-store" } });
+  });
+  await page.goto("/");
+  await page.evaluate(() => new Promise<void>((resolve, reject) => {
+    const opening = indexedDB.open("lucky-arcade", 9);
+    opening.onerror = () => reject(opening.error);
+    opening.onsuccess = () => {
+      const db = opening.result;
+      const transaction = db.transaction("wallet", "readwrite");
+      transaction.objectStore("wallet").put({ contract: "wallet/0.1", id: "wallet", balance: 1_000, updatedAt: new Date().toISOString() });
+      transaction.onerror = () => reject(transaction.error);
+      transaction.oncomplete = () => { db.close(); resolve(); };
+    };
+  }));
+  await page.goto("/venues/temerosa-casino");
+  const market = page.locator(".casino-side-market");
+  await expect(market).toHaveClass(/phase-open/);
+  await market.locator(".side-market-outcomes button").first().click();
+  await market.getByRole("button", { name: "베팅 확정", exact: true }).click();
+  await expect(market.locator(".side-market-receipt")).toContainText("마감 대기");
+  const reserved = await page.evaluate(async () => {
+    const database = await new Function("return import('/src/lib/database.ts')")();
+    const wagers = await database.listGameWagers("temerosa-side-market");
+    const wallet = await database.readWallet();
+    return { wagers, balance: wallet.balance };
+  });
+  expect(reserved.wagers).toHaveLength(1);
+  expect(reserved.wagers[0]).toMatchObject({ cabinetId: "temerosa-side-market", reservedAmount: 20, status: "reserved" });
+  expect(reserved.balance).toBe(980);
+
+  casinoEpoch += 251_000;
+  await page.reload();
+  await expect(market.locator(".side-market-receipt")).toContainText(/적중|실패/, { timeout: 20_000 });
+  const settled = await page.evaluate(async () => {
+    const database = await new Function("return import('/src/lib/database.ts')")();
+    return (await database.listGameWagers("temerosa-side-market"))[0];
+  });
+  expect(settled.status).toBe("settled");
 });
 
 test("does not rewind the casino ledger when a reload receives a stale cached Date", async ({ page }) => {
@@ -307,7 +355,7 @@ test("mobile high-low keeps the dealer and controls inside the viewport", async 
   expect(layout.scrollWidth).toBeLessThanOrEqual(layout.viewport + 1);
 });
 
-test("plays, wagers, records, and restores the public image-only match-pairs table", async ({ page }, testInfo) => {
+test("plays for free, records, and restores the public image-only match-pairs table", async ({ page }, testInfo) => {
   test.skip(testInfo.project.metadata.mobile === true);
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/");
@@ -327,7 +375,8 @@ test("plays, wagers, records, and restores the public image-only match-pairs tab
   await expect(page.getByRole("heading", { name: "짝맞추기" })).toBeVisible();
   expect(await page.locator(".match-pairs-card-front").evaluateAll((fronts) => fronts.every((front) => (front.textContent ?? "").trim() === ""))).toBe(true);
   await expect(page.locator(".match-pairs-card-front img").first()).toHaveAttribute("alt", "");
-  await page.getByRole("button", { name: "10 P · 2배로 시작", exact: true }).click();
+  await expect(page.getByText("직접 대국은 무료입니다. 예정된 NPC 대국 베팅은 카지노 플로어의 통합 관전 시장에서 받습니다.", { exact: true })).toBeVisible();
+  await page.getByRole("button", { name: "대국 시작", exact: true }).click();
   await expect(page.locator(".match-pairs-ready-panel")).toHaveCount(0);
   const pairs = await page.locator(".match-pairs-card").evaluateAll((cards) => {
     const indexes = new Map<string, number[]>();
@@ -348,8 +397,9 @@ test("plays, wagers, records, and restores the public image-only match-pairs tab
         const database = await new Function("return import('/src/lib/database.ts')")();
         return { wallet: await database.readWallet(), wager: (await database.listGameWagers("temerosa-match-pairs:versus-2"))[0] };
       });
-      expect(pending.wallet.balance).toBe(17);
-      expect(pending.wager).toMatchObject({ status: "reserved", stake: 10, reservedAmount: 20 });
+      expect(pending.wallet.balance).toBe(37);
+      expect(pending.wager).toBeUndefined();
+      await expect(page.getByText("저장됨", { exact: true })).toBeVisible();
       await page.reload();
       await expect(page.getByRole("heading", { name: "짝맞추기" })).toBeVisible();
       await expect(page.locator(".match-pairs-card.is-matched")).toHaveCount(2);
@@ -361,9 +411,8 @@ test("plays, wagers, records, and restores the public image-only match-pairs tab
     const database = await new Function("return import('/src/lib/database.ts')")();
     return { wallet: await database.readWallet(), wagers: await database.listGameWagers("temerosa-match-pairs:versus-2"), records: await database.listMatchRecordsForSession("temerosa-match-pairs:versus-2", 10) };
   });
-  expect([26, 36, 46]).toContain(persisted.wagers[0]?.settlementCredit);
-  expect(persisted.wallet.balance).toBe(37 - 20 + persisted.wagers[0].settlementCredit);
-  expect(persisted.wagers[0]).toMatchObject({ cabinetId: "temerosa-match-pairs", stake: 10, reservedAmount: 20, status: "settled" });
+  expect(persisted.wallet.balance).toBe(37);
+  expect(persisted.wagers).toHaveLength(0);
   expect(persisted.records).toHaveLength(1);
   expect(persisted.records[0]).toMatchObject({ cabinetId: "temerosa-match-pairs", outcome: "win", turns: 6 });
   await page.goto("/");
@@ -993,7 +1042,7 @@ test("plays and restores a complete Temerosa old maid table", async ({ page }, t
   await expect(page.getByRole("button", { name: "시작", exact: true })).toBeEnabled();
 });
 
-test("keeps direct play free and offers an optional self prediction", async ({ page }, testInfo) => {
+test("keeps direct old-maid play free and moves wagering to the floor market", async ({ page }, testInfo) => {
   test.skip(testInfo.project.metadata.mobile === true);
   await page.goto("/");
   await page.evaluate(() => new Promise<void>((resolve, reject) => {
@@ -1013,15 +1062,14 @@ test("keeps direct play free and offers an optional self prediction", async ({ p
   if (await start.isDisabled()) await page.getByRole("button", { name: "무작위 선택", exact: true }).click();
   await expect(start).toBeEnabled();
   await expect(page.getByText("순위 보상 · 1등 60 P · 2등 30 P · 3등 15 P · 4등 5 P")).toBeVisible();
-  await page.getByRole("button", { name: "선택 베팅 열기" }).click();
-  await expect(page.getByRole("button", { name: "나", exact: true })).toHaveClass(/selected/);
-  await page.getByRole("button", { name: "베팅하고 시작" }).click();
+  await expect(page.locator(".old-maid-prediction")).toHaveCount(0);
+  await start.click();
   await expect(page.getByText("카드를 나누는 중…")).toBeVisible({ timeout: 20_000 });
-  const prediction = await page.evaluate(async () => {
+  const predictions = await page.evaluate(async () => {
     const database = await new Function("return import('/src/lib/database.ts')")();
-    return (await database.listSpectatorPredictions())[0];
+    return database.listSpectatorPredictions();
   });
-  expect(prediction).toMatchObject({ market: "first-place", predictedCharacterId: "player", reservedAmount: 20, status: "reserved" });
+  expect(predictions).toEqual([]);
 });
 
 test("starts an open-hand four-NPC Temerosa spectator table", async ({ page }, testInfo) => {
@@ -1045,8 +1093,7 @@ test("starts an open-hand four-NPC Temerosa spectator table", async ({ page }, t
   await page.getByRole("button", { name: "NPC 4명 관전" }).click();
   await expect(page.locator(".old-maid-opponent-picker button.selected")).toHaveCount(4);
   await expect(page.locator(".old-maid-spectator-hand .old-maid-card.face")).toHaveCount(0);
-  await expect(page.getByText("최대 손익 20 P", { exact: false })).toBeVisible();
-  await expect(page.getByRole("button", { name: "2배", exact: true })).toHaveClass(/selected/);
+  await expect(page.locator(".old-maid-prediction")).toHaveCount(0);
   await page.evaluate(() => {
     const pause = document.querySelector<HTMLButtonElement>(".old-maid-pause");
     if (!pause) throw new Error("pause button missing");
@@ -1059,7 +1106,7 @@ test("starts an open-hand four-NPC Temerosa spectator table", async ({ page }, t
     observer.observe(document.body, { childList: true, subtree: true, attributes: true });
     clickWhenOfferAppears();
   });
-  await page.getByRole("button", { name: "예측하고 NPC 대국 관전" }).click();
+  await page.getByRole("button", { name: "NPC 대국 관전", exact: true }).click();
   await expect(page.getByText("카드를 나누는 중…")).toBeVisible();
   await expect(page.getByText("일시정지됨")).toBeVisible();
   await expect(page.locator(".old-maid-spectator-seat")).toBeVisible({ timeout: 20_000 });

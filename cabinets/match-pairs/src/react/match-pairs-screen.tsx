@@ -23,6 +23,7 @@ export interface MatchPairsScreenProps {
   initialDifficulty?: MatchPairsDifficulty;
   initialOpponentId?: string;
   walletBalance?: number;
+  wageringEnabled?: boolean;
   busy?: boolean;
   wagerError?: string;
   initialMultiplier?: WagerMultiplier;
@@ -61,6 +62,7 @@ export function MatchPairsScreen({
   initialDifficulty = "easy",
   initialOpponentId = opponents[0]?.id ?? "",
   walletBalance = 0,
+  wageringEnabled = true,
   busy = false,
   wagerError = "",
   initialMultiplier = 2,
@@ -356,14 +358,14 @@ export function MatchPairsScreen({
             onClick={() => dispatch({ type: "set-focus", focus })}>{focusLabel(focus)}</button>)}
           <small>{focusDescription(state.focus)}</small>
         </div>
-        {state.mode === "spectate" && <div className="match-pairs-prediction-target" aria-label="승자 예측">
+        {wageringEnabled && state.mode === "spectate" && <div className="match-pairs-prediction-target" aria-label="승자 예측">
           <strong>누가 이길까요?</strong>
           {MATCH_PAIRS_ACTORS.map((actor) => {
             const characterId = state.opponentIds[actor];
             return characterId && <button type="button" key={actor} aria-pressed={predictedCharacterId === characterId} onClick={() => setPredictedCharacterId(characterId)}>{actorName(actor)}</button>;
           })}
         </div>}
-        <div className="match-pairs-wager" aria-label={state.mode === "spectate" ? "예측 판돈 선택" : "판돈 선택"}>
+        {wageringEnabled ? <div className="match-pairs-wager" aria-label={state.mode === "spectate" ? "예측 판돈 선택" : "판돈 선택"}>
           <div><span>보유 포인트</span><strong>{walletBalance} P</strong></div>
           <div className="match-pairs-stakes">
             {MATCH_PAIRS_STAKES.map((stake) => <button type="button" key={stake} aria-pressed={selectedStake === stake}
@@ -374,12 +376,12 @@ export function MatchPairsScreen({
               disabled={busy || Boolean(onStart) && walletBalance < wagerExposure(selectedStake, multiplier)} onClick={() => setSelectedMultiplier(multiplier)}>{multiplier}배</button>)}
           </div>
           <small>최대 손실 {exposure} P · {state.mode === "play" ? `승리 시 ${Math.round(selectedStake * matchPairsWinCreditRate(opponent, state.focus) * selectedMultiplier)} P 반환` : `예측 적중 시 ${exposure * 2} P 반환`} · 무승부는 전액 환불</small>
-        </div>
+        </div> : <p className="match-pairs-wager-notice">직접 대국은 무료입니다. 예정된 NPC 대국 베팅은 카지노 플로어의 통합 관전 시장에서 받습니다.</p>}
         {wagerError && <p className="match-pairs-wager-error" role="alert">{wagerError}</p>}
         {selectedOpponentUnavailable && <p className="match-pairs-wager-error">선택한 NPC가 다른 테이블에서 게임 중입니다.</p>}
         {loadStatus === "loading" && <p role="status">카드 준비 중…</p>}
         {loadStatus === "error" && <div role="alert"><p>이미지를 준비하지 못했습니다.</p><button type="button" onClick={() => setLoadAttempt((value) => value + 1)}>다시 불러오기</button></div>}
-        <button type="button" className="match-pairs-primary" disabled={loadStatus !== "ready" || busy || selectedOpponentUnavailable || state.mode === "spectate" && !predictedCharacterId || Boolean(onStart) && walletBalance < exposure} onClick={startGame}>{busy ? "예약 중…" : state.mode === "spectate" ? `${selectedStake} P · ${selectedMultiplier}배 예측하고 관전` : `${selectedStake} P · ${selectedMultiplier}배로 시작`}</button>
+        <button type="button" className="match-pairs-primary" disabled={loadStatus !== "ready" || busy || selectedOpponentUnavailable || wageringEnabled && state.mode === "spectate" && !predictedCharacterId || wageringEnabled && Boolean(onStart) && walletBalance < exposure} onClick={startGame}>{busy ? "준비 중…" : !wageringEnabled ? state.mode === "spectate" ? "NPC 대국 관전" : "대국 시작" : state.mode === "spectate" ? `${selectedStake} P · ${selectedMultiplier}배 예측하고 관전` : `${selectedStake} P · ${selectedMultiplier}배로 시작`}</button>
       </section>}
 
       {state.status !== "ready" && loadStatus === "error" && <section className="match-pairs-panel" role="alert"><p>이미지를 준비하지 못했습니다. 현재 판은 그대로 유지됩니다.</p><button type="button" onClick={() => setLoadAttempt((value) => value + 1)}>다시 불러오기</button></section>}
@@ -387,7 +389,7 @@ export function MatchPairsScreen({
       {state.status === "complete" && <section className="match-pairs-panel match-pairs-result" aria-live="polite">
         <h2>{resultTitle}</h2><p>{actorName("player")} {state.claims.player.length}짝 · {actorName("npc")} {state.claims.npc.length}짝</p>
         {state.mode === "play" && <small className="match-pairs-record">상대 전적 · {recordLabel(opponentRecords[opponent.id])}</small>}
-        <strong className="match-pairs-credit">{state.mode === "spectate" ? activePrediction ? predictionLabel(activePrediction) : "관전 완료" : state.outcome === "player" ? `${leveragedCredit} P 반환` : state.outcome === "draw" ? `${exposure} P 환불` : `${exposure} P 손실`}</strong>
+        <strong className="match-pairs-credit">{!wageringEnabled ? state.mode === "spectate" ? "관전 완료" : "대국 완료" : state.mode === "spectate" ? activePrediction ? predictionLabel(activePrediction) : "관전 완료" : state.outcome === "player" ? `${leveragedCredit} P 반환` : state.outcome === "draw" ? `${exposure} P 환불` : `${exposure} P 손실`}</strong>
         <button type="button" className="match-pairs-primary" onClick={restart}>다시하기</button>
       </section>}
       <p className="match-pairs-announcement" aria-live="polite">{announcement}</p>

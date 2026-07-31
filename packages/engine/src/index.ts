@@ -9,6 +9,34 @@ export const ENGINE_VERSION = "arcade-engine/0.1" as const;
 export const WAGER_MULTIPLIERS = [2, 3, 4, 5] as const;
 export type WagerMultiplier = (typeof WAGER_MULTIPLIERS)[number];
 
+export const CASINO_MARKET_QUOTE_CONTRACT = "casino-market-quote/0.1" as const;
+
+/** A frozen outcome quote. Integer basis points keep replay independent of floating point and later repricing. */
+export interface CasinoMarketQuote {
+  contract: typeof CASINO_MARKET_QUOTE_CONTRACT;
+  marketId: string;
+  outcomeId: string;
+  probabilityBps: number;
+  payoutBps: number;
+  maxExposure: number;
+  pricingVersion: string;
+}
+
+export function marketReturnBps(quote: CasinoMarketQuote): number {
+  assertCasinoMarketQuote(quote);
+  return Math.floor(quote.probabilityBps * quote.payoutBps / 10_000);
+}
+
+export function assertCasinoMarketQuote(quote: CasinoMarketQuote, maximumReturnBps = 9_800): void {
+  const weightedPayout = quote.probabilityBps * quote.payoutBps;
+  if (quote.contract !== CASINO_MARKET_QUOTE_CONTRACT || !quote.marketId || !quote.outcomeId || !quote.pricingVersion
+    || !Number.isSafeInteger(quote.probabilityBps) || quote.probabilityBps <= 0 || quote.probabilityBps >= 10_000
+    || !Number.isSafeInteger(quote.payoutBps) || quote.payoutBps <= 0
+    || !Number.isSafeInteger(quote.maxExposure) || quote.maxExposure <= 0
+    || !Number.isSafeInteger(maximumReturnBps) || maximumReturnBps <= 0
+    || !Number.isSafeInteger(weightedPayout) || Math.floor(weightedPayout / 10_000) > maximumReturnBps) throw new Error("casino_market_quote_invalid");
+}
+
 /** Maximum amount removed from the wallet before a leveraged game starts. */
 export function wagerExposure(stake: number, multiplier: WagerMultiplier, baseExposure = 1): number {
   if (!Number.isSafeInteger(stake) || stake < 0 || !Number.isSafeInteger(baseExposure) || baseExposure < 1) throw new Error("wager_exposure_invalid");

@@ -1,4 +1,4 @@
-import { shuffledStandardDeck, type StandardCardId } from "@lucky-arcade/card-table";
+import { STANDARD_CARD_DECK, shuffledStandardDeck, type StandardCardId } from "@lucky-arcade/card-table";
 import { resultHash } from "@lucky-arcade/engine";
 import {
   FIVE_CARD_DRAW_CONTRACT, FIVE_CARD_DRAW_MAX_EXPOSURE_UNITS, FIVE_CARD_DRAW_RULES_VERSION, FIVE_CARD_DRAW_STAKES,
@@ -27,9 +27,33 @@ export function createFiveCardDrawState(context: FiveCardDrawContext, dealerInde
 export function isFiveCardDrawState(value:unknown):value is FiveCardDrawState {
   if(!value||typeof value!=="object")return false;
   const state=value as Partial<FiveCardDrawState>;
-  return state.contract===FIVE_CARD_DRAW_CONTRACT&&state.rulesVersion===FIVE_CARD_DRAW_RULES_VERSION
+  if(!(state.contract===FIVE_CARD_DRAW_CONTRACT&&state.rulesVersion===FIVE_CARD_DRAW_RULES_VERSION
     &&typeof state.context?.sessionId==="string"&&Array.isArray(state.context.opponents)&&Array.isArray(state.seatOrder)
-    &&typeof state.sequence==="number"&&Boolean(state.hands)&&Boolean(state.contributionsUnits)&&Array.isArray(state.betHistory);
+    &&Number.isSafeInteger(state.sequence)&&state.sequence!>=0&&Boolean(state.hands)&&Boolean(state.contributionsUnits)&&Array.isArray(state.betHistory)))return false;
+  if(!state.phase||!["ready","opening-bet","drawing","closing-bet","complete"].includes(state.phase))return false;
+  const seats=state.seatOrder as FiveCardDrawSeatId[];
+  if(seats[0]!=="player"||seats.length!==state.context!.opponents.length+1||new Set(seats).size!==seats.length)return false;
+  const deckIds=new Set(STANDARD_CARD_DECK.map((card)=>card.id));
+  if(!Array.isArray(state.deck)||state.deck.some((card)=>!deckIds.has(card))||state.deck.length>0&&(state.deck.length!==52||new Set(state.deck).size!==52))return false;
+  if(!Number.isSafeInteger(state.deckCursor)||state.deckCursor!<0||state.deckCursor!>state.deck.length)return false;
+  const visibleCards=seats.flatMap((seat)=>[...(state.hands?.[seat]??[]),...(state.discarded?.[seat]??[])]);
+  if(visibleCards.some((card)=>!deckIds.has(card))||new Set(visibleCards).size!==visibleCards.length)return false;
+  if(state.phase!=="ready"&&seats.some((seat)=>state.hands?.[seat]?.length!==5))return false;
+  if(state.result&&!validStoredResult(state as FiveCardDrawState))return false;
+  return state.phase==="complete"?Boolean(state.result):state.result===null;
+}
+
+function validStoredResult(state:FiveCardDrawState):boolean{
+  const result=state.result;if(!result||!state.baseStake||!state.seed)return false;
+  const {resultId,...base}=result;
+  if(resultId!==resultHash(base)||result.contract!==FIVE_CARD_DRAW_CONTRACT||result.rulesVersion!==FIVE_CARD_DRAW_RULES_VERSION
+    ||result.sessionId!==state.context.sessionId||result.seed!==state.seed)return false;
+  const contributionTotal=Object.values(result.contributions).reduce((sum,value)=>sum+value,0);
+  const payoutTotal=Object.values(result.payouts).reduce((sum,value)=>sum+value,0);
+  return Object.values(result.contributions).every((value)=>Number.isSafeInteger(value)&&value>=0)
+    &&Object.values(result.payouts).every((value)=>Number.isSafeInteger(value)&&value>=0)
+    &&result.pot===contributionTotal&&payoutTotal===result.pot
+    &&result.playerCredit===FIVE_CARD_DRAW_MAX_EXPOSURE_UNITS*state.baseStake-result.contributions.player+result.payouts.player;
 }
 
 export function reduceFiveCardDraw(state:FiveCardDrawState,action:FiveCardDrawAction):FiveCardDrawState {

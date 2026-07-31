@@ -153,7 +153,7 @@ export function isMatchPairsState(value: unknown): value is MatchPairsState {
   if (typeof state.opponentIds.npc !== "string" || state.opponentIds.player !== null && typeof state.opponentIds.player !== "string") return false;
   if (state.mode === "play" ? state.opponentIds.player !== null : !state.opponentIds.player || state.opponentIds.player === state.opponentIds.npc) return false;
   if (!("wagerId" in state) || !("stake" in state) || state.wagerId !== null && typeof state.wagerId !== "string" || state.stake != null && !MATCH_PAIRS_STAKES.includes(state.stake)) return false;
-  if (state.status !== "ready" && state.mode === "play" ? !state.wagerId || state.stake === null : false) return false;
+  if (state.status !== "ready" && state.mode === "play" ? (state.wagerId === null) !== (state.stake === null) : false) return false;
   if (state.status !== "ready" && state.mode === "spectate" ? state.wagerId !== null || state.stake !== null : false) return false;
   return MATCH_PAIRS_ACTORS.every((actor) => Array.isArray(state.claims![actor]) && Array.isArray(state.npcMemories![actor])
       && Number.isInteger(state.matchStreaks![actor]) && state.matchStreaks![actor] >= 0

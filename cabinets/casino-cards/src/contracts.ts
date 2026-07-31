@@ -1,8 +1,9 @@
-export const CASINO_CARDS_VERSION = "casino-cards/0.3" as const;
-export const CASINO_CARD_STATE_CONTRACT = "casino-card-state/0.3" as const;
-export const CASINO_CARD_PACK_VERSION = "temerosa-casino-cards/0.3" as const;
+export const CASINO_CARDS_VERSION = "casino-cards/0.4" as const;
+export const CASINO_CARD_STATE_CONTRACT = "casino-card-state/0.4" as const;
+export const CASINO_CARD_PACK_VERSION = "temerosa-casino-cards/0.4" as const;
 export const CASINO_CARD_STAKES = [10, 50, 200] as const;
-export const HIGH_LOW_RETURN_MULTIPLIERS = [1.3, 1.9, 2.7, 4, 5.5] as const;
+/** Audited against an optimal legal stop/continue policy; target RTP is about 94.6%. */
+export const HIGH_LOW_RETURN_MULTIPLIERS = [1.1, 1.6, 2.2, 3.2, 4.5] as const;
 
 export type CasinoCardGameId = "high-low" | "blackjack" | "doubt" | "one-card" | "texas-holdem";
 export type CasinoCardStake = (typeof CASINO_CARD_STAKES)[number];

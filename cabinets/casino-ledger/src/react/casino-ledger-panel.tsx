@@ -383,6 +383,7 @@ function tableName(tableId: CasinoLedgerSourceId): string {
   if (tableId === "temerosa-slot") return "슬롯";
   if (tableId === "temerosa-high-low") return "하이로우";
   if (tableId === "temerosa-five-card-draw") return "파이브 카드 드로";
+  if (tableId === "temerosa-side-market") return "관전 사이드 베팅";
   if (tableId === "temerosa-blackjack") return "블랙잭";
   if (tableId === "temerosa-doubt") return "다우트";
   if (tableId === "temerosa-one-card") return "원카드";

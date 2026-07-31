@@ -6,6 +6,7 @@ import {
   createFiveCardDrawState,
   decideNpcDraw,
   fiveCardDrawPublicView,
+  isFiveCardDrawState,
   legalPlayerBetActions,
   reduceFiveCardDraw,
   type FiveCardDrawContext,
@@ -69,6 +70,13 @@ describe("five-card draw game", () => {
     const second = autoplay(started("repeatable", 3));
     expect(second).toEqual(first);
     expect(first.result?.resultId).toBe(second.result?.resultId);
+  });
+
+  it("rejects a stored settlement whose payout was edited after the hand", () => {
+    const complete = autoplay(started("tampered-result", 2));
+    expect(isFiveCardDrawState(complete)).toBe(true);
+    const result = complete.result!;
+    expect(isFiveCardDrawState({ ...complete, result: { ...result, playerCredit: result.playerCredit + 10 } })).toBe(false);
   });
 
   it("allows zero through three cards in the single exchange", () => {

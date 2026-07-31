@@ -23,6 +23,8 @@ import { TEMEROSA_MATCH_PAIRS_FACES, TEMEROSA_MATCH_PAIRS_PACK_VERSION } from ".
 
 const CABINET_ID = "temerosa-match-pairs";
 const SESSION = "temerosa-match-pairs:versus-2";
+/** Disabled until matchup and perfect-public-memory pricing pass the economy gate. */
+const MATCH_PAIRS_WAGERING_ENABLED = false;
 
 interface ReadyMatchPairs {
   assets: Readonly<Record<string, string>>;
@@ -104,7 +106,9 @@ export default function MatchPairsView({ onExit }: { onExit(): void }) {
     try {
       const seed = `${dailySeed()}:deal:${crypto.randomUUID()}`;
       let action: MatchPairsAction;
-      if (current.mode === "play") {
+      if (!MATCH_PAIRS_WAGERING_ENABLED) {
+        action = { type: "start", seed };
+      } else if (current.mode === "play") {
         const identity: WagerIdentity = { seed, difficulty: current.difficulty, focus: current.focus, opponentIds: current.opponentIds };
         const opponent = opponents.find((candidate) => candidate.id === current.opponentIds.npc);
         if (!opponent) throw new Error("match_pairs_opponent_missing");
@@ -142,19 +146,21 @@ export default function MatchPairsView({ onExit }: { onExit(): void }) {
     if (previous.status === "complete" || next.status !== "complete") return;
     try {
       if (next.mode === "play") {
-        if (!next.wagerId) throw new Error("match_pairs_wager_missing");
-        const receipt = (await listWagers(SESSION)).find((candidate) => candidate.wagerId === next.wagerId); if (!receipt) throw new Error("match_pairs_wager_receipt_missing");
-        setBalance((await settleWager({
-          wagerId: next.wagerId,
-          settlementSequence: next.sequence,
-          resultKey: matchPairsResultHash(next),
-          creditAmount: leveragedCredit(next, receipt),
-        })).wallet.balance);
+        if (next.wagerId) {
+          const receipt = (await listWagers(SESSION)).find((candidate) => candidate.wagerId === next.wagerId); if (!receipt) throw new Error("match_pairs_wager_receipt_missing");
+          setBalance((await settleWager({
+            wagerId: next.wagerId,
+            settlementSequence: next.sequence,
+            resultKey: matchPairsResultHash(next),
+            creditAmount: leveragedCredit(next, receipt),
+          })).wallet.balance);
+        }
         await recordMatch(next, opponents, null);
       } else {
         const prediction = (await listPredictions()).find((candidate) => candidate.outcomeKey === predictionOutcomeKey(next) && candidate.status === "reserved");
-        if (!prediction) throw new Error("match_pairs_prediction_missing");
-        const settled = await settleSpectatorMatch(next, prediction); setActivePrediction(settled); setBalance((await readWallet()).balance); await recordMatch(next, opponents, settled);
+        if (prediction) {
+          const settled = await settleSpectatorMatch(next, prediction); setActivePrediction(settled); setBalance((await readWallet()).balance); await recordMatch(next, opponents, settled);
+        } else await recordMatch(next, opponents, null);
       }
       setOpponentRecords(summarizeOpponentRecords(await listMatchRecordsForSession(SESSION, 200)));
     } catch { setError("결과는 보존됐지만 정산이 남았습니다. 다시 들어오면 같은 영수증으로 처리합니다."); throw new Error("match_pairs_settlement_pending"); }
@@ -163,7 +169,7 @@ export default function MatchPairsView({ onExit }: { onExit(): void }) {
   if (!ready) return <main className="game-shell"><div className="game-loading" role={error ? "alert" : undefined}>{error || "짝맞추기 테이블을 준비하고 있어요…"}{error && <button onClick={onExit}>카지노로 돌아가기</button>}</div></main>;
   return <MatchPairsScreen faces={TEMEROSA_MATCH_PAIRS_FACES} opponents={ready.opponents} assets={ready.assets} thumbAssets={ready.thumbAssets}
     lines={ready.lines} packVersion={TEMEROSA_MATCH_PAIRS_PACK_VERSION} seed={ready.state.seed} sessionId={SESSION} initialState={ready.state}
-    initialMultiplier={ready.multiplier} walletBalance={balance} busy={busy} wagerError={error} activePrediction={activePrediction}
+    initialMultiplier={ready.multiplier} walletBalance={balance} wageringEnabled={MATCH_PAIRS_WAGERING_ENABLED} busy={busy} wagerError={error} activePrediction={activePrediction}
     opponentAvailability={availability.opponents} opponentRecords={opponentRecords}
     onOpponentSelectionChange={(ids) => availability.holdOpponents(ids)} onStart={start} onTransition={persist} onExit={onExit} />;
 }
