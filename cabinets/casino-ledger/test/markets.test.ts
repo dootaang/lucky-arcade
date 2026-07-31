@@ -11,6 +11,7 @@ import {
   casinoSpectatorMarketPresencesAt,
   casinoSpectatorMarketsForDay,
   casinoSpectatorMarketsAt,
+  casinoSpectatorScheduleAt,
   casinoUtcSecondAtKstDay,
   completedDayBalances,
 } from "../src/index.ts";
@@ -109,6 +110,29 @@ describe("integrated NPC spectator markets", () => {
     const markets = casinoSpectatorMarketsAt(profiles, fixedClock(now), contract, 4);
     expect(markets.some((market) => market.phase === "settled")).toBe(true);
     expect(markets.some((market) => market.phase === "open" || market.phase === "locked")).toBe(true);
+  });
+
+  it("separates one current fixture, two upcoming fixtures, and three recent results", () => {
+    const base = casinoUtcSecondAtKstDay(contract.epochKstDay + 5, 36_000);
+    const now = Math.floor(base / 300) * 300 + 179;
+    const schedule = casinoSpectatorScheduleAt(profiles, fixedClock(now), contract);
+    expect(schedule.current?.phase).toBe("open");
+    expect(schedule.upcoming).toHaveLength(2);
+    expect(schedule.upcoming.every((market) => market.phase === "upcoming")).toBe(true);
+    expect(schedule.recent).toHaveLength(3);
+    expect(schedule.recent.every((market) => market.phase === "settled" && now - market.settlesAtUtcSecond < 900)).toBe(true);
+    expect(new Set([schedule.current, ...schedule.upcoming, ...schedule.recent].filter(Boolean).map((market) => market!.marketId)).size).toBe(6);
+  });
+
+  it("drops a result at the fifteen-minute boundary while keeping its deterministic id recoverable", () => {
+    const base = casinoUtcSecondAtKstDay(contract.epochKstDay + 5, 36_000);
+    const now = Math.floor(base / 300) * 300 + 279;
+    const visible = casinoSpectatorScheduleAt(profiles, fixedClock(now), contract);
+    const oldest = visible.recent.at(-1)!;
+    const boundary = oldest.settlesAtUtcSecond + 900;
+    const expired = casinoSpectatorScheduleAt(profiles, fixedClock(boundary), contract);
+    expect(expired.recent.some((market) => market.marketId === oldest.marketId)).toBe(false);
+    expect(casinoSpectatorMarketByIdAt(profiles, fixedClock(boundary), contract, oldest.marketId)?.marketId).toBe(oldest.marketId);
   });
 });
 

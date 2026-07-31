@@ -40,6 +40,12 @@ export interface CasinoSpectatorMarket {
   winningOutcomeId?: string;
 }
 
+export interface CasinoSpectatorSchedule {
+  current?: CasinoSpectatorMarket;
+  upcoming: readonly CasinoSpectatorMarket[];
+  recent: readonly CasinoSpectatorMarket[];
+}
+
 const SAMPLE_COUNT = 20_000;
 const MARKET_OPEN_SECONDS = 180;
 const MARKET_LOCK_SECONDS = 10;
@@ -50,6 +56,9 @@ const EXHIBITION_CYCLE_SECONDS = 300;
 const EXHIBITION_CLOSE_OFFSET = 180;
 const EXHIBITION_START_OFFSET = 190;
 const EXHIBITION_SETTLE_OFFSET = 280;
+export const CASINO_SPECTATOR_RECENT_SECONDS = 15 * 60;
+export const CASINO_SPECTATOR_RECENT_LIMIT = 3;
+export const CASINO_SPECTATOR_UPCOMING_LIMIT = 2;
 const PRICING_CACHE = new Map<string, readonly CasinoSpectatorMarketOutcome[]>();
 const MATCH_PAIRS_REPLAY_IDS = new Set([
   "adesha", "alger", "anna", "apollyon", "bche", "camille", "cicero", "cradle", "deokbae", "diamo",
@@ -84,6 +93,34 @@ export function casinoSpectatorMarketsAt(
   if (limit > 1 && latestSettled && !selected.some((market) => market.marketId === latestSettled.marketId)) selected[selected.length - 1] = latestSettled;
   return Object.freeze(selected.sort((left, right) => phaseOrder(left.phase) - phaseOrder(right.phase)
     || left.startsAtUtcSecond - right.startsAtUtcSecond || compareText(left.marketId, right.marketId)));
+}
+
+/** Separates the live programme from recent results and future fixtures. */
+export function casinoSpectatorScheduleAt(
+  profiles: readonly NpcGamblingProfile[],
+  clock: CasinoClock,
+  contract: NpcLedgerContract,
+): CasinoSpectatorSchedule {
+  const now = normalizedUtcSecond(clock);
+  const markets = exhibitionInventoryAt(
+    profiles,
+    contract,
+    now,
+    CASINO_SPECTATOR_RECENT_SECONDS,
+    CASINO_SPECTATOR_UPCOMING_LIMIT * EXHIBITION_CYCLE_SECONDS,
+  );
+  const current = markets.find((market) => market.phase === "open" || market.phase === "locked");
+  const upcoming = markets.filter((market) => market.phase === "upcoming")
+    .sort((left, right) => left.startsAtUtcSecond - right.startsAtUtcSecond || compareText(left.marketId, right.marketId))
+    .slice(0, CASINO_SPECTATOR_UPCOMING_LIMIT);
+  const recent = markets.filter((market) => market.phase === "settled" && market.settlesAtUtcSecond > now - CASINO_SPECTATOR_RECENT_SECONDS)
+    .sort((left, right) => right.settlesAtUtcSecond - left.settlesAtUtcSecond || compareText(left.marketId, right.marketId))
+    .slice(0, CASINO_SPECTATOR_RECENT_LIMIT);
+  return Object.freeze({
+    ...(current ? { current } : {}),
+    upcoming: Object.freeze(upcoming),
+    recent: Object.freeze(recent),
+  });
 }
 
 /** Complete day inventory used by probability audits and exact receipt recovery. */
@@ -297,6 +334,24 @@ function probabilityBps(counts: readonly number[]): readonly number[] {
     .sort((left, right) => right.fraction - left.fraction || left.index - right.index);
   for (let cursor = 0; remainder > 0; cursor += 1, remainder -= 1) output[order[cursor % order.length]!.index]! += 1;
   return Object.freeze(output);
+}
+
+function exhibitionInventoryAt(
+  profiles: readonly NpcGamblingProfile[],
+  contract: NpcLedgerContract,
+  now: number,
+  historySeconds: number,
+  lookaheadSeconds: number,
+): CasinoSpectatorMarket[] {
+  const currentCycle = Math.floor(now / EXHIBITION_CYCLE_SECONDS);
+  const historyCycles = Math.ceil(historySeconds / EXHIBITION_CYCLE_SECONDS);
+  const lookaheadCycles = Math.ceil(lookaheadSeconds / EXHIBITION_CYCLE_SECONDS);
+  const markets: CasinoSpectatorMarket[] = [];
+  for (let cycle = Math.max(0, currentCycle - historyCycles); cycle <= currentCycle + lookaheadCycles; cycle += 1) {
+    const market = scheduledExhibitionMarket(profiles, contract, cycle, now);
+    if (market.settlesAtUtcSecond >= now - historySeconds && market.opensAtUtcSecond <= now + lookaheadSeconds) markets.push(market);
+  }
+  return markets;
 }
 
 function phaseOrder(phase: CasinoSpectatorMarketPhase): number {

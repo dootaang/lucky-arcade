@@ -11,6 +11,7 @@ export default function CasinoSideMarketReplayView({ market, currentUtcSecond, o
   const [replay, setReplay] = useState<CasinoSideMarketReplay>();
   const [error, setError] = useState("");
   const [revision, setRevision] = useState(0);
+  const [syncRevision, setSyncRevision] = useState(0);
   const live = currentUtcSecond < market.settlesAtUtcSecond;
 
   useEffect(() => {
@@ -29,6 +30,13 @@ export default function CasinoSideMarketReplayView({ market, currentUtcSecond, o
     return () => { alive = false; };
   }, [market.marketId]);
 
+  useEffect(() => {
+    if (!live || revision > 0) return;
+    const synchronizeOnReturn = () => { if (document.visibilityState === "visible") setSyncRevision((value) => value + 1); };
+    document.addEventListener("visibilitychange", synchronizeOnReturn);
+    return () => document.removeEventListener("visibilitychange", synchronizeOnReturn);
+  }, [live, revision]);
+
   const initialFrameIndex = useMemo(() => {
     if (!replay || revision > 0 || !live) return 0;
     const frames = replay.game.frames.length;
@@ -37,13 +45,13 @@ export default function CasinoSideMarketReplayView({ market, currentUtcSecond, o
     // The last frame is complete. A live entrant joins the most recent active
     // state, then the cabinet's own timers and presentation take over.
     return Math.min(frames - 2, Math.floor(progress * (frames - 1)));
-  }, [currentUtcSecond, live, market.settlesAtUtcSecond, market.startsAtUtcSecond, replay, revision]);
+  }, [currentUtcSecond, live, market.settlesAtUtcSecond, market.startsAtUtcSecond, replay, revision, syncRevision]);
 
   const restart = () => setRevision((value) => value + 1);
   const content = replay
     ? replay.kind === "match-pairs"
-      ? <NativeMatchPairsExperience key={`${replay.marketId}:${revision}`} replay={replay} initialFrameIndex={initialFrameIndex} onClose={onClose} onReplay={restart} />
-      : <NativeOldMaidExperience key={`${replay.marketId}:${revision}`} replay={replay} initialFrameIndex={initialFrameIndex} onClose={onClose} onReplay={restart} />
+      ? <NativeMatchPairsExperience key={`${replay.marketId}:${revision}:${syncRevision}`} replay={replay} initialFrameIndex={initialFrameIndex} onClose={onClose} onReplay={restart} />
+      : <NativeOldMaidExperience key={`${replay.marketId}:${revision}:${syncRevision}`} replay={replay} initialFrameIndex={initialFrameIndex} onClose={onClose} onReplay={restart} />
     : null;
 
   return createPortal(<div className="side-market-replay-backdrop is-native" role="dialog" aria-modal="true" aria-label={`${market.title} 관전`}>

@@ -5,7 +5,7 @@ import {
   casinoPresenceAt,
   casinoSpectatorMarketPresencesAt,
   casinoSpectatorMarketByIdAt,
-  casinoSpectatorMarketsAt,
+  casinoSpectatorScheduleAt,
   npcLiveBalancesAt,
   npcSessionSettlements,
   recentNpcPlayEventsAt,
@@ -111,6 +111,13 @@ export default function CasinoLedgerView({ userBalance, tables, onPlay, onBalanc
     document.addEventListener("visibilitychange", visible);
     return () => { window.clearInterval(interval); document.removeEventListener("visibilitychange", visible); };
   }, [clock]);
+  const ticketMarkets = useMemo(() => {
+    if (!clock) return Object.freeze([]) as readonly CasinoSpectatorMarket[];
+    return Object.freeze(sideWagers.slice(0, 20).flatMap((wager) => {
+      const market = casinoSpectatorMarketByIdAt(TEMEROSA_NPC_GAMBLING_PROFILES, clock, TEMEROSA_NPC_LEDGER_CONTRACT, wager.outcomeKey);
+      return market ? [market] : [];
+    }));
+  }, [clock, sideWagers]);
 
   if (!loaded || !clock) return <section className="casino-ledger-loading ca-label" aria-label="카지노 원장 불러오는 중">원장 정리 중…</section>;
   try {
@@ -120,13 +127,8 @@ export default function CasinoLedgerView({ userBalance, tables, onPlay, onBalanc
     const periodStartSecond = casinoUtcSecondAtKstDay(periodStartDay);
     const carriedProfits = TEMEROSA_NPC_LEDGER_CONTRACT.profitHistory.filter((entry)=>entry.kstDay>=periodStartDay);
     const profitPeriod = { coveredDays: Math.max(1,Math.min(7,(absoluteKstDay??TEMEROSA_NPC_LEDGER_CONTRACT.epochKstDay)-periodStartDay+1)), profits: Object.freeze(Object.fromEntries(TEMEROSA_NPC_GAMBLING_PROFILES.map((profile) => [profile.id, worldline.activities.filter((entry)=>entry.npcId===profile.id&&entry.utcSecond>=periodStartSecond).reduce((sum,entry)=>sum+entry.session.delta,0)+journalSettlements.filter((entry) => entry.npcId === profile.id && entry.utcSecond >= periodStartSecond).reduce((sum, entry) => sum + entry.delta, 0)+carriedProfits.reduce((sum,entry)=>sum+(entry.profits[profile.id]??0),0)]))) };
-    const listedSideMarkets = casinoSpectatorMarketsAt(TEMEROSA_NPC_GAMBLING_PROFILES, clock, TEMEROSA_NPC_LEDGER_CONTRACT, 4);
-    const latestReceiptMarket = sideWagers[0]
-      ? casinoSpectatorMarketByIdAt(TEMEROSA_NPC_GAMBLING_PROFILES, clock, TEMEROSA_NPC_LEDGER_CONTRACT, sideWagers[0].outcomeKey)
-      : undefined;
-    const sideMarkets = latestReceiptMarket && !listedSideMarkets.some((market) => market.marketId === latestReceiptMarket.marketId)
-      ? Object.freeze([latestReceiptMarket, ...listedSideMarkets])
-      : listedSideMarkets;
+    const sideMarketSchedule = casinoSpectatorScheduleAt(TEMEROSA_NPC_GAMBLING_PROFILES, clock, TEMEROSA_NPC_LEDGER_CONTRACT);
+    const sideMarkets = Object.freeze([...(sideMarketSchedule.current ? [sideMarketSchedule.current] : []), ...sideMarketSchedule.upcoming, ...sideMarketSchedule.recent]);
     const basePresences = casinoPresenceAt(TEMEROSA_NPC_GAMBLING_PROFILES, clock, TEMEROSA_NPC_LEDGER_CONTRACT);
     const marketPresences = casinoSpectatorMarketPresencesAt(sideMarkets, currentUtcSecond);
     const marketIds = new Set(marketPresences.map((presence) => presence.npcId));
@@ -147,7 +149,7 @@ export default function CasinoLedgerView({ userBalance, tables, onPlay, onBalanc
         setMarketError(code === "game_outcome_already_wagered" ? "이 대국에는 이미 베팅했습니다." : code === "insufficient_points" ? "예약할 포인트가 부족합니다." : code === "side_market_closed" ? "방금 베팅 접수가 마감됐습니다." : code === "casino_counterparty_insufficient_points" ? "하우스 노출 한도에 도달해 이 베팅을 받을 수 없습니다." : "베팅을 예약하지 못했습니다.");
       } finally { setMarketBusy(false); }
     };
-    return <><CasinoSideMarket markets={sideMarkets} wagers={sideWagers} balance={userBalance} currentUtcSecond={currentUtcSecond} busy={marketBusy} {...(marketError ? { error: marketError } : {})} onBet={placeSideBet} /><CasinoLedgerPanel
+    return <><CasinoSideMarket schedule={sideMarketSchedule} ticketMarkets={ticketMarkets} wagers={sideWagers} balance={userBalance} currentUtcSecond={currentUtcSecond} busy={marketBusy} {...(marketError ? { error: marketError } : {})} onBet={placeSideBet} /><CasinoLedgerPanel
       npcBalances={liveBalances}
       npcSevenDayProfits={profitPeriod.profits}
       userBalance={userBalance}

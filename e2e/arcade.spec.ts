@@ -171,6 +171,8 @@ test("reserves, restores, and settles one integrated spectator market receipt", 
   await page.goto("/venues/temerosa-casino");
   const market = page.locator(".casino-side-market");
   await expect(market).toHaveClass(/phase-open/);
+  await expect(market.locator(".side-market-tabs button")).toHaveCount(3);
+  await expect(market.locator(".side-market-recent button")).toHaveCount(3);
   await market.locator(".side-market-outcomes button").first().click();
   await market.getByRole("button", { name: "베팅 확정", exact: true }).click();
   await expect(market.locator(".side-market-receipt")).toContainText("마감 대기");
@@ -186,13 +188,16 @@ test("reserves, restores, and settles one integrated spectator market receipt", 
 
   casinoEpoch += 251_000;
   await page.reload();
-  await expect(market.locator(".side-market-receipt")).toContainText(/적중|실패/, { timeout: 20_000 });
+  await expect(market).toHaveClass(/phase-upcoming/);
+  await market.getByRole("button", { name: "내 베팅 1", exact: true }).click();
+  const history = page.getByRole("dialog", { name: "내 베팅 기록" });
+  await expect(history).toContainText(/적중|실패/, { timeout: 20_000 });
   const settled = await page.evaluate(async () => {
     const database = await new Function("return import('/src/lib/database.ts')")();
     return (await database.listGameWagers("temerosa-side-market"))[0];
   });
   expect(settled.status).toBe("settled");
-  await market.getByRole("button", { name: "처음부터 다시 보기", exact: true }).click();
+  await history.getByRole("button", { name: "다시 보기", exact: true }).click();
   const replay = page.getByRole("dialog", { name: /관전/ });
   await expect(replay).toBeVisible();
   await expect(replay.locator(".match-pairs-shell")).toBeVisible();
@@ -204,7 +209,7 @@ test("reserves, restores, and settles one integrated spectator market receipt", 
 
   casinoEpoch += 300_000;
   await page.reload();
-  await market.locator(".side-market-tabs button").filter({ hasText: "도둑잡기" }).filter({ hasText: "완료" }).click();
+  await market.locator(".side-market-recent button").filter({ hasText: "도둑잡기" }).first().click();
   await expect(market).toHaveClass(/phase-settled/);
   await market.getByRole("button", { name: "처음부터 다시 보기", exact: true }).click();
   const oldMaidReplay = page.getByRole("dialog", { name: /도둑잡기.*관전/ });

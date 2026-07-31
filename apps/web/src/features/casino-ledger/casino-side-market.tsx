@@ -1,19 +1,22 @@
-import { casinoMarketCredit, type CasinoSpectatorMarket } from "@lucky-arcade/casino-ledger";
+import { casinoMarketCredit, type CasinoSpectatorMarket, type CasinoSpectatorSchedule } from "@lucky-arcade/casino-ledger";
 import type { WagerMultiplier } from "@lucky-arcade/engine";
 import type { GameWagerReceipt, PredictionStake } from "@lucky-arcade/persistence";
-import { lazy, Suspense, useEffect, useMemo, useState } from "react";
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { parseSideMarketChoice } from "../../lib/side-market.ts";
 import "./casino-side-market.css";
 import "./casino-side-market-replay.css";
 
 const STAKES = [10, 50, 200] as const satisfies readonly PredictionStake[];
 const MULTIPLIERS = [2, 3, 4, 5] as const satisfies readonly WagerMultiplier[];
+const KST_TIME = new Intl.DateTimeFormat("ko-KR", { timeZone: "Asia/Seoul", hour: "2-digit", minute: "2-digit", hour12: false });
 const CasinoSideMarketReplayView = lazy(() => import("./casino-side-market-replay-view.tsx"));
 
 export default function CasinoSideMarket({
-  markets, wagers, balance, currentUtcSecond, busy, error, onBet,
+  schedule, ticketMarkets, wagers, balance, currentUtcSecond, busy, error, onBet,
 }: {
-  markets: readonly CasinoSpectatorMarket[];
+  schedule: CasinoSpectatorSchedule;
+  ticketMarkets: readonly CasinoSpectatorMarket[];
   wagers: readonly GameWagerReceipt[];
   balance: number;
   currentUtcSecond: number;
@@ -21,33 +24,51 @@ export default function CasinoSideMarket({
   error?: string;
   onBet(market: CasinoSpectatorMarket, outcomeId: string, stake: PredictionStake, multiplier: WagerMultiplier): Promise<void>;
 }): React.ReactElement | null {
-  const wagerMarket = markets.find((market) => wagers.some((wager) => wager.outcomeKey === market.marketId));
-  const preferred = wagerMarket
-    ?? markets.find((market) => market.phase === "open")
-    ?? markets.find((market) => market.phase === "locked")
-    ?? markets.find((market) => market.phase === "upcoming")
-    ?? markets[0];
+  const liveSchedule = useMemo(() => Object.freeze([...(schedule.current ? [schedule.current] : []), ...schedule.upcoming]), [schedule.current, schedule.upcoming]);
+  const listedMarkets = useMemo(() => Object.freeze([...liveSchedule, ...schedule.recent]), [liveSchedule, schedule.recent]);
+  const preferred = schedule.current ?? schedule.upcoming[0] ?? schedule.recent[0];
   const [marketId, setMarketId] = useState(preferred?.marketId ?? "");
   const [manualSelection, setManualSelection] = useState(false);
-  const rawMarket = markets.find((candidate) => candidate.marketId === marketId) ?? preferred;
+  const rawMarket = listedMarkets.find((candidate) => candidate.marketId === marketId) ?? preferred;
   const [outcomeId, setOutcomeId] = useState("");
   const [stake, setStake] = useState<PredictionStake>(10);
   const [multiplier, setMultiplier] = useState<WagerMultiplier>(2);
-  const [replayOpen, setReplayOpen] = useState(false);
+  const [replayMarket, setReplayMarket] = useState<CasinoSpectatorMarket>();
+  const [historyOpen, setHistoryOpen] = useState(false);
   const [offeredMarket, setOfferedMarket] = useState<CasinoSpectatorMarket>();
+  const [settlementNotice, setSettlementNotice] = useState("");
+  const previousWagerStatuses = useRef<ReadonlyMap<string, GameWagerReceipt["status"]> | undefined>(undefined);
   const market = offeredMarket?.marketId === rawMarket?.marketId ? offeredMarket : rawMarket;
   const pricingReady = Boolean(rawMarket && offeredMarket?.marketId === rawMarket.marketId);
-  useEffect(() => { if (preferred && !markets.some((candidate) => candidate.marketId === marketId)) setMarketId(preferred.marketId); }, [marketId, markets, preferred]);
-  useEffect(() => { if (wagerMarket && !manualSelection) setMarketId(wagerMarket.marketId); }, [manualSelection, wagerMarket?.marketId]);
+
+  useEffect(() => {
+    if (!preferred) return;
+    const selectedStillListed = listedMarkets.some((candidate) => candidate.marketId === marketId);
+    if (!manualSelection || !selectedStillListed) {
+      setMarketId(preferred.marketId);
+      if (!selectedStillListed) setManualSelection(false);
+    }
+  }, [listedMarkets, manualSelection, marketId, preferred?.marketId]);
   useEffect(() => { setOutcomeId(rawMarket?.outcomes[0]?.outcomeId ?? ""); }, [rawMarket?.marketId]);
   useEffect(() => {
-    setReplayOpen(false); setOfferedMarket(undefined);
+    setOfferedMarket(undefined);
     if (!rawMarket) return;
     let alive = true;
     void import("../../lib/casino-side-market-replay.ts").then(({ resolveCasinoSideMarketOffer }) => resolveCasinoSideMarketOffer(rawMarket))
       .then((offer) => { if (alive) setOfferedMarket(offer); }).catch(() => undefined);
     return () => { alive = false; };
   }, [rawMarket?.marketId, rawMarket?.phase]);
+  useEffect(() => {
+    const previous = previousWagerStatuses.current;
+    previousWagerStatuses.current = new Map(wagers.map((wager) => [wager.wagerId, wager.status]));
+    if (!previous) return;
+    const settled = wagers.find((wager) => previous.get(wager.wagerId) === "reserved" && wager.status !== "reserved");
+    if (!settled) return;
+    setSettlementNotice(historyStatus(settled));
+    const timer = window.setTimeout(() => setSettlementNotice(""), 5_000);
+    return () => window.clearTimeout(timer);
+  }, [wagers]);
+
   const wager = market ? wagers.find((candidate) => candidate.outcomeKey === market.marketId) : undefined;
   const choice = wager ? parseSideMarketChoice(wager) : null;
   const selected = market?.outcomes.find((outcome) => outcome.outcomeId === outcomeId);
@@ -56,17 +77,29 @@ export default function CasinoSideMarket({
   const canBet = Boolean(pricingReady && market?.phase === "open" && selected && !wager && exposure <= selected.quote.maxExposure && balance >= exposure && !busy);
   const marketLabel = market?.kind === "joker-holder" ? "마지막 조커" : "승자";
   if (!market) return null;
+
+  const selectMarket = (next: CasinoSpectatorMarket) => { setManualSelection(true); setMarketId(next.marketId); };
   return <section className={`casino-side-market phase-${market.phase} ca-glare`} aria-labelledby="side-market-heading">
     <header>
       <div><span className="ca-label">INTEGRATED SPECTATOR MARKET</span><h3 id="side-market-heading" className="ca-serif">통합 관전 사이드 베팅</h3></div>
-      <strong>{phaseLabel(market, currentUtcSecond)}</strong>
+      <div className="side-market-header-actions"><strong>{phaseLabel(market, currentUtcSecond)}</strong><button type="button" className="ca-ghost-btn" onClick={() => setHistoryOpen(true)}>내 베팅 {wagers.length}</button></div>
     </header>
-    {markets.length > 1 && <div className="side-market-tabs" aria-label="예정 대국 선택">{markets.map((candidate) => <button key={candidate.marketId} aria-pressed={candidate.marketId === market.marketId} onClick={() => { setManualSelection(true); setMarketId(candidate.marketId); }}>{candidate.title}<small>{shortPhase(candidate, currentUtcSecond)}</small></button>)}</div>}
+
+    <div className="side-market-programme" aria-label="관전 편성표">
+      <div className="side-market-tabs" aria-label="현재와 다음 편성">
+        {liveSchedule.map((candidate) => <button key={candidate.marketId} aria-pressed={candidate.marketId === market.marketId} onClick={() => selectMarket(candidate)}>
+          <span>{candidate === schedule.current ? candidate.phase === "open" ? "접수 중" : "LIVE" : kstTime(candidate.startsAtUtcSecond)}</span>
+          <strong>{candidate.title}</strong><small>{shortPhase(candidate, currentUtcSecond)}</small>
+        </button>)}
+      </div>
+      {schedule.recent.length > 0 && <div className="side-market-recent"><span>최근 결과 · 15분</span><div>{schedule.recent.map((candidate) => <button key={candidate.marketId} aria-pressed={candidate.marketId === market.marketId} onClick={() => selectMarket(candidate)}><b>{kstTime(candidate.startsAtUtcSecond)}</b> {candidate.title}<small>완료 · 다시 보기</small></button>)}</div></div>}
+    </div>
+
     <div className="side-market-body">
       <div className="side-market-matchup">
-        <span>{market.rulesLabel}</span>
+        <span>{kstTime(market.startsAtUtcSecond)} · {market.rulesLabel}</span>
         <h4>{market.outcomes.filter((outcome) => outcome.npcId).map((outcome) => outcome.label).join("  VS  ")}</h4>
-        <small>카지노 일정이 만든 대진입니다. 대진을 고쳐 만들거나 같은 시장에 다시 걸 수 없습니다.</small>
+        <small>카지노 원장이 만든 결정론 대진입니다. 대진을 고쳐 만들거나 같은 시장을 다시 걸 수 없습니다.</small>
       </div>
       <div className="side-market-outcomes" aria-label={`${marketLabel} 선택`}>
         {market.outcomes.map((outcome) => {
@@ -89,15 +122,43 @@ export default function CasinoSideMarket({
         </div>
       </>}
       <div className="side-market-watch">
-        <button type="button" className="ca-gold-btn" disabled={currentUtcSecond < market.startsAtUtcSecond} onClick={() => setReplayOpen(true)}>
-          {currentUtcSecond < market.startsAtUtcSecond ? `${duration(market.startsAtUtcSecond - currentUtcSecond)} 후 관전석 개방` : market.phase === "settled" ? "처음부터 다시 보기" : "관전석 입장"}
+        <button type="button" className="ca-gold-btn" disabled={currentUtcSecond < market.startsAtUtcSecond} onClick={() => setReplayMarket(market)}>
+          {currentUtcSecond < market.startsAtUtcSecond ? `${duration(market.startsAtUtcSecond - currentUtcSecond)} 뒤 관전석 개방` : market.phase === "settled" ? "처음부터 다시 보기" : "관전석 입장"}
         </button>
-        <small>예측 결과와 같은 실제 게임 리듀서 기록을 재생합니다.</small>
+        <small>예측 결과와 같은 실제 게임 리듀서 기록을 원본 게임 화면으로 재생합니다.</small>
       </div>
     </div>
+    {settlementNotice && <p className="side-market-settlement-notice" role="status">관전 베팅 정산 · {settlementNotice}</p>}
     {error && <p className="side-market-error" role="alert">{error}</p>}
-    {replayOpen && <Suspense fallback={null}><CasinoSideMarketReplayView market={market} currentUtcSecond={currentUtcSecond} onClose={() => setReplayOpen(false)} /></Suspense>}
+    {historyOpen && <SideMarketHistory wagers={wagers.slice(0, 20)} markets={ticketMarkets} onClose={() => setHistoryOpen(false)} onReplay={(ticketMarket) => { setHistoryOpen(false); setReplayMarket(ticketMarket); }} />}
+    {replayMarket && <Suspense fallback={null}><CasinoSideMarketReplayView market={replayMarket} currentUtcSecond={currentUtcSecond} onClose={() => setReplayMarket(undefined)} /></Suspense>}
   </section>;
+}
+
+function SideMarketHistory({ wagers, markets, onClose, onReplay }: { wagers: readonly GameWagerReceipt[]; markets: readonly CasinoSpectatorMarket[]; onClose(): void; onReplay(market: CasinoSpectatorMarket): void }): React.ReactElement {
+  useEffect(() => {
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const closeOnEscape = (event: KeyboardEvent) => { if (event.key === "Escape") onClose(); };
+    window.addEventListener("keydown", closeOnEscape);
+    return () => { document.body.style.overflow = previous; window.removeEventListener("keydown", closeOnEscape); };
+  }, [onClose]);
+  const byId = new Map(markets.map((market) => [market.marketId, market]));
+  return createPortal(<div className="side-market-history-backdrop" role="dialog" aria-modal="true" aria-labelledby="side-market-history-heading" onMouseDown={(event) => { if (event.currentTarget === event.target) onClose(); }}>
+    <section className="side-market-history">
+      <header><div><span className="ca-label">LOCAL BETTING LEDGER</span><h3 id="side-market-history-heading">내 베팅 기록</h3></div><button type="button" className="ca-ghost-btn" onClick={onClose}>닫기</button></header>
+      {wagers.length === 0 ? <p className="side-market-history-empty">아직 관전 베팅 기록이 없습니다.</p> : <ol>{wagers.map((wager) => {
+        const market = byId.get(wager.outcomeKey);
+        const choice = parseSideMarketChoice(wager);
+        const outcome = market?.outcomes.find((candidate) => candidate.outcomeId === choice?.outcomeId);
+        return <li key={wager.wagerId}>
+          <div><span>{market ? `${kstTime(market.startsAtUtcSecond)} · ${market.title}` : "지난 관전 대국"}</span><strong>{outcome?.label ?? "선택 결과"} · {choice?.multiplier ?? "?"}×</strong><small>{historyStatus(wager)}</small></div>
+          <div><b>{wager.reservedAmount.toLocaleString("ko-KR")} P</b>{market && market.phase === "settled" && <button type="button" onClick={() => onReplay(market)}>다시 보기</button>}</div>
+        </li>;
+      })}</ol>}
+      {wagers.length >= 20 && <small className="side-market-history-limit">최근 20건을 표시합니다.</small>}
+    </section>
+  </div>, document.body);
 }
 
 function SideMarketReceipt({ wager, market }: { wager: GameWagerReceipt; market: CasinoSpectatorMarket }): React.ReactElement {
@@ -107,16 +168,24 @@ function SideMarketReceipt({ wager, market }: { wager: GameWagerReceipt; market:
   return <div className={`side-market-receipt status-${wager.status}`}>
     <div><span>내 베팅</span><strong>{label} · {choice?.multiplier ?? "?"}×</strong></div>
     <div><span>예약</span><strong>{wager.reservedAmount.toLocaleString("ko-KR")} P</strong></div>
-    <div><span>상태</span><strong>{wager.status === "reserved" ? "마감 대기" : wager.status === "settled" ? net > 0 ? `적중 +${net.toLocaleString("ko-KR")} P` : `실패 −${wager.reservedAmount.toLocaleString("ko-KR")} P` : wager.status === "refunded" ? "무효 · 전액 환불" : "정산 완료"}</strong></div>
+    <div><span>상태</span><strong>{wager.status === "reserved" ? "마감 대기" : wager.status === "settled" ? net > 0 ? `적중 +${net.toLocaleString("ko-KR")} P` : `실패 −${wager.reservedAmount.toLocaleString("ko-KR")} P` : wager.status === "refunded" ? "무효 · 전액 반환" : "정산 완료"}</strong></div>
   </div>;
 }
 
+function historyStatus(wager: GameWagerReceipt): string {
+  const net = wager.settlementCredit - wager.reservedAmount;
+  if (wager.status === "reserved") return "정산 대기";
+  if (wager.status === "refunded") return "무효 · 전액 반환";
+  if (wager.status === "settled") return net > 0 ? `적중 · 순이익 +${net.toLocaleString("ko-KR")} P` : `실패 · 손실 −${wager.reservedAmount.toLocaleString("ko-KR")} P`;
+  return "정산 완료";
+}
 function phaseLabel(market: CasinoSpectatorMarket, now: number): string {
-  if (market.phase === "upcoming") return `${duration(market.opensAtUtcSecond - now)} 후 접수`;
-  if (market.phase === "open") return `${duration(market.closesAtUtcSecond - now)} 후 마감`;
-  if (market.phase === "locked") return `마감 · ${duration(market.settlesAtUtcSecond - now)} 후 정산`;
-  return "정산 완료 · 다시보기 가능";
+  if (market.phase === "upcoming") return `${duration(market.opensAtUtcSecond - now)} 뒤 접수`;
+  if (market.phase === "open") return `${duration(market.closesAtUtcSecond - now)} 뒤 마감`;
+  if (market.phase === "locked") return `대국 중 · ${duration(market.settlesAtUtcSecond - now)} 뒤 정산`;
+  return "정산 완료 · 다시 보기 가능";
 }
 function shortPhase(market: CasinoSpectatorMarket, now: number): string { return market.phase === "settled" ? "완료" : market.phase === "locked" ? "대국 중" : market.phase === "open" ? `${duration(market.closesAtUtcSecond - now)} 남음` : `${duration(market.opensAtUtcSecond - now)} 뒤`; }
 function duration(seconds: number): string { const value = Math.max(0, seconds); return value < 60 ? `${value}초` : `${Math.ceil(value / 60)}분`; }
 function decimalOdds(payoutBps: number): string { return (payoutBps / 10_000).toFixed(2); }
+function kstTime(utcSecond: number): string { return KST_TIME.format(new Date(utcSecond * 1_000)); }
