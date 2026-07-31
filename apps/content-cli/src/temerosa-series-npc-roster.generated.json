@@ -1,6 +1,6 @@
 {
-  "contract": "temerosa-series-npc-inventory/0.1",
-  "generatedAt": "2026-07-31T09:35:09.435Z",
+  "contract": "temerosa-series-npc-inventory/0.2",
+  "generatedAt": "2026-07-31T10:47:51.888Z",
   "identityRule": "series-and-source-persona",
   "sources": [
     {
@@ -41,13 +41,36 @@
     "loreBacked": 112,
     "imageOnly": 4,
     "houseRoles": 2,
-    "assetCandidates": 1616
+    "assetCandidates": 1616,
+    "roles": {
+      "gambler": 114,
+      "dealer": 0,
+      "host": 0,
+      "house": 2
+    },
+    "statuses": {
+      "confirmed": 112,
+      "needs-confirmation": 4
+    },
+    "portraits": {
+      "complete": 95,
+      "partial": 13,
+      "missing": 8
+    },
+    "releaseEligibility": {
+      "casino-ready": 87,
+      "ledger-only": 21,
+      "house-only": 2,
+      "blocked": 4,
+      "excluded": 2
+    }
   },
   "records": [
     {
       "id": "temerosa:overture:elton-carrasco",
       "series": "overture",
       "sourcePersonaKey": "elton-carrasco",
+      "canonicalPersonKey": "elton-carrasco",
       "displayName": "Elton Carrasco",
       "qualifiedName": "Elton Carrasco · 서곡",
       "aliases": [
@@ -116,12 +139,24 @@
         }
       ],
       "role": "gambler",
-      "status": "confirmed"
+      "status": "confirmed",
+      "portraitAvailability": {
+        "status": "partial",
+        "assetCandidateCount": 8,
+        "seatRoles": [
+          "pleased",
+          "tense",
+          "despair"
+        ]
+      },
+      "releaseEligibility": "ledger-only",
+      "pendingReason": "seat-portrait-role-coverage-incomplete"
     },
     {
       "id": "temerosa:overture:hab",
       "series": "overture",
       "sourcePersonaKey": "hab",
+      "canonicalPersonKey": "hab",
       "displayName": "hab",
       "qualifiedName": "hab · 서곡",
       "aliases": [
@@ -200,12 +235,24 @@
         }
       ],
       "role": "gambler",
-      "status": "confirmed"
+      "status": "confirmed",
+      "portraitAvailability": {
+        "status": "partial",
+        "assetCandidateCount": 10,
+        "seatRoles": [
+          "pleased",
+          "tense",
+          "despair"
+        ]
+      },
+      "releaseEligibility": "ledger-only",
+      "pendingReason": "seat-portrait-role-coverage-incomplete"
     },
     {
       "id": "temerosa:overture:ishmael",
       "series": "overture",
       "sourcePersonaKey": "ishmael",
+      "canonicalPersonKey": "ishmael",
       "displayName": "Ishmael",
       "qualifiedName": "Ishmael · 서곡",
       "aliases": [
@@ -285,12 +332,24 @@
         }
       ],
       "role": "gambler",
-      "status": "confirmed"
+      "status": "confirmed",
+      "portraitAvailability": {
+        "status": "partial",
+        "assetCandidateCount": 10,
+        "seatRoles": [
+          "pleased",
+          "tense",
+          "despair"
+        ]
+      },
+      "releaseEligibility": "ledger-only",
+      "pendingReason": "seat-portrait-role-coverage-incomplete"
     },
     {
       "id": "temerosa:overture:kano",
       "series": "overture",
       "sourcePersonaKey": "kano",
+      "canonicalPersonKey": "kano",
       "displayName": "Kano",
       "qualifiedName": "Kano · 서곡",
       "aliases": [
@@ -419,12 +478,24 @@
         }
       ],
       "role": "gambler",
-      "status": "confirmed"
+      "status": "confirmed",
+      "portraitAvailability": {
+        "status": "partial",
+        "assetCandidateCount": 18,
+        "seatRoles": [
+          "pleased",
+          "tense",
+          "despair"
+        ]
+      },
+      "releaseEligibility": "ledger-only",
+      "pendingReason": "seat-portrait-role-coverage-incomplete"
     },
     {
       "id": "temerosa:overture:licanica",
       "series": "overture",
       "sourcePersonaKey": "licanica",
+      "canonicalPersonKey": "licanica",
       "displayName": "Licanica",
       "qualifiedName": "Licanica · 서곡",
       "aliases": [
@@ -443,12 +514,20 @@
       ],
       "assetCandidates": [],
       "role": "gambler",
-      "status": "confirmed"
+      "status": "confirmed",
+      "portraitAvailability": {
+        "status": "missing",
+        "assetCandidateCount": 0,
+        "seatRoles": []
+      },
+      "releaseEligibility": "ledger-only",
+      "pendingReason": "seat-portrait-assets-missing"
     },
     {
       "id": "temerosa:overture:lyla",
       "series": "overture",
       "sourcePersonaKey": "lyla",
+      "canonicalPersonKey": "lyla",
       "displayName": "Lyla",
       "qualifiedName": "Lyla · 서곡",
       "aliases": [
@@ -521,12 +600,24 @@
         }
       ],
       "role": "gambler",
-      "status": "confirmed"
+      "status": "confirmed",
+      "portraitAvailability": {
+        "status": "partial",
+        "assetCandidateCount": 9,
+        "seatRoles": [
+          "pleased",
+          "tense",
+          "despair"
+        ]
+      },
+      "releaseEligibility": "ledger-only",
+      "pendingReason": "seat-portrait-role-coverage-incomplete"
     },
     {
       "id": "temerosa:overture:mascot",
       "series": "overture",
       "sourcePersonaKey": "mascot",
+      "canonicalPersonKey": "mascot",
       "displayName": "mascot",
       "qualifiedName": "mascot · 서곡",
       "aliases": [
@@ -598,12 +689,24 @@
         }
       ],
       "role": "gambler",
-      "status": "confirmed"
+      "status": "confirmed",
+      "portraitAvailability": {
+        "status": "partial",
+        "assetCandidateCount": 9,
+        "seatRoles": [
+          "pleased",
+          "tense",
+          "despair"
+        ]
+      },
+      "releaseEligibility": "ledger-only",
+      "pendingReason": "seat-portrait-role-coverage-incomplete"
     },
     {
       "id": "temerosa:overture:merry-pip",
       "series": "overture",
       "sourcePersonaKey": "merry-pip",
+      "canonicalPersonKey": "merry-pip",
       "displayName": "Merry-pip",
       "qualifiedName": "Merry-pip · 서곡",
       "aliases": [
@@ -679,12 +782,24 @@
         }
       ],
       "role": "gambler",
-      "status": "confirmed"
+      "status": "confirmed",
+      "portraitAvailability": {
+        "status": "partial",
+        "assetCandidateCount": 9,
+        "seatRoles": [
+          "pleased",
+          "tense",
+          "despair"
+        ]
+      },
+      "releaseEligibility": "ledger-only",
+      "pendingReason": "seat-portrait-role-coverage-incomplete"
     },
     {
       "id": "temerosa:overture:mortem",
       "series": "overture",
       "sourcePersonaKey": "mortem",
+      "canonicalPersonKey": "mortem",
       "displayName": "Mortem",
       "qualifiedName": "Mortem · 서곡",
       "aliases": [
@@ -703,12 +818,20 @@
       ],
       "assetCandidates": [],
       "role": "gambler",
-      "status": "confirmed"
+      "status": "confirmed",
+      "portraitAvailability": {
+        "status": "missing",
+        "assetCandidateCount": 0,
+        "seatRoles": []
+      },
+      "releaseEligibility": "ledger-only",
+      "pendingReason": "seat-portrait-assets-missing"
     },
     {
       "id": "temerosa:overture:pale",
       "series": "overture",
       "sourcePersonaKey": "pale",
+      "canonicalPersonKey": "pale",
       "displayName": "Pale",
       "qualifiedName": "Pale · 서곡",
       "aliases": [
@@ -781,12 +904,24 @@
         }
       ],
       "role": "gambler",
-      "status": "confirmed"
+      "status": "confirmed",
+      "portraitAvailability": {
+        "status": "partial",
+        "assetCandidateCount": 9,
+        "seatRoles": [
+          "pleased",
+          "tense",
+          "despair"
+        ]
+      },
+      "releaseEligibility": "ledger-only",
+      "pendingReason": "seat-portrait-role-coverage-incomplete"
     },
     {
       "id": "temerosa:overture:septendecilliono",
       "series": "overture",
       "sourcePersonaKey": "septendecilliono",
+      "canonicalPersonKey": "septendecilliono",
       "displayName": "septendecilliono",
       "qualifiedName": "septendecilliono · 서곡",
       "aliases": [
@@ -865,12 +1000,24 @@
         }
       ],
       "role": "gambler",
-      "status": "confirmed"
+      "status": "confirmed",
+      "portraitAvailability": {
+        "status": "partial",
+        "assetCandidateCount": 10,
+        "seatRoles": [
+          "pleased",
+          "tense",
+          "despair"
+        ]
+      },
+      "releaseEligibility": "ledger-only",
+      "pendingReason": "seat-portrait-role-coverage-incomplete"
     },
     {
       "id": "temerosa:overture:tashtego",
       "series": "overture",
       "sourcePersonaKey": "tashtego",
+      "canonicalPersonKey": "tashtego",
       "displayName": "Tashtego",
       "qualifiedName": "Tashtego · 서곡",
       "aliases": [
@@ -949,12 +1096,24 @@
         }
       ],
       "role": "gambler",
-      "status": "confirmed"
+      "status": "confirmed",
+      "portraitAvailability": {
+        "status": "partial",
+        "assetCandidateCount": 10,
+        "seatRoles": [
+          "pleased",
+          "tense",
+          "despair"
+        ]
+      },
+      "releaseEligibility": "ledger-only",
+      "pendingReason": "seat-portrait-role-coverage-incomplete"
     },
     {
       "id": "temerosa:root2:ayase",
       "series": "root2",
       "sourcePersonaKey": "ayase",
+      "canonicalPersonKey": "ayase",
       "displayName": "Ayase (아야세)",
       "qualifiedName": "Ayase (아야세) · √2",
       "aliases": [
@@ -1032,12 +1191,25 @@
         }
       ],
       "role": "gambler",
-      "status": "confirmed"
+      "status": "confirmed",
+      "portraitAvailability": {
+        "status": "complete",
+        "assetCandidateCount": 10,
+        "seatRoles": [
+          "neutral",
+          "pleased",
+          "tense",
+          "despair"
+        ]
+      },
+      "releaseEligibility": "casino-ready",
+      "pendingReason": "runtime-integration-not-wired"
     },
     {
       "id": "temerosa:root2:dismas",
       "series": "root2",
       "sourcePersonaKey": "dismas",
+      "canonicalPersonKey": "dismas",
       "displayName": "Dismas (디스마스)",
       "qualifiedName": "Dismas (디스마스) · √2",
       "aliases": [
@@ -1116,12 +1288,25 @@
         }
       ],
       "role": "gambler",
-      "status": "confirmed"
+      "status": "confirmed",
+      "portraitAvailability": {
+        "status": "complete",
+        "assetCandidateCount": 10,
+        "seatRoles": [
+          "neutral",
+          "pleased",
+          "tense",
+          "despair"
+        ]
+      },
+      "releaseEligibility": "casino-ready",
+      "pendingReason": "runtime-integration-not-wired"
     },
     {
       "id": "temerosa:root2:hab",
       "series": "root2",
       "sourcePersonaKey": "hab",
+      "canonicalPersonKey": "hab",
       "displayName": "Hab (허브)",
       "qualifiedName": "Hab (허브) · √2",
       "aliases": [
@@ -1199,12 +1384,25 @@
         }
       ],
       "role": "gambler",
-      "status": "confirmed"
+      "status": "confirmed",
+      "portraitAvailability": {
+        "status": "complete",
+        "assetCandidateCount": 10,
+        "seatRoles": [
+          "neutral",
+          "pleased",
+          "tense",
+          "despair"
+        ]
+      },
+      "releaseEligibility": "casino-ready",
+      "pendingReason": "runtime-integration-not-wired"
     },
     {
       "id": "temerosa:root2:ishmael",
       "series": "root2",
       "sourcePersonaKey": "ishmael",
+      "canonicalPersonKey": "ishmael",
       "displayName": "Ismael (이슈메일)",
       "qualifiedName": "Ismael (이슈메일) · √2",
       "aliases": [
@@ -1277,12 +1475,25 @@
         }
       ],
       "role": "gambler",
-      "status": "confirmed"
+      "status": "confirmed",
+      "portraitAvailability": {
+        "status": "complete",
+        "assetCandidateCount": 9,
+        "seatRoles": [
+          "neutral",
+          "pleased",
+          "tense",
+          "despair"
+        ]
+      },
+      "releaseEligibility": "casino-ready",
+      "pendingReason": "runtime-integration-not-wired"
     },
     {
       "id": "temerosa:root2:kano",
       "series": "root2",
       "sourcePersonaKey": "kano",
+      "canonicalPersonKey": "kano",
       "displayName": "Kano Ameri (카노 아메리)",
       "qualifiedName": "Kano Ameri (카노 아메리) · √2",
       "aliases": [
@@ -1356,12 +1567,25 @@
         }
       ],
       "role": "gambler",
-      "status": "confirmed"
+      "status": "confirmed",
+      "portraitAvailability": {
+        "status": "complete",
+        "assetCandidateCount": 9,
+        "seatRoles": [
+          "neutral",
+          "pleased",
+          "tense",
+          "despair"
+        ]
+      },
+      "releaseEligibility": "casino-ready",
+      "pendingReason": "runtime-integration-not-wired"
     },
     {
       "id": "temerosa:root2:lyla",
       "series": "root2",
       "sourcePersonaKey": "lyla",
+      "canonicalPersonKey": "lyla",
       "displayName": "Lyla (라일라)",
       "qualifiedName": "Lyla (라일라) · √2",
       "aliases": [
@@ -1434,12 +1658,25 @@
         }
       ],
       "role": "gambler",
-      "status": "confirmed"
+      "status": "confirmed",
+      "portraitAvailability": {
+        "status": "complete",
+        "assetCandidateCount": 9,
+        "seatRoles": [
+          "neutral",
+          "pleased",
+          "tense",
+          "despair"
+        ]
+      },
+      "releaseEligibility": "casino-ready",
+      "pendingReason": "runtime-integration-not-wired"
     },
     {
       "id": "temerosa:root2:merry-pip",
       "series": "root2",
       "sourcePersonaKey": "merry-pip",
+      "canonicalPersonKey": "merry-pip",
       "displayName": "Merry-pip (메리-핍)",
       "qualifiedName": "Merry-pip (메리-핍) · √2",
       "aliases": [
@@ -1519,12 +1756,25 @@
         }
       ],
       "role": "gambler",
-      "status": "confirmed"
+      "status": "confirmed",
+      "portraitAvailability": {
+        "status": "complete",
+        "assetCandidateCount": 10,
+        "seatRoles": [
+          "neutral",
+          "pleased",
+          "tense",
+          "despair"
+        ]
+      },
+      "releaseEligibility": "casino-ready",
+      "pendingReason": "runtime-integration-not-wired"
     },
     {
       "id": "temerosa:root2:mortem",
       "series": "root2",
       "sourcePersonaKey": "mortem",
+      "canonicalPersonKey": "mortem",
       "displayName": "Mortem (모르템)",
       "qualifiedName": "Mortem (모르템) · √2",
       "aliases": [
@@ -1597,12 +1847,25 @@
         }
       ],
       "role": "gambler",
-      "status": "confirmed"
+      "status": "confirmed",
+      "portraitAvailability": {
+        "status": "complete",
+        "assetCandidateCount": 9,
+        "seatRoles": [
+          "neutral",
+          "pleased",
+          "tense",
+          "despair"
+        ]
+      },
+      "releaseEligibility": "casino-ready",
+      "pendingReason": "runtime-integration-not-wired"
     },
     {
       "id": "temerosa:root2:nevy",
       "series": "root2",
       "sourcePersonaKey": "nevy",
+      "canonicalPersonKey": "nevy",
       "displayName": "Nevy Krakentus",
       "qualifiedName": "Nevy Krakentus · √2",
       "aliases": [
@@ -1675,12 +1938,25 @@
         }
       ],
       "role": "gambler",
-      "status": "confirmed"
+      "status": "confirmed",
+      "portraitAvailability": {
+        "status": "complete",
+        "assetCandidateCount": 9,
+        "seatRoles": [
+          "neutral",
+          "pleased",
+          "tense",
+          "despair"
+        ]
+      },
+      "releaseEligibility": "casino-ready",
+      "pendingReason": "runtime-integration-not-wired"
     },
     {
       "id": "temerosa:root2:nieun",
       "series": "root2",
       "sourcePersonaKey": "nieun",
+      "canonicalPersonKey": "nieun",
       "displayName": "Nieun (니은)",
       "qualifiedName": "Nieun (니은) · √2",
       "aliases": [
@@ -1754,12 +2030,25 @@
         }
       ],
       "role": "gambler",
-      "status": "confirmed"
+      "status": "confirmed",
+      "portraitAvailability": {
+        "status": "complete",
+        "assetCandidateCount": 9,
+        "seatRoles": [
+          "neutral",
+          "pleased",
+          "tense",
+          "despair"
+        ]
+      },
+      "releaseEligibility": "casino-ready",
+      "pendingReason": "runtime-integration-not-wired"
     },
     {
       "id": "temerosa:root2:nostalgia",
       "series": "root2",
       "sourcePersonaKey": "nostalgia",
+      "canonicalPersonKey": "nostalgia",
       "displayName": "nostalgia (노스텔지아)",
       "qualifiedName": "nostalgia (노스텔지아) · √2",
       "aliases": [
@@ -1888,12 +2177,25 @@
         }
       ],
       "role": "gambler",
-      "status": "confirmed"
+      "status": "confirmed",
+      "portraitAvailability": {
+        "status": "complete",
+        "assetCandidateCount": 18,
+        "seatRoles": [
+          "neutral",
+          "pleased",
+          "tense",
+          "despair"
+        ]
+      },
+      "releaseEligibility": "casino-ready",
+      "pendingReason": "runtime-integration-not-wired"
     },
     {
       "id": "temerosa:root2:pale",
       "series": "root2",
       "sourcePersonaKey": "pale",
+      "canonicalPersonKey": "pale",
       "displayName": "Pale (페일)",
       "qualifiedName": "Pale (페일) · √2",
       "aliases": [
@@ -1972,12 +2274,25 @@
         }
       ],
       "role": "gambler",
-      "status": "confirmed"
+      "status": "confirmed",
+      "portraitAvailability": {
+        "status": "complete",
+        "assetCandidateCount": 10,
+        "seatRoles": [
+          "neutral",
+          "pleased",
+          "tense",
+          "despair"
+        ]
+      },
+      "releaseEligibility": "casino-ready",
+      "pendingReason": "runtime-integration-not-wired"
     },
     {
       "id": "temerosa:root2:presser",
       "series": "root2",
       "sourcePersonaKey": "presser",
+      "canonicalPersonKey": "presser",
       "displayName": "Presser Esser 프렛서 엣서",
       "qualifiedName": "Presser Esser 프렛서 엣서 · √2",
       "aliases": [
@@ -2056,7 +2371,19 @@
         }
       ],
       "role": "gambler",
-      "status": "confirmed"
+      "status": "confirmed",
+      "portraitAvailability": {
+        "status": "complete",
+        "assetCandidateCount": 10,
+        "seatRoles": [
+          "neutral",
+          "pleased",
+          "tense",
+          "despair"
+        ]
+      },
+      "releaseEligibility": "casino-ready",
+      "pendingReason": "runtime-integration-not-wired"
     },
     {
       "id": "temerosa:root2:reila",
@@ -2136,12 +2463,25 @@
         }
       ],
       "role": "gambler",
-      "status": "confirmed"
+      "status": "confirmed",
+      "portraitAvailability": {
+        "status": "complete",
+        "assetCandidateCount": 9,
+        "seatRoles": [
+          "neutral",
+          "pleased",
+          "tense",
+          "despair"
+        ]
+      },
+      "releaseEligibility": "casino-ready",
+      "pendingReason": "runtime-integration-not-wired"
     },
     {
       "id": "temerosa:root2:revi",
       "series": "root2",
       "sourcePersonaKey": "revi",
+      "canonicalPersonKey": "revi",
       "displayName": "Revi (레비)",
       "qualifiedName": "Revi (레비) · √2",
       "aliases": [
@@ -2202,12 +2542,24 @@
         }
       ],
       "role": "gambler",
-      "status": "confirmed"
+      "status": "confirmed",
+      "portraitAvailability": {
+        "status": "partial",
+        "assetCandidateCount": 7,
+        "seatRoles": [
+          "neutral",
+          "tense",
+          "despair"
+        ]
+      },
+      "releaseEligibility": "ledger-only",
+      "pendingReason": "seat-portrait-role-coverage-incomplete"
     },
     {
       "id": "temerosa:root2:septendecilliono",
       "series": "root2",
       "sourcePersonaKey": "septendecilliono",
+      "canonicalPersonKey": "septendecilliono",
       "displayName": "Septendecilliono (셉텐데실리오노)",
       "qualifiedName": "Septendecilliono (셉텐데실리오노) · √2",
       "aliases": [
@@ -2280,12 +2632,25 @@
         }
       ],
       "role": "gambler",
-      "status": "confirmed"
+      "status": "confirmed",
+      "portraitAvailability": {
+        "status": "complete",
+        "assetCandidateCount": 9,
+        "seatRoles": [
+          "neutral",
+          "pleased",
+          "tense",
+          "despair"
+        ]
+      },
+      "releaseEligibility": "casino-ready",
+      "pendingReason": "runtime-integration-not-wired"
     },
     {
       "id": "temerosa:root2:tashtego",
       "series": "root2",
       "sourcePersonaKey": "tashtego",
+      "canonicalPersonKey": "tashtego",
       "displayName": "Tashtego (테슈테고)",
       "qualifiedName": "Tashtego (테슈테고) · √2",
       "aliases": [
@@ -2359,12 +2724,25 @@
         }
       ],
       "role": "gambler",
-      "status": "confirmed"
+      "status": "confirmed",
+      "portraitAvailability": {
+        "status": "complete",
+        "assetCandidateCount": 9,
+        "seatRoles": [
+          "neutral",
+          "pleased",
+          "tense",
+          "despair"
+        ]
+      },
+      "releaseEligibility": "casino-ready",
+      "pendingReason": "runtime-integration-not-wired"
     },
     {
       "id": "temerosa:root2:wares",
       "series": "root2",
       "sourcePersonaKey": "wares",
+      "canonicalPersonKey": "wares",
       "displayName": "Wares 워어즈",
       "qualifiedName": "Wares 워어즈 · √2",
       "aliases": [
@@ -2443,7 +2821,19 @@
         }
       ],
       "role": "house",
-      "status": "confirmed"
+      "status": "confirmed",
+      "portraitAvailability": {
+        "status": "complete",
+        "assetCandidateCount": 10,
+        "seatRoles": [
+          "neutral",
+          "pleased",
+          "tense",
+          "despair"
+        ]
+      },
+      "releaseEligibility": "house-only",
+      "exclusionReason": "house-role-no-personal-wallet"
     },
     {
       "id": "temerosa:bestiaization:a",
@@ -2506,12 +2896,25 @@
         }
       ],
       "role": "gambler",
-      "status": "confirmed"
+      "status": "confirmed",
+      "portraitAvailability": {
+        "status": "complete",
+        "assetCandidateCount": 6,
+        "seatRoles": [
+          "neutral",
+          "pleased",
+          "tense",
+          "despair"
+        ]
+      },
+      "releaseEligibility": "casino-ready",
+      "pendingReason": "runtime-integration-not-wired"
     },
     {
       "id": "temerosa:bestiaization:adesha",
       "series": "bestiaization",
       "sourcePersonaKey": "adesha",
+      "canonicalPersonKey": "adesha",
       "displayName": "Adesha (아데샤)",
       "qualifiedName": "Adesha (아데샤) · 베스티아화",
       "aliases": [
@@ -2596,12 +2999,25 @@
         }
       ],
       "role": "gambler",
-      "status": "confirmed"
+      "status": "confirmed",
+      "portraitAvailability": {
+        "status": "complete",
+        "assetCandidateCount": 11,
+        "seatRoles": [
+          "neutral",
+          "pleased",
+          "tense",
+          "despair"
+        ]
+      },
+      "releaseEligibility": "casino-ready",
+      "pendingReason": "runtime-integration-not-wired"
     },
     {
       "id": "temerosa:bestiaization:alger",
       "series": "bestiaization",
       "sourcePersonaKey": "alger",
+      "canonicalPersonKey": "alger",
       "displayName": "Alger (알제)",
       "qualifiedName": "Alger (알제) · 베스티아화",
       "aliases": [
@@ -2657,12 +3073,25 @@
         }
       ],
       "role": "gambler",
-      "status": "confirmed"
+      "status": "confirmed",
+      "portraitAvailability": {
+        "status": "complete",
+        "assetCandidateCount": 6,
+        "seatRoles": [
+          "neutral",
+          "pleased",
+          "tense",
+          "despair"
+        ]
+      },
+      "releaseEligibility": "casino-ready",
+      "pendingReason": "runtime-integration-not-wired"
     },
     {
       "id": "temerosa:bestiaization:anna",
       "series": "bestiaization",
       "sourcePersonaKey": "anna",
+      "canonicalPersonKey": "anna",
       "displayName": "Anna Nazareth (안나 나자레아)",
       "qualifiedName": "Anna Nazareth (안나 나자레아) · 베스티아화",
       "aliases": [
@@ -2717,12 +3146,25 @@
         }
       ],
       "role": "gambler",
-      "status": "confirmed"
+      "status": "confirmed",
+      "portraitAvailability": {
+        "status": "complete",
+        "assetCandidateCount": 6,
+        "seatRoles": [
+          "neutral",
+          "pleased",
+          "tense",
+          "despair"
+        ]
+      },
+      "releaseEligibility": "casino-ready",
+      "pendingReason": "runtime-integration-not-wired"
     },
     {
       "id": "temerosa:bestiaization:apollyon",
       "series": "bestiaization",
       "sourcePersonaKey": "apollyon",
+      "canonicalPersonKey": "apollyon",
       "displayName": "Apollyon Aite (아폴리온 아이테)",
       "qualifiedName": "Apollyon Aite (아폴리온 아이테) · 베스티아화",
       "aliases": [
@@ -2777,7 +3219,19 @@
         }
       ],
       "role": "gambler",
-      "status": "confirmed"
+      "status": "confirmed",
+      "portraitAvailability": {
+        "status": "complete",
+        "assetCandidateCount": 6,
+        "seatRoles": [
+          "neutral",
+          "pleased",
+          "tense",
+          "despair"
+        ]
+      },
+      "releaseEligibility": "casino-ready",
+      "pendingReason": "runtime-integration-not-wired"
     },
     {
       "id": "temerosa:bestiaization:bacikal",
@@ -2880,12 +3334,25 @@
         }
       ],
       "role": "gambler",
-      "status": "confirmed"
+      "status": "confirmed",
+      "portraitAvailability": {
+        "status": "complete",
+        "assetCandidateCount": 13,
+        "seatRoles": [
+          "neutral",
+          "pleased",
+          "tense",
+          "despair"
+        ]
+      },
+      "releaseEligibility": "excluded",
+      "exclusionReason": "standard-casino-roster-excluded"
     },
     {
       "id": "temerosa:bestiaization:bamcapis",
       "series": "bestiaization",
       "sourcePersonaKey": "bamcapis",
+      "canonicalPersonKey": "bamcapis",
       "displayName": "Bamcapis (밤카피스)",
       "qualifiedName": "Bamcapis (밤카피스) · 베스티아화",
       "aliases": [
@@ -2977,12 +3444,25 @@
         }
       ],
       "role": "gambler",
-      "status": "confirmed"
+      "status": "confirmed",
+      "portraitAvailability": {
+        "status": "complete",
+        "assetCandidateCount": 12,
+        "seatRoles": [
+          "neutral",
+          "pleased",
+          "tense",
+          "despair"
+        ]
+      },
+      "releaseEligibility": "casino-ready",
+      "pendingReason": "runtime-integration-not-wired"
     },
     {
       "id": "temerosa:bestiaization:bche",
       "series": "bestiaization",
       "sourcePersonaKey": "bche",
+      "canonicalPersonKey": "bche",
       "displayName": "Bche (브체)",
       "qualifiedName": "Bche (브체) · 베스티아화",
       "aliases": [
@@ -3037,12 +3517,25 @@
         }
       ],
       "role": "gambler",
-      "status": "confirmed"
+      "status": "confirmed",
+      "portraitAvailability": {
+        "status": "complete",
+        "assetCandidateCount": 6,
+        "seatRoles": [
+          "neutral",
+          "pleased",
+          "tense",
+          "despair"
+        ]
+      },
+      "releaseEligibility": "casino-ready",
+      "pendingReason": "runtime-integration-not-wired"
     },
     {
       "id": "temerosa:bestiaization:boris-leblanc",
       "series": "bestiaization",
       "sourcePersonaKey": "boris-leblanc",
+      "canonicalPersonKey": "boris-leblanc",
       "displayName": "Boris Leblanc (보리스 르블랑)",
       "qualifiedName": "Boris Leblanc (보리스 르블랑) · 베스티아화",
       "aliases": [
@@ -3061,12 +3554,20 @@
       ],
       "assetCandidates": [],
       "role": "gambler",
-      "status": "confirmed"
+      "status": "confirmed",
+      "portraitAvailability": {
+        "status": "missing",
+        "assetCandidateCount": 0,
+        "seatRoles": []
+      },
+      "releaseEligibility": "ledger-only",
+      "pendingReason": "seat-portrait-assets-missing"
     },
     {
       "id": "temerosa:bestiaization:cab",
       "series": "bestiaization",
       "sourcePersonaKey": "cab",
+      "canonicalPersonKey": "cab",
       "displayName": "Cab (캐브)",
       "qualifiedName": "Cab (캐브) · 베스티아화",
       "aliases": [
@@ -3121,12 +3622,25 @@
         }
       ],
       "role": "gambler",
-      "status": "confirmed"
+      "status": "confirmed",
+      "portraitAvailability": {
+        "status": "complete",
+        "assetCandidateCount": 6,
+        "seatRoles": [
+          "neutral",
+          "pleased",
+          "tense",
+          "despair"
+        ]
+      },
+      "releaseEligibility": "casino-ready",
+      "pendingReason": "runtime-integration-not-wired"
     },
     {
       "id": "temerosa:bestiaization:camille",
       "series": "bestiaization",
       "sourcePersonaKey": "camille",
+      "canonicalPersonKey": "camille",
       "displayName": "Camille (카미유)",
       "qualifiedName": "Camille (카미유) · 베스티아화",
       "aliases": [
@@ -3212,12 +3726,25 @@
         }
       ],
       "role": "gambler",
-      "status": "confirmed"
+      "status": "confirmed",
+      "portraitAvailability": {
+        "status": "complete",
+        "assetCandidateCount": 11,
+        "seatRoles": [
+          "neutral",
+          "pleased",
+          "tense",
+          "despair"
+        ]
+      },
+      "releaseEligibility": "casino-ready",
+      "pendingReason": "runtime-integration-not-wired"
     },
     {
       "id": "temerosa:bestiaization:cicero",
       "series": "bestiaization",
       "sourcePersonaKey": "cicero",
+      "canonicalPersonKey": "cicero",
       "displayName": "Cicero (키케로)",
       "qualifiedName": "Cicero (키케로) · 베스티아화",
       "aliases": [
@@ -3272,12 +3799,25 @@
         }
       ],
       "role": "gambler",
-      "status": "confirmed"
+      "status": "confirmed",
+      "portraitAvailability": {
+        "status": "complete",
+        "assetCandidateCount": 6,
+        "seatRoles": [
+          "neutral",
+          "pleased",
+          "tense",
+          "despair"
+        ]
+      },
+      "releaseEligibility": "casino-ready",
+      "pendingReason": "runtime-integration-not-wired"
     },
     {
       "id": "temerosa:bestiaization:cradle",
       "series": "bestiaization",
       "sourcePersonaKey": "cradle",
+      "canonicalPersonKey": "cradle",
       "displayName": "Cradle (크레이들)",
       "qualifiedName": "Cradle (크레이들) · 베스티아화",
       "aliases": [
@@ -3368,12 +3908,25 @@
         }
       ],
       "role": "gambler",
-      "status": "confirmed"
+      "status": "confirmed",
+      "portraitAvailability": {
+        "status": "complete",
+        "assetCandidateCount": 12,
+        "seatRoles": [
+          "neutral",
+          "pleased",
+          "tense",
+          "despair"
+        ]
+      },
+      "releaseEligibility": "casino-ready",
+      "pendingReason": "runtime-integration-not-wired"
     },
     {
       "id": "temerosa:bestiaization:deokbae",
       "series": "bestiaization",
       "sourcePersonaKey": "deokbae",
+      "canonicalPersonKey": "deokbae",
       "displayName": "Kim Deokbae (김덕배)",
       "qualifiedName": "Kim Deokbae (김덕배) · 베스티아화",
       "aliases": [
@@ -3428,12 +3981,25 @@
         }
       ],
       "role": "gambler",
-      "status": "confirmed"
+      "status": "confirmed",
+      "portraitAvailability": {
+        "status": "complete",
+        "assetCandidateCount": 6,
+        "seatRoles": [
+          "neutral",
+          "pleased",
+          "tense",
+          "despair"
+        ]
+      },
+      "releaseEligibility": "casino-ready",
+      "pendingReason": "runtime-integration-not-wired"
     },
     {
       "id": "temerosa:bestiaization:diamo",
       "series": "bestiaization",
       "sourcePersonaKey": "diamo",
+      "canonicalPersonKey": "diamo",
       "displayName": "Diamo (디아모)",
       "qualifiedName": "Diamo (디아모) · 베스티아화",
       "aliases": [
@@ -3488,12 +4054,25 @@
         }
       ],
       "role": "gambler",
-      "status": "confirmed"
+      "status": "confirmed",
+      "portraitAvailability": {
+        "status": "complete",
+        "assetCandidateCount": 6,
+        "seatRoles": [
+          "neutral",
+          "pleased",
+          "tense",
+          "despair"
+        ]
+      },
+      "releaseEligibility": "casino-ready",
+      "pendingReason": "runtime-integration-not-wired"
     },
     {
       "id": "temerosa:bestiaization:dorsinea",
       "series": "bestiaization",
       "sourcePersonaKey": "dorsinea",
+      "canonicalPersonKey": "dorsinea",
       "displayName": "Dorsinea (Don Quixote Dorsinea) (도르시네아)",
       "qualifiedName": "Dorsinea (Don Quixote Dorsinea) (도르시네아) · 베스티아화",
       "aliases": [
@@ -3543,12 +4122,24 @@
         }
       ],
       "role": "gambler",
-      "status": "confirmed"
+      "status": "confirmed",
+      "portraitAvailability": {
+        "status": "partial",
+        "assetCandidateCount": 5,
+        "seatRoles": [
+          "neutral",
+          "pleased",
+          "tense"
+        ]
+      },
+      "releaseEligibility": "ledger-only",
+      "pendingReason": "seat-portrait-role-coverage-incomplete"
     },
     {
       "id": "temerosa:bestiaization:echo",
       "series": "bestiaization",
       "sourcePersonaKey": "echo",
+      "canonicalPersonKey": "echo",
       "displayName": "Echo (에코)",
       "qualifiedName": "Echo (에코) · 베스티아화",
       "aliases": [
@@ -3604,12 +4195,25 @@
         }
       ],
       "role": "gambler",
-      "status": "confirmed"
+      "status": "confirmed",
+      "portraitAvailability": {
+        "status": "complete",
+        "assetCandidateCount": 6,
+        "seatRoles": [
+          "neutral",
+          "pleased",
+          "tense",
+          "despair"
+        ]
+      },
+      "releaseEligibility": "casino-ready",
+      "pendingReason": "runtime-integration-not-wired"
     },
     {
       "id": "temerosa:bestiaization:esther",
       "series": "bestiaization",
       "sourcePersonaKey": "esther",
+      "canonicalPersonKey": "esther",
       "displayName": "Esther (에스더)",
       "qualifiedName": "Esther (에스더) · 베스티아화",
       "aliases": [
@@ -3663,12 +4267,25 @@
         }
       ],
       "role": "gambler",
-      "status": "confirmed"
+      "status": "confirmed",
+      "portraitAvailability": {
+        "status": "complete",
+        "assetCandidateCount": 6,
+        "seatRoles": [
+          "neutral",
+          "pleased",
+          "tense",
+          "despair"
+        ]
+      },
+      "releaseEligibility": "casino-ready",
+      "pendingReason": "runtime-integration-not-wired"
     },
     {
       "id": "temerosa:bestiaization:female",
       "series": "bestiaization",
       "sourcePersonaKey": "female",
+      "canonicalPersonKey": "female",
       "displayName": "Female",
       "qualifiedName": "Female · 베스티아화",
       "aliases": [
@@ -3714,12 +4331,25 @@
         }
       ],
       "role": "gambler",
-      "status": "needs-confirmation"
+      "status": "needs-confirmation",
+      "portraitAvailability": {
+        "status": "complete",
+        "assetCandidateCount": 6,
+        "seatRoles": [
+          "neutral",
+          "pleased",
+          "tense",
+          "despair"
+        ]
+      },
+      "releaseEligibility": "blocked",
+      "pendingReason": "source-persona-lore-confirmation-required"
     },
     {
       "id": "temerosa:bestiaization:flask",
       "series": "bestiaization",
       "sourcePersonaKey": "flask",
+      "canonicalPersonKey": "flask",
       "displayName": "Flask (플라스크)",
       "qualifiedName": "Flask (플라스크) · 베스티아화",
       "aliases": [
@@ -3773,12 +4403,25 @@
         }
       ],
       "role": "gambler",
-      "status": "confirmed"
+      "status": "confirmed",
+      "portraitAvailability": {
+        "status": "complete",
+        "assetCandidateCount": 6,
+        "seatRoles": [
+          "neutral",
+          "pleased",
+          "tense",
+          "despair"
+        ]
+      },
+      "releaseEligibility": "casino-ready",
+      "pendingReason": "runtime-integration-not-wired"
     },
     {
       "id": "temerosa:bestiaization:francis",
       "series": "bestiaization",
       "sourcePersonaKey": "francis",
+      "canonicalPersonKey": "francis",
       "displayName": "Francis (프란시스)",
       "qualifiedName": "Francis (프란시스) · 베스티아화",
       "aliases": [
@@ -3820,12 +4463,24 @@
         }
       ],
       "role": "gambler",
-      "status": "confirmed"
+      "status": "confirmed",
+      "portraitAvailability": {
+        "status": "partial",
+        "assetCandidateCount": 4,
+        "seatRoles": [
+          "neutral",
+          "tense",
+          "despair"
+        ]
+      },
+      "releaseEligibility": "ledger-only",
+      "pendingReason": "seat-portrait-role-coverage-incomplete"
     },
     {
       "id": "temerosa:bestiaization:gestas",
       "series": "bestiaization",
       "sourcePersonaKey": "gestas",
+      "canonicalPersonKey": "gestas",
       "displayName": "Gestas (게스타스)",
       "qualifiedName": "Gestas (게스타스) · 베스티아화",
       "aliases": [
@@ -3842,12 +4497,20 @@
       ],
       "assetCandidates": [],
       "role": "gambler",
-      "status": "confirmed"
+      "status": "confirmed",
+      "portraitAvailability": {
+        "status": "missing",
+        "assetCandidateCount": 0,
+        "seatRoles": []
+      },
+      "releaseEligibility": "ledger-only",
+      "pendingReason": "seat-portrait-assets-missing"
     },
     {
       "id": "temerosa:bestiaization:habwen",
       "series": "bestiaization",
       "sourcePersonaKey": "habwen",
+      "canonicalPersonKey": "habwen",
       "displayName": "Habwen (하브웬)",
       "qualifiedName": "Habwen (하브웬) · 베스티아화",
       "aliases": [
@@ -3901,12 +4564,25 @@
         }
       ],
       "role": "gambler",
-      "status": "confirmed"
+      "status": "confirmed",
+      "portraitAvailability": {
+        "status": "complete",
+        "assetCandidateCount": 6,
+        "seatRoles": [
+          "neutral",
+          "pleased",
+          "tense",
+          "despair"
+        ]
+      },
+      "releaseEligibility": "casino-ready",
+      "pendingReason": "runtime-integration-not-wired"
     },
     {
       "id": "temerosa:bestiaization:hiro",
       "series": "bestiaization",
       "sourcePersonaKey": "hiro",
+      "canonicalPersonKey": "hiro",
       "displayName": "Hiro Kaneda (히로 카네다)",
       "qualifiedName": "Hiro Kaneda (히로 카네다) · 베스티아화",
       "aliases": [
@@ -3962,12 +4638,25 @@
         }
       ],
       "role": "gambler",
-      "status": "confirmed"
+      "status": "confirmed",
+      "portraitAvailability": {
+        "status": "complete",
+        "assetCandidateCount": 6,
+        "seatRoles": [
+          "neutral",
+          "pleased",
+          "tense",
+          "despair"
+        ]
+      },
+      "releaseEligibility": "casino-ready",
+      "pendingReason": "runtime-integration-not-wired"
     },
     {
       "id": "temerosa:bestiaization:iweleth",
       "series": "bestiaization",
       "sourcePersonaKey": "iweleth",
+      "canonicalPersonKey": "iweleth",
       "displayName": "Iweleth (이웰레스)",
       "qualifiedName": "Iweleth (이웰레스) · 베스티아화",
       "aliases": [
@@ -3984,12 +4673,20 @@
       ],
       "assetCandidates": [],
       "role": "gambler",
-      "status": "confirmed"
+      "status": "confirmed",
+      "portraitAvailability": {
+        "status": "missing",
+        "assetCandidateCount": 0,
+        "seatRoles": []
+      },
+      "releaseEligibility": "ledger-only",
+      "pendingReason": "seat-portrait-assets-missing"
     },
     {
       "id": "temerosa:bestiaization:jia",
       "series": "bestiaization",
       "sourcePersonaKey": "jia",
+      "canonicalPersonKey": "jia",
       "displayName": "Jia (지아)",
       "qualifiedName": "Jia (지아) · 베스티아화",
       "aliases": [
@@ -4043,12 +4740,25 @@
         }
       ],
       "role": "gambler",
-      "status": "confirmed"
+      "status": "confirmed",
+      "portraitAvailability": {
+        "status": "complete",
+        "assetCandidateCount": 6,
+        "seatRoles": [
+          "neutral",
+          "pleased",
+          "tense",
+          "despair"
+        ]
+      },
+      "releaseEligibility": "casino-ready",
+      "pendingReason": "runtime-integration-not-wired"
     },
     {
       "id": "temerosa:bestiaization:katrinka",
       "series": "bestiaization",
       "sourcePersonaKey": "katrinka",
+      "canonicalPersonKey": "katrinka",
       "displayName": "Katrinka (카트린카)",
       "qualifiedName": "Katrinka (카트린카) · 베스티아화",
       "aliases": [
@@ -4146,12 +4856,25 @@
         }
       ],
       "role": "gambler",
-      "status": "confirmed"
+      "status": "confirmed",
+      "portraitAvailability": {
+        "status": "complete",
+        "assetCandidateCount": 13,
+        "seatRoles": [
+          "neutral",
+          "pleased",
+          "tense",
+          "despair"
+        ]
+      },
+      "releaseEligibility": "casino-ready",
+      "pendingReason": "runtime-integration-not-wired"
     },
     {
       "id": "temerosa:bestiaization:kreva",
       "series": "bestiaization",
       "sourcePersonaKey": "kreva",
+      "canonicalPersonKey": "kreva",
       "displayName": "Kreva (크레바)",
       "qualifiedName": "Kreva (크레바) · 베스티아화",
       "aliases": [
@@ -4207,12 +4930,25 @@
         }
       ],
       "role": "gambler",
-      "status": "confirmed"
+      "status": "confirmed",
+      "portraitAvailability": {
+        "status": "complete",
+        "assetCandidateCount": 6,
+        "seatRoles": [
+          "neutral",
+          "pleased",
+          "tense",
+          "despair"
+        ]
+      },
+      "releaseEligibility": "casino-ready",
+      "pendingReason": "runtime-integration-not-wired"
     },
     {
       "id": "temerosa:bestiaization:kudryavka",
       "series": "bestiaization",
       "sourcePersonaKey": "kudryavka",
+      "canonicalPersonKey": "kudryavka",
       "displayName": "Kudryavka (쿠드랴프카)",
       "qualifiedName": "Kudryavka (쿠드랴프카) · 베스티아화",
       "aliases": [
@@ -4229,12 +4965,20 @@
       ],
       "assetCandidates": [],
       "role": "gambler",
-      "status": "confirmed"
+      "status": "confirmed",
+      "portraitAvailability": {
+        "status": "missing",
+        "assetCandidateCount": 0,
+        "seatRoles": []
+      },
+      "releaseEligibility": "ledger-only",
+      "pendingReason": "seat-portrait-assets-missing"
     },
     {
       "id": "temerosa:bestiaization:leviathan",
       "series": "bestiaization",
       "sourcePersonaKey": "leviathan",
+      "canonicalPersonKey": "leviathan",
       "displayName": "Leviathan (레비아탄)",
       "qualifiedName": "Leviathan (레비아탄) · 베스티아화",
       "aliases": [
@@ -4251,12 +4995,20 @@
       ],
       "assetCandidates": [],
       "role": "gambler",
-      "status": "confirmed"
+      "status": "confirmed",
+      "portraitAvailability": {
+        "status": "missing",
+        "assetCandidateCount": 0,
+        "seatRoles": []
+      },
+      "releaseEligibility": "ledger-only",
+      "pendingReason": "seat-portrait-assets-missing"
     },
     {
       "id": "temerosa:bestiaization:levillotte",
       "series": "bestiaization",
       "sourcePersonaKey": "levillotte",
+      "canonicalPersonKey": "levillotte",
       "displayName": "Levillotte (레빌로트)",
       "qualifiedName": "Levillotte (레빌로트) · 베스티아화",
       "aliases": [
@@ -4311,12 +5063,25 @@
         }
       ],
       "role": "gambler",
-      "status": "confirmed"
+      "status": "confirmed",
+      "portraitAvailability": {
+        "status": "complete",
+        "assetCandidateCount": 6,
+        "seatRoles": [
+          "neutral",
+          "pleased",
+          "tense",
+          "despair"
+        ]
+      },
+      "releaseEligibility": "casino-ready",
+      "pendingReason": "runtime-integration-not-wired"
     },
     {
       "id": "temerosa:bestiaization:lilim",
       "series": "bestiaization",
       "sourcePersonaKey": "lilim",
+      "canonicalPersonKey": "lilim",
       "displayName": "Lilim (릴림)",
       "qualifiedName": "Lilim (릴림) · 베스티아화",
       "aliases": [
@@ -4370,12 +5135,25 @@
         }
       ],
       "role": "gambler",
-      "status": "confirmed"
+      "status": "confirmed",
+      "portraitAvailability": {
+        "status": "complete",
+        "assetCandidateCount": 6,
+        "seatRoles": [
+          "neutral",
+          "pleased",
+          "tense",
+          "despair"
+        ]
+      },
+      "releaseEligibility": "casino-ready",
+      "pendingReason": "runtime-integration-not-wired"
     },
     {
       "id": "temerosa:bestiaization:limet",
       "series": "bestiaization",
       "sourcePersonaKey": "limet",
+      "canonicalPersonKey": "limet",
       "displayName": "Limet (리멧)",
       "qualifiedName": "Limet (리멧) · 베스티아화",
       "aliases": [
@@ -4431,12 +5209,25 @@
         }
       ],
       "role": "gambler",
-      "status": "confirmed"
+      "status": "confirmed",
+      "portraitAvailability": {
+        "status": "complete",
+        "assetCandidateCount": 6,
+        "seatRoles": [
+          "neutral",
+          "pleased",
+          "tense",
+          "despair"
+        ]
+      },
+      "releaseEligibility": "casino-ready",
+      "pendingReason": "runtime-integration-not-wired"
     },
     {
       "id": "temerosa:bestiaization:lyla",
       "series": "bestiaization",
       "sourcePersonaKey": "lyla",
+      "canonicalPersonKey": "lyla",
       "displayName": "Lyla (라일라)",
       "qualifiedName": "Lyla (라일라) · 베스티아화",
       "aliases": [
@@ -4527,12 +5318,25 @@
         }
       ],
       "role": "gambler",
-      "status": "confirmed"
+      "status": "confirmed",
+      "portraitAvailability": {
+        "status": "complete",
+        "assetCandidateCount": 12,
+        "seatRoles": [
+          "neutral",
+          "pleased",
+          "tense",
+          "despair"
+        ]
+      },
+      "releaseEligibility": "casino-ready",
+      "pendingReason": "runtime-integration-not-wired"
     },
     {
       "id": "temerosa:bestiaization:machina",
       "series": "bestiaization",
       "sourcePersonaKey": "machina",
+      "canonicalPersonKey": "machina",
       "displayName": "Machina (마키나)",
       "qualifiedName": "Machina (마키나) · 베스티아화",
       "aliases": [
@@ -4587,12 +5391,25 @@
         }
       ],
       "role": "gambler",
-      "status": "confirmed"
+      "status": "confirmed",
+      "portraitAvailability": {
+        "status": "complete",
+        "assetCandidateCount": 6,
+        "seatRoles": [
+          "neutral",
+          "pleased",
+          "tense",
+          "despair"
+        ]
+      },
+      "releaseEligibility": "casino-ready",
+      "pendingReason": "runtime-integration-not-wired"
     },
     {
       "id": "temerosa:bestiaization:male",
       "series": "bestiaization",
       "sourcePersonaKey": "male",
+      "canonicalPersonKey": "male",
       "displayName": "Male",
       "qualifiedName": "Male · 베스티아화",
       "aliases": [
@@ -4638,7 +5455,19 @@
         }
       ],
       "role": "gambler",
-      "status": "needs-confirmation"
+      "status": "needs-confirmation",
+      "portraitAvailability": {
+        "status": "complete",
+        "assetCandidateCount": 6,
+        "seatRoles": [
+          "neutral",
+          "pleased",
+          "tense",
+          "despair"
+        ]
+      },
+      "releaseEligibility": "blocked",
+      "pendingReason": "source-persona-lore-confirmation-required"
     },
     {
       "id": "temerosa:bestiaization:maryhub",
@@ -4737,12 +5566,25 @@
         }
       ],
       "role": "gambler",
-      "status": "confirmed"
+      "status": "confirmed",
+      "portraitAvailability": {
+        "status": "complete",
+        "assetCandidateCount": 12,
+        "seatRoles": [
+          "neutral",
+          "pleased",
+          "tense",
+          "despair"
+        ]
+      },
+      "releaseEligibility": "casino-ready",
+      "pendingReason": "runtime-integration-not-wired"
     },
     {
       "id": "temerosa:bestiaization:morsisa",
       "series": "bestiaization",
       "sourcePersonaKey": "morsisa",
+      "canonicalPersonKey": "morsisa",
       "displayName": "Morsisa (모르시사)",
       "qualifiedName": "Morsisa (모르시사) · 베스티아화",
       "aliases": [
@@ -4797,12 +5639,25 @@
         }
       ],
       "role": "gambler",
-      "status": "confirmed"
+      "status": "confirmed",
+      "portraitAvailability": {
+        "status": "complete",
+        "assetCandidateCount": 6,
+        "seatRoles": [
+          "neutral",
+          "pleased",
+          "tense",
+          "despair"
+        ]
+      },
+      "releaseEligibility": "casino-ready",
+      "pendingReason": "runtime-integration-not-wired"
     },
     {
       "id": "temerosa:bestiaization:nayuta",
       "series": "bestiaization",
       "sourcePersonaKey": "nayuta",
+      "canonicalPersonKey": "nayuta",
       "displayName": "Nayuta (10^60) (나유타)",
       "qualifiedName": "Nayuta (10^60) (나유타) · 베스티아화",
       "aliases": [
@@ -4853,7 +5708,19 @@
         }
       ],
       "role": "gambler",
-      "status": "confirmed"
+      "status": "confirmed",
+      "portraitAvailability": {
+        "status": "complete",
+        "assetCandidateCount": 5,
+        "seatRoles": [
+          "neutral",
+          "pleased",
+          "tense",
+          "despair"
+        ]
+      },
+      "releaseEligibility": "casino-ready",
+      "pendingReason": "runtime-integration-not-wired"
     },
     {
       "id": "temerosa:bestiaization:nemo-slaughter-orbit",
@@ -4919,12 +5786,25 @@
         }
       ],
       "role": "gambler",
-      "status": "confirmed"
+      "status": "confirmed",
+      "portraitAvailability": {
+        "status": "complete",
+        "assetCandidateCount": 7,
+        "seatRoles": [
+          "neutral",
+          "pleased",
+          "tense",
+          "despair"
+        ]
+      },
+      "releaseEligibility": "casino-ready",
+      "pendingReason": "runtime-integration-not-wired"
     },
     {
       "id": "temerosa:bestiaization:nieun",
       "series": "bestiaization",
       "sourcePersonaKey": "nieun",
+      "canonicalPersonKey": "nieun",
       "displayName": "Nieun (Park Nieun) (니은)",
       "qualifiedName": "Nieun (Park Nieun) (니은) · 베스티아화",
       "aliases": [
@@ -4979,7 +5859,19 @@
         }
       ],
       "role": "gambler",
-      "status": "confirmed"
+      "status": "confirmed",
+      "portraitAvailability": {
+        "status": "complete",
+        "assetCandidateCount": 6,
+        "seatRoles": [
+          "neutral",
+          "pleased",
+          "tense",
+          "despair"
+        ]
+      },
+      "releaseEligibility": "casino-ready",
+      "pendingReason": "runtime-integration-not-wired"
     },
     {
       "id": "temerosa:bestiaization:nieun-pluto",
@@ -5031,12 +5923,25 @@
         }
       ],
       "role": "gambler",
-      "status": "needs-confirmation"
+      "status": "needs-confirmation",
+      "portraitAvailability": {
+        "status": "complete",
+        "assetCandidateCount": 6,
+        "seatRoles": [
+          "neutral",
+          "pleased",
+          "tense",
+          "despair"
+        ]
+      },
+      "releaseEligibility": "blocked",
+      "pendingReason": "source-persona-lore-confirmation-required"
     },
     {
       "id": "temerosa:bestiaization:nostalgia",
       "series": "bestiaization",
       "sourcePersonaKey": "nostalgia",
+      "canonicalPersonKey": "nostalgia",
       "displayName": "Nostalgia (노스탤지아)",
       "qualifiedName": "Nostalgia (노스탤지아) · 베스티아화",
       "aliases": [
@@ -5090,12 +5995,25 @@
         }
       ],
       "role": "gambler",
-      "status": "confirmed"
+      "status": "confirmed",
+      "portraitAvailability": {
+        "status": "complete",
+        "assetCandidateCount": 6,
+        "seatRoles": [
+          "neutral",
+          "pleased",
+          "tense",
+          "despair"
+        ]
+      },
+      "releaseEligibility": "casino-ready",
+      "pendingReason": "runtime-integration-not-wired"
     },
     {
       "id": "temerosa:bestiaization:phaeo",
       "series": "bestiaization",
       "sourcePersonaKey": "phaeo",
+      "canonicalPersonKey": "phaeo",
       "displayName": "Phaeo (폐어)",
       "qualifiedName": "Phaeo (폐어) · 베스티아화",
       "aliases": [
@@ -5150,12 +6068,25 @@
         }
       ],
       "role": "gambler",
-      "status": "confirmed"
+      "status": "confirmed",
+      "portraitAvailability": {
+        "status": "complete",
+        "assetCandidateCount": 6,
+        "seatRoles": [
+          "neutral",
+          "pleased",
+          "tense",
+          "despair"
+        ]
+      },
+      "releaseEligibility": "casino-ready",
+      "pendingReason": "runtime-integration-not-wired"
     },
     {
       "id": "temerosa:bestiaization:raven",
       "series": "bestiaization",
       "sourcePersonaKey": "raven",
+      "canonicalPersonKey": "raven",
       "displayName": "Raven (레이븐)",
       "qualifiedName": "Raven (레이븐) · 베스티아화",
       "aliases": [
@@ -5208,12 +6139,25 @@
         }
       ],
       "role": "gambler",
-      "status": "confirmed"
+      "status": "confirmed",
+      "portraitAvailability": {
+        "status": "complete",
+        "assetCandidateCount": 6,
+        "seatRoles": [
+          "neutral",
+          "pleased",
+          "tense",
+          "despair"
+        ]
+      },
+      "releaseEligibility": "casino-ready",
+      "pendingReason": "runtime-integration-not-wired"
     },
     {
       "id": "temerosa:bestiaization:renoa",
       "series": "bestiaization",
       "sourcePersonaKey": "renoa",
+      "canonicalPersonKey": "renoa",
       "displayName": "Renoa (레노아)",
       "qualifiedName": "Renoa (레노아) · 베스티아화",
       "aliases": [
@@ -5269,7 +6213,19 @@
         }
       ],
       "role": "gambler",
-      "status": "confirmed"
+      "status": "confirmed",
+      "portraitAvailability": {
+        "status": "complete",
+        "assetCandidateCount": 6,
+        "seatRoles": [
+          "neutral",
+          "pleased",
+          "tense",
+          "despair"
+        ]
+      },
+      "releaseEligibility": "casino-ready",
+      "pendingReason": "runtime-integration-not-wired"
     },
     {
       "id": "temerosa:bestiaization:riel",
@@ -5321,12 +6277,25 @@
         }
       ],
       "role": "gambler",
-      "status": "needs-confirmation"
+      "status": "needs-confirmation",
+      "portraitAvailability": {
+        "status": "complete",
+        "assetCandidateCount": 6,
+        "seatRoles": [
+          "neutral",
+          "pleased",
+          "tense",
+          "despair"
+        ]
+      },
+      "releaseEligibility": "blocked",
+      "pendingReason": "source-persona-lore-confirmation-required"
     },
     {
       "id": "temerosa:bestiaization:sakabus",
       "series": "bestiaization",
       "sourcePersonaKey": "sakabus",
+      "canonicalPersonKey": "sakabus",
       "displayName": "Sakabus (사카바스)",
       "qualifiedName": "Sakabus (사카바스) · 베스티아화",
       "aliases": [
@@ -5381,12 +6350,25 @@
         }
       ],
       "role": "gambler",
-      "status": "confirmed"
+      "status": "confirmed",
+      "portraitAvailability": {
+        "status": "complete",
+        "assetCandidateCount": 6,
+        "seatRoles": [
+          "neutral",
+          "pleased",
+          "tense",
+          "despair"
+        ]
+      },
+      "releaseEligibility": "casino-ready",
+      "pendingReason": "runtime-integration-not-wired"
     },
     {
       "id": "temerosa:bestiaization:sherirus",
       "series": "bestiaization",
       "sourcePersonaKey": "sherirus",
+      "canonicalPersonKey": "sherirus",
       "displayName": "Sherirus (셰리루스)",
       "qualifiedName": "Sherirus (셰리루스) · 베스티아화",
       "aliases": [
@@ -5403,12 +6385,20 @@
       ],
       "assetCandidates": [],
       "role": "gambler",
-      "status": "confirmed"
+      "status": "confirmed",
+      "portraitAvailability": {
+        "status": "missing",
+        "assetCandidateCount": 0,
+        "seatRoles": []
+      },
+      "releaseEligibility": "ledger-only",
+      "pendingReason": "seat-portrait-assets-missing"
     },
     {
       "id": "temerosa:bestiaization:snow-rim",
       "series": "bestiaization",
       "sourcePersonaKey": "snow-rim",
+      "canonicalPersonKey": "snow-rim",
       "displayName": "Snow Rim (설림/雪琳)",
       "qualifiedName": "Snow Rim (설림/雪琳) · 베스티아화",
       "aliases": [
@@ -5463,12 +6453,25 @@
         }
       ],
       "role": "gambler",
-      "status": "confirmed"
+      "status": "confirmed",
+      "portraitAvailability": {
+        "status": "complete",
+        "assetCandidateCount": 6,
+        "seatRoles": [
+          "neutral",
+          "pleased",
+          "tense",
+          "despair"
+        ]
+      },
+      "releaseEligibility": "casino-ready",
+      "pendingReason": "runtime-integration-not-wired"
     },
     {
       "id": "temerosa:bestiaization:spiril",
       "series": "bestiaization",
       "sourcePersonaKey": "spiril",
+      "canonicalPersonKey": "spiril",
       "displayName": "Spiril (스피릴)",
       "qualifiedName": "Spiril (스피릴) · 베스티아화",
       "aliases": [
@@ -5522,12 +6525,25 @@
         }
       ],
       "role": "gambler",
-      "status": "confirmed"
+      "status": "confirmed",
+      "portraitAvailability": {
+        "status": "complete",
+        "assetCandidateCount": 6,
+        "seatRoles": [
+          "neutral",
+          "pleased",
+          "tense",
+          "despair"
+        ]
+      },
+      "releaseEligibility": "casino-ready",
+      "pendingReason": "runtime-integration-not-wired"
     },
     {
       "id": "temerosa:bestiaization:strelka",
       "series": "bestiaization",
       "sourcePersonaKey": "strelka",
+      "canonicalPersonKey": "strelka",
       "displayName": "Strelka (스트렐카)",
       "qualifiedName": "Strelka (스트렐카) · 베스티아화",
       "aliases": [
@@ -5575,12 +6591,25 @@
         }
       ],
       "role": "gambler",
-      "status": "confirmed"
+      "status": "confirmed",
+      "portraitAvailability": {
+        "status": "complete",
+        "assetCandidateCount": 5,
+        "seatRoles": [
+          "neutral",
+          "pleased",
+          "tense",
+          "despair"
+        ]
+      },
+      "releaseEligibility": "casino-ready",
+      "pendingReason": "runtime-integration-not-wired"
     },
     {
       "id": "temerosa:bestiaization:temute",
       "series": "bestiaization",
       "sourcePersonaKey": "temute",
+      "canonicalPersonKey": "temute",
       "displayName": "Temute (테뮤테)",
       "qualifiedName": "Temute (테뮤테) · 베스티아화",
       "aliases": [
@@ -5678,12 +6707,25 @@
         }
       ],
       "role": "gambler",
-      "status": "confirmed"
+      "status": "confirmed",
+      "portraitAvailability": {
+        "status": "complete",
+        "assetCandidateCount": 13,
+        "seatRoles": [
+          "neutral",
+          "pleased",
+          "tense",
+          "despair"
+        ]
+      },
+      "releaseEligibility": "casino-ready",
+      "pendingReason": "runtime-integration-not-wired"
     },
     {
       "id": "temerosa:bestiaization:traver",
       "series": "bestiaization",
       "sourcePersonaKey": "traver",
+      "canonicalPersonKey": "traver",
       "displayName": "Traver (트레버)",
       "qualifiedName": "Traver (트레버) · 베스티아화",
       "aliases": [
@@ -5738,12 +6780,25 @@
         }
       ],
       "role": "gambler",
-      "status": "confirmed"
+      "status": "confirmed",
+      "portraitAvailability": {
+        "status": "complete",
+        "assetCandidateCount": 6,
+        "seatRoles": [
+          "neutral",
+          "pleased",
+          "tense",
+          "despair"
+        ]
+      },
+      "releaseEligibility": "casino-ready",
+      "pendingReason": "runtime-integration-not-wired"
     },
     {
       "id": "temerosa:bestiaization:ttaengchil",
       "series": "bestiaization",
       "sourcePersonaKey": "ttaengchil",
+      "canonicalPersonKey": "ttaengchil",
       "displayName": "Ttaengchil-i (땡칠이)",
       "qualifiedName": "Ttaengchil-i (땡칠이) · 베스티아화",
       "aliases": [
@@ -5805,12 +6860,25 @@
         }
       ],
       "role": "gambler",
-      "status": "confirmed"
+      "status": "confirmed",
+      "portraitAvailability": {
+        "status": "complete",
+        "assetCandidateCount": 7,
+        "seatRoles": [
+          "neutral",
+          "pleased",
+          "tense",
+          "despair"
+        ]
+      },
+      "releaseEligibility": "casino-ready",
+      "pendingReason": "runtime-integration-not-wired"
     },
     {
       "id": "temerosa:bestiaization:tumit-tu",
       "series": "bestiaization",
       "sourcePersonaKey": "tumit-tu",
+      "canonicalPersonKey": "tumit-tu",
       "displayName": "Tumit-Tu (튜밋튜)",
       "qualifiedName": "Tumit-Tu (튜밋튜) · 베스티아화",
       "aliases": [
@@ -5945,12 +7013,25 @@
         }
       ],
       "role": "gambler",
-      "status": "confirmed"
+      "status": "confirmed",
+      "portraitAvailability": {
+        "status": "complete",
+        "assetCandidateCount": 19,
+        "seatRoles": [
+          "neutral",
+          "pleased",
+          "tense",
+          "despair"
+        ]
+      },
+      "releaseEligibility": "casino-ready",
+      "pendingReason": "runtime-integration-not-wired"
     },
     {
       "id": "temerosa:bestiaization:yul",
       "series": "bestiaization",
       "sourcePersonaKey": "yul",
+      "canonicalPersonKey": "yul",
       "displayName": "Yul (율)",
       "qualifiedName": "Yul (율) · 베스티아화",
       "aliases": [
@@ -6005,7 +7086,19 @@
         }
       ],
       "role": "gambler",
-      "status": "confirmed"
+      "status": "confirmed",
+      "portraitAvailability": {
+        "status": "complete",
+        "assetCandidateCount": 6,
+        "seatRoles": [
+          "neutral",
+          "pleased",
+          "tense",
+          "despair"
+        ]
+      },
+      "releaseEligibility": "casino-ready",
+      "pendingReason": "runtime-integration-not-wired"
     },
     {
       "id": "temerosa:finale:a",
@@ -6176,12 +7269,25 @@
         }
       ],
       "role": "gambler",
-      "status": "confirmed"
+      "status": "confirmed",
+      "portraitAvailability": {
+        "status": "complete",
+        "assetCandidateCount": 24,
+        "seatRoles": [
+          "neutral",
+          "pleased",
+          "tense",
+          "despair"
+        ]
+      },
+      "releaseEligibility": "casino-ready",
+      "pendingReason": "runtime-integration-not-wired"
     },
     {
       "id": "temerosa:finale:aberrant-mia",
       "series": "finale",
       "sourcePersonaKey": "aberrant-mia",
+      "canonicalPersonKey": "aberrant-mia",
       "displayName": "Aberrant MIA (이형 미아)",
       "qualifiedName": "Aberrant MIA (이형 미아) · 피날레",
       "aliases": [
@@ -6484,12 +7590,25 @@
         }
       ],
       "role": "gambler",
-      "status": "confirmed"
+      "status": "confirmed",
+      "portraitAvailability": {
+        "status": "complete",
+        "assetCandidateCount": 47,
+        "seatRoles": [
+          "neutral",
+          "pleased",
+          "tense",
+          "despair"
+        ]
+      },
+      "releaseEligibility": "casino-ready",
+      "pendingReason": "runtime-integration-not-wired"
     },
     {
       "id": "temerosa:finale:al2zus",
       "series": "finale",
       "sourcePersonaKey": "al2zus",
+      "canonicalPersonKey": "al2zus",
       "displayName": "Al2zus",
       "qualifiedName": "Al2zus · 피날레",
       "aliases": [
@@ -6608,12 +7727,25 @@
         }
       ],
       "role": "gambler",
-      "status": "confirmed"
+      "status": "confirmed",
+      "portraitAvailability": {
+        "status": "complete",
+        "assetCandidateCount": 17,
+        "seatRoles": [
+          "neutral",
+          "pleased",
+          "tense",
+          "despair"
+        ]
+      },
+      "releaseEligibility": "casino-ready",
+      "pendingReason": "runtime-integration-not-wired"
     },
     {
       "id": "temerosa:finale:alger",
       "series": "finale",
       "sourcePersonaKey": "alger",
+      "canonicalPersonKey": "alger",
       "displayName": "Alger (알제)",
       "qualifiedName": "Alger (알제) · 피날레",
       "aliases": [
@@ -7095,12 +8227,25 @@
         }
       ],
       "role": "gambler",
-      "status": "confirmed"
+      "status": "confirmed",
+      "portraitAvailability": {
+        "status": "complete",
+        "assetCandidateCount": 77,
+        "seatRoles": [
+          "neutral",
+          "pleased",
+          "tense",
+          "despair"
+        ]
+      },
+      "releaseEligibility": "casino-ready",
+      "pendingReason": "runtime-integration-not-wired"
     },
     {
       "id": "temerosa:finale:apollyon",
       "series": "finale",
       "sourcePersonaKey": "apollyon",
+      "canonicalPersonKey": "apollyon",
       "displayName": "Apollyon Aite (아폴리온 아이테)",
       "qualifiedName": "Apollyon Aite (아폴리온 아이테) · 피날레",
       "aliases": [
@@ -7217,7 +8362,19 @@
         }
       ],
       "role": "gambler",
-      "status": "confirmed"
+      "status": "confirmed",
+      "portraitAvailability": {
+        "status": "complete",
+        "assetCandidateCount": 16,
+        "seatRoles": [
+          "neutral",
+          "pleased",
+          "tense",
+          "despair"
+        ]
+      },
+      "releaseEligibility": "casino-ready",
+      "pendingReason": "runtime-integration-not-wired"
     },
     {
       "id": "temerosa:finale:bacikal",
@@ -7374,12 +8531,25 @@
         }
       ],
       "role": "gambler",
-      "status": "confirmed"
+      "status": "confirmed",
+      "portraitAvailability": {
+        "status": "complete",
+        "assetCandidateCount": 22,
+        "seatRoles": [
+          "neutral",
+          "pleased",
+          "tense",
+          "despair"
+        ]
+      },
+      "releaseEligibility": "excluded",
+      "exclusionReason": "standard-casino-roster-excluded"
     },
     {
       "id": "temerosa:finale:bamcapis",
       "series": "finale",
       "sourcePersonaKey": "bamcapis",
+      "canonicalPersonKey": "bamcapis",
       "displayName": "밤카피스 (Bamcapis)",
       "qualifiedName": "밤카피스 (Bamcapis) · 피날레",
       "aliases": [
@@ -7562,7 +8732,19 @@
         }
       ],
       "role": "gambler",
-      "status": "confirmed"
+      "status": "confirmed",
+      "portraitAvailability": {
+        "status": "complete",
+        "assetCandidateCount": 27,
+        "seatRoles": [
+          "neutral",
+          "pleased",
+          "tense",
+          "despair"
+        ]
+      },
+      "releaseEligibility": "casino-ready",
+      "pendingReason": "runtime-integration-not-wired"
     },
     {
       "id": "temerosa:finale:beta",
@@ -7971,12 +9153,25 @@
         }
       ],
       "role": "gambler",
-      "status": "confirmed"
+      "status": "confirmed",
+      "portraitAvailability": {
+        "status": "complete",
+        "assetCandidateCount": 64,
+        "seatRoles": [
+          "neutral",
+          "pleased",
+          "tense",
+          "despair"
+        ]
+      },
+      "releaseEligibility": "casino-ready",
+      "pendingReason": "runtime-integration-not-wired"
     },
     {
       "id": "temerosa:finale:car5p3",
       "series": "finale",
       "sourcePersonaKey": "car5p3",
+      "canonicalPersonKey": "car5p3",
       "displayName": "CAR5P3",
       "qualifiedName": "CAR5P3 · 피날레",
       "aliases": [
@@ -8089,12 +9284,25 @@
         }
       ],
       "role": "gambler",
-      "status": "confirmed"
+      "status": "confirmed",
+      "portraitAvailability": {
+        "status": "complete",
+        "assetCandidateCount": 16,
+        "seatRoles": [
+          "neutral",
+          "pleased",
+          "tense",
+          "despair"
+        ]
+      },
+      "releaseEligibility": "casino-ready",
+      "pendingReason": "runtime-integration-not-wired"
     },
     {
       "id": "temerosa:finale:echo",
       "series": "finale",
       "sourcePersonaKey": "echo",
+      "canonicalPersonKey": "echo",
       "displayName": "에코 (Echo)",
       "qualifiedName": "에코 (Echo) · 피날레",
       "aliases": [
@@ -8300,12 +9508,25 @@
         }
       ],
       "role": "gambler",
-      "status": "confirmed"
+      "status": "confirmed",
+      "portraitAvailability": {
+        "status": "complete",
+        "assetCandidateCount": 31,
+        "seatRoles": [
+          "neutral",
+          "pleased",
+          "tense",
+          "despair"
+        ]
+      },
+      "releaseEligibility": "casino-ready",
+      "pendingReason": "runtime-integration-not-wired"
     },
     {
       "id": "temerosa:finale:flask",
       "series": "finale",
       "sourcePersonaKey": "flask",
+      "canonicalPersonKey": "flask",
       "displayName": "Flask (플라스크)",
       "qualifiedName": "Flask (플라스크) · 피날레",
       "aliases": [
@@ -8504,12 +9725,25 @@
         }
       ],
       "role": "gambler",
-      "status": "confirmed"
+      "status": "confirmed",
+      "portraitAvailability": {
+        "status": "complete",
+        "assetCandidateCount": 30,
+        "seatRoles": [
+          "neutral",
+          "pleased",
+          "tense",
+          "despair"
+        ]
+      },
+      "releaseEligibility": "casino-ready",
+      "pendingReason": "runtime-integration-not-wired"
     },
     {
       "id": "temerosa:finale:flask-impostor",
       "series": "finale",
       "sourcePersonaKey": "flask-impostor",
+      "canonicalPersonKey": "flask-impostor",
       "displayName": "\"Flask\" (플라스크?)",
       "qualifiedName": "\"Flask\" (플라스크?) · 피날레",
       "aliases": [
@@ -9089,12 +10323,25 @@
         }
       ],
       "role": "gambler",
-      "status": "confirmed"
+      "status": "confirmed",
+      "portraitAvailability": {
+        "status": "complete",
+        "assetCandidateCount": 93,
+        "seatRoles": [
+          "neutral",
+          "pleased",
+          "tense",
+          "despair"
+        ]
+      },
+      "releaseEligibility": "casino-ready",
+      "pendingReason": "runtime-integration-not-wired"
     },
     {
       "id": "temerosa:finale:jia",
       "series": "finale",
       "sourcePersonaKey": "jia",
+      "canonicalPersonKey": "jia",
       "displayName": "Jia (지아)",
       "qualifiedName": "Jia (지아) · 피날레",
       "aliases": [
@@ -9286,12 +10533,25 @@
         }
       ],
       "role": "gambler",
-      "status": "confirmed"
+      "status": "confirmed",
+      "portraitAvailability": {
+        "status": "complete",
+        "assetCandidateCount": 29,
+        "seatRoles": [
+          "neutral",
+          "pleased",
+          "tense",
+          "despair"
+        ]
+      },
+      "releaseEligibility": "casino-ready",
+      "pendingReason": "runtime-integration-not-wired"
     },
     {
       "id": "temerosa:finale:kano",
       "series": "finale",
       "sourcePersonaKey": "kano",
+      "canonicalPersonKey": "kano",
       "displayName": "카노 (Kano)",
       "qualifiedName": "카노 (Kano) · 피날레",
       "aliases": [
@@ -9414,12 +10674,25 @@
         }
       ],
       "role": "gambler",
-      "status": "confirmed"
+      "status": "confirmed",
+      "portraitAvailability": {
+        "status": "complete",
+        "assetCandidateCount": 17,
+        "seatRoles": [
+          "neutral",
+          "pleased",
+          "tense",
+          "despair"
+        ]
+      },
+      "releaseEligibility": "casino-ready",
+      "pendingReason": "runtime-integration-not-wired"
     },
     {
       "id": "temerosa:finale:lilim",
       "series": "finale",
       "sourcePersonaKey": "lilim",
+      "canonicalPersonKey": "lilim",
       "displayName": "Lilim (릴림)",
       "qualifiedName": "Lilim (릴림) · 피날레",
       "aliases": [
@@ -9559,12 +10832,25 @@
         }
       ],
       "role": "gambler",
-      "status": "confirmed"
+      "status": "confirmed",
+      "portraitAvailability": {
+        "status": "complete",
+        "assetCandidateCount": 20,
+        "seatRoles": [
+          "neutral",
+          "pleased",
+          "tense",
+          "despair"
+        ]
+      },
+      "releaseEligibility": "casino-ready",
+      "pendingReason": "runtime-integration-not-wired"
     },
     {
       "id": "temerosa:finale:limet",
       "series": "finale",
       "sourcePersonaKey": "limet",
+      "canonicalPersonKey": "limet",
       "displayName": "리멧 아이테 (Limet Aite)",
       "qualifiedName": "리멧 아이테 (Limet Aite) · 피날레",
       "aliases": [
@@ -9842,12 +11128,25 @@
         }
       ],
       "role": "gambler",
-      "status": "confirmed"
+      "status": "confirmed",
+      "portraitAvailability": {
+        "status": "complete",
+        "assetCandidateCount": 43,
+        "seatRoles": [
+          "neutral",
+          "pleased",
+          "tense",
+          "despair"
+        ]
+      },
+      "releaseEligibility": "casino-ready",
+      "pendingReason": "runtime-integration-not-wired"
     },
     {
       "id": "temerosa:finale:mascot",
       "series": "finale",
       "sourcePersonaKey": "mascot",
+      "canonicalPersonKey": "mascot",
       "displayName": "마스코트 (Mascot)",
       "qualifiedName": "마스코트 (Mascot) · 피날레",
       "aliases": [
@@ -9975,12 +11274,25 @@
         }
       ],
       "role": "gambler",
-      "status": "confirmed"
+      "status": "confirmed",
+      "portraitAvailability": {
+        "status": "complete",
+        "assetCandidateCount": 18,
+        "seatRoles": [
+          "neutral",
+          "pleased",
+          "tense",
+          "despair"
+        ]
+      },
+      "releaseEligibility": "casino-ready",
+      "pendingReason": "runtime-integration-not-wired"
     },
     {
       "id": "temerosa:finale:mia",
       "series": "finale",
       "sourcePersonaKey": "mia",
+      "canonicalPersonKey": "mia",
       "displayName": "MIA (미아)",
       "qualifiedName": "MIA (미아) · 피날레",
       "aliases": [
@@ -10132,7 +11444,19 @@
         }
       ],
       "role": "gambler",
-      "status": "confirmed"
+      "status": "confirmed",
+      "portraitAvailability": {
+        "status": "complete",
+        "assetCandidateCount": 22,
+        "seatRoles": [
+          "neutral",
+          "pleased",
+          "tense",
+          "despair"
+        ]
+      },
+      "releaseEligibility": "casino-ready",
+      "pendingReason": "runtime-integration-not-wired"
     },
     {
       "id": "temerosa:finale:nantucket",
@@ -10302,12 +11626,25 @@
         }
       ],
       "role": "gambler",
-      "status": "confirmed"
+      "status": "confirmed",
+      "portraitAvailability": {
+        "status": "complete",
+        "assetCandidateCount": 24,
+        "seatRoles": [
+          "neutral",
+          "pleased",
+          "tense",
+          "despair"
+        ]
+      },
+      "releaseEligibility": "casino-ready",
+      "pendingReason": "runtime-integration-not-wired"
     },
     {
       "id": "temerosa:finale:nayuta",
       "series": "finale",
       "sourcePersonaKey": "nayuta",
+      "canonicalPersonKey": "nayuta",
       "displayName": "Nayuta (나유타)",
       "qualifiedName": "Nayuta (나유타) · 피날레",
       "aliases": [
@@ -10400,12 +11737,25 @@
         }
       ],
       "role": "gambler",
-      "status": "confirmed"
+      "status": "confirmed",
+      "portraitAvailability": {
+        "status": "complete",
+        "assetCandidateCount": 12,
+        "seatRoles": [
+          "neutral",
+          "pleased",
+          "tense",
+          "despair"
+        ]
+      },
+      "releaseEligibility": "casino-ready",
+      "pendingReason": "runtime-integration-not-wired"
     },
     {
       "id": "temerosa:finale:nieun",
       "series": "finale",
       "sourcePersonaKey": "nieun",
+      "canonicalPersonKey": "nieun",
       "displayName": "니은 (Nieun)",
       "qualifiedName": "니은 (Nieun) · 피날레",
       "aliases": [
@@ -10592,12 +11942,25 @@
         }
       ],
       "role": "gambler",
-      "status": "confirmed"
+      "status": "confirmed",
+      "portraitAvailability": {
+        "status": "complete",
+        "assetCandidateCount": 28,
+        "seatRoles": [
+          "neutral",
+          "pleased",
+          "tense",
+          "despair"
+        ]
+      },
+      "releaseEligibility": "casino-ready",
+      "pendingReason": "runtime-integration-not-wired"
     },
     {
       "id": "temerosa:finale:nostalgia",
       "series": "finale",
       "sourcePersonaKey": "nostalgia",
+      "canonicalPersonKey": "nostalgia",
       "displayName": "노스텔지아 델레르페 (Nostalgia Delerpe)",
       "qualifiedName": "노스텔지아 델레르페 (Nostalgia Delerpe) · 피날레",
       "aliases": [
@@ -10767,12 +12130,25 @@
         }
       ],
       "role": "gambler",
-      "status": "confirmed"
+      "status": "confirmed",
+      "portraitAvailability": {
+        "status": "complete",
+        "assetCandidateCount": 25,
+        "seatRoles": [
+          "neutral",
+          "pleased",
+          "tense",
+          "despair"
+        ]
+      },
+      "releaseEligibility": "casino-ready",
+      "pendingReason": "runtime-integration-not-wired"
     },
     {
       "id": "temerosa:finale:pale",
       "series": "finale",
       "sourcePersonaKey": "pale",
+      "canonicalPersonKey": "pale",
       "displayName": "Pale (페일)",
       "qualifiedName": "Pale (페일) · 피날레",
       "aliases": [
@@ -11002,12 +12378,25 @@
         }
       ],
       "role": "gambler",
-      "status": "confirmed"
+      "status": "confirmed",
+      "portraitAvailability": {
+        "status": "complete",
+        "assetCandidateCount": 35,
+        "seatRoles": [
+          "neutral",
+          "pleased",
+          "tense",
+          "despair"
+        ]
+      },
+      "releaseEligibility": "casino-ready",
+      "pendingReason": "runtime-integration-not-wired"
     },
     {
       "id": "temerosa:finale:renoa",
       "series": "finale",
       "sourcePersonaKey": "renoa",
+      "canonicalPersonKey": "renoa",
       "displayName": "Renoa (레노아)",
       "qualifiedName": "Renoa (레노아) · 피날레",
       "aliases": [
@@ -11489,12 +12878,25 @@
         }
       ],
       "role": "gambler",
-      "status": "confirmed"
+      "status": "confirmed",
+      "portraitAvailability": {
+        "status": "complete",
+        "assetCandidateCount": 77,
+        "seatRoles": [
+          "neutral",
+          "pleased",
+          "tense",
+          "despair"
+        ]
+      },
+      "releaseEligibility": "casino-ready",
+      "pendingReason": "runtime-integration-not-wired"
     },
     {
       "id": "temerosa:finale:shino",
       "series": "finale",
       "sourcePersonaKey": "shino",
+      "canonicalPersonKey": "shino",
       "displayName": "시노 (Shino)",
       "qualifiedName": "시노 (Shino) · 피날레",
       "aliases": [
@@ -11740,7 +13142,19 @@
         }
       ],
       "role": "gambler",
-      "status": "confirmed"
+      "status": "confirmed",
+      "portraitAvailability": {
+        "status": "complete",
+        "assetCandidateCount": 38,
+        "seatRoles": [
+          "neutral",
+          "pleased",
+          "tense",
+          "despair"
+        ]
+      },
+      "releaseEligibility": "casino-ready",
+      "pendingReason": "runtime-integration-not-wired"
     },
     {
       "id": "temerosa:finale:silentium",
@@ -12026,12 +13440,25 @@
         }
       ],
       "role": "gambler",
-      "status": "confirmed"
+      "status": "confirmed",
+      "portraitAvailability": {
+        "status": "complete",
+        "assetCandidateCount": 43,
+        "seatRoles": [
+          "neutral",
+          "pleased",
+          "tense",
+          "despair"
+        ]
+      },
+      "releaseEligibility": "casino-ready",
+      "pendingReason": "runtime-integration-not-wired"
     },
     {
       "id": "temerosa:finale:tashtego",
       "series": "finale",
       "sourcePersonaKey": "tashtego",
+      "canonicalPersonKey": "tashtego",
       "displayName": "Tashtego (태슈테고)",
       "qualifiedName": "Tashtego (태슈테고) · 피날레",
       "aliases": [
@@ -12205,12 +13632,25 @@
         }
       ],
       "role": "gambler",
-      "status": "confirmed"
+      "status": "confirmed",
+      "portraitAvailability": {
+        "status": "complete",
+        "assetCandidateCount": 26,
+        "seatRoles": [
+          "neutral",
+          "pleased",
+          "tense",
+          "despair"
+        ]
+      },
+      "releaseEligibility": "casino-ready",
+      "pendingReason": "runtime-integration-not-wired"
     },
     {
       "id": "temerosa:finale:ttaengchil",
       "series": "finale",
       "sourcePersonaKey": "ttaengchil",
+      "canonicalPersonKey": "ttaengchil",
       "displayName": "땡칠이 (Ttaengchil-i)",
       "qualifiedName": "땡칠이 (Ttaengchil-i) · 피날레",
       "aliases": [
@@ -12313,12 +13753,25 @@
         }
       ],
       "role": "gambler",
-      "status": "confirmed"
+      "status": "confirmed",
+      "portraitAvailability": {
+        "status": "complete",
+        "assetCandidateCount": 14,
+        "seatRoles": [
+          "neutral",
+          "pleased",
+          "tense",
+          "despair"
+        ]
+      },
+      "releaseEligibility": "casino-ready",
+      "pendingReason": "runtime-integration-not-wired"
     },
     {
       "id": "temerosa:finale:wares",
       "series": "finale",
       "sourcePersonaKey": "wares",
+      "canonicalPersonKey": "wares",
       "displayName": "워어즈 (Wares)",
       "qualifiedName": "워어즈 (Wares) · 피날레",
       "aliases": [
@@ -12527,7 +13980,19 @@
         }
       ],
       "role": "house",
-      "status": "confirmed"
+      "status": "confirmed",
+      "portraitAvailability": {
+        "status": "complete",
+        "assetCandidateCount": 32,
+        "seatRoles": [
+          "neutral",
+          "pleased",
+          "tense",
+          "despair"
+        ]
+      },
+      "releaseEligibility": "house-only",
+      "exclusionReason": "house-role-no-personal-wallet"
     }
   ]
 }

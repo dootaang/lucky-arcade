@@ -5,7 +5,11 @@ import { TEMEROSA_FORBIDDEN_ASSET_NAME } from "./temerosa-policy.ts";
 
 export const TEMEROSA_SERIES = ["overture", "root2", "bestiaization", "finale"] as const;
 export type TemerosaSeriesKey = (typeof TEMEROSA_SERIES)[number];
-export type TemerosaSeriesNpcRole = "gambler" | "house" | "dealer";
+export type TemerosaSeriesNpcRole = "gambler" | "dealer" | "host" | "house";
+export type TemerosaSeriesNpcStatus = "confirmed" | "needs-confirmation";
+export type TemerosaSeriesNpcPortraitStatus = "complete" | "partial" | "missing";
+export type TemerosaSeriesNpcSeatRole = "neutral" | "pleased" | "tense" | "despair";
+export type TemerosaSeriesNpcReleaseEligibility = "casino-ready" | "ledger-only" | "house-only" | "blocked" | "excluded";
 
 export interface SeriesNpcLoreEvidence {
   entryIndex: number;
@@ -25,18 +29,27 @@ export interface TemerosaSeriesNpcRecord {
   id: string;
   series: TemerosaSeriesKey;
   sourcePersonaKey: string;
-  canonicalPersonKey?: string;
+  /** Relationship/display grouping only. Never use as an account or game-state key. */
+  canonicalPersonKey: string;
   displayName: string;
   qualifiedName: string;
   aliases: readonly string[];
   loreEvidence: readonly SeriesNpcLoreEvidence[];
   assetCandidates: readonly SeriesNpcAssetCandidate[];
   role: TemerosaSeriesNpcRole;
-  status: "confirmed" | "needs-confirmation";
+  status: TemerosaSeriesNpcStatus;
+  portraitAvailability: {
+    status: TemerosaSeriesNpcPortraitStatus;
+    assetCandidateCount: number;
+    seatRoles: readonly TemerosaSeriesNpcSeatRole[];
+  };
+  releaseEligibility: TemerosaSeriesNpcReleaseEligibility;
+  exclusionReason?: string;
+  pendingReason?: string;
 }
 
 export interface TemerosaSeriesNpcInventory {
-  contract: "temerosa-series-npc-inventory/0.1";
+  contract: "temerosa-series-npc-inventory/0.2";
   generatedAt: string;
   identityRule: "series-and-source-persona";
   sources: readonly {
@@ -53,6 +66,10 @@ export interface TemerosaSeriesNpcInventory {
     imageOnly: number;
     houseRoles: number;
     assetCandidates: number;
+    roles: Readonly<Record<TemerosaSeriesNpcRole, number>>;
+    statuses: Readonly<Record<TemerosaSeriesNpcStatus, number>>;
+    portraits: Readonly<Record<TemerosaSeriesNpcPortraitStatus, number>>;
+    releaseEligibility: Readonly<Record<TemerosaSeriesNpcReleaseEligibility, number>>;
   };
   records: readonly TemerosaSeriesNpcRecord[];
 }
@@ -78,6 +95,18 @@ const EXPRESSION_SUFFIXES = [
   "natural", "neutral", "standing", "smile", "smirk", "angry", "sad",
   "blush", "upset", "fight", "combat", "cry",
 ] as const;
+
+const SEAT_ROLE_EXPRESSIONS: Readonly<Record<TemerosaSeriesNpcSeatRole, readonly string[]>> = {
+  neutral: ["natural", "neutral", "standing", "closed-eyes", "opened-eyes", "looking-book"],
+  pleased: ["smile", "smirk", "blush"],
+  tense: ["angry", "upset", "fight", "combat", "combat-stance", "surprised", "contempt"],
+  despair: ["sad", "cry", "teardrop", "disappointed", "embarrassed"],
+};
+
+const STANDARD_ROSTER_EXCLUSIONS = new Set([
+  "temerosa:bestiaization:bacikal",
+  "temerosa:finale:bacikal",
+]);
 
 const IDENTITY_ALIASES: Readonly<Record<string, string>> = {
   "anna-nazareth": "anna",
@@ -119,7 +148,7 @@ export function buildTemerosaSeriesNpcInventory(cards: Readonly<Record<TemerosaS
   const records = TEMEROSA_SERIES.flatMap((series) => extractSeriesRecords(series, cards[series]));
   assertSeriesNpcRecords(records);
   return {
-    contract: "temerosa-series-npc-inventory/0.1",
+    contract: "temerosa-series-npc-inventory/0.2",
     generatedAt,
     identityRule: "series-and-source-persona",
     sources: TEMEROSA_SERIES.map((series) => ({
@@ -136,6 +165,10 @@ export function buildTemerosaSeriesNpcInventory(cards: Readonly<Record<TemerosaS
       imageOnly: records.filter((record) => record.loreEvidence.length === 0).length,
       houseRoles: records.filter((record) => record.role === "house").length,
       assetCandidates: records.reduce((sum, record) => sum + record.assetCandidates.length, 0),
+      roles: countBy(records, (record) => record.role, ["gambler", "dealer", "host", "house"]),
+      statuses: countBy(records, (record) => record.status, ["confirmed", "needs-confirmation"]),
+      portraits: countBy(records, (record) => record.portraitAvailability.status, ["complete", "partial", "missing"]),
+      releaseEligibility: countBy(records, (record) => record.releaseEligibility, ["casino-ready", "ledger-only", "house-only", "blocked", "excluded"]),
     },
     records,
   };
@@ -179,8 +212,19 @@ export function assertSeriesNpcRecords(records: readonly TemerosaSeriesNpcRecord
     if (ids.has(record.id)) throw new Error(`series_npc_id_duplicate:${record.id}`);
     ids.add(record.id);
     if (!record.displayName.trim() || !record.qualifiedName.trim()) throw new Error(`series_npc_name_missing:${record.id}`);
+    if (!record.canonicalPersonKey.trim()) throw new Error(`series_npc_canonical_key_missing:${record.id}`);
     if (record.loreEvidence.length === 0 && record.assetCandidates.length < 2) throw new Error(`series_npc_image_only_evidence_insufficient:${record.id}`);
-    if (record.role === "house" && (record.canonicalPersonKey ?? record.sourcePersonaKey) !== "wares") throw new Error(`series_npc_house_role_invalid:${record.id}`);
+    if (record.status === "confirmed" && record.loreEvidence.length === 0) throw new Error(`series_npc_confirmed_evidence_missing:${record.id}`);
+    if (record.role === "house" && record.sourcePersonaKey !== "wares") throw new Error(`series_npc_house_role_invalid:${record.id}`);
+    if (record.sourcePersonaKey === "wares" && record.role !== "house") throw new Error(`series_npc_wares_role_invalid:${record.id}`);
+    if (record.portraitAvailability.assetCandidateCount !== record.assetCandidates.length) throw new Error(`series_npc_portrait_count_invalid:${record.id}`);
+    if (record.portraitAvailability.status === "complete" && record.portraitAvailability.seatRoles.length !== 4) throw new Error(`series_npc_portrait_complete_invalid:${record.id}`);
+    if (record.releaseEligibility === "casino-ready" && (record.status !== "confirmed" || record.portraitAvailability.status !== "complete" || record.role === "house")) throw new Error(`series_npc_release_invalid:${record.id}`);
+    if (record.releaseEligibility === "house-only" && (record.role !== "house" || record.exclusionReason !== "house-role-no-personal-wallet")) throw new Error(`series_npc_house_release_invalid:${record.id}`);
+    if (record.releaseEligibility === "blocked" && (record.status !== "needs-confirmation" || !record.pendingReason)) throw new Error(`series_npc_block_reason_missing:${record.id}`);
+    if (record.releaseEligibility === "ledger-only" && !record.pendingReason) throw new Error(`series_npc_pending_reason_missing:${record.id}`);
+    if (record.releaseEligibility === "excluded" && !record.exclusionReason) throw new Error(`series_npc_exclusion_reason_missing:${record.id}`);
+    if (Boolean(record.exclusionReason) === Boolean(record.pendingReason)) throw new Error(`series_npc_reason_invalid:${record.id}`);
   }
   for (const series of TEMEROSA_SERIES) if (!records.some((record) => record.series === series)) throw new Error(`series_npc_source_empty:${series}`);
 }
@@ -251,19 +295,50 @@ function groupExpressionAssets(card: ParsedCard): Map<string, SeriesNpcAssetCand
 function makeRecord(series: TemerosaSeriesKey, sourcePersonaKey: string, displayName: string, aliases: string[], loreEvidence: SeriesNpcLoreEvidence[], assetCandidates: SeriesNpcAssetCandidate[]): TemerosaSeriesNpcRecord {
   const canonicalPersonKey = CANONICAL_ALIASES[sourcePersonaKey] ?? sourcePersonaKey.replace(/-(?:pluto|current|finale|overture|root2)$/u, "");
   const role: TemerosaSeriesNpcRole = canonicalPersonKey === "wares" ? "house" : "gambler";
+  const status: TemerosaSeriesNpcStatus = loreEvidence.length > 0 ? "confirmed" : "needs-confirmation";
+  const portraitAvailability = classifyPortraitAvailability(assetCandidates);
+  const id = `temerosa:${series}:${sourcePersonaKey}`;
+  const release = classifyRelease(id, role, status, portraitAvailability.status);
   return {
-    id: `temerosa:${series}:${sourcePersonaKey}`,
+    id,
     series,
     sourcePersonaKey,
-    ...(canonicalPersonKey !== sourcePersonaKey ? { canonicalPersonKey } : {}),
+    canonicalPersonKey,
     displayName,
     qualifiedName: `${displayName} · ${SERIES_LABELS[series]}`,
     aliases: unique(aliases),
     loreEvidence,
     assetCandidates,
     role,
-    status: loreEvidence.length > 0 ? "confirmed" : "needs-confirmation",
+    status,
+    portraitAvailability,
+    ...release,
   };
+}
+
+function classifyPortraitAvailability(assetCandidates: readonly SeriesNpcAssetCandidate[]): TemerosaSeriesNpcRecord["portraitAvailability"] {
+  const expressions = new Set(assetCandidates.map((asset) => asset.expression));
+  const seatRoles = (Object.keys(SEAT_ROLE_EXPRESSIONS) as TemerosaSeriesNpcSeatRole[])
+    .filter((role) => SEAT_ROLE_EXPRESSIONS[role].some((expression) => expressions.has(expression)));
+  return {
+    status: seatRoles.length === 4 ? "complete" : seatRoles.length === 0 ? "missing" : "partial",
+    assetCandidateCount: assetCandidates.length,
+    seatRoles,
+  };
+}
+
+function classifyRelease(
+  id: string,
+  role: TemerosaSeriesNpcRole,
+  status: TemerosaSeriesNpcStatus,
+  portraitStatus: TemerosaSeriesNpcPortraitStatus,
+): Pick<TemerosaSeriesNpcRecord, "releaseEligibility" | "exclusionReason" | "pendingReason"> {
+  if (role === "house") return { releaseEligibility: "house-only", exclusionReason: "house-role-no-personal-wallet" };
+  if (STANDARD_ROSTER_EXCLUSIONS.has(id)) return { releaseEligibility: "excluded", exclusionReason: "standard-casino-roster-excluded" };
+  if (status === "needs-confirmation") return { releaseEligibility: "blocked", pendingReason: "source-persona-lore-confirmation-required" };
+  if (portraitStatus === "missing") return { releaseEligibility: "ledger-only", pendingReason: "seat-portrait-assets-missing" };
+  if (portraitStatus === "partial") return { releaseEligibility: "ledger-only", pendingReason: "seat-portrait-role-coverage-incomplete" };
+  return { releaseEligibility: "casino-ready", pendingReason: "runtime-integration-not-wired" };
 }
 
 function explicitIdentityOverride(series: TemerosaSeriesKey, heading: string, comment: string): string | undefined {
@@ -329,3 +404,8 @@ function firstHeading(content: string): string {
 function isObject(value: unknown): value is LoreEntry { return Boolean(value) && typeof value === "object" && !Array.isArray(value); }
 function string(value: unknown): string { return typeof value === "string" ? value : ""; }
 function unique<T>(values: readonly T[], key: (value: T) => string = (value) => String(value)): T[] { return [...new Map(values.map((value) => [key(value), value])).values()]; }
+function countBy<T, K extends string>(values: readonly T[], key: (value: T) => K, keys: readonly K[]): Record<K, number> {
+  const output = Object.fromEntries(keys.map((value) => [value, 0])) as Record<K, number>;
+  for (const value of values) output[key(value)] += 1;
+  return output;
+}

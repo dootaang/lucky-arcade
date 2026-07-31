@@ -49,12 +49,14 @@ function renderMarkdown(inventory: ReturnType<typeof buildTemerosaSeriesNpcInven
     "> CHARX 원문은 포함하지 않고 로어 항목의 키·SHA-256과 자산 경로만 증거로 남긴다.",
     "",
     `총 ${inventory.totals.records}명 · 로어 근거 ${inventory.totals.loreBacked}명 · 이미지 전용 후보 ${inventory.totals.imageOnly}명 · 하우스 역할 ${inventory.totals.houseRoles}명`,
+    `초상 complete ${inventory.totals.portraits.complete}명 · partial ${inventory.totals.portraits.partial}명 · missing ${inventory.totals.portraits.missing}명`,
     "",
   ];
   for (const source of inventory.sources) {
-    lines.push(`## ${source.series} — ${source.npcRecords}명`, "", "| ID | 표시명 | 근거 | 안전 이미지 후보 | 상태 |", "|---|---|---:|---:|---|");
+    lines.push(`## ${source.series} — ${source.npcRecords}명`, "", "| ID | 표시명 | 역할 | 근거 | 초상 | 출시 | 상태/사유 |", "|---|---|---|---:|---|---|---|");
     for (const record of inventory.records.filter((candidate) => candidate.series === source.series)) {
-      lines.push(`| \`${record.id}\` | ${escapeCell(record.qualifiedName)} | ${record.loreEvidence.length} | ${record.assetCandidates.length} | ${record.status} |`);
+      const reason = record.exclusionReason ?? record.pendingReason ?? record.status;
+      lines.push(`| \`${record.id}\` | ${escapeCell(record.qualifiedName)} | ${record.role} | ${record.loreEvidence.length} | ${record.portraitAvailability.status} (${record.portraitAvailability.seatRoles.join(", ") || "none"}) | ${record.releaseEligibility} | ${reason} |`);
     }
     lines.push("");
   }
