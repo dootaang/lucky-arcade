@@ -20,9 +20,10 @@ export interface TemerosaCasinoReleaseFlags{flowEconomy:boolean}
 export const TEMEROSA_CASINO_RELEASE_FLAGS_DISABLED:Readonly<TemerosaCasinoReleaseFlags>=Object.freeze({flowEconomy:false});
 export const TEMEROSA_FLOW_RELEASE_AUDIT=Object.freeze({
   status:"blocked" as const,
-  blockers:Object.freeze(["house-service-curtailment"] as const),
-  sevenDays:Object.freeze({npcCount:102,supplyChangeBps:492,averageSettlementGapSeconds:24.8}),
-  oneYear:Object.freeze({supplyChangeBps:773,averageSettlementGapSeconds:24.88,houseCurtailedOperatingExpenses:1_587_686}),
+  blockers:Object.freeze(["ten-year-house-solvency"] as const),
+  sevenDays:Object.freeze({npcCount:102,supplyChangeBps:497,averageSettlementGapSeconds:24.8}),
+  oneYear:Object.freeze({supplyChangeBps:501,averageSettlementGapSeconds:24.88,houseCurtailedOperatingExpenses:0}),
+  tenYears:Object.freeze({supplyChangeBps:13_894,averageSettlementGapSeconds:24.86,minimumHouseBalance:-28_919,houseCurtailedOperatingExpenses:2_139_481}),
 });
 export const TEMEROSA_FLOW_RELEASE_READY:boolean=Array.from(TEMEROSA_FLOW_RELEASE_AUDIT.blockers).length===0;
 
@@ -72,7 +73,7 @@ export const TEMEROSA_FLOW_NPC_LEDGER_CONTRACT:NpcLedgerContract=Object.freeze({
   version:"npc-ledger/1.2",seedVersion:"casino-flow/1.0",epochKstDay:TEMEROSA_FLOW_EPOCH_KST_DAY,
   profiles:TEMEROSA_FLOW_NPC_GAMBLING_PROFILES,externalIncomeProfiles:TEMEROSA_FLOW_EXTERNAL_INCOME_PROFILES,
   behaviors:TEMEROSA_FLOW_NPC_BEHAVIORS,houseOpeningBalance:LEGACY_HOUSE_CLOSE-NEW_ACCOUNT_CAPITAL,
-  houseOperatingPolicy:Object.freeze({...DEFAULT_HOUSE_OPERATING_COST_POLICY,perHundredRoundsCost:20,positiveGamingRevenueRateBps:5_760}),
+  houseOperatingPolicy:Object.freeze({...DEFAULT_HOUSE_OPERATING_COST_POLICY,perHundredRoundsCost:1_647,positiveGamingRevenueRateBps:1_856,protectedReserve:0}),
   predecessor:Object.freeze({profiles:TEMEROSA_NPC_GAMBLING_PROFILES,contract:TEMEROSA_NPC_LEDGER_CONTRACT}),
   profitHistory:legacyProfitHistory(),
 });

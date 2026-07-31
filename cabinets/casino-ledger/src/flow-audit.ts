@@ -21,9 +21,11 @@ export interface CasinoFlowAuditReport {
   finalNpcSupply: number;
   finalNpcMedianBalance: number;
   paidEligibleNpcCount: number;
+  reenteredAfterIncomeNpcCount: number;
   maximumNpcShareBps: number;
   topFiveChangedSeats: number;
   houseBalance: number;
+  minimumHouseBalance: number;
   houseGamingProfit: number;
   houseOperatingExpenses: number;
   houseCurtailedOperatingExpenses: number;
@@ -37,8 +39,9 @@ export function auditCasinoFlowEconomy(contract:NpcLedgerContract,days:number,op
   const initialTopFive=topIds(balances,5);
   let totalNpcCasinoTopUps=0,totalRounds=0,totalSettlementRows=0,totalRoundSettlementRows=0,duplicateRoundIdCount=0,unbalancedRoundCount=0,postingImbalance=0;
   const roundIds=new Set<string>();
+  const reenteredAfterIncomeNpcIds=new Set<string>();
   const houseOpeningBalance=contract.houseOpeningBalance??TEMEROSA_HOUSE_OPENING_CAPITAL;
-  let houseBalance=houseOpeningBalance,houseGamingProfit=0,houseOperatingExpenses=0,houseCurtailedOperatingExpenses=0;
+  let houseBalance=houseOpeningBalance,minimumHouseBalance=houseOpeningBalance,houseGamingProfit=0,houseOperatingExpenses=0,houseCurtailedOperatingExpenses=0;
   for(let dayIndex=0;dayIndex<days;dayIndex+=1){
     const plan=casinoDayPlan(profiles,dayIndex,balances,contract);
     totalRounds+=plan.matches.length;
@@ -58,20 +61,26 @@ export function auditCasinoFlowEconomy(contract:NpcLedgerContract,days:number,op
       if(session.tableId==="npc-income")totalNpcCasinoTopUps+=session.delta;
       else totalSettlementRows+=1;
     }
+    for(const profile of profiles){
+      if(balances[profile.id]!>=20)continue;
+      const npcSessions=plan.sessions[profile.id]??[];
+      const income=npcSessions.find((session)=>session.tableId==="npc-income");
+      if(income&&npcSessions.some((session)=>session.tableId!=="npc-income"&&session.secondOfDay>income.secondOfDay))reenteredAfterIncomeNpcIds.add(profile.id);
+    }
     balances=Object.fromEntries(profiles.map((profile)=>{
       const closing=balances[profile.id]!+(plan.sessions[profile.id]??[]).reduce((total,session)=>total+session.delta,0);
       if(!Number.isSafeInteger(closing)||closing<0)throw new Error(`casino_flow_audit_invalid_balance:${profile.id}`);
       return [profile.id,closing];
     }));
     const operationsSecond=operatingPolicy.settlementSecondOfDay;
-    const houseBefore=flowHouseDelta(plan.sessions,-1,operationsSecond);
-    houseBalance+=houseBefore;houseGamingProfit+=houseBefore;
+    const houseBefore=flowHouseBalanceWindow(houseBalance,plan.sessions,-1,operationsSecond);
+    houseBalance=houseBefore.balance;minimumHouseBalance=Math.min(minimumHouseBalance,houseBefore.minimum);houseGamingProfit+=houseBefore.delta;
     const activity=houseDailyActivityFromPlan({absoluteKstDay:contract.epochKstDay+dayIndex,houseBalance,reservedLiability:0,plan,throughSecondOfDay:operationsSecond});
     const expense=createHouseOperatingExpensePlan(activity,operatingPolicy);
     if(expense.transaction)postingImbalance+=expense.transaction.postings.reduce((sum,posting)=>sum+posting.delta,0);
-    houseBalance-=expense.paidAmount;houseOperatingExpenses+=expense.paidAmount;houseCurtailedOperatingExpenses+=expense.curtailedAmount;
-    const houseAfter=flowHouseDelta(plan.sessions,operationsSecond,86_399);
-    houseBalance+=houseAfter;houseGamingProfit+=houseAfter;
+    houseBalance-=expense.paidAmount;minimumHouseBalance=Math.min(minimumHouseBalance,houseBalance);houseOperatingExpenses+=expense.paidAmount;houseCurtailedOperatingExpenses+=expense.curtailedAmount;
+    const houseAfter=flowHouseBalanceWindow(houseBalance,plan.sessions,operationsSecond,86_399);
+    houseBalance=houseAfter.balance;minimumHouseBalance=Math.min(minimumHouseBalance,houseAfter.minimum);houseGamingProfit+=houseAfter.delta;
   }
   const finalNpcBalances=Object.values(balances).toSorted((left,right)=>left-right);
   const finalNpcSupply=sum(finalNpcBalances);
@@ -84,14 +93,24 @@ export function auditCasinoFlowEconomy(contract:NpcLedgerContract,days:number,op
     totalNpcCasinoTopUps,totalRounds,totalSettlementRows,totalRoundSettlementRows,duplicateRoundIdCount,unbalancedRoundCount,postingImbalance,
     averageSettlementGapSeconds:Number((days*86_400/Math.max(1,totalSettlementRows)).toFixed(2)),
     finalNpcSupply,finalNpcMedianBalance:finalNpcBalances[Math.floor(finalNpcBalances.length/2)]??0,
-    paidEligibleNpcCount:finalNpcBalances.filter((balance)=>balance>=20).length,
+    paidEligibleNpcCount:finalNpcBalances.filter((balance)=>balance>=20).length,reenteredAfterIncomeNpcCount:reenteredAfterIncomeNpcIds.size,
     maximumNpcShareBps:finalNpcSupply===0?0:Math.round((finalNpcBalances.at(-1)??0)*10_000/finalNpcSupply),
     topFiveChangedSeats:finalTopFive.filter((id)=>!initialTopFive.includes(id)).length,
-    houseBalance,houseGamingProfit,houseOperatingExpenses,houseCurtailedOperatingExpenses,
+    houseBalance,minimumHouseBalance,houseGamingProfit,houseOperatingExpenses,houseCurtailedOperatingExpenses,
   });
 }
 
 function topIds(balances:Readonly<Record<string,number>>,limit:number):string[]{return Object.entries(balances).toSorted((left,right)=>right[1]-left[1]||compareText(left[0],right[0])).slice(0,limit).map(([id])=>id);}
-function flowHouseDelta(sessions:Readonly<Record<string,readonly {tableId:string;secondOfDay:number;delta:number}[]>>,after:number,through:number):number{return -Object.values(sessions).flat().filter((session)=>session.tableId!=="npc-income"&&session.secondOfDay>after&&session.secondOfDay<=through).reduce((total,session)=>total+session.delta,0);}
+function flowHouseBalanceWindow(openingBalance:number,sessions:Readonly<Record<string,readonly {matchId:string;tableId:string;secondOfDay:number;delta:number}[]>>,after:number,through:number):Readonly<{balance:number;delta:number;minimum:number}>{
+  const rounds=new Map<string,{secondOfDay:number;delta:number}>();
+  for(const session of Object.values(sessions).flat()){
+    if(session.tableId==="npc-income"||session.secondOfDay<=after||session.secondOfDay>through)continue;
+    const round=rounds.get(session.matchId)??{secondOfDay:session.secondOfDay,delta:0};
+    round.delta-=session.delta;rounds.set(session.matchId,round);
+  }
+  let balance=openingBalance,minimum=openingBalance;
+  for(const [,round] of [...rounds].sort((left,right)=>left[1].secondOfDay-right[1].secondOfDay||compareText(left[0],right[0]))){balance+=round.delta;minimum=Math.min(minimum,balance);}
+  return Object.freeze({balance,delta:balance-openingBalance,minimum});
+}
 function sum(values:readonly number[]):number{return values.reduce((total,value)=>total+value,0);}
 function compareText(left:string,right:string):number{return left<right?-1:left>right?1:0;}

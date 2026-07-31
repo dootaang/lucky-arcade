@@ -1,5 +1,5 @@
 import {describe,expect,it}from"vitest";
-import {TEMEROSA_FLOW_EPOCH_KST_DAY,TEMEROSA_FLOW_NPC_GAMBLING_PROFILES,TEMEROSA_FLOW_NPC_LEDGER_CONTRACT,TEMEROSA_FLOW_PROFILE_EXCLUSIONS,TEMEROSA_LEGACY_NPC_SUCCESSORS,TEMEROSA_NPC_GAMBLING_PROFILES,TEMEROSA_NPC_LEDGER_CONTRACT,TEMEROSA_SERIES_CASINO_SEAT_IDS,TEMEROSA_SERIES_RUNTIME_SOURCE,auditCasinoFlowEconomy,casinoDayPlan,casinoUtcSecondAtKstDay,completedDayBalances,houseBalanceAt,recentNpcPlayEventsAt,temerosaCasinoLedgerAtUtcSecond}from"../src/index.ts";
+import {TEMEROSA_FLOW_EPOCH_KST_DAY,TEMEROSA_FLOW_NPC_GAMBLING_PROFILES,TEMEROSA_FLOW_NPC_LEDGER_CONTRACT,TEMEROSA_FLOW_PROFILE_EXCLUSIONS,TEMEROSA_FLOW_RELEASE_AUDIT,TEMEROSA_LEGACY_NPC_SUCCESSORS,TEMEROSA_NPC_GAMBLING_PROFILES,TEMEROSA_NPC_LEDGER_CONTRACT,TEMEROSA_SERIES_CASINO_SEAT_IDS,TEMEROSA_SERIES_RUNTIME_SOURCE,auditCasinoFlowEconomy,casinoDayPlan,casinoUtcSecondAtKstDay,completedDayBalances,houseBalanceAt,recentNpcPlayEventsAt,temerosaCasinoLedgerAtUtcSecond}from"../src/index.ts";
 
 describe("Temerosa flow ledger cutover",()=>{
   it("carries every NPC and house close exactly once",()=>{
@@ -46,6 +46,7 @@ describe("Temerosa flow ledger cutover",()=>{
 
   it("keeps the candidate locked even with a flag while a frozen audit blocker remains",()=>{
     const boundary=casinoUtcSecondAtKstDay(TEMEROSA_FLOW_EPOCH_KST_DAY);
+    expect(TEMEROSA_FLOW_RELEASE_AUDIT.blockers).toContain("ten-year-house-solvency");
     expect(temerosaCasinoLedgerAtUtcSecond(boundary-1,{flowEconomy:true}).contract.version).toBe("npc-ledger/1.1");
     expect(temerosaCasinoLedgerAtUtcSecond(boundary,{flowEconomy:true}).contract.version).toBe("npc-ledger/1.1");
   });
@@ -63,6 +64,9 @@ describe("Temerosa flow ledger cutover",()=>{
     const report=auditCasinoFlowEconomy(TEMEROSA_FLOW_NPC_LEDGER_CONTRACT,365);
     expect(report.supplyChangeBps).toBeGreaterThanOrEqual(-1_000);
     expect(report.supplyChangeBps).toBeLessThanOrEqual(1_000);
-    expect(report.houseCurtailedOperatingExpenses).toBeGreaterThan(0);
-  },60_000);
+    expect(report.houseCurtailedOperatingExpenses).toBe(0);
+    expect(report.minimumHouseBalance).toBeGreaterThanOrEqual(0);
+    expect(report.reenteredAfterIncomeNpcCount).toBeGreaterThan(0);
+    expect(report).toMatchObject(TEMEROSA_FLOW_RELEASE_AUDIT.oneYear);
+  },90_000);
 });

@@ -13,8 +13,11 @@ describe("casino flow economy audit",()=>{
     expect(report.unbalancedRoundCount).toBe(0);
     expect(report.postingImbalance).toBe(0);
     expect(report.finalInternalSupply).toBe(report.finalNpcSupply+report.houseBalance);
+    expect(report.minimumHouseBalance).toBeGreaterThanOrEqual(0);
     expect(report.paidEligibleNpcCount).toBeGreaterThan(report.npcCount*.5);
+    expect(report.reenteredAfterIncomeNpcCount).toBeGreaterThan(0);
     expect(report.maximumNpcShareBps).toBeLessThan(3_500);
+    expect(report.topFiveChangedSeats).toBeGreaterThan(0);
     expect(report.supplyChangeBps).toBeGreaterThanOrEqual(-300);
     expect(report.supplyChangeBps).toBeLessThanOrEqual(500);
     expect(report.averageSettlementGapSeconds).toBeGreaterThanOrEqual(10);
