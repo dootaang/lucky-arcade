@@ -28,7 +28,7 @@ export default function CasinoSideMarket({
   const listedMarkets = useMemo(() => Object.freeze([...liveSchedule, ...schedule.recent]), [liveSchedule, schedule.recent]);
   const preferred = schedule.current ?? schedule.upcoming[0] ?? schedule.recent[0];
   const [marketId, setMarketId] = useState(preferred?.marketId ?? "");
-  const [manualSelection, setManualSelection] = useState(false);
+  const manualSelection = useRef(false);
   const rawMarket = listedMarkets.find((candidate) => candidate.marketId === marketId) ?? preferred;
   const [outcomeId, setOutcomeId] = useState("");
   const [stake, setStake] = useState<PredictionStake>(10);
@@ -44,11 +44,11 @@ export default function CasinoSideMarket({
   useEffect(() => {
     if (!preferred) return;
     const selectedStillListed = listedMarkets.some((candidate) => candidate.marketId === marketId);
-    if (!manualSelection || !selectedStillListed) {
+    if (!manualSelection.current || !selectedStillListed) {
       setMarketId(preferred.marketId);
-      if (!selectedStillListed) setManualSelection(false);
+      if (!selectedStillListed) manualSelection.current = false;
     }
-  }, [listedMarkets, manualSelection, marketId, preferred?.marketId]);
+  }, [listedMarkets, marketId, preferred?.marketId]);
   useEffect(() => { setOutcomeId(rawMarket?.outcomes[0]?.outcomeId ?? ""); }, [rawMarket?.marketId]);
   useEffect(() => {
     setOfferedMarket(undefined);
@@ -78,7 +78,7 @@ export default function CasinoSideMarket({
   const marketLabel = market?.kind === "joker-holder" ? "마지막 조커" : "승자";
   if (!market) return null;
 
-  const selectMarket = (next: CasinoSpectatorMarket) => { setManualSelection(true); setMarketId(next.marketId); };
+  const selectMarket = (next: CasinoSpectatorMarket) => { manualSelection.current = true; setMarketId(next.marketId); };
   return <section className={`casino-side-market phase-${market.phase} ca-glare`} aria-labelledby="side-market-heading">
     <header>
       <div><span className="ca-label">INTEGRATED SPECTATOR MARKET</span><h3 id="side-market-heading" className="ca-serif">통합 관전 사이드 베팅</h3></div>
