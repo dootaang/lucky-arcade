@@ -27,6 +27,9 @@ export interface OldMaidScreenProps {
   opponentAvailability?: Readonly<Record<string, { available: boolean; label: string; availableAtUtcSecond?: number }>>;
   onOpponentSelectionChange?(ids: readonly string[]): void;
   onPersist(previous: OldMaidState, next: OldMaidState, action: OldMaidAction, psychology: OldMaidPsychologySummary): Promise<void>;
+  /** Reuses the native table and presentation without writing game progress. */
+  presentationOnly?: boolean;
+  onReplay?(): void;
   onExit(): void;
 }
 
@@ -54,7 +57,7 @@ export interface OldMaidMatchSummary {
   opponents: Array<{ participantId: string; displayName: string; played: number; beaten: number }>;
 }
 
-export function OldMaidScreen({ cartridge, assets, thumbAssets = assets, detailAssets = assets, initialState, matchSummary, economy, opponentAvailability = {}, onOpponentSelectionChange, onPersist, onExit }: OldMaidScreenProps) {
+export function OldMaidScreen({ cartridge, assets, thumbAssets = assets, detailAssets = assets, initialState, matchSummary, economy, opponentAvailability = {}, onOpponentSelectionChange, onPersist, presentationOnly = false, onReplay, onExit }: OldMaidScreenProps) {
   useMemo(() => validateOldMaidLines(cartridge), [cartridge]);
   const [state, setState] = useState(() => initialState ?? createOldMaidState(cartridge, dailySeed()));
   const [detail, setDetail] = useState<OldMaidFace | null>(null);
@@ -95,7 +98,7 @@ export function OldMaidScreen({ cartridge, assets, thumbAssets = assets, detailA
   const stateRef = useRef(state);
   const persistQueueRef = useRef<Promise<void>>(Promise.resolve());
   const saveRevisionRef = useRef(0);
-  const psychologyRef = useRef<OldMaidPsychologySummary>(loadPsychologySummary(state.sessionId, state.seed));
+  const psychologyRef = useRef<OldMaidPsychologySummary>(presentationOnly ? emptyPsychologySummary() : loadPsychologySummary(state.sessionId, state.seed));
   const [saveState, setSaveState] = useState<"saved" | "saving" | "error">("saved");
   const faces = useMemo(() => new Map(cartridge.faces.map((face) => [face.id, face])), [cartridge]);
   const cards = useMemo(() => new Map(cartridge.cards.map((card) => [card.id, card])), [cartridge]);
@@ -124,9 +127,11 @@ export function OldMaidScreen({ cartridge, assets, thumbAssets = assets, detailA
     } else if (action.type === "collect_draw" || action.type === "start" || action.type === "restart") {
       drawFlightRef.current = null;
     }
-    if (action.type === "start" || action.type === "restart") psychologyRef.current = emptyPsychologySummary();
-    else recordPsychologyAction(cartridge, previous, next, action, psychologyRef.current);
-    savePsychologySummary(next.sessionId, next.seed, psychologyRef.current);
+    if (!presentationOnly) {
+      if (action.type === "start" || action.type === "restart") psychologyRef.current = emptyPsychologySummary();
+      else recordPsychologyAction(cartridge, previous, next, action, psychologyRef.current);
+      savePsychologySummary(next.sessionId, next.seed, psychologyRef.current);
+    }
     const previousSpeech = oldMaidSpeechSnapshot(previous);
     const nextSpeech = oldMaidSpeechSnapshot(next);
     const selectedSpeeches = selectOldMaidSpeeches(cartridge, previousSpeech, nextSpeech, recentLineIdsRef.current);
@@ -134,11 +139,13 @@ export function OldMaidScreen({ cartridge, assets, thumbAssets = assets, detailA
     else if (selectedSpeeches.length > 0) showSpeeches(selectedSpeeches);
     stateRef.current = next;
     setState(next);
-    setSaveState("saving");
-    const revision = ++saveRevisionRef.current;
-    const psychology = { ...psychologyRef.current };
-    persistQueueRef.current = persistQueueRef.current.catch(() => undefined).then(() => onPersist(previous, next, action, psychology));
-    void persistQueueRef.current.then(() => { if (saveRevisionRef.current === revision) setSaveState("saved"); }).catch(() => { if (saveRevisionRef.current === revision) setSaveState("error"); });
+    if (!presentationOnly) {
+      setSaveState("saving");
+      const revision = ++saveRevisionRef.current;
+      const psychology = { ...psychologyRef.current };
+      persistQueueRef.current = persistQueueRef.current.catch(() => undefined).then(() => onPersist(previous, next, action, psychology));
+      void persistQueueRef.current.then(() => { if (saveRevisionRef.current === revision) setSaveState("saved"); }).catch(() => { if (saveRevisionRef.current === revision) setSaveState("error"); });
+    }
   }
 
   function showSpeeches(selected: readonly OldMaidSpeech[]) {
@@ -419,7 +426,7 @@ export function OldMaidScreen({ cartridge, assets, thumbAssets = assets, detailA
     <header className="old-maid-header">
       <button onClick={onExit} aria-label="오락실로 돌아가기"><IconArrowLeft /></button>
       <div><span>BOT CARD · TABLE GAME</span><h1>{cartridge.title}</h1></div>
-      <div className="old-maid-meters">{economy && <button className="old-maid-wallet" onClick={() => setCollectionOpen(true)}>{economy.balance.toLocaleString("ko-KR")} P</button>}<button className="old-maid-pause" onClick={() => { autoPausedRef.current = false; updatePaused(!pausedRef.current); }} disabled={state.status === "ready" || state.status === "complete"}>{paused ? <IconPlayerPlay size={15} /> : <IconPlayerPause size={15} />}{paused ? "계속" : "일시정지"}</button><span>{state.turn}턴</span><small aria-live="polite">{paused ? "일시정지됨" : saveState === "saving" ? "저장 중…" : saveState === "error" ? "저장 재시도 필요" : "자동 저장됨"}</small></div>
+      <div className="old-maid-meters">{economy && <button className="old-maid-wallet" onClick={() => setCollectionOpen(true)}>{economy.balance.toLocaleString("ko-KR")} P</button>}<button className="old-maid-pause" onClick={() => { autoPausedRef.current = false; updatePaused(!pausedRef.current); }} disabled={state.status === "ready" || state.status === "complete"}>{paused ? <IconPlayerPlay size={15} /> : <IconPlayerPause size={15} />}{paused ? "계속" : "일시정지"}</button><span>{state.turn}턴</span>{!presentationOnly && <small aria-live="polite">{paused ? "일시정지됨" : saveState === "saving" ? "저장 중…" : saveState === "error" ? "저장 재시도 필요" : "자동 저장됨"}</small>}</div>
     </header>
 
     <section className="old-maid-table" aria-label={`${cartridge.title} 테이블`}>
@@ -534,8 +541,10 @@ export function OldMaidScreen({ cartridge, assets, thumbAssets = assets, detailA
             {economy.prediction.active.status === "won" ? `예측 적중 · ${economy.prediction.active.multiplier}배 · +${economy.prediction.active.stake * economy.prediction.active.multiplier} P` : economy.prediction.active.status === "lost" ? `예측 실패 · ${economy.prediction.active.multiplier}배 · -${economy.prediction.active.reservedAmount} P` : economy.prediction.active.status === "refunded" ? `대국 무효 · ${economy.prediction.active.reservedAmount} P 반환` : `${economy.prediction.active.multiplier}배 정산 중…`}
           </p>}
           <div className="old-maid-result-actions">
-            <button onClick={() => returnToReady(true)}><IconRefresh /> 다시하기</button>
-            <button className="old-maid-primary" onClick={() => returnToReady(false)}>상대 다시 고르기</button>
+            {presentationOnly ? <button className="old-maid-primary" onClick={onReplay}><IconRefresh /> 처음부터 다시 보기</button> : <>
+              <button onClick={() => returnToReady(true)}><IconRefresh /> 다시하기</button>
+              <button className="old-maid-primary" onClick={() => returnToReady(false)}>상대 다시 고르기</button>
+            </>}
           </div>
         </div>}
       </div>

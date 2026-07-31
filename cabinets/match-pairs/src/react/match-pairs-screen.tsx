@@ -35,6 +35,10 @@ export interface MatchPairsScreenProps {
   onStart?(input: { mode: MatchPairsMode; stake: MatchPairsStake; multiplier: WagerMultiplier; predictedCharacterId?: string }): MatchPairsState | Promise<MatchPairsState>;
   onTransition?(previous: MatchPairsState, next: MatchPairsState, action: MatchPairsAction): void | Promise<void>;
   createRestartSeed?(state: MatchPairsState): string;
+  autoStartSeed?: string;
+  /** Reuses the native board as a read-only deterministic replay. */
+  presentationOnly?: boolean;
+  onReplay?(): void;
   onExit?(): void;
 }
 
@@ -74,6 +78,9 @@ export function MatchPairsScreen({
   onStart,
   onTransition,
   createRestartSeed,
+  autoStartSeed,
+  presentationOnly = false,
+  onReplay,
   onExit,
 }: MatchPairsScreenProps) {
   const [state, setState] = useState(() => initialState ?? createMatchPairsState(faces, opponents, packVersion, seed, initialDifficulty, initialOpponentId, sessionId));
@@ -192,6 +199,11 @@ export function MatchPairsScreen({
     );
     return () => { active = false; };
   }, [assetSignature, loadAttempt]);
+
+  useEffect(() => {
+    if (!autoStartSeed || loadStatus !== "ready" || stateRef.current.status !== "ready") return;
+    dispatch({ type: "start", seed: autoStartSeed });
+  }, [autoStartSeed, dispatch, loadStatus]);
 
   useEffect(() => {
     if (typeof document === "undefined") return;
@@ -390,7 +402,7 @@ export function MatchPairsScreen({
         <h2>{resultTitle}</h2><p>{actorName("player")} {state.claims.player.length}짝 · {actorName("npc")} {state.claims.npc.length}짝</p>
         {state.mode === "play" && <small className="match-pairs-record">상대 전적 · {recordLabel(opponentRecords[opponent.id])}</small>}
         <strong className="match-pairs-credit">{!wageringEnabled ? state.mode === "spectate" ? "관전 완료" : "대국 완료" : state.mode === "spectate" ? activePrediction ? predictionLabel(activePrediction) : "관전 완료" : state.outcome === "player" ? `${leveragedCredit} P 반환` : state.outcome === "draw" ? `${exposure} P 환불` : `${exposure} P 손실`}</strong>
-        <button type="button" className="match-pairs-primary" onClick={restart}>다시하기</button>
+        <button type="button" className="match-pairs-primary" onClick={presentationOnly ? onReplay : restart}>{presentationOnly ? "처음부터 다시 보기" : "다시하기"}</button>
       </section>}
       <p className="match-pairs-announcement" aria-live="polite">{announcement}</p>
     </section>

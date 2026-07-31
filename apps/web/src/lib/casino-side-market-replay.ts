@@ -7,6 +7,11 @@ import { TEMEROSA_MATCH_PAIRS_FACES, TEMEROSA_MATCH_PAIRS_PACK_VERSION } from ".
 import { loadTemerosaCasinoAssets } from "./temerosa-content.ts";
 
 export const SIDE_MARKET_REPLAY_CONTRACT = "casino-side-market-replay/0.1" as const;
+export const SIDE_MARKET_NATIVE_TABLE_IDS = Object.freeze(["temerosa-match-pairs", "temerosa-old-maid"] as const);
+
+export function supportsNativeSideMarketExperience(tableId: string): tableId is typeof SIDE_MARKET_NATIVE_TABLE_IDS[number] {
+  return SIDE_MARKET_NATIVE_TABLE_IDS.some((candidate) => candidate === tableId);
+}
 
 interface SideMarketReplayBase {
   readonly contract: typeof SIDE_MARKET_REPLAY_CONTRACT;
@@ -74,6 +79,7 @@ export function resolveCasinoSideMarketOffer(market: CasinoSpectatorMarket): Pro
 
 async function buildReplay(market: CasinoSpectatorMarket): Promise<CasinoSideMarketReplay> {
   if (!market.matchId.startsWith("casino-spectator-exhibition/0.2:")) throw new Error("side_market_replay_unsupported_match");
+  if (!supportsNativeSideMarketExperience(market.tableId)) throw new Error("side_market_native_experience_missing");
   const bundle = await loadTemerosaCasinoAssets();
   const seed = `${SIDE_MARKET_REPLAY_CONTRACT}:${market.matchId}`;
   if (market.tableId === "temerosa-match-pairs") {
@@ -95,6 +101,7 @@ async function buildReplay(market: CasinoSpectatorMarket): Promise<CasinoSideMar
       winningOutcomeId: game.winningCharacterId, resultHash: game.resultHash, assets: bundle.assets,
       game, faces: TEMEROSA_MATCH_PAIRS_FACES, opponents });
   }
+  if (market.tableId !== "temerosa-old-maid") throw new Error("side_market_native_experience_missing");
   if (market.participantIds.length !== 4) throw new Error("side_market_replay_participant_count");
   const participantIds = market.participantIds as unknown as readonly [string, string, string, string];
   const cartridge = createTemerosaCasinoOldMaidCartridge(bundle.contentAssets);

@@ -193,12 +193,28 @@ test("reserves, restores, and settles one integrated spectator market receipt", 
   });
   expect(settled.status).toBe("settled");
   await market.getByRole("button", { name: "처음부터 다시 보기", exact: true }).click();
-  const replay = page.getByRole("dialog", { name: /관전석/ });
+  const replay = page.getByRole("dialog", { name: /관전/ });
   await expect(replay).toBeVisible();
-  await expect(replay.locator(".side-replay-table")).toBeVisible();
-  await expect(replay).toContainText(/REPLAY|대국 종료/);
-  await replay.getByRole("button", { name: "닫기", exact: true }).click();
+  await expect(replay.locator(".match-pairs-shell")).toBeVisible();
+  await expect(replay.locator(".match-pairs-board")).toBeVisible();
+  await expect(replay.locator(".match-pairs-card")).toHaveCount(16);
+  await expect(replay).toContainText("REPLAY · 원본 관전");
+  await replay.getByRole("button", { name: "오락실로 돌아가기", exact: true }).click();
   await expect(replay).toBeHidden();
+
+  casinoEpoch += 300_000;
+  await page.reload();
+  await market.locator(".side-market-tabs button").filter({ hasText: "도둑잡기" }).filter({ hasText: "완료" }).click();
+  await expect(market).toHaveClass(/phase-settled/);
+  await market.getByRole("button", { name: "처음부터 다시 보기", exact: true }).click();
+  const oldMaidReplay = page.getByRole("dialog", { name: /도둑잡기.*관전/ });
+  await expect(oldMaidReplay.locator(".old-maid-shell")).toBeVisible();
+  await expect(oldMaidReplay.locator(".old-maid-table")).toBeVisible();
+  await expect(oldMaidReplay.locator(".old-maid-deal-layer")).toBeVisible();
+  await expect(oldMaidReplay.locator(".old-maid-deal-card").first()).toBeVisible();
+  await expect(oldMaidReplay).toContainText("REPLAY · 원본 관전");
+  await oldMaidReplay.getByRole("button", { name: "오락실로 돌아가기", exact: true }).click();
+  await expect(oldMaidReplay).toBeHidden();
 });
 
 test("does not rewind the casino ledger when a reload receives a stale cached Date", async ({ page }) => {

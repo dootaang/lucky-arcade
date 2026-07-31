@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { casinoSpectatorMarketByIdAt, casinoSpectatorMarketsAt, casinoUtcSecondAtKstDay, TEMEROSA_NPC_GAMBLING_PROFILES, TEMEROSA_NPC_LEDGER_CONTRACT } from "@lucky-arcade/casino-ledger";
 import { marketReturnBps } from "@lucky-arcade/engine";
-import { resolveCasinoSideMarketOffer, resolveCasinoSideMarketReplay } from "./casino-side-market-replay.ts";
+import { resolveCasinoSideMarketOffer, resolveCasinoSideMarketReplay, supportsNativeSideMarketExperience } from "./casino-side-market-replay.ts";
 
 const originalFetch = globalThis.fetch;
 
@@ -23,6 +23,7 @@ describe("canonical casino side-market replay", () => {
     const now = Math.floor(base / 300) * 300 + 30;
     const clock = { utcSecond: () => now, utcMinute: () => Math.floor(now / 60) };
     const markets = casinoSpectatorMarketsAt(TEMEROSA_NPC_GAMBLING_PROFILES, clock, TEMEROSA_NPC_LEDGER_CONTRACT, 8);
+    expect(markets.every((market) => supportsNativeSideMarketExperience(market.tableId))).toBe(true);
     const pairMarket = markets.find((market) => market.tableId === "temerosa-match-pairs");
     const maidMarket = markets.find((market) => market.tableId === "temerosa-old-maid");
     expect(pairMarket).toBeDefined(); expect(maidMarket).toBeDefined();
