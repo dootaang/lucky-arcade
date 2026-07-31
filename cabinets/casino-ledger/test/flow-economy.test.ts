@@ -52,5 +52,6 @@ describe("NPC flow economy 1.0", () => {
 
   it("never creates a Wares livelihood account", () => {
     expect(() => npcFlowEconomyDay({ ...profile, npcId: "wares" }, 20_667)).toThrow("npc_flow_invalid_identity");
+    expect(() => npcFlowEconomyDay({ ...profile, npcId: "temerosa:finale:wares" }, 20_667)).toThrow("npc_flow_invalid_identity");
   });
 });

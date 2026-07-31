@@ -3,6 +3,7 @@ import { casinoUtcSecondAtKstDay } from "./casino-time.ts";
 import type { CasinoTransaction } from "./economy.ts";
 import {
   createCasinoTransaction,
+  isWaresHouseIdentity,
   npcAccountId,
   npcExternalReserveAccountId,
 } from "./economy.ts";
@@ -107,7 +108,7 @@ export function npcFlowEconomyTransactions(
 }
 
 export function assertNpcExternalIncomeProfile(profile: NpcExternalIncomeProfile): void {
-  if (!profile.npcId || profile.npcId === "wares" || !profile.sourceLabel.trim()) throw new Error("npc_flow_invalid_identity");
+  if (!profile.npcId || isWaresHouseIdentity(profile.npcId) || !profile.sourceLabel.trim()) throw new Error("npc_flow_invalid_identity");
   if (!Array.isArray(profile.evidenceRefs) || profile.evidenceRefs.some((entry) => !entry.trim())) throw new Error("npc_flow_invalid_evidence");
   assertRange(profile.dailyIncomeRange, 1, Number.MAX_SAFE_INTEGER, "npc_flow_invalid_income_range");
   assertRange(profile.casinoBudgetRateBps, 0, 10_000, "npc_flow_invalid_budget_range");

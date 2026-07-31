@@ -59,6 +59,7 @@ describe("casino economy 1.0", () => {
 
   it("rejects Wares as an NPC account and duplicate idempotency is harmless", () => {
     expect(() => npcAccountId("wares")).toThrow("casino_economy_invalid_npc_account");
+    expect(() => npcAccountId("temerosa:finale:wares")).toThrow("casino_economy_invalid_npc_account");
     const reward = createFreePlayRewardTransaction({ transactionId: "free-1", occurredAtCasinoSecond: 10, amount: 60, matchId: "old-maid-1" });
     expect(applyCasinoTransactions({}, [reward, reward])[LOCAL_PLAYER_ACCOUNT_ID]).toBe(60);
   });

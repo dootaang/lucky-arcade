@@ -6,6 +6,8 @@ export const TEMEROSA_HOUSE_ACCOUNT_ID = "house:temerosa" as const;
 export const LOCAL_PLAYER_ACCOUNT_ID = "player:local" as const;
 export const TEMEROSA_HOUSE_OPENING_CAPITAL = 150_000;
 
+export function isWaresHouseIdentity(npcId:string):boolean{return npcId==="wares"||/^temerosa:[^:]+:wares$/.test(npcId);}
+
 export type CasinoInternalAccountId =
   | typeof LOCAL_PLAYER_ACCOUNT_ID
   | typeof TEMEROSA_HOUSE_ACCOUNT_ID
@@ -78,12 +80,12 @@ export const NPC_INCOME_AMOUNTS: Readonly<Record<NpcIncomeBand, number>> = Objec
 });
 
 export function npcAccountId(npcId: string): `npc:${string}` {
-  if (!npcId || npcId === "wares") throw new Error("casino_economy_invalid_npc_account");
+  if (!npcId || isWaresHouseIdentity(npcId)) throw new Error("casino_economy_invalid_npc_account");
   return `npc:${npcId}`;
 }
 
 export function npcExternalReserveAccountId(npcId: string): NpcExternalReserveAccountId {
-  if (!npcId || npcId === "wares") throw new Error("casino_economy_invalid_npc_account");
+  if (!npcId || isWaresHouseIdentity(npcId)) throw new Error("casino_economy_invalid_npc_account");
   return `external:npc:${npcId}`;
 }
 

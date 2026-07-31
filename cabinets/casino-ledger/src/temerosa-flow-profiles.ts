@@ -1,12 +1,10 @@
-import { XorShift32 } from "@lucky-arcade/engine";
 import type {
   CasinoNpcBehavior,
-  NpcActiveWindow,
   NpcExternalIncomeProfile,
   NpcGamblingProfile,
   NpcTableWeight,
 } from "./contracts.ts";
-import { NPC_INCOME_AMOUNTS } from "./economy.ts";
+import { NPC_INCOME_AMOUNTS,isWaresHouseIdentity } from "./economy.ts";
 
 export type TemerosaNpcIdentityPolicy = "series-persona" | "canonical-person";
 
@@ -28,6 +26,19 @@ export interface TemerosaFlowProfileSet {
   externalIncomeProfiles: readonly NpcExternalIncomeProfile[];
   behaviors: readonly CasinoNpcBehavior[];
   sourceRecordIds: Readonly<Record<string, readonly string[]>>;
+  exclusions: readonly TemerosaFlowProfileExclusion[];
+}
+
+export interface TemerosaFlowAuthoredProfile {
+  gambling: Omit<NpcGamblingProfile,"id"|"name"|"openingBalance">;
+  income: Omit<NpcExternalIncomeProfile,"npcId">;
+  behavior: Omit<CasinoNpcBehavior,"npcId">;
+}
+
+export interface TemerosaFlowProfileExclusion {
+  npcId: string;
+  sourceRecordIds: readonly string[];
+  reason: "missing-authored-profile";
 }
 
 export function buildTemerosaFlowProfileSet(input: {
@@ -35,24 +46,32 @@ export function buildTemerosaFlowProfileSet(input: {
   identityPolicy: TemerosaNpcIdentityPolicy;
   legacyProfiles?: readonly NpcGamblingProfile[];
   legacySuccessors?: Readonly<Record<string, string>>;
+  profileOverrides?: Readonly<Record<string,Readonly<TemerosaFlowAuthoredProfile>>>;
 }): TemerosaFlowProfileSet {
   const legacyProfiles: readonly NpcGamblingProfile[] = input.legacyProfiles ?? Object.freeze([]);
   const legacySuccessors: Readonly<Record<string,string>> = input.legacySuccessors ?? Object.freeze({});
+  const profileOverrides:Readonly<Record<string,Readonly<TemerosaFlowAuthoredProfile>>>=input.profileOverrides??Object.freeze({});
   const legacyBySuccessor = new Map(Object.entries(legacySuccessors).map(([legacyId, successor]) => [successor, legacyProfiles.find((profile) => profile.id === legacyId)]));
-  const eligible = input.records.filter((record) => record.role === "gambler");
+  const eligible = input.records.filter((record) => record.role === "gambler"&&!isWaresHouseIdentity(record.id));
   const groups = groupRecords(eligible, input.identityPolicy);
   const profiles: NpcGamblingProfile[] = [];
   const incomes: NpcExternalIncomeProfile[] = [];
   const behaviors: CasinoNpcBehavior[] = [];
   const sourceRecordIds: Record<string,readonly string[]> = {};
+  const exclusions:TemerosaFlowProfileExclusion[]=[];
 
   for (const [npcId, records] of groups) {
     const representative = chooseRepresentative(records, legacyBySuccessor);
     const legacy = records.map((record) => legacyBySuccessor.get(record.id)).find((profile): profile is NpcGamblingProfile => Boolean(profile));
-    const profile = createGamblingProfile(npcId, representative, legacy);
+    const authored=profileOverrides[npcId];
+    if(!legacy&&!authored){
+      exclusions.push(Object.freeze({npcId,sourceRecordIds:Object.freeze(records.map((record)=>record.id).toSorted(compareText)),reason:"missing-authored-profile"}));
+      continue;
+    }
+    const profile = createGamblingProfile(npcId, representative, legacy, authored);
     profiles.push(profile);
-    incomes.push(createIncomeProfile(profile, records, legacy));
-    behaviors.push(createBehavior(profile));
+    incomes.push(authored?Object.freeze({...authored.income,npcId:profile.id}):createIncomeProfile(profile, records, legacy!));
+    behaviors.push(authored?Object.freeze({...authored.behavior,npcId:profile.id}):createBehavior(profile));
     sourceRecordIds[npcId] = Object.freeze(records.map((record) => record.id).toSorted(compareText));
   }
 
@@ -76,6 +95,7 @@ export function buildTemerosaFlowProfileSet(input: {
     externalIncomeProfiles: Object.freeze(ordered.map((entry) => entry.income)),
     behaviors: Object.freeze(ordered.map((entry) => entry.behavior)),
     sourceRecordIds: Object.freeze(Object.fromEntries(Object.entries(sourceRecordIds).toSorted(([left],[right])=>compareText(left,right)))),
+    exclusions:Object.freeze(exclusions.toSorted((left,right)=>compareText(left.npcId,right.npcId))),
   });
 }
 
@@ -92,26 +112,16 @@ function chooseRepresentative(records: readonly TemerosaFlowRosterRecord[], lega
   return records.find((record) => legacyBySuccessor.has(record.id)) ?? records.toSorted((left,right)=>seriesPriority(right.series)-seriesPriority(left.series)||compareText(left.id,right.id))[0]!;
 }
 
-function createGamblingProfile(npcId:string, record:TemerosaFlowRosterRecord, legacy?:NpcGamblingProfile):NpcGamblingProfile {
+function createGamblingProfile(npcId:string, record:TemerosaFlowRosterRecord, legacy:NpcGamblingProfile|undefined, authored:Readonly<TemerosaFlowAuthoredProfile>|undefined):NpcGamblingProfile {
   if (legacy) return Object.freeze({ ...legacy, id:npcId, name:record.qualifiedName });
-  const rng=new XorShift32(`temerosa-flow-profile/1.0:${npcId}`);
-  const risk=decimal(rng,.24,.68),discipline=decimal(rng,.36,.88);
-  const tables=createTableWeights(rng);
-  return Object.freeze({
-    id:npcId,name:record.qualifiedName,openingBalance:0,target:0,
-    riskAppetite:risk,discipline,
-    lossChasing:decimal(rng,.18,.72),winPressing:decimal(rng,.20,.76),
-    stopLossRatio:decimal(rng,.36,.68),takeProfitRatio:decimal(rng,.38,.76),maxExposureRatio:decimal(rng,.16,.36),
-    incomeBand:"middle",payCycleDays:7,paydayOffset:rng.nextUint32()%7,
-    skills:Object.freeze({oldMaid:decimal(rng,.32,.82),matchPairsMemory:decimal(rng,.32,.82),pokerRead:decimal(rng,.32,.82),pokerBluff:decimal(rng,.32,.82),highLowJudgment:decimal(rng,.32,.82)}),
-    sessionsPerDay:Object.freeze({min:3,max:7}),tables,activeHours:createActiveHours(rng),
-  });
+  if(!authored)throw new Error(`temerosa_flow_missing_authored_profile:${npcId}`);
+  return Object.freeze({...authored.gambling,id:npcId,name:record.qualifiedName,openingBalance:0});
 }
 
 function createGuestProfile(npcId:string,legacy:NpcGamblingProfile):NpcGamblingProfile{return Object.freeze({...legacy,id:npcId});}
 
-function createIncomeProfile(profile:NpcGamblingProfile,records:readonly TemerosaFlowRosterRecord[],legacy?:NpcGamblingProfile):NpcExternalIncomeProfile {
-  const expected=legacy?Math.max(1,Math.round(NPC_INCOME_AMOUNTS[legacy.incomeBand]/legacy.payCycleDays)):70+(new XorShift32(`temerosa-flow-income/1.0:${profile.id}`).nextUint32()%61);
+function createIncomeProfile(profile:NpcGamblingProfile,records:readonly TemerosaFlowRosterRecord[],legacy:NpcGamblingProfile):NpcExternalIncomeProfile {
+  const expected=Math.max(1,Math.round(NPC_INCOME_AMOUNTS[legacy.incomeBand]/legacy.payCycleDays));
   const dailyIncomeRange=Object.freeze([expected*4,expected*6] as const);
   const evidenceRefs=Object.freeze(records.flatMap((record)=>record.loreEvidence.map((evidence)=>`${record.series}:${evidence.key}:${evidence.contentSha256}`)).toSorted(compareText));
   return Object.freeze({
@@ -128,13 +138,7 @@ function createBehavior(profile:NpcGamblingProfile):CasinoNpcBehavior{return Obj
   skills:Object.freeze(Object.fromEntries(profile.tables.map((table)=>[table.tableId,skillForTable(profile,table.tableId)]))),preferredTables:profile.tables,
 });}
 
-function createTableWeights(rng:XorShift32):readonly NpcTableWeight[]{
-  const tables=["temerosa-old-maid","temerosa-match-pairs","temerosa-slot","indian-poker","temerosa-high-low","temerosa-five-card-draw"] as const;
-  return Object.freeze(tables.map((tableId)=>Object.freeze({tableId,weight:(tableId==="temerosa-slot"||tableId==="temerosa-high-low"?1:tableId==="temerosa-old-maid"?3:8)+rng.nextUint32()%3})));
-}
-function createActiveHours(rng:XorShift32):readonly NpcActiveWindow[]{const start=(rng.nextUint32()%3)*480;return Object.freeze([{startMinute:start,endMinute:start+480,weight:1}]);}
 function skillForTable(profile:NpcGamblingProfile,tableId:NpcTableWeight["tableId"]):number{if(tableId==="temerosa-old-maid")return profile.skills.oldMaid;if(tableId==="temerosa-match-pairs")return profile.skills.matchPairsMemory;if(tableId==="temerosa-high-low")return profile.skills.highLowJudgment;return (profile.skills.pokerRead+profile.skills.pokerBluff)/2;}
-function decimal(rng:XorShift32,min:number,max:number):number{return Number((min+rng.next()*(max-min)).toFixed(2));}
 function seriesPriority(series:TemerosaFlowRosterRecord["series"]):number{return series==="finale"?4:series==="bestiaization"?3:series==="root2"?2:1;}
 function assertGeneratedProfiles(entries:readonly {profile:NpcGamblingProfile;income:NpcExternalIncomeProfile;behavior:CasinoNpcBehavior}[]):void{const ids=new Set<string>();for(const entry of entries){if(ids.has(entry.profile.id)||entry.profile.id!==entry.income.npcId||entry.profile.id!==entry.behavior.npcId)throw new Error(`temerosa_flow_profile_invalid:${entry.profile.id}`);ids.add(entry.profile.id);}}
 function compareText(left:string,right:string):number{return left<right?-1:left>right?1:0;}
