@@ -125,6 +125,20 @@
 }
 .casino-floor-status span{display:inline-flex;align-items:center;gap:7px;color:var(--ca-gold)}
 .casino-floor-status span+span{color:color-mix(in srgb,var(--ca-gold) 62%,transparent)}
+/* House accounting folds only where it costs the tables their place. On a wide
+   floor the group is `display:contents`, so the labels lay out exactly as before. */
+/* `.casino-floor-status span` is (0,1,1) and would win over a lone class, so
+   these are scoped to the bar to outrank it. */
+.casino-floor-status .floor-house-toggle{display:none}
+.casino-floor-status .floor-house-group{display:contents}
+@media(max-width:700px){
+  /* A 44px pill here would cost more height than folding the six labels saved,
+     so the toggle stays label-sized and extends its hit area instead. */
+  .casino-floor-status .floor-house-toggle{position:relative;display:inline-flex;align-items:center;min-height:22px;padding:2px 9px;border:1px solid color-mix(in srgb,var(--ca-gold) 30%,transparent);border-radius:999px;background:transparent;color:var(--ca-gold);font:inherit;cursor:pointer}
+  .casino-floor-status .floor-house-toggle::after{position:absolute;inset:-11px -6px;content:""}
+  .casino-floor-status .floor-house-group{display:none}
+  .casino-floor-status .floor-house-group.is-open{display:contents}
+}
 
 /* Only an open table gets the travelling light. Ringing every card would erase
    the one thing the ring is for. */
@@ -239,7 +253,7 @@
 .live-table-players{min-height:46px;margin:0;overflow:hidden}
 .live-table-result{margin:0;font-size:.68rem}
 .live-table-card>.ca-num{margin:0;font-size:.68rem}
-.venue-active .live-table-card.playable button{align-self:center;justify-self:end;min-height:40px;margin:0;padding:0 17px;font-size:.82rem}
+.venue-active .live-table-card.playable button{align-self:center;justify-self:end;min-height:44px;margin:0;padding:0 17px;font-size:.82rem}
 .live-table-card .table-suit{top:50%;right:12px;translate:0 -50%;font-size:54px}
 .live-table-empty{white-space:nowrap}
 
@@ -290,7 +304,12 @@
 
 /* v0.4 separates short-term performance from inherited opening bankroll. */
 .ledger-board-switch{float:right;display:inline-flex;gap:4px;margin-left:8px}
-.ledger-board-switch button{border:1px solid color-mix(in srgb,var(--ca-gold) 30%,transparent);border-radius:999px;background:transparent;color:color-mix(in srgb,var(--ca-gold) 68%,white);padding:3px 7px;font-size:.56rem;font-weight:800;cursor:pointer}
+.ledger-board-switch button{position:relative;border:1px solid color-mix(in srgb,var(--ca-gold) 30%,transparent);border-radius:999px;background:transparent;color:color-mix(in srgb,var(--ca-gold) 68%,white);padding:3px 7px;font-size:.56rem;font-weight:800;cursor:pointer}
+/* A 21px pill blown up to 44px would dwarf the heading beside it, so the hit
+   area grows past the visual bounds instead. Same trick for the row buttons. */
+.ledger-board-switch button::after{position:absolute;inset:-12px -4px;content:""}
+.ledger-person-button::after{position:absolute;inset:-10px 0;content:""}
+.ledger-person-button{position:relative}
 .ledger-board-switch button[aria-pressed="true"]{border-color:var(--ca-gold);background:color-mix(in srgb,var(--ca-gold) 16%,transparent);color:var(--ca-gold-bright)}
 
 /* A33 record room. The compact board remains a summary; this layer owns depth. */
