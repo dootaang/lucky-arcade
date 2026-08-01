@@ -1,5 +1,5 @@
 import {describe,expect,it}from"vitest";
-import {TEMEROSA_FLOW_EPOCH_KST_DAY,TEMEROSA_FLOW_NPC_GAMBLING_PROFILES,TEMEROSA_FLOW_NPC_LEDGER_CONTRACT,TEMEROSA_FLOW_PROFILE_EXCLUSIONS,TEMEROSA_FLOW_RELEASE_AUDIT,TEMEROSA_LEGACY_NPC_SUCCESSORS,TEMEROSA_NPC_GAMBLING_PROFILES,TEMEROSA_NPC_LEDGER_CONTRACT,TEMEROSA_SERIES_CASINO_SEAT_IDS,TEMEROSA_SERIES_RUNTIME_SOURCE,casinoDayPlan,casinoUtcSecondAtKstDay,completedDayBalances,houseBalanceAt,recentNpcPlayEventsAt,temerosaCasinoLedgerAtUtcSecond}from"../src/index.ts";
+import {TEMEROSA_FLOW_EPOCH_KST_DAY,TEMEROSA_FLOW_NPC_GAMBLING_PROFILES,TEMEROSA_FLOW_NPC_LEDGER_CONTRACT,TEMEROSA_FLOW_PROFILE_EXCLUSIONS,TEMEROSA_FLOW_RELEASE_AUDIT,TEMEROSA_LEGACY_NPC_SUCCESSORS,TEMEROSA_NPC_GAMBLING_PROFILES,TEMEROSA_NPC_LEDGER_CONTRACT,TEMEROSA_SERIES_CASINO_SEAT_IDS,TEMEROSA_SERIES_RUNTIME_SOURCE,casinoDayPlan,casinoSpectatorScheduleAt,casinoUtcSecondAtKstDay,completedDayBalances,houseBalanceAt,legacyCabinetNpcId,recentNpcPlayEventsAt,temerosaCasinoLedgerAtUtcSecond}from"../src/index.ts";
 
 describe("Temerosa flow ledger cutover",()=>{
   it("carries every NPC and house close exactly once",()=>{
@@ -37,18 +37,20 @@ describe("Temerosa flow ledger cutover",()=>{
     expect(TEMEROSA_FLOW_NPC_GAMBLING_PROFILES.some((profile)=>profile.id==="wares")).toBe(false);
   });
 
-  it("does not switch contracts at the candidate date without a release flag",()=>{
+  it("switches the default worldline at the live KST epoch",()=>{
     const boundary=casinoUtcSecondAtKstDay(TEMEROSA_FLOW_EPOCH_KST_DAY);
     expect(temerosaCasinoLedgerAtUtcSecond(boundary-1).contract.version).toBe("npc-ledger/1.1");
-    expect(temerosaCasinoLedgerAtUtcSecond(boundary).contract.version).toBe("npc-ledger/1.1");
-    expect(temerosaCasinoLedgerAtUtcSecond(boundary+365*86_400).contract.version).toBe("npc-ledger/1.1");
+    expect(temerosaCasinoLedgerAtUtcSecond(boundary).contract.version).toBe("npc-ledger/1.2");
+    expect(temerosaCasinoLedgerAtUtcSecond(boundary+365*86_400).contract.version).toBe("npc-ledger/1.2");
   });
 
-  it("keeps the candidate locked even with a flag while a frozen audit blocker remains",()=>{
+  it("keeps an explicit rollback switch while activating the approved worldline",()=>{
     const boundary=casinoUtcSecondAtKstDay(TEMEROSA_FLOW_EPOCH_KST_DAY);
-    expect(TEMEROSA_FLOW_RELEASE_AUDIT.blockers).toContain("ten-year-audit-pending");
+    expect(TEMEROSA_FLOW_RELEASE_AUDIT.blockers).toEqual([]);
+    expect(TEMEROSA_FLOW_RELEASE_AUDIT.warnings).toContain("ten-year-audit-pending");
     expect(temerosaCasinoLedgerAtUtcSecond(boundary-1,{flowEconomy:true}).contract.version).toBe("npc-ledger/1.1");
-    expect(temerosaCasinoLedgerAtUtcSecond(boundary,{flowEconomy:true}).contract.version).toBe("npc-ledger/1.1");
+    expect(temerosaCasinoLedgerAtUtcSecond(boundary,{flowEconomy:true}).contract.version).toBe("npc-ledger/1.2");
+    expect(temerosaCasinoLedgerAtUtcSecond(boundary,{flowEconomy:false}).contract.version).toBe("npc-ledger/1.1");
   });
 
   it("keeps real live-tape actions visible immediately after the cutover",()=>{
@@ -60,13 +62,24 @@ describe("Temerosa flow ledger cutover",()=>{
     expect(events.some((event)=>event.matchId===first.matchId&&event.code==="table-enter")).toBe(true);
   });
 
-  it("records the audited one-year drift as frozen release blockers",()=>{
+  it("records the audited one-year drift as live operating warnings",()=>{
     const report=TEMEROSA_FLOW_RELEASE_AUDIT.oneYear;
     expect(report.supplyChangeBps).toBeGreaterThan(1_000);
     expect(report.averageSettlementGapSeconds).toBeGreaterThan(25);
     expect(report.houseCurtailedOperatingExpenses).toBe(0);
-    expect(TEMEROSA_FLOW_RELEASE_AUDIT.blockers).toContain("one-year-supply-drift");
-    expect(TEMEROSA_FLOW_RELEASE_AUDIT.blockers).toContain("one-year-activity-gap");
+    expect(TEMEROSA_FLOW_RELEASE_AUDIT.warnings).toContain("one-year-supply-drift");
+    expect(TEMEROSA_FLOW_RELEASE_AUDIT.warnings).toContain("one-year-activity-gap");
     expect(report.minimumHouseBalance).toBeGreaterThanOrEqual(TEMEROSA_FLOW_NPC_LEDGER_CONTRACT.houseOperatingPolicy!.protectedReserve);
+  });
+
+  it("keeps series accounts while scheduling cabinet-compatible spectator replays",()=>{
+    const second=casinoUtcSecondAtKstDay(TEMEROSA_FLOW_EPOCH_KST_DAY,12*3_600);
+    const schedule=casinoSpectatorScheduleAt(TEMEROSA_FLOW_NPC_GAMBLING_PROFILES,{utcMinute:()=>Math.floor(second/60)},TEMEROSA_FLOW_NPC_LEDGER_CONTRACT);
+    const markets=[...(schedule.current?[schedule.current]:[]),...schedule.upcoming,...schedule.recent];
+    expect(markets.length).toBeGreaterThan(0);
+    for(const market of markets){
+      expect(market.participantIds.every((id)=>TEMEROSA_FLOW_NPC_GAMBLING_PROFILES.some((profile)=>profile.id===id))).toBe(true);
+      expect(market.participantIds.every((id)=>legacyCabinetNpcId(id)!==undefined)).toBe(true);
+    }
   });
 });

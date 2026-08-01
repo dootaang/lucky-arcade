@@ -1,4 +1,4 @@
-import { CASINO_SPECTATOR_PRICING_VERSION, CASINO_SPECTATOR_TARGET_RETURN_BPS, type CasinoSpectatorMarket } from "@lucky-arcade/casino-ledger";
+import { CASINO_SPECTATOR_PRICING_VERSION, CASINO_SPECTATOR_TARGET_RETURN_BPS, legacyCabinetNpcId, type CasinoSpectatorMarket } from "@lucky-arcade/casino-ledger";
 import { CASINO_MARKET_QUOTE_CONTRACT, type CasinoMarketQuote } from "@lucky-arcade/engine";
 import { createMatchPairsSpectatorReplay, type MatchPairsFace, type MatchPairsOpponent, type MatchPairsSpectatorReplay } from "@lucky-arcade/match-pairs";
 import { createOldMaidSpectatorReplay, createTemerosaCasinoOldMaidCartridge, type OldMaidCartridge, type OldMaidSpectatorReplay } from "@lucky-arcade/old-maid";
@@ -84,7 +84,7 @@ async function buildReplay(market: CasinoSpectatorMarket): Promise<CasinoSideMar
   const seed = `${SIDE_MARKET_REPLAY_CONTRACT}:${market.matchId}`;
   if (market.tableId === "temerosa-match-pairs") {
     if (market.participantIds.length !== 2) throw new Error("side_market_replay_participant_count");
-    const participantIds = market.participantIds as unknown as readonly [string, string];
+    const participantIds = replayParticipantIds(market) as unknown as readonly [string, string];
     const opponents = createTemerosaMatchPairsOpponents(bundle.contentAssets);
     const game = createMatchPairsSpectatorReplay({
       faces: TEMEROSA_MATCH_PAIRS_FACES,
@@ -96,19 +96,21 @@ async function buildReplay(market: CasinoSpectatorMarket): Promise<CasinoSideMar
       difficulty: "normal",
       focus: "standard",
     });
-    assertMarketOutcome(market, game.winningCharacterId);
+    const winningOutcomeId=marketOutcomeId(market,participantIds,game.winningCharacterId);
+    assertMarketOutcome(market,winningOutcomeId);
     return Object.freeze({ contract: SIDE_MARKET_REPLAY_CONTRACT, kind: "match-pairs", marketId: market.marketId, seed,
-      winningOutcomeId: game.winningCharacterId, resultHash: game.resultHash, assets: bundle.assets,
+      winningOutcomeId, resultHash: game.resultHash, assets: bundle.assets,
       game, faces: TEMEROSA_MATCH_PAIRS_FACES, opponents });
   }
   if (market.tableId !== "temerosa-old-maid") throw new Error("side_market_native_experience_missing");
   if (market.participantIds.length !== 4) throw new Error("side_market_replay_participant_count");
-  const participantIds = market.participantIds as unknown as readonly [string, string, string, string];
+  const participantIds = replayParticipantIds(market) as unknown as readonly [string, string, string, string];
   const cartridge = createTemerosaCasinoOldMaidCartridge(bundle.contentAssets);
   const game = createOldMaidSpectatorReplay({ cartridge, seed, sessionId: `side-market:${market.marketId}`, participantIds });
-  assertMarketOutcome(market, game.oddCardHolderCharacterId);
+  const winningOutcomeId=marketOutcomeId(market,participantIds,game.oddCardHolderCharacterId);
+  assertMarketOutcome(market,winningOutcomeId);
   return Object.freeze({ contract: SIDE_MARKET_REPLAY_CONTRACT, kind: "old-maid", marketId: market.marketId, seed,
-    winningOutcomeId: game.oddCardHolderCharacterId, resultHash: game.resultHash, assets: bundle.assets, game, cartridge });
+    winningOutcomeId, resultHash: game.resultHash, assets: bundle.assets, game, cartridge });
 }
 
 function assertMarketOutcome(market: CasinoSpectatorMarket, winningOutcomeId: string): void {
@@ -121,22 +123,22 @@ async function priceActualOutcomes(market: CasinoSpectatorMarket): Promise<reado
   const counts = Object.fromEntries(outcomeIds.map((id) => [id, 1])) as Record<string, number>;
   if (market.tableId === "temerosa-match-pairs") {
     if (market.participantIds.length !== 2) throw new Error("side_market_replay_participant_count");
-    const participantIds = market.participantIds as unknown as readonly [string, string];
+    const participantIds = replayParticipantIds(market) as unknown as readonly [string, string];
     const opponents = createTemerosaMatchPairsOpponents(bundle.contentAssets);
     for (let sample = 0; sample < PRICING_SAMPLES; sample += 1) {
       const game = createMatchPairsSpectatorReplay({ faces: TEMEROSA_MATCH_PAIRS_FACES, opponents, packVersion: TEMEROSA_MATCH_PAIRS_PACK_VERSION,
         seed: `${CASINO_SPECTATOR_PRICING_VERSION}:${market.tableId}:${participantIds.join("+")}:${sample}`, sessionId: `side-market-price:${sample}`,
         participantIds, difficulty: "normal", focus: "standard", captureFrames: false });
-      counts[game.winningCharacterId]! += 1;
+      counts[marketOutcomeId(market,participantIds,game.winningCharacterId)]! += 1;
     }
   } else {
     if (market.participantIds.length !== 4) throw new Error("side_market_replay_participant_count");
-    const participantIds = market.participantIds as unknown as readonly [string, string, string, string];
+    const participantIds = replayParticipantIds(market) as unknown as readonly [string, string, string, string];
     const cartridge = createTemerosaCasinoOldMaidCartridge(bundle.contentAssets);
     for (let sample = 0; sample < PRICING_SAMPLES; sample += 1) {
       const game = createOldMaidSpectatorReplay({ cartridge, seed: `${CASINO_SPECTATOR_PRICING_VERSION}:${market.tableId}:${participantIds.join("+")}:${sample}`,
         sessionId: `side-market-price:${sample}`, participantIds, captureFrames: false });
-      counts[game.oddCardHolderCharacterId]! += 1;
+      counts[marketOutcomeId(market,participantIds,game.oddCardHolderCharacterId)]! += 1;
     }
   }
   return probabilityBps(outcomeIds.map((id) => counts[id]!));
@@ -150,4 +152,15 @@ function probabilityBps(counts: readonly number[]): readonly number[] {
     .sort((left, right) => right.fraction - left.fraction || left.index - right.index);
   for (let cursor = 0; remainder > 0; cursor += 1, remainder -= 1) output[order[cursor % order.length]!.index]! += 1;
   return Object.freeze(output);
+}
+
+function replayParticipantIds(market:CasinoSpectatorMarket):readonly string[]{
+  return Object.freeze(market.participantIds.map((id)=>legacyCabinetNpcId(id)??id));
+}
+
+function marketOutcomeId(market:CasinoSpectatorMarket,replayIds:readonly string[],winningReplayId:string):string{
+  if(winningReplayId==="draw"&&market.outcomes.some((outcome)=>outcome.outcomeId==="draw"))return "draw";
+  const index=replayIds.indexOf(winningReplayId);
+  if(index<0)throw new Error("side_market_replay_outcome_missing");
+  return market.participantIds[index]!;
 }

@@ -112,12 +112,13 @@ test("loads the living ledger lazily and reuses the casino manifest in a game", 
   await expect(page.locator(".casino-record-room")).toBeVisible();
   await expect(page.locator(".record-ranking tbody tr")).toHaveCount(30);
   await page.getByRole("button", { name: "30명 더 보기", exact: true }).click();
-  await expect(page.locator(".record-ranking tbody tr")).toHaveCount(35);
-  await expect(page.locator(".record-ranking tbody tr:not(.is-user)")).toHaveCount(34);
+  while (await page.locator(".record-more").count()) await page.locator(".record-more").click();
+  await expect(page.locator(".record-ranking tbody tr")).toHaveCount(103);
+  await expect(page.locator(".record-ranking tbody tr:not(.is-user)")).toHaveCount(102);
   await expect(page.locator(".record-ranking tbody tr.is-user")).toHaveCount(1);
   await page.locator(".record-ranking tbody tr th button").first().click();
   await expect(page.locator(".npc-ledger-detail")).toBeVisible();
-  await expect(page.locator(".npc-ledger-kpis article")).toHaveCount(4);
+  await expect(page.locator(".npc-ledger-kpis article")).toHaveCount(8);
   await expect(page.locator(".npc-receipts li").first()).toContainText("KST");
   await page.locator(".record-close").click();
   await expect(page.locator(".casino-record-room")).toHaveCount(0);

@@ -7,6 +7,7 @@ import {
 import { casinoKstDayAtUtcSecond, casinoUtcSecondAtKstDay } from "./casino-time.ts";
 import { casinoDayPlan, completedDayBalances } from "./engine.ts";
 import type { CasinoClock, CasinoTableId, NpcGamblingProfile, NpcLedgerContract, NpcMatch, NpcPresence, NpcSession } from "./contracts.ts";
+import { TEMEROSA_LEGACY_NPC_SUCCESSORS } from "./temerosa-series-migration.ts";
 
 export const CASINO_SPECTATOR_MARKET_CONTRACT = "casino-spectator-market/0.2" as const;
 export const CASINO_SPECTATOR_PRICING_VERSION = "casino-spectator-pricing/0.2" as const;
@@ -65,6 +66,9 @@ const MATCH_PAIRS_REPLAY_IDS = new Set([
   "echo", "esther", "hiro", "katrinka", "kreva", "levillotte", "lilim", "lyla", "machina", "morsisa",
   "nemo", "nieun", "nostalgia", "phaeo", "raven", "temute", "traver", "ttaengchil", "tumit-tu", "yul",
 ]);
+const OLD_MAID_REPLAY_IDS = new Set(Object.keys(TEMEROSA_LEGACY_NPC_SUCCESSORS).filter((id)=>id!=="bacikal"));
+const MATCH_PAIRS_REPLAY_ACCOUNT_IDS = replayAccountIds(MATCH_PAIRS_REPLAY_IDS);
+const OLD_MAID_REPLAY_ACCOUNT_IDS = replayAccountIds(OLD_MAID_REPLAY_IDS);
 
 /** Returns the current, recently settled, and next scheduled NPC-only markets. */
 export function casinoSpectatorMarketsAt(
@@ -249,9 +253,8 @@ function scheduledExhibitionMarket(
     return dayStart + visit.startedAtSecondOfDay < settles && dayStart + visit.endsAtSecondOfDay > starts;
   }).flatMap((visit) => visit.participantIds));
   const rng = new XorShift32(`${CASINO_SPECTATOR_PRICING_VERSION}:event:${cycle}:participants`);
-  const eligibleProfiles = tableId === "temerosa-old-maid"
-    ? profiles.filter((profile) => profile.id !== "bacikal")
-    : profiles.filter((profile) => MATCH_PAIRS_REPLAY_IDS.has(profile.id));
+  const eligibleAccountIds=tableId === "temerosa-old-maid"?OLD_MAID_REPLAY_ACCOUNT_IDS:MATCH_PAIRS_REPLAY_ACCOUNT_IDS;
+  const eligibleProfiles=profiles.filter((profile)=>eligibleAccountIds.has(profile.id));
   const candidates = eligibleProfiles.filter((profile) => !busy.has(profile.id)).map((profile) => ({ profile, order: rng.next() }))
     .sort((left, right) => left.order - right.order || compareText(left.profile.id, right.profile.id));
   const fallback = eligibleProfiles.filter((profile) => !candidates.some((candidate) => candidate.profile.id === profile.id)).map((profile) => ({ profile, order: rng.next() }))
@@ -363,3 +366,12 @@ function normalizedUtcSecond(clock: CasinoClock): number {
   return seconds;
 }
 function compareText(left: string, right: string): number { return left < right ? -1 : left > right ? 1 : 0; }
+
+function replayAccountIds(legacyIds:ReadonlySet<string>):ReadonlySet<string>{
+  const ids=new Set<string>(legacyIds);
+  for(const legacyId of legacyIds){
+    const successor=TEMEROSA_LEGACY_NPC_SUCCESSORS[legacyId];
+    if(successor)ids.add(successor);
+  }
+  return ids;
+}

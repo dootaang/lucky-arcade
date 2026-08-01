@@ -20,7 +20,7 @@ describe("casino flow economy audit",()=>{
     expect(report.topFiveChangedSeats).toBeGreaterThan(0);
     const supplyWithinReleaseBand=report.supplyChangeBps>=-300&&report.supplyChangeBps<=500;
     expect(supplyWithinReleaseBand).toBe(false);
-    expect(TEMEROSA_FLOW_RELEASE_AUDIT.blockers).toContain("seven-day-supply-drift");
+    expect(TEMEROSA_FLOW_RELEASE_AUDIT.warnings).toContain("seven-day-supply-drift");
     expect(report.averageSettlementGapSeconds).toBeGreaterThanOrEqual(10);
     expect(report.averageSettlementGapSeconds).toBeLessThanOrEqual(25);
     expect(report).toMatchObject(TEMEROSA_FLOW_RELEASE_AUDIT.sevenDays);

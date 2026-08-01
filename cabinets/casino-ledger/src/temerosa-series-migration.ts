@@ -52,3 +52,16 @@ export const TEMEROSA_LEGACY_NPC_SUCCESSORS: Readonly<Record<string, TemerosaSer
 export function successorNpcId(legacyNpcId: string): TemerosaSeriesNpcId | undefined {
   return TEMEROSA_LEGACY_NPC_SUCCESSORS[legacyNpcId];
 }
+
+/**
+ * Returns the legacy cabinet character id used to render a series-scoped
+ * casino account. The translation belongs at the replay boundary: balances,
+ * markets, and receipts continue to use the series-scoped account id.
+ */
+export function legacyCabinetNpcId(seriesNpcId: string): string | undefined {
+  const matches=Object.entries(TEMEROSA_LEGACY_NPC_SUCCESSORS)
+    .filter(([,successor])=>successor===seriesNpcId)
+    .map(([legacyId])=>legacyId)
+    .sort((left,right)=>left==="bacikal"?1:right==="bacikal"?-1:left.localeCompare(right));
+  return matches[0];
+}

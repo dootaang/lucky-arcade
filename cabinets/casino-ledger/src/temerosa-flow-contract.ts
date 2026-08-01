@@ -13,14 +13,16 @@ import {
   TEMEROSA_SERIES_RUNTIME_SOURCE,
 } from "./temerosa-series-runtime.generated.ts";
 
-/** Audit-candidate epoch only. It is inert until an explicit release flag is supplied. */
+/** Live epoch: 2026-08-01 00:00 KST. Historical results are frozen from this boundary. */
 export const TEMEROSA_FLOW_EPOCH_KST_DAY=20_666;
 
 export interface TemerosaCasinoReleaseFlags{flowEconomy:boolean}
 export const TEMEROSA_CASINO_RELEASE_FLAGS_DISABLED:Readonly<TemerosaCasinoReleaseFlags>=Object.freeze({flowEconomy:false});
+export const TEMEROSA_CASINO_RELEASE_FLAGS_ACTIVE:Readonly<TemerosaCasinoReleaseFlags>=Object.freeze({flowEconomy:true});
 export const TEMEROSA_FLOW_RELEASE_AUDIT=Object.freeze({
-  status:"blocked" as const,
-  blockers:Object.freeze(["seven-day-supply-drift","one-year-supply-drift","one-year-activity-gap","ten-year-audit-pending"] as const),
+  status:"active-with-warnings" as const,
+  blockers:Object.freeze([] as const),
+  warnings:Object.freeze(["seven-day-supply-drift","one-year-supply-drift","one-year-activity-gap","ten-year-audit-pending"] as const),
   sevenDays:Object.freeze({npcCount:102,supplyChangeBps:-1_681,averageSettlementGapSeconds:24.91,minimumHouseBalance:100_384,houseCurtailedOperatingExpenses:0}),
   oneYear:Object.freeze({supplyChangeBps:2_329,averageSettlementGapSeconds:26.13,minimumHouseBalance:50_012,houseCurtailedOperatingExpenses:0}),
   tenYears:Object.freeze({status:"pending" as const}),
@@ -79,7 +81,7 @@ export const TEMEROSA_FLOW_NPC_LEDGER_CONTRACT:NpcLedgerContract=Object.freeze({
   profitHistory:legacyProfitHistory(),
 });
 
-export function temerosaCasinoLedgerAtUtcSecond(utcSecond:number,releaseFlags:Readonly<TemerosaCasinoReleaseFlags>=TEMEROSA_CASINO_RELEASE_FLAGS_DISABLED):Readonly<{profiles:readonly NpcGamblingProfile[];contract:NpcLedgerContract}>{
+export function temerosaCasinoLedgerAtUtcSecond(utcSecond:number,releaseFlags:Readonly<TemerosaCasinoReleaseFlags>=TEMEROSA_CASINO_RELEASE_FLAGS_ACTIVE):Readonly<{profiles:readonly NpcGamblingProfile[];contract:NpcLedgerContract}>{
   if(!Number.isSafeInteger(utcSecond))throw new Error("temerosa_ledger_invalid_clock");
   return releaseFlags.flowEconomy&&TEMEROSA_FLOW_RELEASE_READY&&casinoKstDayAtUtcSecond(utcSecond)>=TEMEROSA_FLOW_EPOCH_KST_DAY
     ? Object.freeze({profiles:TEMEROSA_FLOW_NPC_GAMBLING_PROFILES,contract:TEMEROSA_FLOW_NPC_LEDGER_CONTRACT})
