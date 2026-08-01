@@ -982,10 +982,14 @@ test("plays and restores a complete Temerosa old maid table", async ({ page }, t
       if (!checkedThrowingChrome) {
         const chrome = await page.locator(".old-maid-discard-options>button.throwing").evaluate((button) => {
           const name = button.querySelector(".old-maid-card strong");
-          return { nameDisplay: name ? getComputedStyle(name).display : "missing", buttonTransform: getComputedStyle(button).transform };
+          const label = button.querySelector(":scope>strong");
+          return {
+            nameDisplay: name ? getComputedStyle(name).display : "missing",
+            labelDisplay: label ? getComputedStyle(label).display : "missing",
+            buttonTransform: getComputedStyle(button).transform,
+          };
         });
-        expect(chrome).toEqual({ nameDisplay: "none", buttonTransform: "none" });
-        await expect(page.locator(".old-maid-discard-options>button.throwing>strong")).toHaveCSS("opacity", "0", { timeout: 170 });
+        expect(chrome).toEqual({ nameDisplay: "none", labelDisplay: "none", buttonTransform: "none" });
         checkedThrowingChrome = true;
       }
       await expect(page.locator(".old-maid-pile-pair")).not.toHaveCount(0);

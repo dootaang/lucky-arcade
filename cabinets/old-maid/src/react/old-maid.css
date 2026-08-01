@@ -36,7 +36,7 @@
 .old-maid-card-button.reordering{outline:2px solid #e6c36c;transform:translateY(-8px)}.old-maid-reorder-budget{flex:0 0 100%;align-self:flex-end;margin-left:10px;color:#91a5bd;font-size:.68rem}
 .old-maid-discard-options.throwing>button:not(.throwing){opacity:.12;transform:scale(.88)}
 .old-maid-discard-options>button.throwing{position:relative;z-index:12;opacity:1!important}
-.old-maid-discard-options>button.throwing .old-maid-card strong{display:none}.old-maid-discard-options>button.throwing>strong{opacity:0;transition:opacity .12s}
+.old-maid-discard-options>button.throwing .old-maid-card strong,.old-maid-discard-options>button.throwing>strong{display:none}
 .old-maid-discard-options>button{transition:opacity .18s,transform .18s}
 
 @media(max-width:900px){
