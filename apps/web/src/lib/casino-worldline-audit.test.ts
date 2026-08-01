@@ -31,8 +31,8 @@ describe("npc-ledger/1.2 canonical transition audit",()=>{
     });
 
     const farFuture=casinoUtcSecondAtKstDay(TEMEROSA_FLOW_EPOCH_KST_DAY+3_650);
-    expect(temerosaCasinoLedgerAtUtcSecond(farFuture).contract.version).toBe("npc-ledger/1.2");
-    expect(temerosaCasinoLedgerAtUtcSecond(farFuture,{flowEconomy:true}).contract.version).toBe("npc-ledger/1.2");
+    expect(temerosaCasinoLedgerAtUtcSecond(farFuture).contract.version).toBe("npc-ledger/1.3");
+    expect(temerosaCasinoLedgerAtUtcSecond(farFuture,{flowEconomy:true}).contract.version).toBe("npc-ledger/1.3");
     expect(temerosaCasinoLedgerAtUtcSecond(farFuture,{flowEconomy:false}).contract.version).toBe("npc-ledger/1.1");
   },process.env.CASINO_LONG_AUDIT==="1"?900_000:60_000);
 });

@@ -58,6 +58,7 @@ const REQUIRED_ASSETS = [
 let assetPromise: Promise<Readonly<Record<string, string>>> | null = null;
 let casinoAssetPromise: Promise<TemerosaCasinoAssetBundle> | null = null;
 let seriesNpcAssetPromise: Promise<TemerosaSeriesNpcAssetBundle> | null = null;
+let cigeniaAssetPromise: Promise<TemerosaSeriesNpcAssetBundle> | null = null;
 const manifestPromises = new Map<string, Promise<TemerosaManifestLoad>>();
 
 export interface TemerosaCasinoAssetBundle {
@@ -77,9 +78,9 @@ interface SeriesNpcPortraitRecord {
   lg?: SeriesPortraitVariant;
 }
 interface TemerosaSeriesNpcManifest {
-  contract: "temerosa-series-npc-portrait-pack/0.2";
+  contract: "temerosa-series-npc-portrait-pack/0.2" | "temerosa-series-npc-portrait-pack/0.3";
   packId: "temerosa-series-npcs";
-  version: "0.2.0";
+  version: "0.2.0" | "0.3.0";
   npcs: readonly SeriesNpcPortraitRecord[];
 }
 export interface TemerosaSeriesNpcAssetBundle {
@@ -142,28 +143,16 @@ export function loadTemerosaCasinoManifest(): Promise<TemerosaManifestLoad> {
 
 /** Loads the four-series portrait pack only after a series-NPC surface asks for it. */
 export function loadTemerosaSeriesNpcAssets():Promise<TemerosaSeriesNpcAssetBundle>{
-  seriesNpcAssetPromise??=fetch("/content/temerosa-series-npcs/0.2.0/manifest.json",{cache:"no-store"}).then(async(response)=>{
-    if(!response.ok)throw new Error("temerosa_series_npc_manifest_missing");
-    const manifest=await response.json() as TemerosaSeriesNpcManifest;
-    if(manifest.contract!=="temerosa-series-npc-portrait-pack/0.2"||manifest.packId!=="temerosa-series-npcs"||manifest.version!=="0.2.0")throw new Error("temerosa_series_npc_manifest_invalid");
-    const thumbAssets:Record<string,string>={},assets:Record<string,Readonly<Record<string,string>>>={},detailAssets:Record<string,string>={};
-    const unavailable:string[]=[];
-    for(const npc of manifest.npcs){
-      if(npc.status!=="available"){unavailable.push(npc.npcId);continue;}
-      if(!npc.sm||!npc.md)throw new Error(`temerosa_series_npc_asset_incomplete:${npc.npcId}`);
-      thumbAssets[npc.npcId]=seriesNpcContentUrl(npc.sm.path);
-      assets[npc.npcId]=Object.freeze(Object.fromEntries(Object.entries(npc.md).map(([emotion,variant])=>[emotion,seriesNpcContentUrl(variant.path)])));
-      detailAssets[npc.npcId]=seriesNpcContentUrl(npc.lg?.path??npc.md.neutral?.path??npc.sm.path);
-    }
-    return Object.freeze({thumbAssets:Object.freeze(thumbAssets),assets:Object.freeze(assets),detailAssets:Object.freeze(detailAssets),unavailableNpcIds:Object.freeze(unavailable.toSorted())});
-  }).catch((error:unknown)=>{seriesNpcAssetPromise=null;throw error;});
+  seriesNpcAssetPromise??=loadSeriesNpcAssetPack("0.2.0","temerosa-series-npc-portrait-pack/0.2").catch((error:unknown)=>{seriesNpcAssetPromise=null;throw error;});
   return seriesNpcAssetPromise;
 }
 
 /** Resolves one mounted NPC at a time; image bytes remain browser-lazy. */
 export async function resolveTemerosaSeriesNpcPortrait(npcId:string,intent:TemerosaSeriesNpcPortraitIntent):Promise<string|undefined>{
   if(!npcId.startsWith("temerosa:"))return undefined;
-  const bundle=await loadTemerosaSeriesNpcAssets();
+  const bundle=npcId==="temerosa:finale:cigenia"
+    ? await (cigeniaAssetPromise??=loadSeriesNpcAssetPack("0.3.0","temerosa-series-npc-portrait-pack/0.3").catch((error:unknown)=>{cigeniaAssetPromise=null;throw error;}))
+    : await loadTemerosaSeriesNpcAssets();
   const portraitId=npcId==="temerosa:overture:mortem"?"temerosa:root2:mortem":npcId;
   if(npcId==="temerosa:guest:nemo")return intent==="detail"
     ? contentUrl("0.8.0","assets/margin/npc-nemo-neutral/lg.webp")
@@ -192,4 +181,21 @@ function fetchManifest(version: string): Promise<TemerosaManifestLoad> {
 }
 export function temerosaContentUrl(version: string, path: string): string { return `/content/temerosa-margin/${version}/${path}`; }
 function contentUrl(version: string, path: string): string { return temerosaContentUrl(version, path); }
-function seriesNpcContentUrl(path:string):string{return `/content/temerosa-series-npcs/0.2.0/${path}`;}
+function seriesNpcContentUrl(version:string,path:string):string{return `/content/temerosa-series-npcs/${version}/${path}`;}
+
+async function loadSeriesNpcAssetPack(version:"0.2.0"|"0.3.0",contract:TemerosaSeriesNpcManifest["contract"]):Promise<TemerosaSeriesNpcAssetBundle>{
+  const response=await fetch(`/content/temerosa-series-npcs/${version}/manifest.json`,{cache:"no-store"});
+  if(!response.ok)throw new Error("temerosa_series_npc_manifest_missing");
+  const manifest=await response.json() as TemerosaSeriesNpcManifest;
+  if(manifest.contract!==contract||manifest.packId!=="temerosa-series-npcs"||manifest.version!==version)throw new Error("temerosa_series_npc_manifest_invalid");
+  const thumbAssets:Record<string,string>={},assets:Record<string,Readonly<Record<string,string>>>={},detailAssets:Record<string,string>={};
+  const unavailable:string[]=[];
+  for(const npc of manifest.npcs){
+    if(npc.status!=="available"){unavailable.push(npc.npcId);continue;}
+    if(!npc.sm||!npc.md)throw new Error(`temerosa_series_npc_asset_incomplete:${npc.npcId}`);
+    thumbAssets[npc.npcId]=seriesNpcContentUrl(version,npc.sm.path);
+    assets[npc.npcId]=Object.freeze(Object.fromEntries(Object.entries(npc.md).map(([emotion,variant])=>[emotion,seriesNpcContentUrl(version,variant.path)])));
+    detailAssets[npc.npcId]=seriesNpcContentUrl(version,npc.lg?.path??npc.md.neutral?.path??npc.sm.path);
+  }
+  return Object.freeze({thumbAssets:Object.freeze(thumbAssets),assets:Object.freeze(assets),detailAssets:Object.freeze(detailAssets),unavailableNpcIds:Object.freeze(unavailable.toSorted())});
+}

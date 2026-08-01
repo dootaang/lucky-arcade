@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { TEMEROSA_FLOW_NPC_LEDGER_CONTRACT, TEMEROSA_SERIES_RUNTIME_SOURCE } from "../temerosa-flow-contract.ts";
-import { casinoEconomyHeadline, casinoLedgerEmotionForProfit, isPublicCasinoLedgerIdentity, splitCasinoQualifiedName } from "./casino-ledger-panel.tsx";
+import { CasinoPersonName, casinoEconomyHeadline, casinoLedgerEmotionForProfit, isPublicCasinoLedgerIdentity, splitCasinoQualifiedName } from "./casino-ledger-panel.tsx";
 
 describe("casino qualified names",()=>{
   it("splits the final qualified-name separator",()=>{
@@ -21,6 +21,20 @@ describe("casino qualified names",()=>{
     ["라일라 · Bestiaization", "Bestiaization"],
   ] as const)("keeps the canonical series visible for %s",(qualifiedName,series)=>{
     expect(splitCasinoQualifiedName(qualifiedName)).toEqual({name:"라일라",series});
+  });
+
+  it("can suppress series chips on the dense live tape",()=>{
+    const element=CasinoPersonName({qualifiedName:"키게니아 · Finale",showSeries:false});
+    const props=element.props as {className:string;children:unknown[]};
+    expect(props.className).toBe("casino-person-name");
+    expect(props.children[1]).toBe(false);
+  });
+
+  it("keeps settlement series chips on the same line as the name",()=>{
+    const element=CasinoPersonName({qualifiedName:"키게니아 · Finale",inlineSeries:true});
+    const props=element.props as {className:string;children:unknown[]};
+    expect(props.className).toContain("is-inline-series");
+    expect(props.children[1]).toBeTruthy();
   });
 });
 

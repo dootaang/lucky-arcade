@@ -159,6 +159,7 @@ test("loads the living ledger lazily and reuses the casino manifest in a game", 
 });
 
 test("reserves, restores, and settles one integrated spectator market receipt", async ({ page }, testInfo) => {
+  test.setTimeout(90_000);
   test.skip(testInfo.project.metadata.mobile === true);
   let casinoEpoch = Date.parse("2026-07-31T06:00:30Z");
   await page.route("**/content/temerosa-margin/0.8.0/manifest.json", async (route) => {
@@ -226,6 +227,9 @@ test("reserves, restores, and settles one integrated spectator market receipt", 
   await expect(oldMaidReplay.locator(".old-maid-table")).toBeVisible();
   await expect(oldMaidReplay.locator(".old-maid-deal-layer")).toBeVisible();
   await expect(oldMaidReplay.locator(".old-maid-deal-card").first()).toBeVisible();
+  // Draw flights are portalled to document.body so they can cross the modal
+  // and seat clipping boundaries; they are intentionally not dialog children.
+  await expect(page.locator(".old-maid-flight-layer")).toBeVisible({ timeout: 30_000 });
   await expect(oldMaidReplay).toContainText("REPLAY · 원본 관전");
   await oldMaidReplay.getByRole("button", { name: "오락실로 돌아가기", exact: true }).click();
   await expect(oldMaidReplay).toBeHidden();

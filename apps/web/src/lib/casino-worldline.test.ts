@@ -217,14 +217,13 @@ describe("personal casino world line", () => {
     }
   },120_000);
 
-  it("activates 1.2 at the epoch and retains the explicit rollback path",()=>{
+  it("activates 1.2 at its epoch, 1.3 on the next KST day, and retains rollback",()=>{
     const boundary=casinoUtcSecondAtKstDay(TEMEROSA_FLOW_EPOCH_KST_DAY);
     expect(temerosaCasinoLedgerAtUtcSecond(boundary-1).contract.version).toBe("npc-ledger/1.1");
-    for(const second of [boundary,boundary+3_650*86_400]){
-      expect(temerosaCasinoLedgerAtUtcSecond(second).contract.version).toBe("npc-ledger/1.2");
-      expect(temerosaCasinoLedgerAtUtcSecond(second,{flowEconomy:true}).contract.version).toBe("npc-ledger/1.2");
-      expect(temerosaCasinoLedgerAtUtcSecond(second,{flowEconomy:false}).contract.version).toBe("npc-ledger/1.1");
-    }
+    expect(temerosaCasinoLedgerAtUtcSecond(boundary).contract.version).toBe("npc-ledger/1.2");
+    expect(temerosaCasinoLedgerAtUtcSecond(boundary+86_400).contract.version).toBe("npc-ledger/1.3");
+    expect(temerosaCasinoLedgerAtUtcSecond(boundary+3_650*86_400,{flowEconomy:true}).contract.version).toBe("npc-ledger/1.3");
+    expect(temerosaCasinoLedgerAtUtcSecond(boundary+3_650*86_400,{flowEconomy:false}).contract.version).toBe("npc-ledger/1.1");
   });
 });
 

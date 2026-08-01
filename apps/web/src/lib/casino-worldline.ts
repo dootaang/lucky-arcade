@@ -14,6 +14,7 @@ import {
   npcFlowEconomyDay,
   assertCasinoTransaction,
   successorNpcId,
+  isFlowLedgerContractVersion,
   type CasinoDayPlan,
   type CasinoPresentationClock,
   type CasinoTransaction,
@@ -59,7 +60,7 @@ export function personalCasinoWorldlineAt(
   const uniqueTransactions = normalizeTransactions(transactions);
   const absoluteDay = casinoKstDayAtUtcSecond(now);
   const finalDayIndex = absoluteDay - contract.epochKstDay;
-  const canCheckpoint=contract.version==="npc-ledger/1.2"&&storage!==undefined&&finalDayIndex>=0;
+  const canCheckpoint=isFlowLedgerContractVersion(contract.version)&&storage!==undefined&&finalDayIndex>=0;
   const completedDayIndex=finalDayIndex-1;
   const completedJournalKey=completedDayIndex>=0?journalKeyThroughDay(uniqueTransactions,contract,completedDayIndex):"";
   const checkpoint=canCheckpoint?readLatestWorldlineCheckpoint(storage!,completedDayIndex,contract,(dayIndex)=>journalKeyThroughDay(uniqueTransactions,contract,dayIndex)):undefined;
@@ -71,7 +72,7 @@ export function personalCasinoWorldlineAt(
   const startDayIndex=memory?memory.dayIndex+1:checkpoint?checkpoint.historyAnchor.dayIndex+1:0;
   const snapshots=new Map<number,CasinoWorldlineCheckpointSnapshot>([[initial.dayIndex,freezeSnapshot(initial)]]);
   const activities:NpcActivity[]=[...(memory?.recentActivities??[])];
-  const activityStartDay=contract.version==="npc-ledger/1.2"?Math.max(0,finalDayIndex-6):0;
+  const activityStartDay=isFlowLedgerContractVersion(contract.version)?Math.max(0,finalDayIndex-6):0;
   let houseGamingProfitToday=0,houseOperatingExpensesToday=0;
 
   for(let dayIndex=startDayIndex;dayIndex<=finalDayIndex;dayIndex+=1){
@@ -79,7 +80,7 @@ export function personalCasinoWorldlineAt(
     const cutoff=dayIndex===finalDayIndex?casinoSecondOfKstDayAtUtcSecond(now):DAY_SECONDS-1;
     const dayTransactions=transactionDays.get(dayIndex)??[];
     const balanceEvents=npcEvents(dayTransactions,dayStart,contract);
-    const plan=contract.version==="npc-ledger/1.2"
+    const plan=isFlowLedgerContractVersion(contract.version)
       ?casinoDayPlanWithHouseOpening(profiles,dayIndex,initial.npcBalances,contract,initial.houseBalance,balanceEvents)
       :casinoDayPlan(profiles,dayIndex,initial.npcBalances,contract,balanceEvents);
     for(const profile of profiles)for(const session of plan.sessions[profile.id]??[]){
@@ -92,7 +93,7 @@ export function personalCasinoWorldlineAt(
       if(initial.npcBalances[event.npcId]===undefined)throw new Error(`casino_worldline_unknown_npc:${event.npcId}`);
       initial.npcBalances[event.npcId]!+=event.delta;
     }
-    if(contract.version==="npc-ledger/1.2")for(const incomeProfile of contract.externalIncomeProfiles??[]){
+    if(isFlowLedgerContractVersion(contract.version))for(const incomeProfile of contract.externalIncomeProfiles??[]){
       const incomeDay=npcFlowEconomyDay(incomeProfile,contract.epochKstDay+dayIndex);
       if(incomeDay.settlementMinute*60>cutoff)continue;
       initial.npcExternalReserves[incomeProfile.npcId]=(initial.npcExternalReserves[incomeProfile.npcId]??0)+incomeDay.grossIncome-incomeDay.casinoTopUp;
@@ -176,20 +177,20 @@ function npcEvents(transactions:readonly CasinoTransaction[],dayStart:number,con
   return Object.freeze(transactions.flatMap((transaction)=>transaction.postings.flatMap((posting,index)=>{
     if(!posting.accountId.startsWith("npc:")||posting.delta===0)return [];
     const storedNpcId=posting.accountId.slice(4);
-    const npcId=contract.version==="npc-ledger/1.2"?successorNpcId(storedNpcId)??storedNpcId:storedNpcId;
+    const npcId=isFlowLedgerContractVersion(contract.version)?successorNpcId(storedNpcId)??storedNpcId:storedNpcId;
     return [Object.freeze({eventId:`${transaction.transactionId}:${index}`,npcId,secondOfDay:transaction.occurredAtCasinoSecond-dayStart,delta:posting.delta})];
   })));
 }
 function applyHouseDay(opening:number,absoluteDay:number,cutoff:number,plan:CasinoDayPlan,transactions:readonly CasinoTransaction[],dayStart:number,contract:NpcLedgerContract):{balance:number;gamingProfit:number;operatingExpenses:number;curtailedOperatingExpenses:number}{
   const sessions=plan.sessions;
   const movements=[
-    ...Object.values(sessions).flat().filter((session)=>contract.version==="npc-ledger/1.2"?session.tableId!=="npc-income":isHouseTable(session.tableId)).map((session)=>({second:session.secondOfDay,delta:-session.delta,kind:"gaming" as const,branch:"deterministic" as const,id:session.matchId})),
+    ...Object.values(sessions).flat().filter((session)=>isFlowLedgerContractVersion(contract.version)?session.tableId!=="npc-income":isHouseTable(session.tableId)).map((session)=>({second:session.secondOfDay,delta:-session.delta,kind:"gaming" as const,branch:"deterministic" as const,id:session.matchId})),
     ...transactions.flatMap((transaction)=>transaction.postings.flatMap((posting,index)=>posting.accountId===TEMEROSA_HOUSE_ACCOUNT_ID?[{second:transaction.occurredAtCasinoSecond-dayStart,delta:posting.delta,kind:isHouseGamingTransaction(transaction)?"gaming" as const:"local" as const,branch:"local" as const,id:`${transaction.transactionId}:${index}`}]:[])),
   ].filter((movement)=>movement.second<=cutoff).sort((left,right)=>left.second-right.second||compareText(left.id,right.id));
   const operatingPolicy=contract.houseOperatingPolicy??DEFAULT_HOUSE_OPERATING_COST_POLICY;
-  const operationsSecond=contract.version==="npc-ledger/1.2"?operatingPolicy.settlementSecondOfDay:OPERATIONS_SECOND;
+  const operationsSecond=isFlowLedgerContractVersion(contract.version)?operatingPolicy.settlementSecondOfDay:OPERATIONS_SECOND;
   let balance=opening,gamingProfit=0,operatingExpenses=0,curtailedOperatingExpenses=0,cursor=0;
-  if(contract.version!=="npc-ledger/1.2"){
+  if(!isFlowLedgerContractVersion(contract.version)){
     for(const movement of movements)if(movement.branch==="deterministic"){balance+=movement.delta;gamingProfit+=movement.delta;}
     if(absoluteDay%7===0&&cutoff>=operationsSecond&&balance>TEMEROSA_HOUSE_OPENING_CAPITAL){const amount=Math.floor((balance-TEMEROSA_HOUSE_OPENING_CAPITAL)*.25);balance-=amount;operatingExpenses+=amount;}
     for(const movement of movements)if(movement.branch==="local"){balance+=movement.delta;if(movement.kind==="gaming")gamingProfit+=movement.delta;}

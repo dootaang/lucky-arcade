@@ -29,6 +29,8 @@ export interface OldMaidScreenProps {
   onPersist(previous: OldMaidState, next: OldMaidState, action: OldMaidAction, psychology: OldMaidPsychologySummary): Promise<void>;
   /** Reuses the native table and presentation without writing game progress. */
   presentationOnly?: boolean;
+  /** Starts a native spectator table from ready so every presentation action runs. */
+  autoStart?: Readonly<{ mode: OldMaidMode; characterIds: readonly string[] }>;
   onReplay?(): void;
   onExit(): void;
 }
@@ -57,7 +59,7 @@ export interface OldMaidMatchSummary {
   opponents: Array<{ participantId: string; displayName: string; played: number; beaten: number }>;
 }
 
-export function OldMaidScreen({ cartridge, assets, thumbAssets = assets, detailAssets = assets, initialState, matchSummary, economy, opponentAvailability = {}, onOpponentSelectionChange, onPersist, presentationOnly = false, onReplay, onExit }: OldMaidScreenProps) {
+export function OldMaidScreen({ cartridge, assets, thumbAssets = assets, detailAssets = assets, initialState, matchSummary, economy, opponentAvailability = {}, onOpponentSelectionChange, onPersist, presentationOnly = false, autoStart, onReplay, onExit }: OldMaidScreenProps) {
   useMemo(() => validateOldMaidLines(cartridge), [cartridge]);
   const [state, setState] = useState(() => initialState ?? createOldMaidState(cartridge, dailySeed()));
   const [detail, setDetail] = useState<OldMaidFace | null>(null);
@@ -98,6 +100,7 @@ export function OldMaidScreen({ cartridge, assets, thumbAssets = assets, detailA
   const stateRef = useRef(state);
   const persistQueueRef = useRef<Promise<void>>(Promise.resolve());
   const saveRevisionRef = useRef(0);
+  const autoStartRef = useRef(false);
   const psychologyRef = useRef<OldMaidPsychologySummary>(presentationOnly ? emptyPsychologySummary() : loadPsychologySummary(state.sessionId, state.seed));
   const [saveState, setSaveState] = useState<"saved" | "saving" | "error">("saved");
   const faces = useMemo(() => new Map(cartridge.faces.map((face) => [face.id, face])), [cartridge]);
@@ -147,6 +150,15 @@ export function OldMaidScreen({ cartridge, assets, thumbAssets = assets, detailA
       void persistQueueRef.current.then(() => { if (saveRevisionRef.current === revision) setSaveState("saved"); }).catch(() => { if (saveRevisionRef.current === revision) setSaveState("error"); });
     }
   }
+
+  useEffect(() => {
+    if (!autoStart || autoStartRef.current || stateRef.current.status !== "ready") return;
+    autoStartRef.current = true;
+    const characterIds = [...autoStart.characterIds];
+    setLobbyMode(autoStart.mode);
+    setOpponentIds(characterIds);
+    dispatch({ type: "start", mode: autoStart.mode, characterIds });
+  }, [autoStart]);
 
   function showSpeeches(selected: readonly OldMaidSpeech[]) {
     cancelSpeechTimers();

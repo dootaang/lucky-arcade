@@ -138,7 +138,7 @@ export interface CasinoDayPlan {
   matches: readonly NpcMatch[];
   predictions: readonly NpcPredictionWager[];
   sessions: Readonly<Record<string, readonly NpcSession[]>>;
-  /** Present only for npc-ledger/1.2. This is the reproducible, pre-round service envelope. */
+  /** Present on flow-ledger contracts. This is the reproducible, pre-round service envelope. */
   houseService?: Readonly<{
     openingBalance: number;
     protectedReserve: number;
@@ -192,10 +192,17 @@ export interface NpcSession {
   prediction?: NpcPredictionWager;
 }
 
+export type NpcLedgerContractVersion = "npc-ledger/1.0" | "npc-ledger/1.1" | "npc-ledger/1.2" | "npc-ledger/1.3";
+export type NpcLedgerSeedVersion = "npc-ledger/0.9" | "casino-flow/1.0" | "casino-flow/1.1" | "casino-flow/1.2";
+
+export function isFlowLedgerContractVersion(version: NpcLedgerContractVersion): boolean {
+  return version === "npc-ledger/1.2" || version === "npc-ledger/1.3";
+}
+
 export interface NpcLedgerContract {
-  version: "npc-ledger/1.0" | "npc-ledger/1.1" | "npc-ledger/1.2";
+  version: NpcLedgerContractVersion;
   /** Frozen deterministic seed domain; changing calendar boundaries must not reroll history. */
-  seedVersion: "npc-ledger/0.9" | "casino-flow/1.0" | "casino-flow/1.1";
+  seedVersion: NpcLedgerSeedVersion;
   /** First casino calendar day, counted at KST midnight. */
   epochKstDay: number;
   profiles: readonly NpcGamblingProfile[];
@@ -204,7 +211,7 @@ export interface NpcLedgerContract {
   houseOperatingPolicy?: Readonly<HouseOperatingCostPolicy>;
   /** Optional frozen predecessor used to carry each browser's local branch exactly. */
   predecessor?: Readonly<{profiles:readonly NpcGamblingProfile[];contract:NpcLedgerContract}>;
-  /** Required by npc-ledger/1.2; ignored by frozen legacy contracts. */
+  /** Required by flow-ledger contracts; ignored by frozen legacy contracts. */
   externalIncomeProfiles?: readonly NpcExternalIncomeProfile[];
   /** Optional authored overrides. Existing NpcGamblingProfile fields remain the fallback. */
   behaviors?: readonly CasinoNpcBehavior[];

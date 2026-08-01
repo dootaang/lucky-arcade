@@ -327,6 +327,9 @@
    narrow cells. The four dark fills keep white text above 7:1 in both themes. */
 .casino-person-name{display:inline-flex;flex:1 1 auto;min-width:0;max-width:100%;flex-wrap:wrap;align-items:center;gap:3px 6px;vertical-align:middle}
 .casino-person-name-text{flex:1 1 5ch;min-width:3ch;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.casino-person-name.is-inline-series{width:100%;flex-wrap:nowrap}
+.casino-person-name.is-inline-series .casino-person-name-text{flex:0 1 auto;min-width:0}
+.casino-person-name.is-inline-series .casino-series-chip{flex:0 0 auto}
 .casino-series-chip{flex:0 0 auto;max-width:100%;padding:2px 6px;border:1px solid #ffffff2e;border-radius:999px;background:#34383f;color:#fff;font-size:.56rem;font-weight:850;letter-spacing:.015em;line-height:1.25;white-space:nowrap}
 .casino-series-chip[data-series="Overture"]{background:#32483b}
 .casino-series-chip[data-series="√2"]{background:#4a3658}

@@ -1,5 +1,5 @@
 import {describe,expect,it}from"vitest";
-import {TEMEROSA_FLOW_EPOCH_KST_DAY,TEMEROSA_FLOW_NPC_GAMBLING_PROFILES,TEMEROSA_FLOW_NPC_LEDGER_CONTRACT,TEMEROSA_FLOW_PROFILE_EXCLUSIONS,TEMEROSA_FLOW_RELEASE_AUDIT,TEMEROSA_LEGACY_NPC_SUCCESSORS,TEMEROSA_NPC_GAMBLING_PROFILES,TEMEROSA_NPC_LEDGER_CONTRACT,TEMEROSA_SERIES_CASINO_SEAT_IDS,TEMEROSA_SERIES_RUNTIME_SOURCE,casinoDayPlan,casinoSpectatorScheduleAt,casinoUtcSecondAtKstDay,completedDayBalances,houseBalanceAt,legacyCabinetNpcId,recentNpcPlayEventsAt,temerosaCasinoLedgerAtUtcSecond}from"../src/index.ts";
+import {TEMEROSA_CIGENIA_NPC_ID,TEMEROSA_FLOW_13_EPOCH_KST_DAY,TEMEROSA_FLOW_13_NPC_GAMBLING_PROFILES,TEMEROSA_FLOW_13_NPC_LEDGER_CONTRACT,TEMEROSA_FLOW_EPOCH_KST_DAY,TEMEROSA_FLOW_NPC_GAMBLING_PROFILES,TEMEROSA_FLOW_NPC_LEDGER_CONTRACT,TEMEROSA_FLOW_PROFILE_EXCLUSIONS,TEMEROSA_FLOW_RELEASE_AUDIT,TEMEROSA_LEGACY_NPC_SUCCESSORS,TEMEROSA_NPC_GAMBLING_PROFILES,TEMEROSA_NPC_LEDGER_CONTRACT,TEMEROSA_SERIES_CASINO_SEAT_IDS,TEMEROSA_SERIES_RUNTIME_SOURCE,auditCasinoFlowEconomy,casinoDayPlan,casinoPresenceAt,casinoSpectatorScheduleAt,casinoUtcSecondAtKstDay,completedDayBalances,houseBalanceAt,legacyCabinetNpcId,recentNpcPlayEventsAt,temerosaCasinoLedgerAtUtcSecond}from"../src/index.ts";
 
 describe("Temerosa flow ledger cutover",()=>{
   it("carries every NPC and house close exactly once",()=>{
@@ -41,7 +41,8 @@ describe("Temerosa flow ledger cutover",()=>{
     const boundary=casinoUtcSecondAtKstDay(TEMEROSA_FLOW_EPOCH_KST_DAY);
     expect(temerosaCasinoLedgerAtUtcSecond(boundary-1).contract.version).toBe("npc-ledger/1.1");
     expect(temerosaCasinoLedgerAtUtcSecond(boundary).contract.version).toBe("npc-ledger/1.2");
-    expect(temerosaCasinoLedgerAtUtcSecond(boundary+365*86_400).contract.version).toBe("npc-ledger/1.2");
+    expect(temerosaCasinoLedgerAtUtcSecond(casinoUtcSecondAtKstDay(TEMEROSA_FLOW_13_EPOCH_KST_DAY)-1).contract.version).toBe("npc-ledger/1.2");
+    expect(temerosaCasinoLedgerAtUtcSecond(casinoUtcSecondAtKstDay(TEMEROSA_FLOW_13_EPOCH_KST_DAY)).contract.version).toBe("npc-ledger/1.3");
   });
 
   it("keeps an explicit rollback switch while activating the approved worldline",()=>{
@@ -100,4 +101,51 @@ describe("Temerosa flow ledger cutover",()=>{
       expect(market.participantIds.every((id)=>legacyCabinetNpcId(id)!==undefined)).toBe(true);
     }
   });
+
+  it("opens 1.3 with Cigenia and keeps every gambler eligible throughout the KST day",()=>{
+    expect(TEMEROSA_FLOW_13_NPC_LEDGER_CONTRACT).toMatchObject({version:"npc-ledger/1.3",seedVersion:"casino-flow/1.2",epochKstDay:20_667});
+    expect(TEMEROSA_FLOW_13_NPC_GAMBLING_PROFILES).toHaveLength(TEMEROSA_FLOW_NPC_GAMBLING_PROFILES.length+1);
+    expect(TEMEROSA_FLOW_13_NPC_GAMBLING_PROFILES.find((profile)=>profile.id===TEMEROSA_CIGENIA_NPC_ID)?.name).toBe("키게니아 · Finale");
+    for(const profile of TEMEROSA_FLOW_13_NPC_GAMBLING_PROFILES){
+      const minutes=new Set(profile.activeHours.flatMap((period)=>Array.from({length:period.endMinute-period.startMinute},(_,offset)=>period.startMinute+offset)));
+      expect(minutes.size,profile.id).toBe(1_440);
+    }
+  });
+
+  it("carries the frozen 1.2 close into 1.3 before granting Cigenia a wallet",()=>{
+    const close=completedDayBalances(TEMEROSA_FLOW_NPC_GAMBLING_PROFILES,0,TEMEROSA_FLOW_NPC_LEDGER_CONTRACT);
+    for(const profile of TEMEROSA_FLOW_13_NPC_GAMBLING_PROFILES){
+      if(profile.id===TEMEROSA_CIGENIA_NPC_ID)continue;
+      expect(profile.openingBalance,profile.id).toBe(close[profile.id]);
+    }
+    const lastSecond=casinoUtcSecondAtKstDay(TEMEROSA_FLOW_13_EPOCH_KST_DAY)-1;
+    const houseClose=houseBalanceAt(TEMEROSA_FLOW_NPC_GAMBLING_PROFILES,{utcMinute:()=>Math.floor(lastSecond/60)},TEMEROSA_FLOW_NPC_LEDGER_CONTRACT).balance;
+    const cigenia=TEMEROSA_FLOW_13_NPC_GAMBLING_PROFILES.find((profile)=>profile.id===TEMEROSA_CIGENIA_NPC_ID)!;
+    expect(TEMEROSA_FLOW_13_NPC_LEDGER_CONTRACT.houseOpeningBalance!+cigenia.openingBalance).toBe(houseClose);
+  });
+
+  it("keeps the floor populated all day without fabricating settlement rows",()=>{
+    let minimum=Number.POSITIVE_INFINITY;
+    let sawPlaying=false,sawSpectating=false;
+    for(let minute=0;minute<1_440;minute+=15){
+      const second=casinoUtcSecondAtKstDay(TEMEROSA_FLOW_13_EPOCH_KST_DAY,minute*60);
+      const active=casinoPresenceAt(TEMEROSA_FLOW_13_NPC_GAMBLING_PROFILES,{utcMinute:()=>Math.floor(second/60),utcSecond:()=>second},TEMEROSA_FLOW_13_NPC_LEDGER_CONTRACT).filter((presence)=>presence.phase!=="idle");
+      minimum=Math.min(minimum,active.length);
+      sawPlaying ||= active.some((presence)=>presence.role==="playing"&&presence.session!==undefined);
+      sawSpectating ||= active.some((presence)=>presence.role==="spectating"&&presence.session===undefined&&presence.matchId===undefined);
+    }
+    expect(minimum).toBeGreaterThanOrEqual(12);
+    expect(sawPlaying).toBe(true);
+    expect(sawSpectating).toBe(true);
+  },15_000);
+
+  it("keeps the seven-day 1.3 economy inside the approved circulation band",()=>{
+    const report=auditCasinoFlowEconomy(TEMEROSA_FLOW_13_NPC_LEDGER_CONTRACT,7);
+    expect(report.supplyChangeBps).toBeGreaterThanOrEqual(-300);
+    expect(report.supplyChangeBps).toBeLessThanOrEqual(500);
+    expect(report.averageSettlementGapSeconds).toBeGreaterThanOrEqual(10);
+    expect(report.averageSettlementGapSeconds).toBeLessThanOrEqual(25);
+    expect(report.postingImbalance).toBe(0);
+    expect(report.minimumHouseBalance).toBeGreaterThanOrEqual(TEMEROSA_FLOW_13_NPC_LEDGER_CONTRACT.houseOperatingPolicy!.protectedReserve);
+  },15_000);
 });

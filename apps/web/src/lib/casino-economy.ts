@@ -2,8 +2,10 @@ import {
   TEMEROSA_HOUSE_ACCOUNT_ID,
   casinoJournalAccountDelta,
   successorNpcId,
+  isFlowLedgerContractVersion,
   temerosaCasinoLedgerAtUtcSecond,
   type CasinoInternalAccountId,
+  type NpcLedgerContractVersion,
 } from "@lucky-arcade/casino-ledger";
 import { casinoClockFromSample, deviceCasinoClockSample, rememberCasinoClockSecond, stabilizeCasinoClockSample } from "./casino-clock.ts";
 import { listCasinoTransactions } from "./database.ts";
@@ -66,21 +68,21 @@ export async function casinoCounterpartyContexts(
     }];
     if (!accountId.startsWith("npc:")) throw new Error(`casino_counterparty_invalid:${accountId}`);
     const storedNpcId=accountId.slice(4);
-    const npcId=ledger.contract.version==="npc-ledger/1.2"?successorNpcId(storedNpcId)??storedNpcId:storedNpcId;
+    const npcId=isFlowLedgerContractVersion(ledger.contract.version)?successorNpcId(storedNpcId)??storedNpcId:storedNpcId;
     const balance = worldline.npcBalances[npcId];
     if (balance === undefined || !Number.isSafeInteger(balance) || balance < 0) throw new Error(`casino_counterparty_unknown:${accountId}`);
     return [accountId, { counterpartyAccountId: accountId, counterpartyBalance: balance, counterpartyBaseBalance: balance - localDelta, casinoOccurredAtSecond }];
   })));
 }
 
-function normalizedJournalDelta(journal:Awaited<ReturnType<typeof listCasinoTransactions>>,accountId:CasinoInternalAccountId,contractVersion:string):number{
+function normalizedJournalDelta(journal:Awaited<ReturnType<typeof listCasinoTransactions>>,accountId:CasinoInternalAccountId,contractVersion:NpcLedgerContractVersion):number{
   if(accountId===TEMEROSA_HOUSE_ACCOUNT_ID||!accountId.startsWith("npc:"))return casinoJournalAccountDelta(journal,accountId);
   const requested=accountId.slice(4);
-  const canonical=contractVersion==="npc-ledger/1.2"?successorNpcId(requested)??requested:requested;
+  const canonical=isFlowLedgerContractVersion(contractVersion)?successorNpcId(requested)??requested:requested;
   return journal.reduce((sum,transaction)=>sum+transaction.postings.reduce((postingSum,posting)=>{
     if(!posting.accountId.startsWith("npc:"))return postingSum;
     const stored=posting.accountId.slice(4);
-    const normalized=contractVersion==="npc-ledger/1.2"?successorNpcId(stored)??stored:stored;
+    const normalized=isFlowLedgerContractVersion(contractVersion)?successorNpcId(stored)??stored:stored;
     return normalized===canonical?postingSum+posting.delta:postingSum;
   },0),0);
 }

@@ -6,6 +6,7 @@ import { DEFAULT_HOUSE_OPERATING_COST_POLICY } from "./house-operations.ts";
 import { buildTemerosaFlowProfileSet } from "./temerosa-flow-profiles.ts";
 import { TEMEROSA_NPC_GAMBLING_PROFILES,TEMEROSA_NPC_LEDGER_CONTRACT } from "./temerosa-profiles.ts";
 import { TEMEROSA_LEGACY_NPC_SUCCESSORS } from "./temerosa-series-migration.ts";
+import { TEMEROSA_CIGENIA_BEHAVIOR,TEMEROSA_CIGENIA_GAMBLING_PROFILE,TEMEROSA_CIGENIA_INCOME_PROFILE } from "./temerosa-cigenia-profile.ts";
 import {
   TEMEROSA_SERIES_AUTHORED_PROFILES,
   TEMEROSA_SERIES_CASINO_SEAT_IDS,
@@ -15,6 +16,8 @@ import {
 
 /** Live epoch: 2026-08-01 00:00 KST. Historical results are frozen from this boundary. */
 export const TEMEROSA_FLOW_EPOCH_KST_DAY=20_666;
+/** 2026-08-02 00:00 KST. Keeps 1.2's first day frozen. */
+export const TEMEROSA_FLOW_13_EPOCH_KST_DAY=20_667;
 
 export interface TemerosaCasinoReleaseFlags{flowEconomy:boolean}
 export const TEMEROSA_CASINO_RELEASE_FLAGS_DISABLED:Readonly<TemerosaCasinoReleaseFlags>=Object.freeze({flowEconomy:false});
@@ -28,6 +31,14 @@ export const TEMEROSA_FLOW_RELEASE_AUDIT=Object.freeze({
   tenYears:Object.freeze({status:"pending" as const}),
 });
 export const TEMEROSA_FLOW_RELEASE_READY:boolean=Array.from(TEMEROSA_FLOW_RELEASE_AUDIT.blockers).length===0;
+export const TEMEROSA_FLOW_13_RELEASE_AUDIT=Object.freeze({
+  status:"active-with-warnings" as const,
+  blockers:Object.freeze([] as const),
+  warnings:Object.freeze(["one-year-audit-pending","ten-year-audit-pending"] as const),
+  sevenDays:Object.freeze({npcCount:103,supplyChangeBps:422,averageSettlementGapSeconds:22.8,minimumHouseBalance:50_000,houseCurtailedOperatingExpenses:2_960}),
+  floor:Object.freeze({sampleMinutes:5,minimumPresent:19,averagePresent:39.63,maximumPresent:77}),
+});
+export const TEMEROSA_FLOW_13_RELEASE_READY:boolean=Array.from(TEMEROSA_FLOW_13_RELEASE_AUDIT.blockers).length===0;
 
 const LEGACY_FINAL_DAY_INDEX=TEMEROSA_FLOW_EPOCH_KST_DAY-TEMEROSA_NPC_LEDGER_CONTRACT.epochKstDay-1;
 const LEGACY_CLOSE=completedDayBalances(TEMEROSA_NPC_GAMBLING_PROFILES,LEGACY_FINAL_DAY_INDEX,TEMEROSA_NPC_LEDGER_CONTRACT);
@@ -81,11 +92,72 @@ export const TEMEROSA_FLOW_NPC_LEDGER_CONTRACT:NpcLedgerContract=Object.freeze({
   profitHistory:legacyProfitHistory(),
 });
 
+const FLOW_12_FINAL_DAY_INDEX=TEMEROSA_FLOW_13_EPOCH_KST_DAY-TEMEROSA_FLOW_EPOCH_KST_DAY-1;
+const FLOW_12_CLOSE=completedDayBalances(TEMEROSA_FLOW_NPC_GAMBLING_PROFILES,FLOW_12_FINAL_DAY_INDEX,TEMEROSA_FLOW_NPC_LEDGER_CONTRACT);
+const FLOW_12_HOUSE_CLOSE=houseBalanceAt(
+  TEMEROSA_FLOW_NPC_GAMBLING_PROFILES,
+  exactClock(casinoUtcSecondAtKstDay(TEMEROSA_FLOW_13_EPOCH_KST_DAY)-1),
+  TEMEROSA_FLOW_NPC_LEDGER_CONTRACT,
+).balance;
+
+export const TEMEROSA_FLOW_13_NPC_GAMBLING_PROFILES:readonly NpcGamblingProfile[]=Object.freeze([
+  ...TEMEROSA_FLOW_NPC_GAMBLING_PROFILES.map((profile,index)=>Object.freeze({
+    ...profile,
+    openingBalance:FLOW_12_CLOSE[profile.id]!,
+    activeHours:fullDayActivityHours(profile.activeHours,index),
+  })),
+  Object.freeze({...TEMEROSA_CIGENIA_GAMBLING_PROFILE,activeHours:fullDayActivityHours(TEMEROSA_CIGENIA_GAMBLING_PROFILE.activeHours,TEMEROSA_FLOW_NPC_GAMBLING_PROFILES.length)}),
+].toSorted((left,right)=>left.id<right.id?-1:left.id>right.id?1:0));
+
+export const TEMEROSA_FLOW_13_EXTERNAL_INCOME_PROFILES=Object.freeze([
+  ...TEMEROSA_FLOW_EXTERNAL_INCOME_PROFILES,
+  TEMEROSA_CIGENIA_INCOME_PROFILE,
+].toSorted((left,right)=>left.npcId<right.npcId?-1:left.npcId>right.npcId?1:0));
+
+export const TEMEROSA_FLOW_13_NPC_BEHAVIORS=Object.freeze([
+  ...TEMEROSA_FLOW_NPC_BEHAVIORS,
+  TEMEROSA_CIGENIA_BEHAVIOR,
+].toSorted((left,right)=>left.npcId<right.npcId?-1:left.npcId>right.npcId?1:0));
+
+export const TEMEROSA_FLOW_13_NPC_LEDGER_CONTRACT:NpcLedgerContract=Object.freeze({
+  version:"npc-ledger/1.3",seedVersion:"casino-flow/1.2",epochKstDay:TEMEROSA_FLOW_13_EPOCH_KST_DAY,
+  profiles:TEMEROSA_FLOW_13_NPC_GAMBLING_PROFILES,
+  externalIncomeProfiles:TEMEROSA_FLOW_13_EXTERNAL_INCOME_PROFILES,
+  behaviors:TEMEROSA_FLOW_13_NPC_BEHAVIORS,
+  houseOpeningBalance:FLOW_12_HOUSE_CLOSE-TEMEROSA_CIGENIA_GAMBLING_PROFILE.openingBalance,
+  houseOperatingPolicy:Object.freeze({...TEMEROSA_FLOW_NPC_LEDGER_CONTRACT.houseOperatingPolicy!,perHundredRoundsCost:1_400,protectedReserve:50_000}),
+  predecessor:Object.freeze({profiles:TEMEROSA_FLOW_NPC_GAMBLING_PROFILES,contract:TEMEROSA_FLOW_NPC_LEDGER_CONTRACT}),
+  profitHistory:flow13ProfitHistory(),
+});
+
 export function temerosaCasinoLedgerAtUtcSecond(utcSecond:number,releaseFlags:Readonly<TemerosaCasinoReleaseFlags>=TEMEROSA_CASINO_RELEASE_FLAGS_ACTIVE):Readonly<{profiles:readonly NpcGamblingProfile[];contract:NpcLedgerContract}>{
   if(!Number.isSafeInteger(utcSecond))throw new Error("temerosa_ledger_invalid_clock");
-  return releaseFlags.flowEconomy&&TEMEROSA_FLOW_RELEASE_READY&&casinoKstDayAtUtcSecond(utcSecond)>=TEMEROSA_FLOW_EPOCH_KST_DAY
-    ? Object.freeze({profiles:TEMEROSA_FLOW_NPC_GAMBLING_PROFILES,contract:TEMEROSA_FLOW_NPC_LEDGER_CONTRACT})
+  const kstDay=casinoKstDayAtUtcSecond(utcSecond);
+  return releaseFlags.flowEconomy&&TEMEROSA_FLOW_RELEASE_READY&&TEMEROSA_FLOW_13_RELEASE_READY&&kstDay>=TEMEROSA_FLOW_13_EPOCH_KST_DAY
+    ? Object.freeze({profiles:TEMEROSA_FLOW_13_NPC_GAMBLING_PROFILES,contract:TEMEROSA_FLOW_13_NPC_LEDGER_CONTRACT})
+    : releaseFlags.flowEconomy&&TEMEROSA_FLOW_RELEASE_READY&&kstDay>=TEMEROSA_FLOW_EPOCH_KST_DAY
+      ? Object.freeze({profiles:TEMEROSA_FLOW_NPC_GAMBLING_PROFILES,contract:TEMEROSA_FLOW_NPC_LEDGER_CONTRACT})
     : Object.freeze({profiles:TEMEROSA_NPC_GAMBLING_PROFILES,contract:TEMEROSA_NPC_LEDGER_CONTRACT});
+}
+
+function fullDayActivityHours(previous:readonly {startMinute:number;endMinute:number;weight:number}[],index:number):readonly {startMinute:number;endMinute:number;weight:number}[]{
+  const midpoint=previous[0]?Math.floor((previous[0].startMinute+previous[0].endMinute-1)/2):index*240;
+  const peak=Math.floor(midpoint/240)%6;
+  return Object.freeze(Array.from({length:6},(_,slot)=>{
+    const distance=Math.min((slot-peak+6)%6,(peak-slot+6)%6);
+    // Peaks remain visible without recreating a closed shift. A 3:1 ceiling
+    // keeps the off-hours busy when all 103 guests draw the same KST day.
+    const weight=distance===0?3:distance===1?2:1;
+    return Object.freeze({startMinute:slot*240,endMinute:(slot+1)*240,weight});
+  }));
+}
+
+function flow13ProfitHistory():NpcLedgerContract["profitHistory"]{
+  const plan=casinoDayPlan(TEMEROSA_FLOW_NPC_GAMBLING_PROFILES,FLOW_12_FINAL_DAY_INDEX,Object.fromEntries(TEMEROSA_FLOW_NPC_GAMBLING_PROFILES.map((profile)=>[profile.id,profile.openingBalance])),TEMEROSA_FLOW_NPC_LEDGER_CONTRACT);
+  const profits=Object.freeze(Object.fromEntries(TEMEROSA_FLOW_NPC_GAMBLING_PROFILES.map((profile)=>[
+    profile.id,(plan.sessions[profile.id]??[]).filter((session)=>session.tableId!=="npc-income").reduce((sum,session)=>sum+session.delta,0),
+  ])));
+  return Object.freeze([...TEMEROSA_FLOW_NPC_LEDGER_CONTRACT.profitHistory,Object.freeze({kstDay:TEMEROSA_FLOW_EPOCH_KST_DAY,profits})]);
 }
 
 function legacyProfitHistory():NpcLedgerContract["profitHistory"]{

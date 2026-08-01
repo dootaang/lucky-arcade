@@ -1,0 +1,34 @@
+{
+  "contract": "temerosa-series-npc-portrait-audit/0.3",
+  "packId": "temerosa-series-npcs",
+  "version": "0.3.0",
+  "status": "passed",
+  "sourceImageSha256": "ade53b5ec7d412f2e3cc74e99be02c1a6545ffc6f98ad4bf0f030247c5d742e1",
+  "sourceCardSha256": "dd9b96da9cc26da2aedfa2038cecedbe30111ee71d0e1bb0756750a2c2d98ed9",
+  "enlargedVariants": [],
+  "crossSeriesFallbacks": [],
+  "originalFilesIncluded": [],
+  "generatedFiles": [
+    {
+      "path": "assets/sm/cigenia.webp",
+      "width": 133,
+      "height": 200,
+      "bytes": 7528,
+      "sha256": "ca7491b86340bd481a4f1931a493cb13c34f96a7b88254b7d1d2b06295055c8b"
+    },
+    {
+      "path": "assets/md/cigenia.webp",
+      "width": 400,
+      "height": 600,
+      "bytes": 45022,
+      "sha256": "dbbae7ad2a00d037ab5cc6f52f1b067b89c73787ba1b704e0a786af3e19123e1"
+    },
+    {
+      "path": "assets/lg/cigenia.webp",
+      "width": 800,
+      "height": 1200,
+      "bytes": 132212,
+      "sha256": "28071f9f145a4efe0d9966f4b6933f243cb7dcd74680524ec5b62982256784f0"
+    }
+  ]
+}

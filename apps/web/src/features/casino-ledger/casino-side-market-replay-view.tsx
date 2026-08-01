@@ -1,6 +1,7 @@
 import type { CasinoSpectatorMarket } from "@lucky-arcade/casino-ledger";
 import { createMatchPairsState } from "@lucky-arcade/match-pairs";
 import { MatchPairsScreen } from "@lucky-arcade/match-pairs/react";
+import { createOldMaidState } from "@lucky-arcade/old-maid";
 import { OldMaidScreen } from "@lucky-arcade/old-maid/react";
 import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
@@ -51,7 +52,7 @@ export default function CasinoSideMarketReplayView({ market, currentUtcSecond, o
   const content = replay
     ? replay.kind === "match-pairs"
       ? <NativeMatchPairsExperience key={`${replay.marketId}:${revision}:${syncRevision}`} replay={replay} initialFrameIndex={initialFrameIndex} onClose={onClose} onReplay={restart} />
-      : <NativeOldMaidExperience key={`${replay.marketId}:${revision}:${syncRevision}`} replay={replay} initialFrameIndex={initialFrameIndex} onClose={onClose} onReplay={restart} />
+      : <NativeOldMaidExperience key={`${replay.marketId}:${revision}:${syncRevision}`} replay={replay} onClose={onClose} onReplay={restart} />
     : null;
 
   return createPortal(<div className="side-market-replay-backdrop is-native" role="dialog" aria-modal="true" aria-label={`${market.title} 관전`}>
@@ -98,12 +99,16 @@ function NativeMatchPairsExperience({ replay, initialFrameIndex, onClose, onRepl
   />;
 }
 
-function NativeOldMaidExperience({ replay, initialFrameIndex, onClose, onReplay }: { replay: OldMaidSideMarketReplay; initialFrameIndex: number; onClose(): void; onReplay(): void }): React.ReactElement {
-  const initialState = replay.game.frames[initialFrameIndex]?.state ?? replay.game.frames[0]!.state;
+function NativeOldMaidExperience({ replay, onClose, onReplay }: { replay: OldMaidSideMarketReplay; onClose(): void; onReplay(): void }): React.ReactElement {
+  // A captured frame is the state *after* its action. Injecting a live frame
+  // skipped the action that owns dealing, draw and discard motion. Rebuild the
+  // ready table and let the native cabinet execute the same deterministic game.
+  const initialState = createOldMaidState(replay.cartridge, replay.seed, replay.game.finalState.sessionId);
   return <OldMaidScreen
     cartridge={replay.cartridge}
     assets={replay.assets}
     initialState={initialState}
+    autoStart={{ mode: "spectate", characterIds: replay.game.participantIds }}
     presentationOnly
     onReplay={onReplay}
     onPersist={async () => undefined}

@@ -1,4 +1,4 @@
-import type { CasinoClock, CasinoLedgerSourceId, CasinoTableId, NpcGamblingProfile, NpcLedgerContract, NpcRoundSettlement, NpcSession } from "./contracts.ts";
+import { isFlowLedgerContractVersion, type CasinoClock, type CasinoLedgerSourceId, type CasinoTableId, type NpcGamblingProfile, type NpcLedgerContract, type NpcRoundSettlement, type NpcSession } from "./contracts.ts";
 import { casinoDayPlanWithHouseOpening,casinoDayPlan } from "./engine.ts";
 import { casinoKstDayAtUtcSecond, casinoSecondOfKstDayAtUtcSecond } from "./casino-time.ts";
 import { TEMEROSA_HOUSE_ACCOUNT_ID, TEMEROSA_HOUSE_OPENING_CAPITAL } from "./economy.ts";
@@ -31,13 +31,13 @@ export function houseBalanceAt(profiles: readonly NpcGamblingProfile[], clock: C
   let operatingExpenses = 0;
   let curtailedOperatingExpenses = 0;
   for (let dayIndex=0;dayIndex<=finalDayIndex;dayIndex+=1) {
-    const plan=contract.version==="npc-ledger/1.2"
+    const plan=isFlowLedgerContractVersion(contract.version)
       ? casinoDayPlanWithHouseOpening(profiles,dayIndex,npcBalances,contract,balance)
       : casinoDayPlan(profiles,dayIndex,npcBalances,contract);
     const sessions=plan.sessions;
     const secondLimit=dayIndex===finalDayIndex?casinoSecondOfKstDayAtUtcSecond(nowSecond):86_399;
     const kstDay=contract.epochKstDay+dayIndex;
-    if(contract.version==="npc-ledger/1.2"){
+    if(isFlowLedgerContractVersion(contract.version)){
       const operatingPolicy=contract.houseOperatingPolicy??DEFAULT_HOUSE_OPERATING_COST_POLICY;
       const operationsSecond=operatingPolicy.settlementSecondOfDay;
       const beforeOperations=flowHouseGamingDeltaThrough(sessions,Math.min(secondLimit,operationsSecond));

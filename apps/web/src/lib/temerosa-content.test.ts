@@ -60,6 +60,22 @@ describe("Temerosa manifest memoization", () => {
     expect(fetcher).not.toHaveBeenCalled();
   });
 
+  it("loads Cigenia from the 1.3 supplement without downloading the 0.2 roster pack",async()=>{
+    vi.resetModules();
+    const fetcher=vi.fn(async(input:string|URL|Request)=>{
+      expect(String(input instanceof Request?input.url:input)).toBe("/content/temerosa-series-npcs/0.3.0/manifest.json");
+      return new Response(JSON.stringify({
+        contract:"temerosa-series-npc-portrait-pack/0.3",packId:"temerosa-series-npcs",version:"0.3.0",
+        npcs:[{npcId:"temerosa:finale:cigenia",status:"available",sm:{path:"assets/sm/cigenia.webp",emotion:"neutral"},md:{neutral:{path:"assets/md/cigenia.webp",emotion:"neutral"}},lg:{path:"assets/lg/cigenia.webp",emotion:"neutral"}}],
+      }),{status:200});
+    });
+    vi.stubGlobal("fetch",fetcher);
+    const {resolveTemerosaSeriesNpcPortrait}=await import("./temerosa-content.ts");
+    await expect(resolveTemerosaSeriesNpcPortrait("temerosa:finale:cigenia","sm")).resolves.toBe("/content/temerosa-series-npcs/0.3.0/assets/sm/cigenia.webp");
+    await expect(resolveTemerosaSeriesNpcPortrait("temerosa:finale:cigenia","detail")).resolves.toBe("/content/temerosa-series-npcs/0.3.0/assets/lg/cigenia.webp");
+    expect(fetcher).toHaveBeenCalledOnce();
+  });
+
   it("rejects the immutable 0.1 contract at the 0.2 path",async()=>{
     vi.resetModules();
     vi.stubGlobal("fetch",vi.fn(async()=>new Response(JSON.stringify({

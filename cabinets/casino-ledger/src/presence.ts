@@ -1,3 +1,4 @@
+import { XorShift32 } from "@lucky-arcade/engine";
 import { casinoDayPlan, completedDayBalances } from "./engine.ts";
 import {
   casinoKstDayAtUtcSecond,
@@ -94,6 +95,8 @@ export function casinoPresenceAt(
     const active = intervals.find((interval)=>now>=interval.startedAtUtcSecond&&now<interval.availableAtUtcSecond);
     if (!active) {
       const next=intervals.find((interval)=>interval.startedAtUtcSecond>now);
+      const ambient=contract.version==="npc-ledger/1.3"?ambientSpectatorPresence(profile,absoluteDay,now,contract):undefined;
+      if(ambient)return ambient;
       return Object.freeze({npcId:profile.id,phase:"idle" as const,...(next?{startedAtUtcSecond:next.startedAtUtcSecond}:{})});
     }
     const intervalDayStart=casinoUtcSecondAtKstDay(casinoKstDayAtUtcSecond(active.startedAtUtcSecond));
@@ -114,6 +117,46 @@ export function casinoPresenceAt(
       role:active.role,
     });
   }));
+}
+
+/**
+ * A guest can still be on the floor after declining a wager. These intervals
+ * create no match, balance delta, tape row or settlement: they are explicitly
+ * spectator presence, not synthetic gambling activity. Twelve KST bands keep
+ * the room populated while authored game visits remain the economic truth.
+ */
+function ambientSpectatorPresence(profile:NpcGamblingProfile,absoluteDay:number,now:number,contract:NpcLedgerContract):NpcPresence|undefined{
+  const bandSeconds=7_200;
+  const dayStart=casinoUtcSecondAtKstDay(absoluteDay);
+  const bandIndex=Math.floor((now-dayStart)/bandSeconds);
+  for(const candidate of [bandIndex,bandIndex-1]){
+    const candidateDay=absoluteDay+Math.floor(candidate/12);
+    const normalizedBand=((candidate%12)+12)%12;
+    const rng=new XorShift32(`${contract.seedVersion}:ambient-spectator:${candidateDay}:${normalizedBand}:${profile.id}`);
+    const attendanceChance=.38+profile.discipline*.18;
+    if(rng.next()>=attendanceChance)continue;
+    const start=casinoUtcSecondAtKstDay(candidateDay)+normalizedBand*bandSeconds+Math.floor(rng.next()*bandSeconds);
+    const availableAt=start+3_000+Math.floor(rng.next()*2_401);
+    if(now<start||now>=availableAt)continue;
+    const table=weightedAmbientTable(profile,rng);
+    const settlesAt=availableAt-14;
+    const phase=now<start+APPROACH_SECONDS?"approaching" as const
+      :now>=settlesAt?(now<settlesAt+SETTLE_SECONDS?"settling" as const:"leaving" as const)
+        :"spectating" as const;
+    return Object.freeze({
+      npcId:profile.id,phase,tableId:table,role:"spectating" as const,
+      visitId:`${contract.seedVersion}:ambient:${candidateDay}:${normalizedBand}:${profile.id}`,
+      startedAtUtcSecond:start,settlesAtUtcSecond:settlesAt,availableAtUtcSecond:availableAt,
+    });
+  }
+  return undefined;
+}
+
+function weightedAmbientTable(profile:NpcGamblingProfile,rng:XorShift32):NpcGamblingProfile["tables"][number]["tableId"]{
+  const total=profile.tables.reduce((sum,entry)=>sum+entry.weight,0);
+  let target=rng.next()*total;
+  for(const entry of profile.tables){target-=entry.weight;if(target<0)return entry.tableId;}
+  return profile.tables.at(-1)!.tableId;
 }
 
 function compareText(left:string,right:string):number{return left<right?-1:left>right?1:0;}

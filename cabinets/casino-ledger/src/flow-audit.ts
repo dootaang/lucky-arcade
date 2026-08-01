@@ -1,6 +1,6 @@
 import { casinoDayPlanWithHouseOpening } from "./engine.ts";
 import { TEMEROSA_HOUSE_OPENING_CAPITAL } from "./economy.ts";
-import type { NpcLedgerContract } from "./contracts.ts";
+import { isFlowLedgerContractVersion, type NpcLedgerContract } from "./contracts.ts";
 import { npcFlowEconomyTransactions } from "./flow-economy.ts";
 import { DEFAULT_HOUSE_OPERATING_COST_POLICY,createHouseOperatingExpensePlan,houseDailyActivityFromPlan,type HouseOperatingCostPolicy } from "./house-operations.ts";
 
@@ -32,7 +32,7 @@ export interface CasinoFlowAuditReport {
 }
 
 export function auditCasinoFlowEconomy(contract:NpcLedgerContract,days:number,operatingPolicy:Readonly<HouseOperatingCostPolicy>=contract.houseOperatingPolicy??DEFAULT_HOUSE_OPERATING_COST_POLICY):CasinoFlowAuditReport {
-  if(contract.version!=="npc-ledger/1.2"||!Number.isSafeInteger(days)||days<1)throw new Error("casino_flow_audit_invalid_input");
+  if(!isFlowLedgerContractVersion(contract.version)||!Number.isSafeInteger(days)||days<1)throw new Error("casino_flow_audit_invalid_input");
   const profiles=contract.profiles;
   let balances:Record<string,number>=Object.fromEntries(profiles.map((profile)=>[profile.id,profile.openingBalance]));
   const initialNpcSupply=sum(Object.values(balances));

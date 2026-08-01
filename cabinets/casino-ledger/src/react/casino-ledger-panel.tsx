@@ -36,11 +36,11 @@ export function casinoLedgerEmotionForProfit(net: number): CasinoLedgerPortraitE
   return "tense";
 }
 
-export function CasinoPersonName({ qualifiedName }: { qualifiedName: string }): React.ReactElement {
+export function CasinoPersonName({ qualifiedName, showSeries = true, inlineSeries = false }: { qualifiedName: string; showSeries?: boolean; inlineSeries?: boolean }): React.ReactElement {
   const { name, series } = splitCasinoQualifiedName(qualifiedName);
-  return <span className="casino-person-name" title={qualifiedName} aria-label={qualifiedName}>
+  return <span className={`casino-person-name${inlineSeries ? " is-inline-series" : ""}`} title={qualifiedName} aria-label={qualifiedName}>
     <span className="casino-person-name-text">{name}</span>
-    {series && <span className="casino-series-chip" data-series={series}>{series}</span>}
+    {showSeries && series && <span className="casino-series-chip" data-series={series}>{series}</span>}
   </span>;
 }
 
@@ -395,7 +395,7 @@ function TapeLine({ event, names, currentUtcSecond, newest = false }: { event: C
   const incomeClass=event.tableId==="npc-income"?event.label.includes("예산 투입")?" is-income-top-up":" is-income-business":"";
   const directionClass = incomeClass || (event.tone === "gain" ? " is-rising" : event.tone === "loss" ? " is-falling" : event.tone ? " is-balanced" : "");
   return <span data-tape-key={event.id} className={`ledger-activity-line is-${event.kind}${event.tone ? ` is-tone-${event.tone}` : ""}${directionClass}${newest ? " is-newest" : ""}`}>
-    <b><CasinoPersonName qualifiedName={name}/></b><small>{ageLabel(age)}</small><span className="ledger-activity-action"><i>{tableName(event.tableId)}</i> · {predictedName?<><CasinoPersonName qualifiedName={predictedName}/> {event.predictionMarket==="joker-holder"?"꼴찌":"우승"} 예측</>:event.label}</span><strong className="ca-num">{event.delta !== undefined
+    <b><CasinoPersonName qualifiedName={name} showSeries={false}/></b><small>{ageLabel(age)}</small><span className="ledger-activity-action"><i>{tableName(event.tableId)}</i> · {predictedName?<><CasinoPersonName qualifiedName={predictedName} showSeries={false}/> {event.predictionMarket==="joker-holder"?"꼴찌":"우승"} 예측</>:event.label}</span><strong className="ca-num">{event.delta !== undefined
       ? signedPoints(event.delta)
       : event.stake === 0 ? "FREE" : `${event.stake} P${event.multiplier?` ×${event.multiplier}`:""}`}</strong>
   </span>;
@@ -416,7 +416,7 @@ function SettlementLine({ settlement, names, currentUtcSecond }: { settlement: N
     data-direction={direction}
     aria-label={`${name}, ${tableName(settlement.tableId)}, ${ageLabel(age)}, ${directionLabel} ${Math.abs(delta)} 포인트`}
   >
-    <div><b><CasinoPersonName qualifiedName={name}/></b><small>{ageLabel(age)}</small></div>
+    <div><b><CasinoPersonName qualifiedName={name} inlineSeries/></b><small>{ageLabel(age)}</small></div>
     <span>{tableName(settlement.tableId)} · {settlementLabel(settlement,names)}{leverage === null ? "" : ` · ${leverage}배`}</span>
     <strong><i aria-hidden="true">{symbol}</i> {directionLabel}</strong>
     <NumberTicker value={Math.abs(delta)} prefix={delta > 0 ? "+" : delta < 0 ? "−" : ""} suffix=" P" durationMs={650} className="ca-num ledger-settlement-amount" />

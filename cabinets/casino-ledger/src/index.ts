@@ -15,4 +15,5 @@ export * from "./rounds.ts";
 export * from "./temerosa-profiles.ts";
 export * from "./temerosa-flow-profiles.ts";
 export * from "./temerosa-flow-contract.ts";
+export * from "./temerosa-cigenia-profile.ts";
 export * from "./temerosa-series-migration.ts";

@@ -8,6 +8,7 @@ import {
   casinoSecondOfKstDayAtUtcSecond,
   casinoUtcSecondAtKstDay,
 } from "./casino-time.ts";
+import { isFlowLedgerContractVersion } from "./contracts.ts";
 import type {
   CasinoClock,
   CasinoDayPlan,
@@ -79,7 +80,7 @@ export function casinoDayPlan(
 ): CasinoDayPlan {
   validateDay(profiles, dayIndex, openingBalances, contract);
   validateBalanceEvents(balanceEvents, profiles);
-  const houseOpeningBalance=contract.version==="npc-ledger/1.2"?canonicalFlowHouseOpening(contract,dayIndex):undefined;
+  const houseOpeningBalance=isFlowLedgerContractVersion(contract.version)?canonicalFlowHouseOpening(contract,dayIndex):undefined;
   return buildCasinoDayPlan(profiles,dayIndex,openingBalances,contract,balanceEvents,houseOpeningBalance);
 }
 
@@ -97,7 +98,7 @@ export function casinoDayPlanWithHouseOpening(
 ): CasinoDayPlan {
   validateDay(profiles,dayIndex,openingBalances,contract);
   validateBalanceEvents(balanceEvents,profiles);
-  if(contract.version!=="npc-ledger/1.2"||!Number.isSafeInteger(houseOpeningBalance)||houseOpeningBalance<0)throw new Error("npc_ledger_invalid_house_opening");
+  if(!isFlowLedgerContractVersion(contract.version)||!Number.isSafeInteger(houseOpeningBalance)||houseOpeningBalance<0)throw new Error("npc_ledger_invalid_house_opening");
   return buildCasinoDayPlan(profiles,dayIndex,openingBalances,contract,balanceEvents,houseOpeningBalance);
 }
 
@@ -135,7 +136,7 @@ function buildCasinoDayPlan(
     }
   };
 
-  if(contract.version==="npc-ledger/1.2"){
+  if(isFlowLedgerContractVersion(contract.version)){
     const plan=buildFlowCasinoDayPlan({profiles,dayIndex,contract,visits,drafts,balances,visitOpening,output,incomes,appliedIncome,orderedEvents,houseOpeningBalance:houseOpeningBalance!});
     if(cacheKey!==undefined)cacheDayPlan(contractCache!,cacheKey,plan);
     return plan;
@@ -286,7 +287,10 @@ function buildFlowCasinoDayPlan(input:{
   const liveVisitIds=new Set(matches.map((match)=>match.visitId));
   const finalVisits=visits.filter((visit)=>liveVisitIds.has(visit.visitId)).map((visit)=>{
     const last=matches.filter((match)=>match.visitId===visit.visitId).at(-1);
-    return Object.freeze({...visit,endsAtSecondOfDay:Math.min(visit.endsAtSecondOfDay,(last?.settlesAtSecondOfDay??visit.endsAtSecondOfDay)+12)});
+    const endsAtSecondOfDay=contract.version==="npc-ledger/1.3"
+      ? visit.endsAtSecondOfDay
+      : Math.min(visit.endsAtSecondOfDay,(last?.settlesAtSecondOfDay??visit.endsAtSecondOfDay)+12);
+    return Object.freeze({...visit,endsAtSecondOfDay});
   });
   const finalRevenueProvision=Math.floor(grossHouseRevenue*policy.positiveGamingRevenueRateBps/10_000);
   const finalOperatingProvision=operatingProvision+finalRevenueProvision;
@@ -486,14 +490,21 @@ function createVisits(profiles: readonly NpcGamblingProfile[], dayIndex: number,
   for (const intent of intents) {
     const desired = participantCount(intent.tableId);
     const group = pending.get(intent.tableId) ?? [];
-    if (group.some((entry) => entry.npcId === intent.npcId)) flushPending(intent.tableId, group, groups, pending);
+    if(contract.version==="npc-ledger/1.3"&&group.length>0&&intent.second-group.at(-1)!.second>10*60){
+      // A table request may wait briefly for opponents, not for the next shift.
+      // Stale unmatched intents become a real solo slot visit at their original
+      // time instead of dragging the whole group hours forward.
+      flushPending(intent.tableId,group,groups,pending);
+    }
+    const refreshed = pending.get(intent.tableId) ?? [];
+    if (refreshed.some((entry) => entry.npcId === intent.npcId)) flushPending(intent.tableId, refreshed, groups, pending);
     const current = pending.get(intent.tableId) ?? [];
     current.push(intent);
     pending.set(intent.tableId, current);
     if (current.length >= desired) flushPending(intent.tableId, current, groups, pending);
   }
   for (const [tableId, group] of pending) flushPending(tableId, group, groups, pending);
-  const availableAt: Record<string, number> = Object.fromEntries(profiles.map((profile) => [profile.id, 0]));
+  const availableAt: Record<string, number> = Object.fromEntries(profiles.map((profile) => [profile.id, contract.version==="npc-ledger/1.3"?-30:0]));
   const visits: NpcVisit[] = [];
   for (const group of groups.toSorted((a,b) => averageSecond(a)-averageSecond(b))) {
     const originalTable = group[0]!.tableId;
@@ -516,15 +527,17 @@ function createVisits(profiles: readonly NpcGamblingProfile[], dayIndex: number,
 }
 
 function createIntents(profiles: readonly NpcGamblingProfile[], dayIndex: number, contract: NpcLedgerContract): VisitIntent[] {
-  return profiles.flatMap((profile) => {
+  return profiles.flatMap((profile,profileIndex) => {
     const prefix = `${contract.seedVersion}:${profile.id}:${dayIndex}`;
     const scheduleRng = new XorShift32(`${prefix}:schedule`);
     const tableRng = new XorShift32(`${prefix}:tables`);
     const behavior=contract.behaviors?.find((entry)=>entry.npcId===profile.id);
     const visitRange=behavior?.visitsPerDay??profile.sessionsPerDay;
     const count = randomInteger(visitRange.min, visitRange.max, scheduleRng);
-    return sessionSchedule(profile, count, scheduleRng).map((minute, ordinal) => {
-      const second=minute*60+randomInteger(0,59,scheduleRng);
+    return sessionSchedule(profile,count,scheduleRng,dayIndex,profileIndex,profiles.length).map((minute, ordinal) => {
+      const bandAnchor=contract.version==="npc-ledger/1.3"&&minute%240===0;
+      const scatteredSecond=randomInteger(0,59,scheduleRng);
+      const second=minute*60+(bandAnchor?0:scatteredSecond);
       return { npcId: profile.id, second, ordinal, tableId: weightedTable(profile, tableRng, dayIndex, second,behavior?.preferredTables) };
     });
   }).sort((a,b) => a.second-b.second || compareText(a.npcId,b.npcId) || a.ordinal-b.ordinal);
@@ -532,7 +545,7 @@ function createIntents(profiles: readonly NpcGamblingProfile[], dayIndex: number
 
 function createMatchDrafts(visit: NpcVisit, dayIndex: number, contract: NpcLedgerContract): readonly MatchDraft[] {
   const rng = new XorShift32(`${contract.seedVersion}:${dayIndex}:${visit.visitId}:matches`);
-  const range = (contract.version === "npc-ledger/1.2" ? FLOW_MATCH_SECONDS : MATCH_SECONDS)[visit.tableId];
+  const range = (isFlowLedgerContractVersion(contract.version) ? FLOW_MATCH_SECONDS : MATCH_SECONDS)[visit.tableId];
   const output: MatchDraft[] = [];
   const behavior=contract.behaviors?.find((entry)=>entry.npcId===visit.participantIds[0]);
   const desiredRounds=behavior?randomInteger(behavior.roundsPerVisit.min,behavior.roundsPerVisit.max,rng):Number.MAX_SAFE_INTEGER;
@@ -719,8 +732,31 @@ function validateCheckpoint(profiles: readonly NpcGamblingProfile[], checkpoint?
   }
   return output;
 }
-function sessionSchedule(profile:NpcGamblingProfile,count:number,rng:XorShift32): readonly number[] {
+function sessionSchedule(profile:NpcGamblingProfile,count:number,rng:XorShift32,dayIndex:number,profileIndex:number,profileCount:number): readonly number[] {
   const values=new Set<number>(); let attempts=0;
+  const coversWholeDay=profile.activeHours.length>1&&profile.activeHours[0]?.startMinute===0
+    &&profile.activeHours.at(-1)?.endMinute===MINUTES_PER_DAY
+    &&profile.activeHours.every((range,index)=>index===0||profile.activeHours[index-1]!.endMinute===range.startMinute);
+  // Flow 1.3 profiles carry one real visit intent in every four-hour band.
+  // Remaining visits still follow the authored peak weights. This preserves
+  // the daily round count while removing a clock interval in which the whole
+  // casino can accidentally go dark.
+  if(coversWholeDay&&count>=profile.activeHours.length){
+    for(const [slot,range] of profile.activeHours.entries()){
+      // The guaranteed visit in each band is spread into rotating six-person
+      // cohorts. Random placement created long valleys even with 103 guests;
+      // cohorts keep the same visit total while making the floor continuously
+      // occupied. Extra visits below still follow the authored peak weights.
+      rng.next(); // preserve the remaining schedule stream across the 1.3 rewrite
+      const cohortSize=6;
+      const cohortCount=Math.ceil(profileCount/cohortSize);
+      const rotation=(dayIndex*17+slot*5)%profileCount;
+      const rank=(profileIndex+rotation)%profileCount;
+      const cohort=Math.floor(rank/cohortSize);
+      const width=range.endMinute-range.startMinute;
+      values.add(range.startMinute+Math.floor(cohort*width/cohortCount));
+    }
+  }
   while(values.size<count&&attempts<count*100){ attempts++; const range=profile.activeHours[drawWeightedIndex(profile.activeHours.map((entry)=>entry.weight),rng)]!; values.add(range.startMinute+Math.floor(rng.next()*(range.endMinute-range.startMinute))); }
   for(const range of profile.activeHours) for(let minute=range.startMinute;minute<range.endMinute&&values.size<count;minute++) values.add(minute);
   if(values.size!==count) throw new Error("npc_ledger_insufficient_schedule");
@@ -735,7 +771,7 @@ function weightedTable(profile:NpcGamblingProfile,rng:XorShift32,dayIndex:number
 }
 function incomeSessionsForDay(profiles:readonly NpcGamblingProfile[],dayIndex:number,contract:NpcLedgerContract):Readonly<Record<string,NpcSession>> {
   const absoluteDay=contract.epochKstDay+dayIndex;
-  if(contract.version==="npc-ledger/1.2"){
+  if(isFlowLedgerContractVersion(contract.version)){
     const incomeProfiles=new Map((contract.externalIncomeProfiles??[]).map((profile)=>[profile.npcId,profile]));
     return Object.freeze(Object.fromEntries(profiles.map((profile)=>{
       const incomeProfile=incomeProfiles.get(profile.id);
@@ -763,10 +799,10 @@ function normalizedUtcSecond(clock:CasinoClock):number {
 }
 function compareText(a:string,b:string):number{return a<b?-1:a>b?1:0;}
 function validateDay(profiles:readonly NpcGamblingProfile[],dayIndex:number,openings:Readonly<Record<string,number>>,contract:NpcLedgerContract):void {
-  if(!["npc-ledger/1.0","npc-ledger/1.1","npc-ledger/1.2"].includes(contract.version)||!["npc-ledger/0.9","casino-flow/1.0","casino-flow/1.1"].includes(contract.seedVersion)||!Number.isSafeInteger(contract.epochKstDay)||!Number.isSafeInteger(dayIndex)||dayIndex<0)throw new Error("npc_ledger_invalid_contract");
+  if(!["npc-ledger/1.0","npc-ledger/1.1","npc-ledger/1.2","npc-ledger/1.3"].includes(contract.version)||!["npc-ledger/0.9","casino-flow/1.0","casino-flow/1.1","casino-flow/1.2"].includes(contract.seedVersion)||!Number.isSafeInteger(contract.epochKstDay)||!Number.isSafeInteger(dayIndex)||dayIndex<0)throw new Error("npc_ledger_invalid_contract");
   if(contract.houseOpeningBalance!==undefined&&(!Number.isSafeInteger(contract.houseOpeningBalance)||contract.houseOpeningBalance<0))throw new Error("npc_ledger_invalid_contract");
-  if(contract.version!=="npc-ledger/1.2"&&contract.seedVersion!=="npc-ledger/0.9")throw new Error("npc_ledger_invalid_contract");
-  if(contract.version==="npc-ledger/1.2"){
+  if(!isFlowLedgerContractVersion(contract.version)&&contract.seedVersion!=="npc-ledger/0.9")throw new Error("npc_ledger_invalid_contract");
+  if(isFlowLedgerContractVersion(contract.version)){
     const incomeProfiles=contract.externalIncomeProfiles??[];
     const ids=new Set<string>();
     for(const incomeProfile of incomeProfiles){assertNpcExternalIncomeProfile(incomeProfile);if(ids.has(incomeProfile.npcId))throw new Error(`npc_ledger_duplicate_flow_income_profile:${incomeProfile.npcId}`);ids.add(incomeProfile.npcId);}
@@ -783,7 +819,7 @@ function validateDay(profiles:readonly NpcGamblingProfile[],dayIndex:number,open
   }
   if(profiles.length===0||new Set(profiles.map((p)=>p.id)).size!==profiles.length||profiles.some((profile)=>!contract.profiles.some((entry)=>entry.id===profile.id)))throw new Error("npc_ledger_invalid_profiles");
   for(const profile of profiles){
-    if(!profile.id||!profile.name||!Number.isSafeInteger(profile.openingBalance)||profile.openingBalance<(contract.version==="npc-ledger/1.2"?0:1))throw new Error("npc_ledger_invalid_profile");
+    if(!profile.id||!profile.name||!Number.isSafeInteger(profile.openingBalance)||profile.openingBalance<(isFlowLedgerContractVersion(contract.version)?0:1))throw new Error("npc_ledger_invalid_profile");
     for(const value of [profile.riskAppetite,profile.discipline,profile.lossChasing,profile.winPressing,profile.stopLossRatio,profile.takeProfitRatio,profile.maxExposureRatio,...Object.values(profile.skills)]) if(!(value>=0&&value<=1))throw new Error("npc_ledger_invalid_profile");
     if(!["low","middle","high","premium"].includes(profile.incomeBand)||![7,14].includes(profile.payCycleDays)||!Number.isSafeInteger(profile.paydayOffset)||profile.paydayOffset<0||profile.paydayOffset>=profile.payCycleDays)throw new Error("npc_ledger_invalid_income_profile");
     const opening=openings[profile.id]; if(!Number.isSafeInteger(opening)||opening!<0||opening!>MAX_SAFE_BALANCE)throw new Error(`npc_ledger_invalid_state:${profile.id}`);
