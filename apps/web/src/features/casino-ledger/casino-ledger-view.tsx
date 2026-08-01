@@ -123,6 +123,8 @@ export default function CasinoLedgerView({ userBalance, tables, onPlay, onBalanc
   if(!ledger)return null;
   try {
     const {profiles,contract}=ledger;
+    // Render the selected contract verbatim. The 1.2 contract has 99 four-series
+    // runtime identities plus preserved Esther, Riel, and Magical Girl Nemo: 102.
     const currentUtcSecond = clock.utcSecond();
     const worldline = personalCasinoWorldlineAt(profiles, clock, contract, journal);
     const periodStartDay = profitStartKstDay ?? absoluteKstDay ?? contract.epochKstDay;

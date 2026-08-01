@@ -19,7 +19,7 @@ describe("Temerosa manifest memoization", () => {
   it("loads the series portrait pack lazily and memoizes the parsed maps", async()=>{
     vi.resetModules();
     const fetcher=vi.fn(async()=>new Response(JSON.stringify({
-      contract:"temerosa-series-npc-portrait-pack/0.1",packId:"temerosa-series-npcs",version:"0.1.0",
+      contract:"temerosa-series-npc-portrait-pack/0.2",packId:"temerosa-series-npcs",version:"0.2.0",
       npcs:[
         {npcId:"temerosa:overture:test",status:"available",sm:{path:"assets/sm/a.webp",emotion:"neutral"},md:{neutral:{path:"assets/md/a.webp",emotion:"neutral"}},lg:{path:"assets/lg/a.webp",emotion:"neutral"}},
         {npcId:"temerosa:finale:missing",status:"unavailable"},
@@ -30,11 +30,12 @@ describe("Temerosa manifest memoization", () => {
     const [first,second]=await Promise.all([loadTemerosaSeriesNpcAssets(),loadTemerosaSeriesNpcAssets()]);
     expect(first).toBe(second);
     expect(fetcher).toHaveBeenCalledOnce();
-    expect(first.thumbAssets["temerosa:overture:test"]).toBe("/content/temerosa-series-npcs/0.1.0/assets/sm/a.webp");
-    expect(first.assets["temerosa:overture:test"]?.neutral).toBe("/content/temerosa-series-npcs/0.1.0/assets/md/a.webp");
+    expect(fetcher).toHaveBeenCalledWith("/content/temerosa-series-npcs/0.2.0/manifest.json");
+    expect(first.thumbAssets["temerosa:overture:test"]).toBe("/content/temerosa-series-npcs/0.2.0/assets/sm/a.webp");
+    expect(first.assets["temerosa:overture:test"]?.neutral).toBe("/content/temerosa-series-npcs/0.2.0/assets/md/a.webp");
     expect(first.unavailableNpcIds).toEqual(["temerosa:finale:missing"]);
-    await expect(resolveTemerosaSeriesNpcPortrait("temerosa:overture:test","sm")).resolves.toBe("/content/temerosa-series-npcs/0.1.0/assets/sm/a.webp");
-    await expect(resolveTemerosaSeriesNpcPortrait("temerosa:overture:test","detail")).resolves.toBe("/content/temerosa-series-npcs/0.1.0/assets/lg/a.webp");
+    await expect(resolveTemerosaSeriesNpcPortrait("temerosa:overture:test","sm")).resolves.toBe("/content/temerosa-series-npcs/0.2.0/assets/sm/a.webp");
+    await expect(resolveTemerosaSeriesNpcPortrait("temerosa:overture:test","detail")).resolves.toBe("/content/temerosa-series-npcs/0.2.0/assets/lg/a.webp");
     await expect(resolveTemerosaSeriesNpcPortrait("temerosa:finale:missing","sm")).resolves.toBeUndefined();
     await expect(resolveTemerosaSeriesNpcPortrait("temerosa:finale:test","sm")).resolves.toBeUndefined();
     await expect(resolveTemerosaSeriesNpcPortrait("pale","sm")).resolves.toBeUndefined();
@@ -48,5 +49,14 @@ describe("Temerosa manifest memoization", () => {
     const {resolveTemerosaSeriesNpcPortrait}=await import("./temerosa-content.ts");
     await expect(resolveTemerosaSeriesNpcPortrait("pale","sm")).resolves.toBeUndefined();
     expect(fetcher).not.toHaveBeenCalled();
+  });
+
+  it("rejects the immutable 0.1 contract at the 0.2 path",async()=>{
+    vi.resetModules();
+    vi.stubGlobal("fetch",vi.fn(async()=>new Response(JSON.stringify({
+      contract:"temerosa-series-npc-portrait-pack/0.1",packId:"temerosa-series-npcs",version:"0.1.0",npcs:[],
+    }),{status:200})));
+    const {loadTemerosaSeriesNpcAssets}=await import("./temerosa-content.ts");
+    await expect(loadTemerosaSeriesNpcAssets()).rejects.toThrow("temerosa_series_npc_manifest_invalid");
   });
 });

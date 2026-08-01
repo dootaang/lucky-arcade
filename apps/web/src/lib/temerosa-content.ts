@@ -77,9 +77,9 @@ interface SeriesNpcPortraitRecord {
   lg?: SeriesPortraitVariant;
 }
 interface TemerosaSeriesNpcManifest {
-  contract: "temerosa-series-npc-portrait-pack/0.1";
+  contract: "temerosa-series-npc-portrait-pack/0.2";
   packId: "temerosa-series-npcs";
-  version: "0.1.0";
+  version: "0.2.0";
   npcs: readonly SeriesNpcPortraitRecord[];
 }
 export interface TemerosaSeriesNpcAssetBundle {
@@ -141,10 +141,10 @@ export function loadTemerosaCasinoManifest(): Promise<TemerosaManifestLoad> {
 
 /** Loads the four-series portrait pack only after a series-NPC surface asks for it. */
 export function loadTemerosaSeriesNpcAssets():Promise<TemerosaSeriesNpcAssetBundle>{
-  seriesNpcAssetPromise??=fetch("/content/temerosa-series-npcs/0.1.0/manifest.json").then(async(response)=>{
+  seriesNpcAssetPromise??=fetch("/content/temerosa-series-npcs/0.2.0/manifest.json").then(async(response)=>{
     if(!response.ok)throw new Error("temerosa_series_npc_manifest_missing");
     const manifest=await response.json() as TemerosaSeriesNpcManifest;
-    if(manifest.contract!=="temerosa-series-npc-portrait-pack/0.1"||manifest.packId!=="temerosa-series-npcs"||manifest.version!=="0.1.0")throw new Error("temerosa_series_npc_manifest_invalid");
+    if(manifest.contract!=="temerosa-series-npc-portrait-pack/0.2"||manifest.packId!=="temerosa-series-npcs"||manifest.version!=="0.2.0")throw new Error("temerosa_series_npc_manifest_invalid");
     const thumbAssets:Record<string,string>={},assets:Record<string,Readonly<Record<string,string>>>={},detailAssets:Record<string,string>={};
     const unavailable:string[]=[];
     for(const npc of manifest.npcs){
@@ -186,4 +186,4 @@ function fetchManifest(version: string): Promise<TemerosaManifestLoad> {
 }
 export function temerosaContentUrl(version: string, path: string): string { return `/content/temerosa-margin/${version}/${path}`; }
 function contentUrl(version: string, path: string): string { return temerosaContentUrl(version, path); }
-function seriesNpcContentUrl(path:string):string{return `/content/temerosa-series-npcs/0.1.0/${path}`;}
+function seriesNpcContentUrl(path:string):string{return `/content/temerosa-series-npcs/0.2.0/${path}`;}
