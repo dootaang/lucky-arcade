@@ -1,4 +1,4 @@
-import { casinoPresenceAt, casinoSpectatorMarketPresencesAt, casinoSpectatorMarketsAt, npcAvailability, temerosaCasinoLedgerAtUtcSecond } from "@lucky-arcade/casino-ledger";
+import { casinoPresenceAt, casinoSpectatorMarketPresencesAt, casinoSpectatorMarketsAt, legacyCabinetNpcId, npcAvailability, temerosaCasinoLedgerAtUtcSecond } from "@lucky-arcade/casino-ledger";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { casinoClockFromSample, deviceCasinoClockSample, type CasinoClockSample } from "../../lib/casino-clock.ts";
 import { loadTemerosaCasinoManifest } from "../../lib/temerosa-content.ts";
@@ -59,14 +59,17 @@ export function useCasinoOpponentAvailability(scope: string): {
     const marketIds = new Set(marketPresences.map((presence) => presence.npcId));
     const publicAvailability = npcAvailability([...basePresences.filter((presence) => !marketIds.has(presence.npcId)), ...marketPresences]);
     const heldIds = new Set(held.filter((invite) => invite.expiresAtUtcSecond > now).map((invite) => invite.npcId));
-    return Object.freeze(Object.fromEntries(ledger.profiles.map((profile) => {
+    for(const profile of ledger.profiles){const legacyId=legacyCabinetNpcId(profile.id);if(legacyId&&heldIds.has(legacyId))heldIds.add(profile.id);}
+    const resolved=Object.fromEntries(ledger.profiles.map((profile) => {
       const status = publicAvailability[profile.id]!;
       if (status.available && heldIds.has(profile.id)) return [profile.id, Object.freeze({ available: true, label: "초대 수락" })];
       if (status.available) return [profile.id, Object.freeze({ available: true, label: "이용 가능" })];
       const remaining = status.availableAtUtcSecond === undefined ? "잠시 후" : remainingLabel(status.availableAtUtcSecond - now);
       const activity=status.phase==="spectating"?`${tableLabel(status.tableId)} 관전 중`:`${tableLabel(status.tableId)} 중`;
       return [profile.id, Object.freeze({ available: false, label: `${activity} · ${remaining}`, ...(status.availableAtUtcSecond === undefined ? {} : { availableAtUtcSecond: status.availableAtUtcSecond }) })];
-    })));
+    }));
+    for(const profile of ledger.profiles){const legacyId=legacyCabinetNpcId(profile.id);if(legacyId)resolved[legacyId]=resolved[profile.id];}
+    return Object.freeze(resolved);
   }, [clock, held, now, revision]);
 
   const holdOpponents = useCallback((ids: readonly string[]) => {

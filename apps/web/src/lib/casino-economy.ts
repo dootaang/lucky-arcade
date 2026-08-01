@@ -1,6 +1,7 @@
 import {
   TEMEROSA_HOUSE_ACCOUNT_ID,
   casinoJournalAccountDelta,
+  successorNpcId,
   temerosaCasinoLedgerAtUtcSecond,
   type CasinoInternalAccountId,
 } from "@lucky-arcade/casino-ledger";
@@ -56,7 +57,7 @@ export async function casinoCounterpartyContexts(
   const worldline = personalCasinoWorldlineAt(ledger.profiles, clock, ledger.contract, journal);
 
   return Object.freeze(Object.fromEntries(accountIds.map((accountId) => {
-    const localDelta = casinoJournalAccountDelta(journal, accountId);
+    const localDelta = normalizedJournalDelta(journal,accountId,ledger.contract.version);
     if (accountId === TEMEROSA_HOUSE_ACCOUNT_ID) return [accountId, {
       counterpartyAccountId: accountId,
       counterpartyBalance: worldline.houseBalance,
@@ -64,8 +65,22 @@ export async function casinoCounterpartyContexts(
       casinoOccurredAtSecond,
     }];
     if (!accountId.startsWith("npc:")) throw new Error(`casino_counterparty_invalid:${accountId}`);
-    const balance = worldline.npcBalances[accountId.slice(4)];
+    const storedNpcId=accountId.slice(4);
+    const npcId=ledger.contract.version==="npc-ledger/1.2"?successorNpcId(storedNpcId)??storedNpcId:storedNpcId;
+    const balance = worldline.npcBalances[npcId];
     if (balance === undefined || !Number.isSafeInteger(balance) || balance < 0) throw new Error(`casino_counterparty_unknown:${accountId}`);
     return [accountId, { counterpartyAccountId: accountId, counterpartyBalance: balance, counterpartyBaseBalance: balance - localDelta, casinoOccurredAtSecond }];
   })));
+}
+
+function normalizedJournalDelta(journal:Awaited<ReturnType<typeof listCasinoTransactions>>,accountId:CasinoInternalAccountId,contractVersion:string):number{
+  if(accountId===TEMEROSA_HOUSE_ACCOUNT_ID||!accountId.startsWith("npc:"))return casinoJournalAccountDelta(journal,accountId);
+  const requested=accountId.slice(4);
+  const canonical=contractVersion==="npc-ledger/1.2"?successorNpcId(requested)??requested:requested;
+  return journal.reduce((sum,transaction)=>sum+transaction.postings.reduce((postingSum,posting)=>{
+    if(!posting.accountId.startsWith("npc:"))return postingSum;
+    const stored=posting.accountId.slice(4);
+    const normalized=contractVersion==="npc-ledger/1.2"?successorNpcId(stored)??stored:stored;
+    return normalized===canonical?postingSum+posting.delta:postingSum;
+  },0),0);
 }

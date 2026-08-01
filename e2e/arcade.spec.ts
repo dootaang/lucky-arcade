@@ -657,6 +657,7 @@ test("selects, wagers, and restores a five-round Indian poker table while defaul
   await page.goto("/play/indian-poker");
   await expect(page.getByRole("heading", { name: "인디언 포커" })).toBeVisible();
   await expect(page.getByRole("button", { name: /7라운드/ })).toHaveAttribute("aria-pressed", "true");
+  await page.getByRole("button", { name: "무작위 상대", exact: true }).click();
   await page.getByRole("button", { name: "5라운드", exact: true }).click();
   await page.getByRole("button", { name: "시작", exact: true }).click();
   await expect(page.locator(".indian-poker-player").getByRole("img", { name: "보이지 않는 내 카드" })).toBeVisible();
