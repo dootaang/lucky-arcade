@@ -25,3 +25,6 @@ test-results/
 playwright-report/
 /.tmp-*/
 /.codex-remote-attachments/
+# Raw image-generation output. Content assets only enter the repo through the
+# content:temerosa:* pipeline as webp with a manifest (sha256 + reviewEvidence).
+/output/

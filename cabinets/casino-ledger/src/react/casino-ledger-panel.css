@@ -335,3 +335,21 @@
 .live-player[data-visit] .live-player-portrait{box-shadow:0 0 0 2px var(--visit-color),0 0 12px color-mix(in srgb,var(--visit-color) 45%,transparent)}
 .live-player.is-spectating .live-player-portrait{box-shadow:0 0 0 1px var(--ca-gold),0 0 10px color-mix(in srgb,var(--ca-gold) 36%,transparent)}
 @media(prefers-reduced-motion:reduce){.ledger-portrait img,.live-player-portrait>img{transition:none!important}}
+
+/* The floor's rail narrows the table column without narrowing the window, so a
+   viewport media query can no longer tell when these rows are cramped. The live
+   grid is single-column in every context, so its inline size is the card's:
+   the card can react to the space it actually has.
+
+   A qualified name runs to "쿠드랴프카 · Bestiaization", and three of them share
+   one column that peaks near 260px even on an 864px card. The row simply cannot
+   hold three seats, so below 900px guests and last result take their own rows —
+   the same shape the narrow-viewport rules already use. */
+.casino-live-grid{container-type:inline-size}
+@container (max-width:900px){
+  .live-table-card{grid-template-columns:1fr 78px auto;min-height:126px}
+  .live-table-players{grid-column:1/3;grid-row:2;min-height:42px}
+  .live-table-result{grid-column:1/3;grid-row:3}
+  .venue-active .live-table-card.playable button{grid-column:3;grid-row:1/4}
+  .live-player b{overflow:visible;white-space:normal}
+}
