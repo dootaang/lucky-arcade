@@ -4,6 +4,7 @@ import {
   CASINO_SECONDS_PER_DAY,
   DEFAULT_HOUSE_OPERATING_COST_POLICY,
   casinoDayPlan,
+  casinoDayPlanWithHouseOpening,
   casinoKstDayAtUtcSecond,
   casinoSecondOfKstDayAtUtcSecond,
   casinoUtcSecondAtKstDay,
@@ -82,7 +83,9 @@ export function personalCasinoWorldlineAt(
     const cutoff = dayIndex === finalDayIndex ? casinoSecondOfKstDayAtUtcSecond(now) : DAY_SECONDS - 1;
     const dayTransactions = transactionDays.get(dayIndex) ?? [];
     const balanceEvents = npcEvents(dayTransactions, dayStart);
-    const plan = casinoDayPlan(profiles, dayIndex, balances, contract, balanceEvents);
+    const plan = contract.version==="npc-ledger/1.2"
+      ? casinoDayPlanWithHouseOpening(profiles,dayIndex,balances,contract,houseBalance,balanceEvents)
+      : casinoDayPlan(profiles,dayIndex,balances,contract,balanceEvents);
     const sessions = plan.sessions;
     for (const profile of profiles) {
       for (const session of sessions[profile.id] ?? []) {
