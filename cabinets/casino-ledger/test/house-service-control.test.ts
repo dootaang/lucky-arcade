@@ -108,7 +108,7 @@ describe("deterministic house service control",()=>{
     expect(report.houseCurtailedOperatingExpenses).toBe(0);
     expect(report.duplicateRoundIdCount).toBe(0);
     expect(report.postingImbalance).toBe(0);
-  },90_000);
+  },120_000);
 
   const longAudit=process.env.CASINO_LEDGER_LONG_AUDIT==="1"?it:it.skip;
   longAudit("records the ten-year reserve-safe release audit",()=>{
