@@ -1,0 +1,346 @@
+{
+  "contract": "temerosa-series-npc-portrait-audit/0.2",
+  "packId": "temerosa-series-npcs",
+  "version": "0.2.0",
+  "status": "passed",
+  "missingNpcIds": [
+    "temerosa:overture:licanica",
+    "temerosa:overture:mascot",
+    "temerosa:overture:mortem",
+    "temerosa:bestiaization:boris-leblanc",
+    "temerosa:bestiaization:gestas",
+    "temerosa:bestiaization:iweleth",
+    "temerosa:bestiaization:kudryavka",
+    "temerosa:bestiaization:leviathan",
+    "temerosa:bestiaization:sherirus"
+  ],
+  "emotionFallbacks": [
+    {
+      "npcId": "temerosa:overture:elton-carrasco",
+      "emotion": "neutral",
+      "fallbackFrom": "smile"
+    },
+    {
+      "npcId": "temerosa:overture:hab",
+      "emotion": "neutral",
+      "fallbackFrom": "embarrassed"
+    },
+    {
+      "npcId": "temerosa:overture:ishmael",
+      "emotion": "neutral",
+      "fallbackFrom": "smile"
+    },
+    {
+      "npcId": "temerosa:overture:kano",
+      "emotion": "neutral",
+      "fallbackFrom": "angry"
+    },
+    {
+      "npcId": "temerosa:overture:lyla",
+      "emotion": "neutral",
+      "fallbackFrom": "embarrassed"
+    },
+    {
+      "npcId": "temerosa:overture:merry-pip",
+      "emotion": "neutral",
+      "fallbackFrom": "smile"
+    },
+    {
+      "npcId": "temerosa:overture:pale",
+      "emotion": "neutral",
+      "fallbackFrom": "blush"
+    },
+    {
+      "npcId": "temerosa:overture:septendecilliono",
+      "emotion": "neutral",
+      "fallbackFrom": "contempt"
+    },
+    {
+      "npcId": "temerosa:overture:tashtego",
+      "emotion": "neutral",
+      "fallbackFrom": "teardrop"
+    },
+    {
+      "npcId": "temerosa:root2:revi",
+      "emotion": "pleased",
+      "fallbackFrom": "neutral"
+    },
+    {
+      "npcId": "temerosa:bestiaization:dorsinea",
+      "emotion": "despair",
+      "fallbackFrom": "neutral"
+    },
+    {
+      "npcId": "temerosa:bestiaization:francis",
+      "emotion": "pleased",
+      "fallbackFrom": "neutral"
+    }
+  ],
+  "forbiddenAssetMatches": [],
+  "mimeMismatches": [],
+  "enlargedVariants": [],
+  "crossSeriesFallbacks": [],
+  "crossNpcSourceDuplicates": [
+    "bestiaization:5f15178e2eea7ac9c6f9ff0a9f062d494625883c48d8e292e17d08b5ee2783e8:temerosa:bestiaization:temute,temerosa:bestiaization:tumit-tu",
+    "bestiaization:8eee84944d2f5147972a91d3bd16e1c304dd74040e0a92aa9d9575339bc61f35:temerosa:bestiaization:temute,temerosa:bestiaization:tumit-tu",
+    "bestiaization:ede4936363c88c4aa977a6b261d9a6c6b4e6c6910a3bca32b2ce5dcf5a96fa70:temerosa:bestiaization:temute,temerosa:bestiaization:tumit-tu",
+    "bestiaization:ff32901c14d61cc3e421488630f2c9b03d64275b1f928a85fc8f02b7f43df823:temerosa:bestiaization:temute,temerosa:bestiaization:tumit-tu"
+  ],
+  "approvedNpcIds": [
+    "temerosa:root2:ayase",
+    "temerosa:root2:dismas",
+    "temerosa:root2:hab",
+    "temerosa:root2:ishmael",
+    "temerosa:root2:kano",
+    "temerosa:root2:lyla",
+    "temerosa:root2:merry-pip",
+    "temerosa:root2:mortem",
+    "temerosa:root2:nevy",
+    "temerosa:root2:nieun",
+    "temerosa:root2:nostalgia",
+    "temerosa:root2:pale",
+    "temerosa:root2:presser",
+    "temerosa:root2:reila",
+    "temerosa:root2:septendecilliono",
+    "temerosa:root2:tashtego",
+    "temerosa:root2:wares",
+    "temerosa:bestiaization:a",
+    "temerosa:bestiaization:adesha",
+    "temerosa:bestiaization:alger",
+    "temerosa:bestiaization:anna",
+    "temerosa:bestiaization:apollyon",
+    "temerosa:bestiaization:bacikal",
+    "temerosa:bestiaization:bamcapis",
+    "temerosa:bestiaization:bche",
+    "temerosa:bestiaization:cab",
+    "temerosa:bestiaization:camille",
+    "temerosa:bestiaization:cicero",
+    "temerosa:bestiaization:cradle",
+    "temerosa:bestiaization:deokbae",
+    "temerosa:bestiaization:diamo",
+    "temerosa:bestiaization:echo",
+    "temerosa:bestiaization:esther",
+    "temerosa:bestiaization:flask",
+    "temerosa:bestiaization:habwen",
+    "temerosa:bestiaization:hiro",
+    "temerosa:bestiaization:jia",
+    "temerosa:bestiaization:katrinka",
+    "temerosa:bestiaization:kreva",
+    "temerosa:bestiaization:levillotte",
+    "temerosa:bestiaization:lilim",
+    "temerosa:bestiaization:limet",
+    "temerosa:bestiaization:lyla",
+    "temerosa:bestiaization:machina",
+    "temerosa:bestiaization:maryhub",
+    "temerosa:bestiaization:morsisa",
+    "temerosa:bestiaization:nayuta",
+    "temerosa:bestiaization:nemo-slaughter-orbit",
+    "temerosa:bestiaization:nieun",
+    "temerosa:bestiaization:nostalgia",
+    "temerosa:bestiaization:phaeo",
+    "temerosa:bestiaization:raven",
+    "temerosa:bestiaization:renoa",
+    "temerosa:bestiaization:sakabus",
+    "temerosa:bestiaization:snow-rim",
+    "temerosa:bestiaization:spiril",
+    "temerosa:bestiaization:strelka",
+    "temerosa:bestiaization:traver",
+    "temerosa:bestiaization:ttaengchil",
+    "temerosa:bestiaization:yul",
+    "temerosa:finale:a",
+    "temerosa:finale:aberrant-mia",
+    "temerosa:finale:al2zus",
+    "temerosa:finale:alger",
+    "temerosa:finale:apollyon",
+    "temerosa:finale:bacikal",
+    "temerosa:finale:bamcapis",
+    "temerosa:finale:beta",
+    "temerosa:finale:car5p3",
+    "temerosa:finale:echo",
+    "temerosa:finale:flask",
+    "temerosa:finale:flask-impostor",
+    "temerosa:finale:jia",
+    "temerosa:finale:kano",
+    "temerosa:finale:lilim",
+    "temerosa:finale:limet",
+    "temerosa:finale:mascot",
+    "temerosa:finale:mia",
+    "temerosa:finale:nantucket",
+    "temerosa:finale:nayuta",
+    "temerosa:finale:nieun",
+    "temerosa:finale:nostalgia",
+    "temerosa:finale:pale",
+    "temerosa:finale:renoa",
+    "temerosa:finale:shino",
+    "temerosa:finale:silentium",
+    "temerosa:finale:tashtego",
+    "temerosa:finale:ttaengchil",
+    "temerosa:finale:wares"
+  ],
+  "ownerReviewNeeded": [
+    {
+      "npcId": "temerosa:overture:elton-carrasco",
+      "reasons": [
+        "emotion-fallback"
+      ]
+    },
+    {
+      "npcId": "temerosa:overture:hab",
+      "reasons": [
+        "emotion-fallback"
+      ]
+    },
+    {
+      "npcId": "temerosa:overture:ishmael",
+      "reasons": [
+        "emotion-fallback"
+      ]
+    },
+    {
+      "npcId": "temerosa:overture:kano",
+      "reasons": [
+        "emotion-fallback"
+      ]
+    },
+    {
+      "npcId": "temerosa:overture:licanica",
+      "reasons": [
+        "portrait-unavailable"
+      ]
+    },
+    {
+      "npcId": "temerosa:overture:lyla",
+      "reasons": [
+        "emotion-fallback"
+      ]
+    },
+    {
+      "npcId": "temerosa:overture:mascot",
+      "reasons": [
+        "portrait-unavailable"
+      ]
+    },
+    {
+      "npcId": "temerosa:overture:merry-pip",
+      "reasons": [
+        "emotion-fallback"
+      ]
+    },
+    {
+      "npcId": "temerosa:overture:mortem",
+      "reasons": [
+        "portrait-unavailable"
+      ]
+    },
+    {
+      "npcId": "temerosa:overture:pale",
+      "reasons": [
+        "emotion-fallback"
+      ]
+    },
+    {
+      "npcId": "temerosa:overture:septendecilliono",
+      "reasons": [
+        "emotion-fallback"
+      ]
+    },
+    {
+      "npcId": "temerosa:overture:tashtego",
+      "reasons": [
+        "emotion-fallback"
+      ]
+    },
+    {
+      "npcId": "temerosa:root2:revi",
+      "reasons": [
+        "emotion-fallback"
+      ]
+    },
+    {
+      "npcId": "temerosa:bestiaization:boris-leblanc",
+      "reasons": [
+        "portrait-unavailable"
+      ]
+    },
+    {
+      "npcId": "temerosa:bestiaization:dorsinea",
+      "reasons": [
+        "emotion-fallback"
+      ]
+    },
+    {
+      "npcId": "temerosa:bestiaization:female",
+      "reasons": [
+        "source-persona-lore-confirmation-required"
+      ]
+    },
+    {
+      "npcId": "temerosa:bestiaization:francis",
+      "reasons": [
+        "emotion-fallback"
+      ]
+    },
+    {
+      "npcId": "temerosa:bestiaization:gestas",
+      "reasons": [
+        "portrait-unavailable"
+      ]
+    },
+    {
+      "npcId": "temerosa:bestiaization:iweleth",
+      "reasons": [
+        "portrait-unavailable"
+      ]
+    },
+    {
+      "npcId": "temerosa:bestiaization:kudryavka",
+      "reasons": [
+        "portrait-unavailable"
+      ]
+    },
+    {
+      "npcId": "temerosa:bestiaization:leviathan",
+      "reasons": [
+        "portrait-unavailable"
+      ]
+    },
+    {
+      "npcId": "temerosa:bestiaization:male",
+      "reasons": [
+        "source-persona-lore-confirmation-required"
+      ]
+    },
+    {
+      "npcId": "temerosa:bestiaization:nieun-pluto",
+      "reasons": [
+        "source-persona-lore-confirmation-required"
+      ]
+    },
+    {
+      "npcId": "temerosa:bestiaization:riel",
+      "reasons": [
+        "source-persona-lore-confirmation-required"
+      ]
+    },
+    {
+      "npcId": "temerosa:bestiaization:sherirus",
+      "reasons": [
+        "portrait-unavailable"
+      ]
+    },
+    {
+      "npcId": "temerosa:bestiaization:temute",
+      "reasons": [
+        "exact-source-shared-within-series"
+      ]
+    },
+    {
+      "npcId": "temerosa:bestiaization:tumit-tu",
+      "reasons": [
+        "exact-source-shared-within-series"
+      ]
+    }
+  ],
+  "uniqueImageFiles": 626,
+  "imageBytes": 25900664
+}

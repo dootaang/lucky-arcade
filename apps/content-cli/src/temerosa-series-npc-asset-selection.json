@@ -6,7 +6,8 @@
     "selection": "automatic-safe-expression-priority",
     "crossSeriesFallback": false,
     "unavailableIsExplicit": true,
-    "manualVisualPrecheck": false
+    "manualVisualPrecheck": false,
+    "postImplementationVisualReview": "completed"
   },
   "items": [
     {
@@ -40,6 +41,12 @@
           "sourceEntryPath": "assets/other/image/95.png",
           "sourceExpression": "cry"
         }
+      },
+      "visualReview": {
+        "status": "owner-review-needed",
+        "reasons": [
+          "emotion-fallback"
+        ]
       }
     },
     {
@@ -73,6 +80,12 @@
           "sourceEntryPath": "assets/other/image/29.png",
           "sourceExpression": "cry"
         }
+      },
+      "visualReview": {
+        "status": "owner-review-needed",
+        "reasons": [
+          "emotion-fallback"
+        ]
       }
     },
     {
@@ -106,6 +119,12 @@
           "sourceEntryPath": "assets/other/image/107.png",
           "sourceExpression": "cry"
         }
+      },
+      "visualReview": {
+        "status": "owner-review-needed",
+        "reasons": [
+          "emotion-fallback"
+        ]
       }
     },
     {
@@ -115,11 +134,11 @@
       "status": "selected",
       "emotions": {
         "neutral": {
-          "assetId": "3f3d3b04a700ad69:10:c64bab744789",
-          "name": "Pale.blush",
-          "sourceEntryPath": "assets/other/image/11.png",
-          "sourceExpression": "blush",
-          "fallbackFrom": "blush"
+          "assetId": "3f3d3b04a700ad69:131:a8550a9caa23",
+          "name": "Kano.Angry",
+          "sourceEntryPath": "assets/other/image/132.png",
+          "sourceExpression": "angry",
+          "fallbackFrom": "angry"
         },
         "pleased": {
           "assetId": "3f3d3b04a700ad69:134:feb35018bdff",
@@ -139,6 +158,12 @@
           "sourceEntryPath": "assets/other/image/140.png",
           "sourceExpression": "cry"
         }
+      },
+      "visualReview": {
+        "status": "owner-review-needed",
+        "reasons": [
+          "emotion-fallback"
+        ]
       }
     },
     {
@@ -146,7 +171,13 @@
       "series": "overture",
       "sourceFingerprint": "3f3d3b04a700ad69fa2270f5308dc096d08b00cab0fa412d299d1336a6875407",
       "status": "unavailable",
-      "reason": "no-safe-image-candidates"
+      "reason": "no-safe-image-candidates",
+      "visualReview": {
+        "status": "owner-review-needed",
+        "reasons": [
+          "portrait-unavailable"
+        ]
+      }
     },
     {
       "npcId": "temerosa:overture:lyla",
@@ -179,39 +210,25 @@
           "sourceEntryPath": "assets/other/image/70.png",
           "sourceExpression": "cry"
         }
+      },
+      "visualReview": {
+        "status": "owner-review-needed",
+        "reasons": [
+          "emotion-fallback"
+        ]
       }
     },
     {
       "npcId": "temerosa:overture:mascot",
       "series": "overture",
       "sourceFingerprint": "3f3d3b04a700ad69fa2270f5308dc096d08b00cab0fa412d299d1336a6875407",
-      "status": "selected",
-      "emotions": {
-        "neutral": {
-          "assetId": "3f3d3b04a700ad69:61:fe529c77283e",
-          "name": "Lyla.embarrassed",
-          "sourceEntryPath": "assets/other/image/62.png",
-          "sourceExpression": "embarrassed",
-          "fallbackFrom": "embarrassed"
-        },
-        "pleased": {
-          "assetId": "3f3d3b04a700ad69:62:894c0342da9c",
-          "name": "Lyla.smile",
-          "sourceEntryPath": "assets/other/image/63.png",
-          "sourceExpression": "smile"
-        },
-        "tense": {
-          "assetId": "3f3d3b04a700ad69:64:7612b58b6acd",
-          "name": "Lyla.Angry",
-          "sourceEntryPath": "assets/other/image/65.png",
-          "sourceExpression": "angry"
-        },
-        "despair": {
-          "assetId": "3f3d3b04a700ad69:69:df284217cb20",
-          "name": "Lyla.cry",
-          "sourceEntryPath": "assets/other/image/70.png",
-          "sourceExpression": "cry"
-        }
+      "status": "unavailable",
+      "reason": "no-owned-image-candidates",
+      "visualReview": {
+        "status": "owner-review-needed",
+        "reasons": [
+          "portrait-unavailable"
+        ]
       }
     },
     {
@@ -245,6 +262,12 @@
           "sourceEntryPath": "assets/other/image/82.png",
           "sourceExpression": "cry"
         }
+      },
+      "visualReview": {
+        "status": "owner-review-needed",
+        "reasons": [
+          "emotion-fallback"
+        ]
       }
     },
     {
@@ -252,7 +275,13 @@
       "series": "overture",
       "sourceFingerprint": "3f3d3b04a700ad69fa2270f5308dc096d08b00cab0fa412d299d1336a6875407",
       "status": "unavailable",
-      "reason": "no-safe-image-candidates"
+      "reason": "no-safe-image-candidates",
+      "visualReview": {
+        "status": "owner-review-needed",
+        "reasons": [
+          "portrait-unavailable"
+        ]
+      }
     },
     {
       "npcId": "temerosa:overture:pale",
@@ -285,6 +314,12 @@
           "sourceEntryPath": "assets/other/image/7.png",
           "sourceExpression": "cry"
         }
+      },
+      "visualReview": {
+        "status": "owner-review-needed",
+        "reasons": [
+          "emotion-fallback"
+        ]
       }
     },
     {
@@ -318,6 +353,12 @@
           "sourceEntryPath": "assets/other/image/37.png",
           "sourceExpression": "cry"
         }
+      },
+      "visualReview": {
+        "status": "owner-review-needed",
+        "reasons": [
+          "emotion-fallback"
+        ]
       }
     },
     {
@@ -351,6 +392,12 @@
           "sourceEntryPath": "assets/other/image/49.png",
           "sourceExpression": "cry"
         }
+      },
+      "visualReview": {
+        "status": "owner-review-needed",
+        "reasons": [
+          "emotion-fallback"
+        ]
       }
     },
     {
@@ -383,6 +430,9 @@
           "sourceEntryPath": "assets/other/image/112.png",
           "sourceExpression": "sad"
         }
+      },
+      "visualReview": {
+        "status": "approved"
       }
     },
     {
@@ -415,6 +465,9 @@
           "sourceEntryPath": "assets/other/image/166.png",
           "sourceExpression": "sad"
         }
+      },
+      "visualReview": {
+        "status": "approved"
       }
     },
     {
@@ -447,6 +500,9 @@
           "sourceEntryPath": "assets/other/image/304.png",
           "sourceExpression": "sad"
         }
+      },
+      "visualReview": {
+        "status": "approved"
       }
     },
     {
@@ -479,6 +535,9 @@
           "sourceEntryPath": "assets/other/image/132.png",
           "sourceExpression": "sad"
         }
+      },
+      "visualReview": {
+        "status": "approved"
       }
     },
     {
@@ -511,6 +570,9 @@
           "sourceEntryPath": "assets/other/image/20.png",
           "sourceExpression": "sad"
         }
+      },
+      "visualReview": {
+        "status": "approved"
       }
     },
     {
@@ -543,6 +605,9 @@
           "sourceEntryPath": "assets/other/image/59.png",
           "sourceExpression": "sad"
         }
+      },
+      "visualReview": {
+        "status": "approved"
       }
     },
     {
@@ -575,6 +640,9 @@
           "sourceEntryPath": "assets/other/image/270.png",
           "sourceExpression": "sad"
         }
+      },
+      "visualReview": {
+        "status": "approved"
       }
     },
     {
@@ -607,6 +675,9 @@
           "sourceEntryPath": "assets/other/image/4.png",
           "sourceExpression": "sad"
         }
+      },
+      "visualReview": {
+        "status": "approved"
       }
     },
     {
@@ -639,6 +710,9 @@
           "sourceEntryPath": "assets/other/image/201.png",
           "sourceExpression": "sad"
         }
+      },
+      "visualReview": {
+        "status": "approved"
       }
     },
     {
@@ -671,6 +745,9 @@
           "sourceEntryPath": "assets/other/image/38.png",
           "sourceExpression": "sad"
         }
+      },
+      "visualReview": {
+        "status": "approved"
       }
     },
     {
@@ -680,29 +757,32 @@
       "status": "selected",
       "emotions": {
         "neutral": {
-          "assetId": "119b1a857be6c62f:15:6d053d54fd9c",
-          "name": "Kano.natural",
-          "sourceEntryPath": "assets/other/image/16.png",
+          "assetId": "119b1a857be6c62f:72:83a9479b737a",
+          "name": "Nostalgia.natural",
+          "sourceEntryPath": "assets/other/image/73.png",
           "sourceExpression": "natural"
         },
         "pleased": {
-          "assetId": "119b1a857be6c62f:16:feb35018bdff",
-          "name": "Kano.smile",
-          "sourceEntryPath": "assets/other/image/17.png",
+          "assetId": "119b1a857be6c62f:69:f407b0840ee4",
+          "name": "Nostalgia.smile",
+          "sourceEntryPath": "assets/other/image/70.png",
           "sourceExpression": "smile"
         },
         "tense": {
-          "assetId": "119b1a857be6c62f:11:c4a9dfb6bd8b",
-          "name": "Kano.angry",
-          "sourceEntryPath": "assets/other/image/12.png",
+          "assetId": "119b1a857be6c62f:76:7f1d0068528f",
+          "name": "Nostalgia.angry",
+          "sourceEntryPath": "assets/other/image/77.png",
           "sourceExpression": "angry"
         },
         "despair": {
-          "assetId": "119b1a857be6c62f:19:2fd8bc9f6145",
-          "name": "Kano.sad",
-          "sourceEntryPath": "assets/other/image/20.png",
+          "assetId": "119b1a857be6c62f:74:7be26b52cc53",
+          "name": "Nostalgia.sad",
+          "sourceEntryPath": "assets/other/image/75.png",
           "sourceExpression": "sad"
         }
+      },
+      "visualReview": {
+        "status": "approved"
       }
     },
     {
@@ -735,6 +815,9 @@
           "sourceEntryPath": "assets/other/image/246.png",
           "sourceExpression": "sad"
         }
+      },
+      "visualReview": {
+        "status": "approved"
       }
     },
     {
@@ -767,6 +850,9 @@
           "sourceEntryPath": "assets/other/image/193.png",
           "sourceExpression": "sad"
         }
+      },
+      "visualReview": {
+        "status": "approved"
       }
     },
     {
@@ -799,6 +885,9 @@
           "sourceEntryPath": "assets/other/image/89.png",
           "sourceExpression": "sad"
         }
+      },
+      "visualReview": {
+        "status": "approved"
       }
     },
     {
@@ -832,6 +921,12 @@
           "sourceEntryPath": "assets/other/image/211.png",
           "sourceExpression": "sad"
         }
+      },
+      "visualReview": {
+        "status": "owner-review-needed",
+        "reasons": [
+          "emotion-fallback"
+        ]
       }
     },
     {
@@ -864,6 +959,9 @@
           "sourceEntryPath": "assets/other/image/229.png",
           "sourceExpression": "sad"
         }
+      },
+      "visualReview": {
+        "status": "approved"
       }
     },
     {
@@ -896,6 +994,9 @@
           "sourceEntryPath": "assets/other/image/287.png",
           "sourceExpression": "sad"
         }
+      },
+      "visualReview": {
+        "status": "approved"
       }
     },
     {
@@ -928,6 +1029,9 @@
           "sourceEntryPath": "assets/other/image/153.png",
           "sourceExpression": "sad"
         }
+      },
+      "visualReview": {
+        "status": "approved"
       }
     },
     {
@@ -960,6 +1064,9 @@
           "sourceEntryPath": "assets/other/image/389.jpeg",
           "sourceExpression": "sad"
         }
+      },
+      "visualReview": {
+        "status": "approved"
       }
     },
     {
@@ -992,6 +1099,9 @@
           "sourceEntryPath": "assets/other/image/179.jpeg",
           "sourceExpression": "sad"
         }
+      },
+      "visualReview": {
+        "status": "approved"
       }
     },
     {
@@ -1024,6 +1134,9 @@
           "sourceEntryPath": "assets/other/image/314.png",
           "sourceExpression": "sad"
         }
+      },
+      "visualReview": {
+        "status": "approved"
       }
     },
     {
@@ -1056,6 +1169,9 @@
           "sourceEntryPath": "assets/other/image/250.jpeg",
           "sourceExpression": "sad"
         }
+      },
+      "visualReview": {
+        "status": "approved"
       }
     },
     {
@@ -1088,6 +1204,9 @@
           "sourceEntryPath": "assets/other/image/235.jpeg",
           "sourceExpression": "sad"
         }
+      },
+      "visualReview": {
+        "status": "approved"
       }
     },
     {
@@ -1097,29 +1216,32 @@
       "status": "selected",
       "emotions": {
         "neutral": {
-          "assetId": "336eb710913afbc8:321:66745362541e",
-          "name": "Nemo.natural",
-          "sourceEntryPath": "assets/other/image/322.png",
+          "assetId": "336eb710913afbc8:373:e12270fb9a69",
+          "name": "Bacikal.natural",
+          "sourceEntryPath": "assets/other/image/374.png",
           "sourceExpression": "natural"
         },
         "pleased": {
-          "assetId": "336eb710913afbc8:322:a0737f3124cf",
-          "name": "Nemo.smile",
-          "sourceEntryPath": "assets/other/image/323.png",
+          "assetId": "336eb710913afbc8:378:ff005d45a314",
+          "name": "Bacikal.smile",
+          "sourceEntryPath": "assets/other/image/379.png",
           "sourceExpression": "smile"
         },
         "tense": {
-          "assetId": "336eb710913afbc8:323:fdadaf92ddb4",
-          "name": "Nemo.angry",
-          "sourceEntryPath": "assets/other/image/324.png",
+          "assetId": "336eb710913afbc8:374:ae15b7537d74",
+          "name": "Bacikal.angry",
+          "sourceEntryPath": "assets/other/image/375.png",
           "sourceExpression": "angry"
         },
         "despair": {
-          "assetId": "336eb710913afbc8:324:2a2ed519ced4",
-          "name": "Nemo.sad",
-          "sourceEntryPath": "assets/other/image/325.png",
+          "assetId": "336eb710913afbc8:375:9513c101fab9",
+          "name": "Bacikal.sad",
+          "sourceEntryPath": "assets/other/image/376.png",
           "sourceExpression": "sad"
         }
+      },
+      "visualReview": {
+        "status": "approved"
       }
     },
     {
@@ -1152,6 +1274,9 @@
           "sourceEntryPath": "assets/other/image/218.jpeg",
           "sourceExpression": "sad"
         }
+      },
+      "visualReview": {
+        "status": "approved"
       }
     },
     {
@@ -1184,6 +1309,9 @@
           "sourceEntryPath": "assets/other/image/120.jpeg",
           "sourceExpression": "sad"
         }
+      },
+      "visualReview": {
+        "status": "approved"
       }
     },
     {
@@ -1191,7 +1319,13 @@
       "series": "bestiaization",
       "sourceFingerprint": "336eb710913afbc8e95eae3e7be0f33994e169c41eefe746c9ffb300ec64e825",
       "status": "unavailable",
-      "reason": "no-safe-image-candidates"
+      "reason": "no-safe-image-candidates",
+      "visualReview": {
+        "status": "owner-review-needed",
+        "reasons": [
+          "portrait-unavailable"
+        ]
+      }
     },
     {
       "npcId": "temerosa:bestiaization:cab",
@@ -1223,6 +1357,9 @@
           "sourceEntryPath": "assets/other/image/258.jpeg",
           "sourceExpression": "sad"
         }
+      },
+      "visualReview": {
+        "status": "approved"
       }
     },
     {
@@ -1255,6 +1392,9 @@
           "sourceEntryPath": "assets/other/image/117.jpeg",
           "sourceExpression": "sad"
         }
+      },
+      "visualReview": {
+        "status": "approved"
       }
     },
     {
@@ -1287,6 +1427,9 @@
           "sourceEntryPath": "assets/other/image/92.jpeg",
           "sourceExpression": "sad"
         }
+      },
+      "visualReview": {
+        "status": "approved"
       }
     },
     {
@@ -1296,29 +1439,32 @@
       "status": "selected",
       "emotions": {
         "neutral": {
-          "assetId": "336eb710913afbc8:219:0b283f50051c",
-          "name": "Sakabus.natural",
-          "sourceEntryPath": "assets/other/image/220.jpeg",
+          "assetId": "336eb710913afbc8:260:e7e5bafb91d6",
+          "name": "Cradle.natural",
+          "sourceEntryPath": "assets/other/image/261.jpeg",
           "sourceExpression": "natural"
         },
         "pleased": {
-          "assetId": "336eb710913afbc8:220:323d1ae17942",
-          "name": "Sakabus.smile",
-          "sourceEntryPath": "assets/other/image/221.jpeg",
+          "assetId": "336eb710913afbc8:261:0dd237adaf8f",
+          "name": "Cradle.smile",
+          "sourceEntryPath": "assets/other/image/262.jpeg",
           "sourceExpression": "smile"
         },
         "tense": {
-          "assetId": "336eb710913afbc8:221:861057d25c7d",
-          "name": "Sakabus.angry",
-          "sourceEntryPath": "assets/other/image/222.jpeg",
+          "assetId": "336eb710913afbc8:262:f402edf4c64b",
+          "name": "Cradle.angry",
+          "sourceEntryPath": "assets/other/image/263.jpeg",
           "sourceExpression": "angry"
         },
         "despair": {
-          "assetId": "336eb710913afbc8:223:005e14a62699",
-          "name": "Sakabus.sad",
-          "sourceEntryPath": "assets/other/image/224.jpeg",
+          "assetId": "336eb710913afbc8:265:ce1ad5c0a052",
+          "name": "Cradle.sad",
+          "sourceEntryPath": "assets/other/image/266.jpeg",
           "sourceExpression": "sad"
         }
+      },
+      "visualReview": {
+        "status": "approved"
       }
     },
     {
@@ -1351,6 +1497,9 @@
           "sourceEntryPath": "assets/other/image/127.jpeg",
           "sourceExpression": "sad"
         }
+      },
+      "visualReview": {
+        "status": "approved"
       }
     },
     {
@@ -1383,6 +1532,9 @@
           "sourceEntryPath": "assets/other/image/190.jpeg",
           "sourceExpression": "sad"
         }
+      },
+      "visualReview": {
+        "status": "approved"
       }
     },
     {
@@ -1416,6 +1568,12 @@
           "sourceExpression": "natural",
           "fallbackFrom": "neutral"
         }
+      },
+      "visualReview": {
+        "status": "owner-review-needed",
+        "reasons": [
+          "emotion-fallback"
+        ]
       }
     },
     {
@@ -1448,6 +1606,9 @@
           "sourceEntryPath": "assets/other/image/202.jpeg",
           "sourceExpression": "sad"
         }
+      },
+      "visualReview": {
+        "status": "approved"
       }
     },
     {
@@ -1480,6 +1641,9 @@
           "sourceEntryPath": "assets/other/image/244.jpeg",
           "sourceExpression": "sad"
         }
+      },
+      "visualReview": {
+        "status": "approved"
       }
     },
     {
@@ -1512,6 +1676,12 @@
           "sourceEntryPath": "assets/other/image/411.jpeg",
           "sourceExpression": "sad"
         }
+      },
+      "visualReview": {
+        "status": "owner-review-needed",
+        "reasons": [
+          "source-persona-lore-confirmation-required"
+        ]
       }
     },
     {
@@ -1544,6 +1714,9 @@
           "sourceEntryPath": "assets/other/image/206.jpeg",
           "sourceExpression": "sad"
         }
+      },
+      "visualReview": {
+        "status": "approved"
       }
     },
     {
@@ -1577,6 +1750,12 @@
           "sourceEntryPath": "assets/other/image/282.png",
           "sourceExpression": "sad"
         }
+      },
+      "visualReview": {
+        "status": "owner-review-needed",
+        "reasons": [
+          "emotion-fallback"
+        ]
       }
     },
     {
@@ -1584,7 +1763,13 @@
       "series": "bestiaization",
       "sourceFingerprint": "336eb710913afbc8e95eae3e7be0f33994e169c41eefe746c9ffb300ec64e825",
       "status": "unavailable",
-      "reason": "no-safe-image-candidates"
+      "reason": "no-safe-image-candidates",
+      "visualReview": {
+        "status": "owner-review-needed",
+        "reasons": [
+          "portrait-unavailable"
+        ]
+      }
     },
     {
       "npcId": "temerosa:bestiaization:habwen",
@@ -1616,6 +1801,9 @@
           "sourceEntryPath": "assets/other/image/367.jpeg",
           "sourceExpression": "sad"
         }
+      },
+      "visualReview": {
+        "status": "approved"
       }
     },
     {
@@ -1648,6 +1836,9 @@
           "sourceEntryPath": "assets/other/image/166.jpeg",
           "sourceExpression": "sad"
         }
+      },
+      "visualReview": {
+        "status": "approved"
       }
     },
     {
@@ -1655,7 +1846,13 @@
       "series": "bestiaization",
       "sourceFingerprint": "336eb710913afbc8e95eae3e7be0f33994e169c41eefe746c9ffb300ec64e825",
       "status": "unavailable",
-      "reason": "no-safe-image-candidates"
+      "reason": "no-safe-image-candidates",
+      "visualReview": {
+        "status": "owner-review-needed",
+        "reasons": [
+          "portrait-unavailable"
+        ]
+      }
     },
     {
       "npcId": "temerosa:bestiaization:jia",
@@ -1687,6 +1884,9 @@
           "sourceEntryPath": "assets/other/image/361.jpeg",
           "sourceExpression": "sad"
         }
+      },
+      "visualReview": {
+        "status": "approved"
       }
     },
     {
@@ -1719,6 +1919,9 @@
           "sourceEntryPath": "assets/other/image/140.jpeg",
           "sourceExpression": "sad"
         }
+      },
+      "visualReview": {
+        "status": "approved"
       }
     },
     {
@@ -1751,6 +1954,9 @@
           "sourceEntryPath": "assets/other/image/109.jpeg",
           "sourceExpression": "sad"
         }
+      },
+      "visualReview": {
+        "status": "approved"
       }
     },
     {
@@ -1758,14 +1964,26 @@
       "series": "bestiaization",
       "sourceFingerprint": "336eb710913afbc8e95eae3e7be0f33994e169c41eefe746c9ffb300ec64e825",
       "status": "unavailable",
-      "reason": "no-safe-image-candidates"
+      "reason": "no-safe-image-candidates",
+      "visualReview": {
+        "status": "owner-review-needed",
+        "reasons": [
+          "portrait-unavailable"
+        ]
+      }
     },
     {
       "npcId": "temerosa:bestiaization:leviathan",
       "series": "bestiaization",
       "sourceFingerprint": "336eb710913afbc8e95eae3e7be0f33994e169c41eefe746c9ffb300ec64e825",
       "status": "unavailable",
-      "reason": "no-safe-image-candidates"
+      "reason": "no-safe-image-candidates",
+      "visualReview": {
+        "status": "owner-review-needed",
+        "reasons": [
+          "portrait-unavailable"
+        ]
+      }
     },
     {
       "npcId": "temerosa:bestiaization:levillotte",
@@ -1797,6 +2015,9 @@
           "sourceEntryPath": "assets/other/image/175.jpeg",
           "sourceExpression": "sad"
         }
+      },
+      "visualReview": {
+        "status": "approved"
       }
     },
     {
@@ -1829,6 +2050,9 @@
           "sourceEntryPath": "assets/other/image/269.jpeg",
           "sourceExpression": "sad"
         }
+      },
+      "visualReview": {
+        "status": "approved"
       }
     },
     {
@@ -1861,6 +2085,9 @@
           "sourceEntryPath": "assets/other/image/276.png",
           "sourceExpression": "sad"
         }
+      },
+      "visualReview": {
+        "status": "approved"
       }
     },
     {
@@ -1893,6 +2120,9 @@
           "sourceEntryPath": "assets/other/image/293.png",
           "sourceExpression": "sad"
         }
+      },
+      "visualReview": {
+        "status": "approved"
       }
     },
     {
@@ -1925,6 +2155,9 @@
           "sourceEntryPath": "assets/other/image/135.jpeg",
           "sourceExpression": "sad"
         }
+      },
+      "visualReview": {
+        "status": "approved"
       }
     },
     {
@@ -1957,6 +2190,12 @@
           "sourceEntryPath": "assets/other/image/408.jpeg",
           "sourceExpression": "sad"
         }
+      },
+      "visualReview": {
+        "status": "owner-review-needed",
+        "reasons": [
+          "source-persona-lore-confirmation-required"
+        ]
       }
     },
     {
@@ -1989,6 +2228,9 @@
           "sourceEntryPath": "assets/other/image/332.jpeg",
           "sourceExpression": "sad"
         }
+      },
+      "visualReview": {
+        "status": "approved"
       }
     },
     {
@@ -2021,6 +2263,9 @@
           "sourceEntryPath": "assets/other/image/196.jpeg",
           "sourceExpression": "sad"
         }
+      },
+      "visualReview": {
+        "status": "approved"
       }
     },
     {
@@ -2053,6 +2298,9 @@
           "sourceEntryPath": "assets/other/image/356.jpeg",
           "sourceExpression": "sad"
         }
+      },
+      "visualReview": {
+        "status": "approved"
       }
     },
     {
@@ -2085,6 +2333,9 @@
           "sourceEntryPath": "assets/other/image/325.png",
           "sourceExpression": "sad"
         }
+      },
+      "visualReview": {
+        "status": "approved"
       }
     },
     {
@@ -2117,6 +2368,9 @@
           "sourceEntryPath": "assets/other/image/344.png",
           "sourceExpression": "sad"
         }
+      },
+      "visualReview": {
+        "status": "approved"
       }
     },
     {
@@ -2149,6 +2403,12 @@
           "sourceEntryPath": "assets/other/image/353.png",
           "sourceExpression": "sad"
         }
+      },
+      "visualReview": {
+        "status": "owner-review-needed",
+        "reasons": [
+          "source-persona-lore-confirmation-required"
+        ]
       }
     },
     {
@@ -2181,6 +2441,9 @@
           "sourceEntryPath": "assets/other/image/228.jpeg",
           "sourceExpression": "sad"
         }
+      },
+      "visualReview": {
+        "status": "approved"
       }
     },
     {
@@ -2213,6 +2476,9 @@
           "sourceEntryPath": "assets/other/image/98.jpeg",
           "sourceExpression": "sad"
         }
+      },
+      "visualReview": {
+        "status": "approved"
       }
     },
     {
@@ -2245,6 +2511,9 @@
           "sourceEntryPath": "assets/other/image/384.jpeg",
           "sourceExpression": "sad"
         }
+      },
+      "visualReview": {
+        "status": "approved"
       }
     },
     {
@@ -2277,6 +2546,9 @@
           "sourceEntryPath": "assets/other/image/285.png",
           "sourceExpression": "sad"
         }
+      },
+      "visualReview": {
+        "status": "approved"
       }
     },
     {
@@ -2309,6 +2581,12 @@
           "sourceEntryPath": "assets/other/image/302.png",
           "sourceExpression": "sad"
         }
+      },
+      "visualReview": {
+        "status": "owner-review-needed",
+        "reasons": [
+          "source-persona-lore-confirmation-required"
+        ]
       }
     },
     {
@@ -2341,6 +2619,9 @@
           "sourceEntryPath": "assets/other/image/224.jpeg",
           "sourceExpression": "sad"
         }
+      },
+      "visualReview": {
+        "status": "approved"
       }
     },
     {
@@ -2348,7 +2629,13 @@
       "series": "bestiaization",
       "sourceFingerprint": "336eb710913afbc8e95eae3e7be0f33994e169c41eefe746c9ffb300ec64e825",
       "status": "unavailable",
-      "reason": "no-safe-image-candidates"
+      "reason": "no-safe-image-candidates",
+      "visualReview": {
+        "status": "owner-review-needed",
+        "reasons": [
+          "portrait-unavailable"
+        ]
+      }
     },
     {
       "npcId": "temerosa:bestiaization:snow-rim",
@@ -2380,6 +2667,9 @@
           "sourceEntryPath": "assets/other/image/209.jpeg",
           "sourceExpression": "sad"
         }
+      },
+      "visualReview": {
+        "status": "approved"
       }
     },
     {
@@ -2412,6 +2702,9 @@
           "sourceEntryPath": "assets/other/image/395.jpeg",
           "sourceExpression": "sad"
         }
+      },
+      "visualReview": {
+        "status": "approved"
       }
     },
     {
@@ -2444,6 +2737,9 @@
           "sourceEntryPath": "assets/other/image/239.jpeg",
           "sourceExpression": "sad"
         }
+      },
+      "visualReview": {
+        "status": "approved"
       }
     },
     {
@@ -2476,6 +2772,12 @@
           "sourceEntryPath": "assets/other/image/150.jpeg",
           "sourceExpression": "sad"
         }
+      },
+      "visualReview": {
+        "status": "owner-review-needed",
+        "reasons": [
+          "exact-source-shared-within-series"
+        ]
       }
     },
     {
@@ -2508,6 +2810,9 @@
           "sourceEntryPath": "assets/other/image/104.jpeg",
           "sourceExpression": "sad"
         }
+      },
+      "visualReview": {
+        "status": "approved"
       }
     },
     {
@@ -2540,6 +2845,9 @@
           "sourceEntryPath": "assets/other/image/146.jpeg",
           "sourceExpression": "sad"
         }
+      },
+      "visualReview": {
+        "status": "approved"
       }
     },
     {
@@ -2549,29 +2857,35 @@
       "status": "selected",
       "emotions": {
         "neutral": {
-          "assetId": "336eb710913afbc8:136:a603f0b20df5",
-          "name": "Katrinka.natural",
-          "sourceEntryPath": "assets/other/image/137.jpeg",
+          "assetId": "336eb710913afbc8:152:3cf1b73cb80a",
+          "name": "Tumit-Tu.natural",
+          "sourceEntryPath": "assets/other/image/153.jpeg",
           "sourceExpression": "natural"
         },
         "pleased": {
-          "assetId": "336eb710913afbc8:141:261794587902",
-          "name": "Katrinka.smile",
-          "sourceEntryPath": "assets/other/image/142.jpeg",
+          "assetId": "336eb710913afbc8:155:7d1c81cd9f6a",
+          "name": "Tumit-Tu.smile",
+          "sourceEntryPath": "assets/other/image/156.jpeg",
           "sourceExpression": "smile"
         },
         "tense": {
-          "assetId": "336eb710913afbc8:137:18758c63c9ff",
-          "name": "Katrinka.angry",
-          "sourceEntryPath": "assets/other/image/138.jpeg",
+          "assetId": "336eb710913afbc8:150:e4f9030dde40",
+          "name": "Tumit-Tu.angry",
+          "sourceEntryPath": "assets/other/image/151.jpeg",
           "sourceExpression": "angry"
         },
         "despair": {
-          "assetId": "336eb710913afbc8:139:fd0535bf7251",
-          "name": "Katrinka.sad",
-          "sourceEntryPath": "assets/other/image/140.jpeg",
+          "assetId": "336eb710913afbc8:149:0900fecabfb9",
+          "name": "Tumit-Tu.sad",
+          "sourceEntryPath": "assets/other/image/150.jpeg",
           "sourceExpression": "sad"
         }
+      },
+      "visualReview": {
+        "status": "owner-review-needed",
+        "reasons": [
+          "exact-source-shared-within-series"
+        ]
       }
     },
     {
@@ -2604,6 +2918,9 @@
           "sourceEntryPath": "assets/other/image/83.jpeg",
           "sourceExpression": "sad"
         }
+      },
+      "visualReview": {
+        "status": "approved"
       }
     },
     {
@@ -2636,6 +2953,9 @@
           "sourceEntryPath": "assets/other/image/[A]_sad.png",
           "sourceExpression": "sad"
         }
+      },
+      "visualReview": {
+        "status": "approved"
       }
     },
     {
@@ -2668,6 +2988,9 @@
           "sourceEntryPath": "assets/other/image/Aberrant_MIA_sad.png",
           "sourceExpression": "sad"
         }
+      },
+      "visualReview": {
+        "status": "approved"
       }
     },
     {
@@ -2700,6 +3023,9 @@
           "sourceEntryPath": "assets/other/image/Al2zus_sad_1.png",
           "sourceExpression": "sad"
         }
+      },
+      "visualReview": {
+        "status": "approved"
       }
     },
     {
@@ -2732,6 +3058,9 @@
           "sourceEntryPath": "assets/other/image/Alger_sad_1.png",
           "sourceExpression": "sad"
         }
+      },
+      "visualReview": {
+        "status": "approved"
       }
     },
     {
@@ -2764,6 +3093,9 @@
           "sourceEntryPath": "assets/other/image/Apollyon_sad_1.png",
           "sourceExpression": "sad"
         }
+      },
+      "visualReview": {
+        "status": "approved"
       }
     },
     {
@@ -2796,6 +3128,9 @@
           "sourceEntryPath": "assets/other/image/Bacikal_sad_1.png",
           "sourceExpression": "sad"
         }
+      },
+      "visualReview": {
+        "status": "approved"
       }
     },
     {
@@ -2828,6 +3163,9 @@
           "sourceEntryPath": "assets/other/image/Bamcapis_sad_1.png",
           "sourceExpression": "sad"
         }
+      },
+      "visualReview": {
+        "status": "approved"
       }
     },
     {
@@ -2860,6 +3198,9 @@
           "sourceEntryPath": "assets/other/image/Beta_sad_1.png",
           "sourceExpression": "sad"
         }
+      },
+      "visualReview": {
+        "status": "approved"
       }
     },
     {
@@ -2892,6 +3233,9 @@
           "sourceEntryPath": "assets/other/image/CAR5P3_sad_1.png",
           "sourceExpression": "sad"
         }
+      },
+      "visualReview": {
+        "status": "approved"
       }
     },
     {
@@ -2924,6 +3268,9 @@
           "sourceEntryPath": "assets/other/image/Echo_sad_1.png",
           "sourceExpression": "sad"
         }
+      },
+      "visualReview": {
+        "status": "approved"
       }
     },
     {
@@ -2956,6 +3303,9 @@
           "sourceEntryPath": "assets/other/image/Real_Flask_sad_1.png",
           "sourceExpression": "sad"
         }
+      },
+      "visualReview": {
+        "status": "approved"
       }
     },
     {
@@ -2965,29 +3315,32 @@
       "status": "selected",
       "emotions": {
         "neutral": {
-          "assetId": "26b083d4c9dfba1c:408:431eb2e74f03",
-          "name": "Alger_standing",
-          "sourceEntryPath": "assets/other/image/Alger_standing_1.png",
+          "assetId": "26b083d4c9dfba1c:189:bb80345224a0",
+          "name": "Fake_flask_standing",
+          "sourceEntryPath": "assets/other/image/Fake_flask_standing.png",
           "sourceExpression": "standing"
         },
         "pleased": {
-          "assetId": "26b083d4c9dfba1c:405:b2999daaade5",
-          "name": "Alger_smile",
-          "sourceEntryPath": "assets/other/image/Alger_smile.png",
+          "assetId": "26b083d4c9dfba1c:185:26dac4f7e03f",
+          "name": "Fake_flask_smile",
+          "sourceEntryPath": "assets/other/image/Fake_flask_smile.png",
           "sourceExpression": "smile"
         },
         "tense": {
-          "assetId": "26b083d4c9dfba1c:395:d5b21db5fe4b",
-          "name": "Alger_angry",
-          "sourceEntryPath": "assets/other/image/Alger_angry.png",
+          "assetId": "26b083d4c9dfba1c:176:ed77d1ba901b",
+          "name": "Fake_flask_angry",
+          "sourceEntryPath": "assets/other/image/Fake_flask_angry.png",
           "sourceExpression": "angry"
         },
         "despair": {
-          "assetId": "26b083d4c9dfba1c:394:dfd434045199",
-          "name": "Alger_sad",
-          "sourceEntryPath": "assets/other/image/Alger_sad_1.png",
+          "assetId": "26b083d4c9dfba1c:192:99b7e8ac76a3",
+          "name": "Fake_flask_sad",
+          "sourceEntryPath": "assets/other/image/Fake_flask_sad_1.png",
           "sourceExpression": "sad"
         }
+      },
+      "visualReview": {
+        "status": "approved"
       }
     },
     {
@@ -3020,6 +3373,9 @@
           "sourceEntryPath": "assets/other/image/Jia_sad.png",
           "sourceExpression": "sad"
         }
+      },
+      "visualReview": {
+        "status": "approved"
       }
     },
     {
@@ -3052,6 +3408,9 @@
           "sourceEntryPath": "assets/other/image/Kano_sad_1.png",
           "sourceExpression": "sad"
         }
+      },
+      "visualReview": {
+        "status": "approved"
       }
     },
     {
@@ -3084,6 +3443,9 @@
           "sourceEntryPath": "assets/other/image/Lilim_sad_1.png",
           "sourceExpression": "sad"
         }
+      },
+      "visualReview": {
+        "status": "approved"
       }
     },
     {
@@ -3116,6 +3478,9 @@
           "sourceEntryPath": "assets/other/image/Limet_sad_1.png",
           "sourceExpression": "sad"
         }
+      },
+      "visualReview": {
+        "status": "approved"
       }
     },
     {
@@ -3148,6 +3513,9 @@
           "sourceEntryPath": "assets/other/image/Mascot_sad.png",
           "sourceExpression": "sad"
         }
+      },
+      "visualReview": {
+        "status": "approved"
       }
     },
     {
@@ -3180,6 +3548,9 @@
           "sourceEntryPath": "assets/other/image/MIA_sad.png",
           "sourceExpression": "sad"
         }
+      },
+      "visualReview": {
+        "status": "approved"
       }
     },
     {
@@ -3212,6 +3583,9 @@
           "sourceEntryPath": "assets/other/image/Nantucket_sad.png",
           "sourceExpression": "sad"
         }
+      },
+      "visualReview": {
+        "status": "approved"
       }
     },
     {
@@ -3244,6 +3618,9 @@
           "sourceEntryPath": "assets/other/image/Nayuta_sad.png",
           "sourceExpression": "sad"
         }
+      },
+      "visualReview": {
+        "status": "approved"
       }
     },
     {
@@ -3276,6 +3653,9 @@
           "sourceEntryPath": "assets/other/image/Nieun_sad_1.png",
           "sourceExpression": "sad"
         }
+      },
+      "visualReview": {
+        "status": "approved"
       }
     },
     {
@@ -3308,6 +3688,9 @@
           "sourceEntryPath": "assets/other/image/Nostalgia_sad_1.png",
           "sourceExpression": "sad"
         }
+      },
+      "visualReview": {
+        "status": "approved"
       }
     },
     {
@@ -3340,6 +3723,9 @@
           "sourceEntryPath": "assets/other/image/Pale_sad_1.png",
           "sourceExpression": "sad"
         }
+      },
+      "visualReview": {
+        "status": "approved"
       }
     },
     {
@@ -3349,29 +3735,32 @@
       "status": "selected",
       "emotions": {
         "neutral": {
-          "assetId": "26b083d4c9dfba1c:408:431eb2e74f03",
-          "name": "Alger_standing",
-          "sourceEntryPath": "assets/other/image/Alger_standing_1.png",
+          "assetId": "26b083d4c9dfba1c:713:3db15af12111",
+          "name": "Renoa_standing",
+          "sourceEntryPath": "assets/other/image/Renoa_standing_1.png",
           "sourceExpression": "standing"
         },
         "pleased": {
-          "assetId": "26b083d4c9dfba1c:405:b2999daaade5",
-          "name": "Alger_smile",
-          "sourceEntryPath": "assets/other/image/Alger_smile.png",
+          "assetId": "26b083d4c9dfba1c:706:67d468d58aa5",
+          "name": "Renoa_smile",
+          "sourceEntryPath": "assets/other/image/Renoa_smile_1.png",
           "sourceExpression": "smile"
         },
         "tense": {
-          "assetId": "26b083d4c9dfba1c:395:d5b21db5fe4b",
-          "name": "Alger_angry",
-          "sourceEntryPath": "assets/other/image/Alger_angry.png",
+          "assetId": "26b083d4c9dfba1c:689:a413932b39b7",
+          "name": "Renoa_angry",
+          "sourceEntryPath": "assets/other/image/Renoa_angry_1.png",
           "sourceExpression": "angry"
         },
         "despair": {
-          "assetId": "26b083d4c9dfba1c:394:dfd434045199",
-          "name": "Alger_sad",
-          "sourceEntryPath": "assets/other/image/Alger_sad_1.png",
+          "assetId": "26b083d4c9dfba1c:704:05aa4f823862",
+          "name": "Renoa_sad",
+          "sourceEntryPath": "assets/other/image/Renoa_sad_1.png",
           "sourceExpression": "sad"
         }
+      },
+      "visualReview": {
+        "status": "approved"
       }
     },
     {
@@ -3404,6 +3793,9 @@
           "sourceEntryPath": "assets/other/image/Shino_sad_1.png",
           "sourceExpression": "sad"
         }
+      },
+      "visualReview": {
+        "status": "approved"
       }
     },
     {
@@ -3413,29 +3805,32 @@
       "status": "selected",
       "emotions": {
         "neutral": {
-          "assetId": "26b083d4c9dfba1c:551:785f512b1b6b",
-          "name": "Limet_standing",
-          "sourceEntryPath": "assets/other/image/Limet_standing.png",
+          "assetId": "26b083d4c9dfba1c:442:cfc6fd1cd1b0",
+          "name": "Silentium_standing",
+          "sourceEntryPath": "assets/other/image/Silentium_standing_1.png",
           "sourceExpression": "standing"
         },
         "pleased": {
-          "assetId": "26b083d4c9dfba1c:548:46451b004432",
-          "name": "Limet_smile",
-          "sourceEntryPath": "assets/other/image/Limet_smile_1.png",
+          "assetId": "26b083d4c9dfba1c:438:11b6e406ba50",
+          "name": "Silentium_smile",
+          "sourceEntryPath": "assets/other/image/Silentium_smile.jpg",
           "sourceExpression": "smile"
         },
         "tense": {
-          "assetId": "26b083d4c9dfba1c:527:3b345d6d2e3a",
-          "name": "Limet_angry",
-          "sourceEntryPath": "assets/other/image/Limet_angry_1.png",
+          "assetId": "26b083d4c9dfba1c:431:1736f185c8ea",
+          "name": "Silentium_angry",
+          "sourceEntryPath": "assets/other/image/Silentium_angry.png",
           "sourceExpression": "angry"
         },
         "despair": {
-          "assetId": "26b083d4c9dfba1c:545:207282911e61",
-          "name": "Limet_sad",
-          "sourceEntryPath": "assets/other/image/Limet_sad_1.png",
+          "assetId": "26b083d4c9dfba1c:437:e2e533ee3565",
+          "name": "Silentium_sad",
+          "sourceEntryPath": "assets/other/image/Silentium_sad.png",
           "sourceExpression": "sad"
         }
+      },
+      "visualReview": {
+        "status": "approved"
       }
     },
     {
@@ -3468,6 +3863,9 @@
           "sourceEntryPath": "assets/other/image/Tashtego_sad_1.png",
           "sourceExpression": "sad"
         }
+      },
+      "visualReview": {
+        "status": "approved"
       }
     },
     {
@@ -3500,6 +3898,9 @@
           "sourceEntryPath": "assets/other/image/Ttaengchil_sad_1.png",
           "sourceExpression": "sad"
         }
+      },
+      "visualReview": {
+        "status": "approved"
       }
     },
     {
@@ -3532,6 +3933,9 @@
           "sourceEntryPath": "assets/other/image/Wares_sad_1.png",
           "sourceExpression": "sad"
         }
+      },
+      "visualReview": {
+        "status": "approved"
       }
     }
   ]

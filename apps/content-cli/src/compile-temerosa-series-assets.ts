@@ -16,9 +16,23 @@ const EMOTION_PREFERENCES: Readonly<Record<Emotion, readonly string[]>> = {
   tense: ["tense", "angry", "upset", "surprised", "embarrassed", "contempt", "combat-stance", "combat", "fight"],
   despair: ["despair", "sad", "cry", "teardrop", "disappointed"],
 };
+const VERIFIED_CANDIDATE_OWNERSHIP: Readonly<Record<string, RegExp>> = {
+  "temerosa:overture:kano": /^K(?:a|o)no[._]/iu,
+  "temerosa:overture:mascot": /^Mascot[._]/iu,
+  "temerosa:root2:nostalgia": /^Nostalgia[._]/iu,
+  "temerosa:bestiaization:bacikal": /^Bacikal[._]/iu,
+  "temerosa:bestiaization:cradle": /^Cradle[._]/iu,
+  "temerosa:bestiaization:tumit-tu": /^Tumit[-_]Tu[._]/iu,
+  "temerosa:finale:flask-impostor": /^Fake[_ .-]?flask[._]/iu,
+  "temerosa:finale:renoa": /^Renoa[._]/iu,
+  "temerosa:finale:silentium": /^Silentium[._]/iu,
+};
 
 export type Emotion = (typeof EMOTIONS)[number];
 export type PortraitScale = "sm" | "md" | "lg";
+export type VisualReview =
+  | { status: "approved" }
+  | { status: "owner-review-needed"; reasons: string[] };
 
 export interface SeriesNpcAssetSelection {
   contract: "temerosa-series-npc-asset-selection/0.1";
@@ -29,6 +43,7 @@ export interface SeriesNpcAssetSelection {
     crossSeriesFallback: false;
     unavailableIsExplicit: true;
     manualVisualPrecheck: false;
+    postImplementationVisualReview: "pending" | "completed";
   };
   items: SeriesNpcAssetSelectionItem[];
 }
@@ -38,8 +53,8 @@ export type SeriesNpcAssetSelectionItem = {
   series: TemerosaSeriesKey;
   sourceFingerprint: string;
 } & (
-  | { status: "unavailable"; reason: "no-safe-image-candidates" }
-  | { status: "selected"; emotions: Record<Emotion, SelectedCandidate> }
+  | { status: "unavailable"; reason: "no-safe-image-candidates" | "no-owned-image-candidates"; visualReview: VisualReview }
+  | { status: "selected"; emotions: Record<Emotion, SelectedCandidate>; visualReview: VisualReview }
 );
 
 export interface SelectedCandidate {
@@ -51,7 +66,7 @@ export interface SelectedCandidate {
 }
 
 export interface SeriesNpcPortraitPackManifest {
-  contract: "temerosa-series-npc-portrait-pack/0.1";
+  contract: "temerosa-series-npc-portrait-pack/0.2";
   packId: typeof PACK_ID;
   version: string;
   generatedAt: string;
@@ -75,6 +90,8 @@ export interface SeriesNpcPortraitPackManifest {
     uniqueSourceImages: number;
     uniqueImageFiles: number;
     imageBytes: number;
+    approved: number;
+    ownerReviewNeeded: number;
   };
   npcs: SeriesNpcPortraitEntry[];
 }
@@ -83,8 +100,8 @@ export type SeriesNpcPortraitEntry = {
   npcId: string;
   series: TemerosaSeriesKey;
 } & (
-  | { status: "unavailable"; reason: "no-safe-image-candidates" }
-  | { status: "available"; sm: PortraitVariant; md: Record<Emotion, PortraitVariant>; lg?: PortraitVariant }
+  | { status: "unavailable"; reason: "no-safe-image-candidates" | "no-owned-image-candidates"; visualReview: VisualReview }
+  | { status: "available"; sm: PortraitVariant; md: Record<Emotion, PortraitVariant>; lg?: PortraitVariant; visualReview: VisualReview }
 );
 
 export interface PortraitVariant {
@@ -112,7 +129,7 @@ export interface PortraitVariant {
 }
 
 export interface SeriesNpcAssetAudit {
-  contract: "temerosa-series-npc-portrait-audit/0.1";
+  contract: "temerosa-series-npc-portrait-audit/0.2";
   packId: typeof PACK_ID;
   version: string;
   status: "passed";
@@ -122,6 +139,9 @@ export interface SeriesNpcAssetAudit {
   mimeMismatches: string[];
   enlargedVariants: string[];
   crossSeriesFallbacks: string[];
+  crossNpcSourceDuplicates: string[];
+  approvedNpcIds: string[];
+  ownerReviewNeeded: Array<{ npcId: string; reasons: string[] }>;
   uniqueImageFiles: number;
   imageBytes: number;
 }
@@ -144,7 +164,7 @@ export function buildSeriesNpcAssetSelection(inventory: TemerosaSeriesNpcInvento
     contract: "temerosa-series-npc-asset-selection/0.1",
     inventoryContract: inventory.contract,
     identityRule: "series-and-source-persona",
-    policy: { selection: "automatic-safe-expression-priority", crossSeriesFallback: false, unavailableIsExplicit: true, manualVisualPrecheck: false },
+    policy: { selection: "automatic-safe-expression-priority", crossSeriesFallback: false, unavailableIsExplicit: true, manualVisualPrecheck: false, postImplementationVisualReview: "pending" },
     items: inventory.records.map((record) => selectRecord(record, required(fingerprints.get(record.series), `series_source_missing:${record.series}`))),
   };
 }
@@ -152,19 +172,21 @@ export function buildSeriesNpcAssetSelection(inventory: TemerosaSeriesNpcInvento
 export function assertSeriesNpcAssetSelection(selection: SeriesNpcAssetSelection, inventory: TemerosaSeriesNpcInventory): void {
   if (selection.contract !== "temerosa-series-npc-asset-selection/0.1" || selection.identityRule !== "series-and-source-persona") throw new Error("series_asset_selection_contract_invalid");
   if (selection.inventoryContract !== inventory.contract) throw new Error("series_asset_selection_inventory_contract_invalid");
-  if (selection.policy.crossSeriesFallback || !selection.policy.unavailableIsExplicit) throw new Error("series_asset_selection_policy_invalid");
+  if (selection.policy.crossSeriesFallback || !selection.policy.unavailableIsExplicit || !["pending", "completed"].includes(selection.policy.postImplementationVisualReview)) throw new Error("series_asset_selection_policy_invalid");
   if (selection.items.length !== inventory.records.length || new Set(selection.items.map((item) => item.npcId)).size !== selection.items.length) throw new Error("series_asset_selection_count_invalid");
   const records = new Map(inventory.records.map((record) => [record.id, record]));
   const fingerprints = new Map(inventory.sources.map((source) => [source.series, source.fingerprint]));
   for (const item of selection.items) {
     const record = records.get(item.npcId);
     if (!record || item.series !== record.series || item.sourceFingerprint !== fingerprints.get(record.series)) throw new Error(`series_asset_selection_identity_invalid:${item.npcId}`);
+    assertVisualReview(item.visualReview, item.npcId);
     if (item.status === "unavailable") {
-      if (record.assetCandidates.length > 0) throw new Error(`series_asset_selection_false_unavailable:${item.npcId}`);
+      if (eligibleCandidates(record).length > 0) throw new Error(`series_asset_selection_false_unavailable:${item.npcId}`);
       continue;
     }
-    if (record.assetCandidates.length === 0) throw new Error(`series_asset_selection_missing_unavailable:${item.npcId}`);
-    const candidates = new Map(record.assetCandidates.map((candidate) => [candidate.assetId, candidate]));
+    const eligible = eligibleCandidates(record);
+    if (eligible.length === 0) throw new Error(`series_asset_selection_missing_unavailable:${item.npcId}`);
+    const candidates = new Map(eligible.map((candidate) => [candidate.assetId, candidate]));
     for (const emotion of EMOTIONS) {
       const selected = item.emotions[emotion], candidate = candidates.get(selected.assetId);
       if (!candidate || candidate.name !== selected.name || (candidate.path ?? "") !== selected.sourceEntryPath || candidate.expression !== selected.sourceExpression) throw new Error(`series_asset_selection_candidate_invalid:${item.npcId}:${emotion}`);
@@ -178,17 +200,21 @@ export async function auditSeriesNpcPortraitPack(packRoot: string, manifest: Ser
   const missingNpcIds = manifest.npcs.filter((npc) => npc.status === "unavailable").map((npc) => npc.npcId);
   const emotionFallbacks: SeriesNpcAssetAudit["emotionFallbacks"] = [];
   const files = new Map<string, PortraitVariant>();
+  const sourceOwners = new Map<string, Set<string>>();
   for (const npc of manifest.npcs) {
     if (npc.status === "unavailable") continue;
     const variants = [npc.sm, ...EMOTIONS.map((emotion) => npc.md[emotion]), ...(npc.lg ? [npc.lg] : [])];
     for (const variant of variants) {
       files.set(variant.path, variant);
+      const sourceKey = `${npc.series}:${variant.source.sha256}`;
+      const owners = sourceOwners.get(sourceKey) ?? new Set<string>(); owners.add(npc.npcId); sourceOwners.set(sourceKey, owners);
       if (variant.source.series !== npc.series) crossSeriesFallbacks.push(`${npc.npcId}:${variant.emotion}:${variant.source.series}`);
       if (variant.width > variant.source.width || variant.height > variant.source.height) enlargedVariants.push(`${npc.npcId}:${variant.scale}:${variant.emotion}`);
       if (variant.fallbackFrom && variant.scale === "md") emotionFallbacks.push({ npcId: npc.npcId, emotion: variant.emotion, fallbackFrom: variant.fallbackFrom });
       if ([variant.path, variant.source.name, variant.source.entryPath].some((value) => TEMEROSA_FORBIDDEN_ASSET_NAME.test(value))) forbiddenAssetMatches.push(`${npc.npcId}:${variant.path}`);
     }
   }
+  const crossNpcSourceDuplicates = [...sourceOwners.entries()].filter(([, owners]) => owners.size > 1).map(([key, owners]) => `${key}:${[...owners].sort().join(",")}`).sort();
   let imageBytes = 0;
   for (const [path, expected] of files) {
     const full = resolve(packRoot, path), bytes = await readFile(full), info = await stat(full), metadata = await sharp(bytes, { failOn: "error", limitInputPixels: MAX_INPUT_PIXELS }).metadata();
@@ -198,11 +224,14 @@ export async function auditSeriesNpcPortraitPack(packRoot: string, manifest: Ser
   }
   if (files.size !== manifest.totals.uniqueImageFiles || imageBytes !== manifest.totals.imageBytes) throw new Error("series_asset_manifest_totals_invalid");
   const audit: SeriesNpcAssetAudit = {
-    contract: "temerosa-series-npc-portrait-audit/0.1", packId: PACK_ID, version: manifest.version, status: "passed",
+    contract: "temerosa-series-npc-portrait-audit/0.2", packId: PACK_ID, version: manifest.version, status: "passed",
     missingNpcIds, emotionFallbacks, forbiddenAssetMatches, mimeMismatches, enlargedVariants, crossSeriesFallbacks,
+    crossNpcSourceDuplicates,
+    approvedNpcIds: manifest.npcs.filter((npc) => npc.visualReview.status === "approved").map((npc) => npc.npcId),
+    ownerReviewNeeded: manifest.npcs.filter((npc) => npc.visualReview.status === "owner-review-needed").map((npc) => ({ npcId: npc.npcId, reasons: npc.visualReview.status === "owner-review-needed" ? npc.visualReview.reasons : [] })),
     uniqueImageFiles: files.size, imageBytes,
   };
-  if (forbiddenAssetMatches.length || mimeMismatches.length || enlargedVariants.length || crossSeriesFallbacks.length) throw new Error("series_asset_audit_failed");
+  if (forbiddenAssetMatches.length || mimeMismatches.length || enlargedVariants.length || crossSeriesFallbacks.length) throw new Error(`series_asset_audit_failed:${JSON.stringify({ forbiddenAssetMatches, mimeMismatches, enlargedVariants, crossSeriesFallbacks })}`);
   return audit;
 }
 
@@ -213,6 +242,7 @@ async function compile(args: Arguments, root: string): Promise<{ manifest: Serie
   if (args.refreshSelection) await writeFile(selectionPath, `${JSON.stringify(buildSeriesNpcAssetSelection(inventory), null, 2)}\n`, "utf8");
   const selection = JSON.parse(await readFile(selectionPath, "utf8")) as SeriesNpcAssetSelection;
   assertSeriesNpcAssetSelection(selection, inventory);
+  if (selection.policy.postImplementationVisualReview !== "completed") throw new Error("series_asset_selection_visual_review_incomplete");
   const output = resolve(root, args.out, args.version), staging = `${output}.building`;
   const resolvers = {} as Record<TemerosaSeriesKey, AssetResolver>;
   await rm(staging, { recursive: true, force: true });
@@ -223,7 +253,7 @@ async function compile(args: Arguments, root: string): Promise<{ manifest: Serie
     const sourceCache = new Map<string, ResolvedSource>();
     for (let index = 0; index < selection.items.length; index += 1) {
       const item = selection.items[index]!;
-      if (item.status === "unavailable") { entries.push({ npcId: item.npcId, series: item.series, status: "unavailable", reason: item.reason }); continue; }
+      if (item.status === "unavailable") { entries.push({ npcId: item.npcId, series: item.series, status: "unavailable", reason: item.reason, visualReview: item.visualReview }); continue; }
       const sources = {} as Record<Emotion, ResolvedSource>;
       for (const emotion of EMOTIONS) sources[emotion] = await resolveSource(item, item.emotions[emotion], resolvers[item.series], sourceCache);
       const neutralChoice = item.emotions.neutral;
@@ -231,12 +261,12 @@ async function compile(args: Arguments, root: string): Promise<{ manifest: Serie
       const md = {} as Record<Emotion, PortraitVariant>;
       for (const emotion of EMOTIONS) md[emotion] = await createVariant(staging, "md", emotion, item.emotions[emotion], sources[emotion], derived);
       const lg = sources.neutral.height >= 900 ? await createVariant(staging, "lg", "neutral", neutralChoice, sources.neutral, derived) : undefined;
-      entries.push({ npcId: item.npcId, series: item.series, status: "available", sm, md, ...(lg ? { lg } : {}) });
+      entries.push({ npcId: item.npcId, series: item.series, status: "available", sm, md, ...(lg ? { lg } : {}), visualReview: item.visualReview });
       if ((index + 1) % 20 === 0) process.stderr.write(`series_npc_assets_compiled:${index + 1}/${selection.items.length}\n`);
     }
     const uniqueFiles = new Map([...derived.values()].map((variant) => [variant.path, variant]));
     const manifest: SeriesNpcPortraitPackManifest = {
-      contract: "temerosa-series-npc-portrait-pack/0.1", packId: PACK_ID, version: args.version, generatedAt: new Date().toISOString(), identityRule: "series-and-source-persona",
+      contract: "temerosa-series-npc-portrait-pack/0.2", packId: PACK_ID, version: args.version, generatedAt: new Date().toISOString(), identityRule: "series-and-source-persona",
       policy: { originalsRedistributed: false, actualMimeSniffed: true, exactSourceDuplicatesCollapsed: true, exactDerivedDuplicatesCollapsed: true, crossSeriesFallback: false, withoutEnlargement: true, lgMinimumSourceHeight: 900 },
       sources: inventory.sources.map(({ series, fingerprint }) => ({ series, fingerprint })),
       totals: {
@@ -244,6 +274,8 @@ async function compile(args: Arguments, root: string): Promise<{ manifest: Serie
         portraitOwnerships: entries.filter((entry) => entry.status === "available").reduce((sum, entry) => sum + 5 + (entry.status === "available" && entry.lg ? 1 : 0), 0),
         emotionFallbacks: entries.filter((entry): entry is Extract<SeriesNpcPortraitEntry, { status: "available" }> => entry.status === "available").flatMap((entry) => EMOTIONS.map((emotion) => entry.md[emotion])).filter((variant) => variant.fallbackFrom).length,
         uniqueSourceImages: new Set([...sourceCache.values()].map((source) => source.sha256)).size, uniqueImageFiles: uniqueFiles.size, imageBytes: [...uniqueFiles.values()].reduce((sum, variant) => sum + variant.bytes, 0),
+        approved: entries.filter((entry) => entry.visualReview.status === "approved").length,
+        ownerReviewNeeded: entries.filter((entry) => entry.visualReview.status === "owner-review-needed").length,
       },
       npcs: entries,
     };
@@ -263,18 +295,25 @@ async function compile(args: Arguments, root: string): Promise<{ manifest: Serie
 }
 
 function selectRecord(record: TemerosaSeriesNpcRecord, sourceFingerprint: string): SeriesNpcAssetSelectionItem {
-  if (record.assetCandidates.length === 0) return { npcId: record.id, series: record.series, sourceFingerprint, status: "unavailable", reason: "no-safe-image-candidates" };
-  const neutral = selectCandidate(record.assetCandidates, "neutral") ?? [...record.assetCandidates].sort(compareCandidate)[0]!;
+  const candidates = eligibleCandidates(record);
+  const visualReview: VisualReview = { status: "owner-review-needed", reasons: ["post-implementation-review-required"] };
+  if (candidates.length === 0) return { npcId: record.id, series: record.series, sourceFingerprint, status: "unavailable", reason: record.assetCandidates.length === 0 ? "no-safe-image-candidates" : "no-owned-image-candidates", visualReview };
+  const neutral = selectCandidate(candidates, "neutral") ?? [...candidates].sort(compareCandidate)[0]!;
   const emotions = {} as Record<Emotion, SelectedCandidate>;
   for (const emotion of EMOTIONS) {
-    const native = selectCandidate(record.assetCandidates, emotion), selected = native ?? neutral;
+    const native = selectCandidate(candidates, emotion), selected = native ?? neutral;
     emotions[emotion] = {
       assetId: selected.assetId, name: selected.name, sourceEntryPath: selected.path ?? "", sourceExpression: selected.expression,
       ...(!native || !EMOTION_PREFERENCES[emotion].includes(selected.expression) ? { fallbackFrom: native ? selected.expression : "neutral" } : {}),
     };
   }
   if (!EMOTION_PREFERENCES.neutral.includes(neutral.expression)) emotions.neutral.fallbackFrom = neutral.expression;
-  return { npcId: record.id, series: record.series, sourceFingerprint, status: "selected", emotions };
+  return { npcId: record.id, series: record.series, sourceFingerprint, status: "selected", emotions, visualReview };
+}
+
+function eligibleCandidates(record: TemerosaSeriesNpcRecord): SeriesNpcAssetCandidate[] {
+  const ownership = VERIFIED_CANDIDATE_OWNERSHIP[record.id];
+  return ownership ? record.assetCandidates.filter((candidate) => ownership.test(candidate.name)) : [...record.assetCandidates];
 }
 
 function selectCandidate(candidates: readonly SeriesNpcAssetCandidate[], emotion: Emotion): SeriesNpcAssetCandidate | undefined {
@@ -342,6 +381,11 @@ function assertManifest(manifest: SeriesNpcPortraitPackManifest, inventory: Teme
 
 function assertSafeSource(name: string, path: string, npcId: string): void {
   if (!path || TEMEROSA_FORBIDDEN_ASSET_NAME.test(name) || TEMEROSA_FORBIDDEN_ASSET_NAME.test(path)) throw new Error(`series_asset_forbidden_or_missing_path:${npcId}`);
+}
+
+function assertVisualReview(review: VisualReview, npcId: string): void {
+  if (review.status === "approved") return;
+  if (review.status !== "owner-review-needed" || !Array.isArray(review.reasons) || review.reasons.length === 0) throw new Error(`series_asset_visual_review_invalid:${npcId}`);
 }
 
 function renderReviewHtml(manifest: SeriesNpcPortraitPackManifest): string {
