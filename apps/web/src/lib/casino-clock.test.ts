@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { casinoKstDayAtUtcSecond, casinoUtcSecondAtKstDay, TEMEROSA_FLOW_EPOCH_KST_DAY } from "@lucky-arcade/casino-ledger";
 import { casinoClockFromSample, casinoClockSampleFromResponse, rememberCasinoClockSecond, stabilizeCasinoClockSample } from "./casino-clock.ts";
 
 describe("casino clock", () => {
@@ -32,6 +33,17 @@ describe("casino clock", () => {
     rememberCasinoClockSecond(1_000, storage);
     const fresh = Object.freeze({ serverEpochMs: 1_100_000, sampledAtPerformanceMs: 20, uncertaintyMs: 1_000, source: "http-date" as const });
     expect(stabilizeCasinoClockSample(fresh, storage, 40)).toBe(fresh);
+  });
+
+  it("keeps the 1.1 to 1.2 candidate boundary on exact KST midnight seconds",()=>{
+    const boundary=casinoUtcSecondAtKstDay(TEMEROSA_FLOW_EPOCH_KST_DAY);
+    const before=Object.freeze({serverEpochMs:(boundary-1)*1_000,sampledAtPerformanceMs:10,uncertaintyMs:1_000,source:"http-date" as const});
+    const after=Object.freeze({serverEpochMs:boundary*1_000,sampledAtPerformanceMs:10,uncertaintyMs:1_000,source:"http-date" as const});
+    const beforeSecond=casinoClockFromSample(before,()=>10).utcSecond();
+    const afterSecond=casinoClockFromSample(after,()=>10).utcSecond();
+    expect(casinoKstDayAtUtcSecond(beforeSecond)).toBe(TEMEROSA_FLOW_EPOCH_KST_DAY-1);
+    expect(casinoKstDayAtUtcSecond(afterSecond)).toBe(TEMEROSA_FLOW_EPOCH_KST_DAY);
+    expect(afterSecond-beforeSecond).toBe(1);
   });
 });
 
