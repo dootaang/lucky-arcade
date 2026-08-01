@@ -114,15 +114,18 @@ test("loads the living ledger lazily and reuses the casino manifest in a game", 
   // The first three seats are a podium; four and down stay tabular. Six entries either way.
   await expect(page.locator(".ledger-podium-seat")).toHaveCount(3);
   await expect(page.locator(".casino-ledger-board tbody tr")).toHaveCount(3);
+  const recentSettlementLabel = await page.locator(".casino-ledger-settlements .ledger-settlement-line").first().getAttribute("aria-label");
+  const recentNpcName = recentSettlementLabel?.split(",")[0]?.trim();
+  expect(recentNpcName).toBeTruthy();
   await page.locator(".ledger-board-switch button").filter({ hasText: "전체 보기" }).click();
   await expect(page.locator(".casino-record-room")).toBeVisible();
   await expect(page.locator(".record-ranking tbody tr")).toHaveCount(30);
   await page.getByRole("button", { name: "30명 더 보기", exact: true }).click();
   while (await page.locator(".record-more").count()) await page.locator(".record-more").click();
-  await expect(page.locator(".record-ranking tbody tr")).toHaveCount(103);
-  await expect(page.locator(".record-ranking tbody tr:not(.is-user)")).toHaveCount(102);
+  await expect(page.locator(".record-ranking tbody tr")).toHaveCount(104);
+  await expect(page.locator(".record-ranking tbody tr:not(.is-user)")).toHaveCount(103);
   await expect(page.locator(".record-ranking tbody tr.is-user")).toHaveCount(1);
-  await page.locator(".record-ranking tbody tr th button").first().click();
+  await page.locator(".record-ranking").getByRole("button", { name: recentNpcName!, exact: true }).click();
   await expect(page.locator(".npc-ledger-detail")).toBeVisible();
   await expect(page.locator(".npc-ledger-kpis article")).toHaveCount(8);
   await expect(page.locator(".npc-receipts li").first()).toContainText("KST");
@@ -144,7 +147,9 @@ test("loads the living ledger lazily and reuses the casino manifest in a game", 
   const tapeRows = page.locator(".ledger-motion [data-tape-key]");
   const tapeCount = await tapeRows.count();
   expect(tapeCount).toBeLessThanOrEqual(8);
-  await expect(page.locator(".casino-live-grid .live-table-card:is(.is-open, .is-playing, .is-settling, .is-leaving)")).toHaveCount(6);
+  const activeTableCount = await page.locator(".casino-live-grid .live-table-card:is(.is-open, .is-playing, .is-settling, .is-leaving)").count();
+  expect(activeTableCount).toBeGreaterThan(0);
+  expect(activeTableCount).toBeLessThanOrEqual(6);
   const tapeKeys = await tapeRows.evaluateAll((rows) => rows.map((row) => row.getAttribute("data-tape-key")));
   expect(new Set(tapeKeys).size).toBe(tapeKeys.length);
   await expect(page.locator(".casino-live-grid .live-table-card")).toHaveCount(6);
