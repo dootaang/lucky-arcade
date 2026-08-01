@@ -344,7 +344,8 @@ export function OldMaidScreen({ cartridge, assets, thumbAssets = assets, detailA
     setDirectPrediction(false);
     setPredictedCharacterId("");
     const limit = mode === "spectate" ? 4 : 3;
-    const next = opponentIds.slice(0, limit);
+    const availableIds = new Set(availableCharacters.map((character) => character.id));
+    const next = opponentIds.filter((id) => availableIds.has(id)).slice(0, limit);
     for (const character of availableCharacters) if (next.length < limit && !next.includes(character.id)) next.push(character.id);
     setOpponentIds(next);
     onOpponentSelectionChange?.(next);
