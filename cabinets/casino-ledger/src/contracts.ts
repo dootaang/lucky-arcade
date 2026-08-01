@@ -138,6 +138,15 @@ export interface CasinoDayPlan {
   matches: readonly NpcMatch[];
   predictions: readonly NpcPredictionWager[];
   sessions: Readonly<Record<string, readonly NpcSession[]>>;
+  /** Present only for npc-ledger/1.2. This is the reproducible, pre-round service envelope. */
+  houseService?: Readonly<{
+    openingBalance: number;
+    protectedReserve: number;
+    operatingProvision: number;
+    acceptedHouseRiskRounds: number;
+    curtailedHouseRiskRounds: number;
+    maximumConcurrentLiability: number;
+  }>;
 }
 
 /** A personal-world-line posting that can change later autonomous stakes. */
@@ -186,7 +195,7 @@ export interface NpcSession {
 export interface NpcLedgerContract {
   version: "npc-ledger/1.0" | "npc-ledger/1.1" | "npc-ledger/1.2";
   /** Frozen deterministic seed domain; changing calendar boundaries must not reroll history. */
-  seedVersion: "npc-ledger/0.9" | "casino-flow/1.0";
+  seedVersion: "npc-ledger/0.9" | "casino-flow/1.0" | "casino-flow/1.1";
   /** First casino calendar day, counted at KST midnight. */
   epochKstDay: number;
   profiles: readonly NpcGamblingProfile[];

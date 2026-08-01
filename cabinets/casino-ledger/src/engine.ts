@@ -1,6 +1,7 @@
 import { WAGER_MULTIPLIERS, XorShift32, type WagerMultiplier } from "@lucky-arcade/engine";
 import { NPC_INCOME_AMOUNTS } from "./economy.ts";
 import { NPC_FLOW_ECONOMY_CONTRACT, assertNpcExternalIncomeProfile, npcFlowEconomyDay } from "./flow-economy.ts";
+import { DEFAULT_HOUSE_OPERATING_COST_POLICY,createHouseOperatingExpensePlan,houseDailyActivityFromPlan } from "./house-operations.ts";
 import {
   CASINO_SECONDS_PER_DAY,
   casinoKstDayAtUtcSecond,
@@ -59,11 +60,14 @@ const FLOW_MATCH_SECONDS = Object.freeze({
 } as const);
 /** 2026-07-30 18:00 KST. Earlier settlements on release day remain byte-for-byte stable. */
 const FIVE_CARD_DRAW_OPENING_SECOND_OF_DAY = 18 * 60 * 60;
+/** Published 7.5% peer-game rake; retained from the audited flow candidate. */
 const FLOW_PVP_RAKE_BPS = 750;
 
 interface VisitIntent { npcId: string; second: number; ordinal: number; tableId: CasinoTableId }
 interface MatchDraft { matchId: string; visitId: string; tableId: CasinoTableId; participantIds: readonly string[]; startsAtSecondOfDay: number; settlesAtSecondOfDay: number }
 const DAY_PLAN_CACHE = new Map<string,CasinoDayPlan>();
+interface FlowServiceState { nextDay:number; houseBalance:number; npcBalances:Record<string,number>; houseOpenings:number[] }
+const FLOW_SERVICE_STATE = new WeakMap<NpcLedgerContract,FlowServiceState>();
 
 /** The v0.5 source of truth: a visit contains independently resolved real matches. */
 export function casinoDayPlan(
@@ -75,7 +79,19 @@ export function casinoDayPlan(
 ): CasinoDayPlan {
   validateDay(profiles, dayIndex, openingBalances, contract);
   validateBalanceEvents(balanceEvents, profiles);
-  const cacheKey=profiles===contract.profiles&&balanceEvents.length===0?`${contract.version}:${contract.seedVersion}:${dayIndex}:${profiles.map((profile)=>openingBalances[profile.id]).join(",")}`:undefined;
+  const houseOpeningBalance=contract.version==="npc-ledger/1.2"?canonicalFlowHouseOpening(contract,dayIndex):undefined;
+  return buildCasinoDayPlan(profiles,dayIndex,openingBalances,contract,balanceEvents,houseOpeningBalance);
+}
+
+function buildCasinoDayPlan(
+  profiles: readonly NpcGamblingProfile[],
+  dayIndex: number,
+  openingBalances: Readonly<Record<string, number>>,
+  contract: NpcLedgerContract,
+  balanceEvents: readonly NpcBalanceEvent[],
+  houseOpeningBalance?: number,
+): CasinoDayPlan {
+  const cacheKey=profiles===contract.profiles&&balanceEvents.length===0?`${contract.version}:${contract.seedVersion}:${housePolicyCacheKey(contract)}:${dayIndex}:${houseOpeningBalance??"legacy"}:${profiles.map((profile)=>openingBalances[profile.id]).join(",")}`:undefined;
   const cached=cacheKey===undefined?undefined:DAY_PLAN_CACHE.get(cacheKey);
   if(cached){DAY_PLAN_CACHE.delete(cacheKey!);DAY_PLAN_CACHE.set(cacheKey!,cached);return cached;}
   const byId = new Map(profiles.map((profile) => [profile.id, profile]));
@@ -100,6 +116,12 @@ export function casinoDayPlan(
     }
   };
 
+  if(contract.version==="npc-ledger/1.2"){
+    const plan=buildFlowCasinoDayPlan({profiles,dayIndex,contract,visits,drafts,balances,visitOpening,output,incomes,appliedIncome,orderedEvents,houseOpeningBalance:houseOpeningBalance!});
+    if(cacheKey!==undefined){DAY_PLAN_CACHE.set(cacheKey,plan);while(DAY_PLAN_CACHE.size>16)DAY_PLAN_CACHE.delete(DAY_PLAN_CACHE.keys().next().value!);}
+    return plan;
+  }
+
   for (const draft of drafts) {
     applyEventsThrough(draft.startsAtSecondOfDay);
     for (const [npcId, session] of Object.entries(incomes)) {
@@ -114,7 +136,7 @@ export function casinoDayPlan(
     for(const profile of participants){const key=`${draft.visitId}:${profile.id}`;if(!visitOpening.has(key))visitOpening.set(key,balances[profile.id]!);}
     if (draft.tableId === "temerosa-old-maid") {
       if (participants.length < 2 || !participants.every((profile) => policyAllowsPaid(profile, balances[profile.id]!, visitOpening.get(`${draft.visitId}:${profile.id}`)!,rng))) continue;
-      const terms = chooseOldMaidExposure(participants, balances, rng,contract.version==="npc-ledger/1.2");
+      const terms = chooseOldMaidExposure(participants, balances, rng,false);
       if (terms.exposure === 0) continue;
       settlePaidOldMaid(draft, participants, balances, output, terms.stake, terms.multiplier, terms.exposure, rng);
       matches.push(matchFromDraft(draft, terms.stake, terms.multiplier));
@@ -122,14 +144,14 @@ export function casinoDayPlan(
     }
     if (!participants.every((profile) => policyAllowsPaid(profile, balances[profile.id]!, visitOpening.get(`${draft.visitId}:${profile.id}`)!,rng))) continue;
     const reference=Object.fromEntries(participants.map((profile)=>[profile.id,visitOpening.get(`${draft.visitId}:${profile.id}`)!]));
-    const terms = chooseSharedExposure(participants, balances, reference, rng,contract.version==="npc-ledger/1.2");
+    const terms = chooseSharedExposure(participants, balances, reference, rng,false);
     if (terms.exposure === 0) continue;
     if (draft.tableId === "temerosa-slot") {
       settleSlot(draft, participants[0]!, balances, output, terms.stake, terms.multiplier, rng);
     } else if (draft.tableId === "temerosa-high-low") {
       settleHighLow(draft, participants[0]!, balances, output, terms.stake, terms.multiplier, rng, contract.epochKstDay + dayIndex >= AUDITED_HIGH_LOW_OPENING_KST_DAY);
     } else {
-      settlePvp(draft, draft.tableId, participants, balances, output, terms.stake, terms.multiplier, rng, contract.version === "npc-ledger/1.2");
+      settlePvp(draft, draft.tableId, participants, balances, output, terms.stake, terms.multiplier, rng, false);
     }
     matches.push(matchFromDraft(draft, terms.stake, terms.multiplier));
   }
@@ -147,6 +169,178 @@ export function casinoDayPlan(
   });
   if(cacheKey!==undefined){DAY_PLAN_CACHE.set(cacheKey,plan);while(DAY_PLAN_CACHE.size>16)DAY_PLAN_CACHE.delete(DAY_PLAN_CACHE.keys().next().value!);}
   return plan;
+}
+
+interface PendingFlowSettlement { settlesAt:number; liability:number; rows:readonly {npcId:string;session:NpcSession}[] }
+
+function buildFlowCasinoDayPlan(input:{
+  profiles:readonly NpcGamblingProfile[];dayIndex:number;contract:NpcLedgerContract;visits:readonly NpcVisit[];drafts:readonly MatchDraft[];
+  balances:Record<string,number>;visitOpening:Map<string,number>;output:Record<string,NpcSession[]>;
+  incomes:Readonly<Record<string,NpcSession>>;appliedIncome:Set<string>;orderedEvents:readonly NpcBalanceEvent[];houseOpeningBalance:number;
+}):CasinoDayPlan{
+  // Draft timestamps remain part of the public worldline. Moving a rejected
+  // round would also move NPC affordability, live-tape and cache boundaries,
+  // so this contract reduces its pre-round stake tier and finally curtails.
+  const {profiles,dayIndex,contract,visits,balances,visitOpening,output,incomes,appliedIncome,orderedEvents}=input;
+  const byId=new Map(profiles.map((profile)=>[profile.id,profile]));
+  const policy=contract.houseOperatingPolicy??DEFAULT_HOUSE_OPERATING_COST_POLICY;
+  const drafts=input.drafts.toSorted((left,right)=>left.startsAtSecondOfDay-right.startsAtSecondOfDay||compareText(left.matchId,right.matchId));
+  let operatingProvision=policy.baseFacilityCost;
+  const acceptedDrafts:MatchDraft[]=[];
+  const acceptedVisitEnds=new Map<string,number>();
+  const reservedByNpc:Record<string,number>=Object.fromEntries(profiles.map((profile)=>[profile.id,0]));
+  const pending:PendingFlowSettlement[]=[];
+  const matches:NpcMatch[]=[];
+  let eventCursor=0,houseBalance=input.houseOpeningBalance,outstandingLiability=0,grossHouseRevenue=0;
+  let acceptedHouseRiskRounds=0,curtailedHouseRiskRounds=0,maximumConcurrentLiability=0;
+  const availableBalance=(npcId:string)=>balances[npcId]!-reservedByNpc[npcId]!;
+  const applySettlementsThrough=(second:number)=>{
+    pending.sort((left,right)=>left.settlesAt-right.settlesAt);
+    while(pending.length>0&&pending[0]!.settlesAt<=second){
+      const settlement=pending.shift()!;
+      outstandingLiability-=settlement.liability;
+      for(const {npcId,session} of settlement.rows){
+        reservedByNpc[npcId]!-=session.reservedAmount;
+        balances[npcId]!+=session.delta;
+        if(isHouseRiskTable(session.tableId))grossHouseRevenue+=Math.max(0,-session.delta);
+        houseBalance-=session.delta;
+      }
+    }
+  };
+  const applyInputsThrough=(second:number)=>{
+    while(eventCursor<orderedEvents.length&&orderedEvents[eventCursor]!.secondOfDay<=second){
+      const event=orderedEvents[eventCursor++]!;balances[event.npcId]!+=event.delta;
+      if(!Number.isSafeInteger(balances[event.npcId])||availableBalance(event.npcId)<0)throw new Error(`npc_worldline_insolvent:${event.eventId}`);
+    }
+    for(const [npcId,session] of Object.entries(incomes))if(!appliedIncome.has(npcId)&&session.secondOfDay<=second){balances[npcId]!+=session.delta;appliedIncome.add(npcId);}
+  };
+  for(const draft of drafts){
+    applySettlementsThrough(draft.startsAtSecondOfDay);applyInputsThrough(draft.startsAtSecondOfDay);
+    const participants=draft.participantIds.map((id)=>byId.get(id)).filter((value):value is NpcGamblingProfile=>Boolean(value));
+    if(participants.length===0)continue;
+    const policyRng=new XorShift32(`${contract.seedVersion}:${dayIndex}:${draft.matchId}:policy`);
+    const termsRng=new XorShift32(`${contract.seedVersion}:${dayIndex}:${draft.matchId}:terms`);
+    const resultRng=new XorShift32(`${contract.seedVersion}:${dayIndex}:${draft.matchId}:result`);
+    for(const profile of participants){const key=`${draft.visitId}:${profile.id}`;if(!visitOpening.has(key))visitOpening.set(key,availableBalance(profile.id));}
+    if(draft.tableId==="temerosa-old-maid"){
+      if(participants.length<2||!participants.every((profile)=>policyAllowsPaid(profile,availableBalance(profile.id),visitOpening.get(`${draft.visitId}:${profile.id}`)!,policyRng)))continue;
+      const terms=chooseOldMaidExposure(participants,Object.fromEntries(participants.map((profile)=>[profile.id,availableBalance(profile.id)])),termsRng,true);
+      if(terms.exposure===0)continue;
+      const nextProvision=incrementalOperatingProvision(draft,visits,acceptedDrafts,acceptedVisitEnds,policy);
+      // Old maid is zero-sum for the house. It remains available even while
+      // house-risk tables are reduced. Its activity cost may therefore remain
+      // an explicit release blocker; it must not be disguised as game risk.
+      const settlement=createPendingSessions(draft,participants,balances,reservedByNpc,output,(tempBalances,tempOutput)=>settlePaidOldMaid(draft,participants,tempBalances,tempOutput,terms.stake,terms.multiplier,terms.exposure,resultRng));
+      operatingProvision=acceptOperatingProvision(draft,acceptedDrafts,acceptedVisitEnds,nextProvision);
+      acceptPending(settlement,0,pending,reservedByNpc,output);matches.push(matchFromDraft(draft,terms.stake,terms.multiplier));continue;
+    }
+    if(!participants.every((profile)=>policyAllowsPaid(profile,availableBalance(profile.id),visitOpening.get(`${draft.visitId}:${profile.id}`)!,policyRng)))continue;
+    const reference=Object.fromEntries(participants.map((profile)=>[profile.id,visitOpening.get(`${draft.visitId}:${profile.id}`)!]));
+    const revenueProvision=Math.floor(grossHouseRevenue*policy.positiveGamingRevenueRateBps/10_000);
+    const nextProvision=incrementalOperatingProvision(draft,visits,acceptedDrafts,acceptedVisitEnds,policy);
+    const requiredProvision=nextProvision+revenueProvision;
+    const rawCapacity=houseBalance-outstandingLiability-policy.protectedReserve-requiredProvision;
+    if(rawCapacity<0&&isHouseRiskTable(draft.tableId)){curtailedHouseRiskRounds+=1;continue;}
+    // PVP has no negative house liability (draw/zero-sum plus a published
+    // rake), so it remains open even when the risk-table envelope is empty.
+    const capacity=Math.max(0,rawCapacity);
+    const available=Object.fromEntries(participants.map((profile)=>[profile.id,availableBalance(profile.id)]));
+    const terms=chooseSharedExposure(participants,available,reference,termsRng,true,isHouseRiskTable(draft.tableId)?capacity:Number.MAX_SAFE_INTEGER,draft.tableId);
+    if(terms.exposure===0){if(isHouseRiskTable(draft.tableId))curtailedHouseRiskRounds+=1;continue;}
+    const liability=houseMaximumRoundLiability(draft.tableId,terms.stake,terms.multiplier);
+    const settlement=createPendingSessions(draft,participants,balances,reservedByNpc,output,(tempBalances,tempOutput)=>{
+      if(draft.tableId==="temerosa-slot")settleSlot(draft,participants[0]!,tempBalances,tempOutput,terms.stake,terms.multiplier,resultRng);
+      else if(draft.tableId==="temerosa-high-low")settleHighLow(draft,participants[0]!,tempBalances,tempOutput,terms.stake,terms.multiplier,resultRng,contract.epochKstDay+dayIndex>=AUDITED_HIGH_LOW_OPENING_KST_DAY);
+      else settlePvp(draft,draft.tableId as "temerosa-match-pairs"|"indian-poker"|"temerosa-five-card-draw",participants,tempBalances,tempOutput,terms.stake,terms.multiplier,resultRng,true);
+    });
+    operatingProvision=acceptOperatingProvision(draft,acceptedDrafts,acceptedVisitEnds,nextProvision);
+    acceptPending(settlement,liability,pending,reservedByNpc,output);outstandingLiability+=liability;
+    maximumConcurrentLiability=Math.max(maximumConcurrentLiability,outstandingLiability);
+    if(isHouseRiskTable(draft.tableId))acceptedHouseRiskRounds+=1;
+    matches.push(matchFromDraft(draft,terms.stake,terms.multiplier));
+  }
+  applySettlementsThrough(86_399);applyInputsThrough(86_399);
+  const liveVisitIds=new Set(matches.map((match)=>match.visitId));
+  const finalVisits=visits.filter((visit)=>liveVisitIds.has(visit.visitId)).map((visit)=>{
+    const last=matches.filter((match)=>match.visitId===visit.visitId).at(-1);
+    return Object.freeze({...visit,endsAtSecondOfDay:Math.min(visit.endsAtSecondOfDay,(last?.settlesAtSecondOfDay??visit.endsAtSecondOfDay)+12)});
+  });
+  const finalRevenueProvision=Math.floor(grossHouseRevenue*policy.positiveGamingRevenueRateBps/10_000);
+  const finalOperatingProvision=operatingProvision+finalRevenueProvision;
+  return Object.freeze({visits:Object.freeze(finalVisits),matches:Object.freeze(matches),predictions:Object.freeze([]),sessions:freezeSessions(output),houseService:Object.freeze({
+    openingBalance:input.houseOpeningBalance,protectedReserve:policy.protectedReserve,operatingProvision:finalOperatingProvision,acceptedHouseRiskRounds,curtailedHouseRiskRounds,maximumConcurrentLiability,
+  })});
+}
+
+function createPendingSessions(draft:MatchDraft,participants:readonly NpcGamblingProfile[],balances:Readonly<Record<string,number>>,reservedByNpc:Readonly<Record<string,number>>,output:Readonly<Record<string,NpcSession[]>>,settle:(balances:Record<string,number>,output:Record<string,NpcSession[]>)=>void):readonly {npcId:string;session:NpcSession}[]{
+  const tempBalances={...balances};
+  for(const profile of participants)tempBalances[profile.id]=balances[profile.id]!-reservedByNpc[profile.id]!;
+  const tempOutput:Record<string,NpcSession[]>=Object.fromEntries(Object.keys(output).map((id)=>[id,[]]));
+  settle(tempBalances,tempOutput);
+  return Object.freeze(participants.flatMap((profile)=>(tempOutput[profile.id]??[]).map((session)=>Object.freeze({npcId:profile.id,session}))));
+}
+
+function acceptPending(rows:readonly {npcId:string;session:NpcSession}[],liability:number,pending:PendingFlowSettlement[],reservedByNpc:Record<string,number>,output:Record<string,NpcSession[]>):void{
+  for(const row of rows){reservedByNpc[row.npcId]!+=row.session.reservedAmount;output[row.npcId]!.push(row.session);}
+  pending.push({settlesAt:rows[0]?.session.secondOfDay??0,liability,rows});
+}
+
+function fixedOperatingProvision(visits:readonly NpcVisit[],drafts:readonly MatchDraft[],visitEnds:ReadonlyMap<string,number>,policy:Readonly<NonNullable<NpcLedgerContract["houseOperatingPolicy"]>>):number{
+  const through=policy.settlementSecondOfDay;
+  const seconds=visits.reduce((sum,visit)=>sum+Math.max(0,Math.min(visitEnds.get(visit.visitId)??visit.startedAtSecondOfDay,through)-visit.startedAtSecondOfDay),0);
+  const rounds=drafts.filter((draft)=>draft.settlesAtSecondOfDay<=through).length;
+  return policy.baseFacilityCost+Math.ceil(seconds*policy.activeTableHourCost/3_600)+Math.ceil(rounds*policy.perHundredRoundsCost/100);
+}
+function incrementalOperatingProvision(draft:MatchDraft,visits:readonly NpcVisit[],acceptedDrafts:readonly MatchDraft[],acceptedVisitEnds:ReadonlyMap<string,number>,policy:Readonly<NonNullable<NpcLedgerContract["houseOperatingPolicy"]>>):number{
+  const ends=new Map(acceptedVisitEnds);ends.set(draft.visitId,Math.max(ends.get(draft.visitId)??0,draft.settlesAtSecondOfDay+12));
+  return fixedOperatingProvision(visits,[...acceptedDrafts,draft],ends,policy);
+}
+function acceptOperatingProvision(draft:MatchDraft,acceptedDrafts:MatchDraft[],acceptedVisitEnds:Map<string,number>,provision:number):number{
+  acceptedDrafts.push(draft);acceptedVisitEnds.set(draft.visitId,Math.max(acceptedVisitEnds.get(draft.visitId)??0,draft.settlesAtSecondOfDay+12));return provision;
+}
+
+function isHouseRiskTable(tableId:string):tableId is "temerosa-slot"|"temerosa-high-low"{return tableId==="temerosa-slot"||tableId==="temerosa-high-low";}
+function houseMaximumRoundLiability(tableId:string,stake:Exclude<NpcStake,0>,multiplier:WagerMultiplier):number{
+  if(tableId==="temerosa-slot")return stake*multiplier*29;
+  if(tableId==="temerosa-high-low")return Math.round(stake*4.5)*multiplier-stake*multiplier;
+  return 0;
+}
+
+function canonicalFlowHouseOpening(contract:NpcLedgerContract,dayIndex:number):number{
+  let state=FLOW_SERVICE_STATE.get(contract);
+  if(!state){
+    state={nextDay:0,houseBalance:contract.houseOpeningBalance??150_000,npcBalances:openingBalances(contract.profiles),houseOpenings:[]};
+    FLOW_SERVICE_STATE.set(contract,state);
+  }
+  if(state.houseOpenings[dayIndex]!==undefined)return state.houseOpenings[dayIndex]!;
+  while(state.nextDay<=dayIndex){
+    const currentDay=state.nextDay;
+    state.houseOpenings[currentDay]=state.houseBalance;
+    const plan=buildCasinoDayPlan(contract.profiles,currentDay,state.npcBalances,contract,Object.freeze([]),state.houseBalance);
+    state.npcBalances=Object.fromEntries(contract.profiles.map((profile)=>[profile.id,state!.npcBalances[profile.id]!+(plan.sessions[profile.id]??[]).reduce((sum,session)=>sum+session.delta,0)]));
+    state.houseBalance=closeFlowHouseDay(state.houseBalance,plan,contract,currentDay);
+    state.nextDay+=1;
+  }
+  return state.houseOpenings[dayIndex]!;
+}
+
+function closeFlowHouseDay(opening:number,plan:CasinoDayPlan,contract:NpcLedgerContract,dayIndex:number):number{
+  const policy=contract.houseOperatingPolicy??DEFAULT_HOUSE_OPERATING_COST_POLICY;
+  const before=flowHouseDeltaBetween(plan.sessions,-1,policy.settlementSecondOfDay);
+  let balance=opening+before;
+  const expense=createHouseOperatingExpensePlan(houseDailyActivityFromPlan({absoluteKstDay:contract.epochKstDay+dayIndex,houseBalance:balance,reservedLiability:0,plan,throughSecondOfDay:policy.settlementSecondOfDay}),policy);
+  balance-=expense.paidAmount;
+  balance+=flowHouseDeltaBetween(plan.sessions,policy.settlementSecondOfDay,86_399);
+  if(balance<policy.protectedReserve)throw new Error(`house_service_reserve_breach:${dayIndex}`);
+  return balance;
+}
+
+function flowHouseDeltaBetween(sessions:Readonly<Record<string,readonly NpcSession[]>>,after:number,through:number):number{
+  return -Object.values(sessions).flat().filter((session)=>session.tableId!=="npc-income"&&session.secondOfDay>after&&session.secondOfDay<=through).reduce((sum,session)=>sum+session.delta,0);
+}
+function housePolicyCacheKey(contract:NpcLedgerContract):string{
+  const policy=contract.houseOperatingPolicy;
+  return policy===undefined?"legacy":[policy.baseFacilityCost,policy.activeTableHourCost,policy.perHundredRoundsCost,policy.positiveGamingRevenueRateBps,policy.protectedReserve,policy.settlementSecondOfDay].join(",");
 }
 
 export function casinoDaySessions(
@@ -434,16 +628,16 @@ function addSession(
   }));
 }
 
-function chooseSharedExposure(profiles: readonly NpcGamblingProfile[], balances: Readonly<Record<string,number>>, dayOpening: Readonly<Record<string,number>>, rng: XorShift32,allowMinimum:boolean): {stake: Exclude<NpcStake,0>; multiplier: WagerMultiplier; exposure:number} {
+function chooseSharedExposure(profiles: readonly NpcGamblingProfile[], balances: Readonly<Record<string,number>>, dayOpening: Readonly<Record<string,number>>, rng: XorShift32,allowMinimum:boolean,maximumHouseLiability=Number.MAX_SAFE_INTEGER,tableId:CasinoTableId="indian-poker"): {stake: Exclude<NpcStake,0>; multiplier: WagerMultiplier; exposure:number} {
   const initiator = profiles[0]!;
   const maximum = Math.min(...profiles.map((profile) => allowMinimum?affordableMaximumExposure(profile,balances[profile.id]!,20):Math.floor(Math.min(balances[profile.id]!,Math.max(0,balances[profile.id]!*profile.maxExposureRatio)))));
-  const stakes = PAID_STAKES.filter((stake) => stake*2 <= maximum);
+  const stakes = PAID_STAKES.filter((stake) => stake*2 <= maximum&&houseMaximumRoundLiability(tableId,stake,2)<=maximumHouseLiability);
   if (stakes.length === 0) return { stake:10, multiplier:2, exposure:0 };
   const pnl = balances[initiator.id]!-dayOpening[initiator.id]!;
   const tilt = pnl < 0 ? initiator.lossChasing : pnl > 0 ? initiator.winPressing : .5;
   const stakeWeights = stakes.map((_,index) => 1 + index*initiator.riskAppetite*4 + (pnl < 0 ? index*tilt*2 : 0));
   const stake = stakes[drawWeightedIndex(stakeWeights,rng)]!;
-  const legalMultipliers = WAGER_MULTIPLIERS.filter((value) => stake*value <= maximum);
+  const legalMultipliers = WAGER_MULTIPLIERS.filter((value) => stake*value <= maximum&&houseMaximumRoundLiability(tableId,stake,value)<=maximumHouseLiability);
   const weights = legalMultipliers.map((value) => 1 + (value-2)*(initiator.riskAppetite*.9+tilt*.35));
   const multiplier = legalMultipliers[drawWeightedIndex(weights,rng)]!;
   return { stake, multiplier, exposure:stake*multiplier };
@@ -541,7 +735,7 @@ function normalizedUtcSecond(clock:CasinoClock):number {
 }
 function compareText(a:string,b:string):number{return a<b?-1:a>b?1:0;}
 function validateDay(profiles:readonly NpcGamblingProfile[],dayIndex:number,openings:Readonly<Record<string,number>>,contract:NpcLedgerContract):void {
-  if(!["npc-ledger/1.0","npc-ledger/1.1","npc-ledger/1.2"].includes(contract.version)||!["npc-ledger/0.9","casino-flow/1.0"].includes(contract.seedVersion)||!Number.isSafeInteger(contract.epochKstDay)||!Number.isSafeInteger(dayIndex)||dayIndex<0)throw new Error("npc_ledger_invalid_contract");
+  if(!["npc-ledger/1.0","npc-ledger/1.1","npc-ledger/1.2"].includes(contract.version)||!["npc-ledger/0.9","casino-flow/1.0","casino-flow/1.1"].includes(contract.seedVersion)||!Number.isSafeInteger(contract.epochKstDay)||!Number.isSafeInteger(dayIndex)||dayIndex<0)throw new Error("npc_ledger_invalid_contract");
   if(contract.houseOpeningBalance!==undefined&&(!Number.isSafeInteger(contract.houseOpeningBalance)||contract.houseOpeningBalance<0))throw new Error("npc_ledger_invalid_contract");
   if(contract.version!=="npc-ledger/1.2"&&contract.seedVersion!=="npc-ledger/0.9")throw new Error("npc_ledger_invalid_contract");
   if(contract.version==="npc-ledger/1.2"){
