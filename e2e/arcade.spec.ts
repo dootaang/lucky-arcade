@@ -110,6 +110,8 @@ test("loads the living ledger lazily and reuses the casino manifest in a game", 
   await expect(page.locator(".casino-ledger-board tbody tr")).toHaveCount(6);
   await page.locator(".ledger-board-switch button").filter({ hasText: "전체 보기" }).click();
   await expect(page.locator(".casino-record-room")).toBeVisible();
+  await expect(page.locator(".record-ranking tbody tr")).toHaveCount(30);
+  await page.getByRole("button", { name: "30명 더 보기", exact: true }).click();
   await expect(page.locator(".record-ranking tbody tr")).toHaveCount(35);
   await expect(page.locator(".record-ranking tbody tr:not(.is-user)")).toHaveCount(34);
   await expect(page.locator(".record-ranking tbody tr.is-user")).toHaveCount(1);
