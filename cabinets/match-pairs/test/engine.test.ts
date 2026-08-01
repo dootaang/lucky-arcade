@@ -39,6 +39,14 @@ describe("match pairs board and public information", () => {
 });
 
 describe("turns, observation, and two CPU seats", () => {
+  it("separates free entry from a pre-reserved spread wager", () => {
+    const practice = fresh("entry-practice");
+    expect(() => reduce(practice, { type: "start", seed: "entry:deal", stake: 10, wagerId: "legacy" })).toThrow(MATCH_PAIRS_ERRORS.startInvalid);
+    const spread = reduce(practice, { type: "set-entry", entryKind: "spread-wager" });
+    expect(() => reduce(spread, { type: "start", seed: "entry:deal" })).toThrow(MATCH_PAIRS_ERRORS.startInvalid);
+    expect(reduce(spread, { type: "start", seed: "entry:deal", stake: 50, wagerId: "reserved" })).toMatchObject({ status: "playing", entryKind: "spread-wager", stake: 50, wagerId: "reserved" });
+  });
+
   it("changes memory pressure without erasing the selected character profile", () => {
     const relaxed = reduce(fresh("focus-relaxed"), { type: "set-focus", focus: "relaxed" });
     const sharp = reduce(fresh("focus-sharp"), { type: "set-focus", focus: "sharp" });
@@ -106,4 +114,4 @@ function revealPlayer(state: MatchPairsState, first: number, second: number): Ma
 function autoplayPlayer(seed: string, difficulty: MatchPairsDifficulty, candidates: readonly MatchPairsFace[] = faces): MatchPairsState { let state = reduceMatchPairs(candidates, opponents, createMatchPairsState(candidates, opponents, "pack", seed, difficulty, "steady", "session"), start(seed)); for (const pairId of [...new Set(state.cards.map((card) => card.pairId))]) { const indexes = state.cards.flatMap((card, index) => card.pairId === pairId ? [index] : []); state = reduceMatchPairs(candidates, opponents, state, { type: "player-reveal", index: indexes[0]! }); state = reduceMatchPairs(candidates, opponents, state, { type: "player-reveal", index: indexes[1]! }); state = reduceMatchPairs(candidates, opponents, state, { type: "resolve" }); } return state; }
 function autoplaySpectator(seed: string): MatchPairsState { let state = createMatchPairsState(faces, opponents, "pack", seed, "easy", "steady", "session", "spectate", "curious"); state = reduce(state, { type: "start", seed: `${seed}:deal` }); for (let guard = 0; state.status !== "complete" && guard < 300; guard += 1) state = reduce(state, state.status === "checking" ? { type: "resolve" } : { type: "npc-reveal" }); return state; }
 function opponent(id: string, memoryCapacity: number, observationRate: number, recallAccuracy: number, memoryRetention: number, consistency: number, searchStyle: MatchPairsOpponent["searchStyle"], streakComposure: number, difficultyTier: MatchPairsOpponent["difficultyTier"], winCreditMultiplier: 1.5 | 2 | 2.5): MatchPairsOpponent { return { id, name: id, portraits: { neutral: `${id}-neutral`, pleased: `${id}-pleased`, tense: `${id}-tense` }, despairPortrait: `${id}-despair`, memoryCapacity, observationRate, recallAccuracy, memoryRetention, consistency, searchStyle, streakComposure, difficultyTier, winCreditMultiplier }; }
-function start(seed: string) { return { type: "start", seed: `${seed}:deal`, stake: 10, wagerId: `wager:${seed}` } as const; }
+function start(seed: string) { return { type: "start", seed: `${seed}:deal` } as const; }

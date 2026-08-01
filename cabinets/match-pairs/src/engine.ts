@@ -9,7 +9,7 @@ import {
 export function createMatchPairsState(
   faces: readonly MatchPairsFace[], opponents: readonly MatchPairsOpponent[], packVersion: string, seed: string,
   difficulty: MatchPairsDifficulty, opponentId: string, sessionId = "match-pairs:versus-2",
-  mode: MatchPairsMode = "play", spectatorOpponentId?: string, focus: MatchPairsFocus = "relaxed",
+  mode: MatchPairsMode = "play", spectatorOpponentId?: string, focus: MatchPairsFocus = "relaxed", entryKind: MatchPairsState["entryKind"] = "practice",
 ): MatchPairsState {
   assertNonEmpty(packVersion, MATCH_PAIRS_ERRORS.invalidPackVersion); assertNonEmpty(seed, MATCH_PAIRS_ERRORS.invalidSeed);
   assertNonEmpty(sessionId, MATCH_PAIRS_ERRORS.invalidSessionId); assertDifficulty(difficulty); validateOpponents(opponents);
@@ -18,7 +18,7 @@ export function createMatchPairsState(
   const cards = shuffle(createCards(selected), new XorShift32(`${packVersion}:${seed}:${difficulty}:board`));
   return {
     contract: MATCH_PAIRS_STATE_CONTRACT, version: MATCH_PAIRS_VERSION, packVersion, sessionId, seed, sequence: 0,
-    mode, focus, difficulty, status: "ready", cards, openIndexes: [], matchedPairIds: [], claims: emptyClaims(),
+    mode, entryKind: mode === "spectate" ? "practice" : entryKind, focus, difficulty, status: "ready", cards, openIndexes: [], matchedPairIds: [], claims: emptyClaims(),
     currentTurn: openingActor(mode, seed), revealActor: null, opponentIds, wagerId: null, stake: null, creditAmount: 0,
     npcMemories: emptyMemories(), reactions: neutralReactions(), matchStreaks: emptyStreaks(), turnNumber: 0,
     attempts: 0, lastResolution: null, outcome: null, history: [],
@@ -30,13 +30,18 @@ export function reduceMatchPairs(faces: readonly MatchPairsFace[], opponents: re
   if (action.type === "restart") {
     assertDifficulty(action.difficulty);
     const mode = action.mode ?? state.mode, selection = action.opponentIds ?? state.opponentIds, focus = action.focus ?? state.focus;
-    const restarted = createMatchPairsState(faces, opponents, state.packVersion, action.seed, action.difficulty, selection.npc, state.sessionId, mode, selection.player ?? undefined, focus);
+    const entryKind = mode === "spectate" ? "practice" : action.entryKind ?? state.entryKind;
+    const restarted = createMatchPairsState(faces, opponents, state.packVersion, action.seed, action.difficulty, selection.npc, state.sessionId, mode, selection.player ?? undefined, focus, entryKind);
     return recordAction({ ...restarted, sequence: state.sequence }, action, state.history);
   }
   if (action.type === "set-mode") {
     assert(state.status === "ready", MATCH_PAIRS_ERRORS.opponentSelectionInvalid);
     const selection = selectionForMode(opponents, action.mode, state.opponentIds.npc, state.opponentIds.player ?? undefined);
-    return recordAction({ ...state, mode: action.mode, opponentIds: selection, currentTurn: openingActor(action.mode, state.seed), npcMemories: emptyMemories(), reactions: neutralReactions(), matchStreaks: emptyStreaks() }, action);
+    return recordAction({ ...state, mode: action.mode, entryKind: action.mode === "spectate" ? "practice" : state.entryKind, opponentIds: selection, currentTurn: openingActor(action.mode, state.seed), npcMemories: emptyMemories(), reactions: neutralReactions(), matchStreaks: emptyStreaks() }, action);
+  }
+  if (action.type === "set-entry") {
+    assert(state.status === "ready" && state.mode === "play", MATCH_PAIRS_ERRORS.opponentSelectionInvalid);
+    return recordAction({ ...state, entryKind: action.entryKind }, action);
   }
   if (action.type === "set-focus") {
     assert(state.status === "ready" && ["relaxed", "standard", "sharp"].includes(action.focus), MATCH_PAIRS_ERRORS.opponentSelectionInvalid);
@@ -62,11 +67,11 @@ export function reduceMatchPairs(faces: readonly MatchPairsFace[], opponents: re
   if (action.type === "start") {
     assert(state.status === "ready", MATCH_PAIRS_ERRORS.startInvalid); assertNonEmpty(action.seed, MATCH_PAIRS_ERRORS.invalidSeed);
     if (state.mode === "play") {
-      const free = action.wagerId === undefined && action.stake === undefined;
+      const free = state.entryKind !== "spread-wager" && action.wagerId === undefined && action.stake === undefined;
       const wagered = typeof action.wagerId === "string" && action.wagerId.length > 0 && (action.stake === 10 || action.stake === 50 || action.stake === 200);
-      assert(free || wagered, MATCH_PAIRS_ERRORS.startInvalid);
+      assert(free || state.entryKind === "spread-wager" && wagered, MATCH_PAIRS_ERRORS.startInvalid);
     } else assert(action.wagerId === undefined && action.stake === undefined, MATCH_PAIRS_ERRORS.startInvalid);
-    const started = createMatchPairsState(faces, opponents, state.packVersion, action.seed, state.difficulty, state.opponentIds.npc, state.sessionId, state.mode, state.opponentIds.player ?? undefined, state.focus);
+    const started = createMatchPairsState(faces, opponents, state.packVersion, action.seed, state.difficulty, state.opponentIds.npc, state.sessionId, state.mode, state.opponentIds.player ?? undefined, state.focus, state.entryKind);
     return recordAction({ ...started, sequence: state.sequence, status: "playing", wagerId: action.wagerId ?? null, stake: action.stake ?? null }, action, state.history);
   }
   if (action.type === "player-reveal") {
@@ -148,9 +153,10 @@ function resolveOpenCards(state: MatchPairsState, opponents: readonly MatchPairs
     const aged = decayMemory(state.npcMemories[seat], effectiveOpponent(opponentForActor(state, opponents, seat), state.focus));
     return [seat, matched ? aged.filter((entry) => entry.pairId !== first.pairId) : aged];
   })) as unknown as Record<MatchPairsActor, readonly MatchPairsMemoryEntry[]>;
-  const creditAmount = state.mode === "play" && outcome === "player" && state.stake !== null
-    ? Math.round(state.stake * matchPairsWinCreditRate(opponentForActor(state, opponents, "npc"), state.focus))
-    : state.mode === "play" && outcome === "draw" && state.stake !== null ? state.stake : 0;
+  // Economy 0.5 settles from the frozen challenge/spread receipt outside the
+  // game core. creditAmount remains zero so a raw win can never revive the
+  // retired fixed-paytable path.
+  const creditAmount = 0;
   return recordAction({
     ...state, matchedPairIds, claims, currentTurn: matched ? actor : otherActor(actor), revealActor: null, openIndexes: [], npcMemories,
     reactions: reactionsAfterResolution(state, actor, matched, outcome), matchStreaks, turnNumber: state.turnNumber + 1,
@@ -213,7 +219,7 @@ function emptyStreaks(): Record<MatchPairsActor, number> { return { player: 0, n
 function maximumConstraintMatching(prioritized: readonly MatchPairsFace[]): MatchPairsFace[] { const byCharacter = new Map<string, MatchPairsFace[]>(); for (const face of prioritized) byCharacter.set(face.characterId, [...(byCharacter.get(face.characterId) ?? []), face]); const matchedByGroup = new Map<string, MatchPairsFace>(); const match = (characterId: string, visitedGroups: Set<string>): boolean => { for (const face of byCharacter.get(characterId) ?? []) { const group = constraintKey(face); if (visitedGroups.has(group)) continue; visitedGroups.add(group); const previous = matchedByGroup.get(group); if (!previous || match(previous.characterId, visitedGroups)) { matchedByGroup.set(group, face); return true; } } return false; }; for (const characterId of byCharacter.keys()) match(characterId, new Set()); const ids = new Set([...matchedByGroup.values()].map((face) => face.id)); return prioritized.filter((face) => ids.has(face.id)); }
 function createCards(faces: readonly MatchPairsFace[]): MatchPairsCard[] { return faces.flatMap((face) => [{ cardId: `${face.id}:copy-1`, pairId: face.id }, { cardId: `${face.id}:copy-2`, pairId: face.id }]); }
 function recordAction(state: MatchPairsState, action: MatchPairsAction, history = state.history): MatchPairsState { const sequence = state.sequence + 1; return { ...state, sequence, history: [...history, { sequence, action: cloneAction(action) }] }; }
-function cloneAction(action: MatchPairsAction): MatchPairsAction { if (action.type === "player-reveal") return { type: action.type, index: action.index }; if (action.type === "restart") return { type: action.type, seed: action.seed, difficulty: action.difficulty, ...(action.mode ? { mode: action.mode } : {}), ...(action.focus ? { focus: action.focus } : {}), ...(action.opponentIds ? { opponentIds: { ...action.opponentIds } } : {}) }; if (action.type === "select-opponent") return { type: action.type, opponentId: action.opponentId, ...(action.actor ? { actor: action.actor } : {}) }; if (action.type === "set-mode") return { type: action.type, mode: action.mode }; if (action.type === "set-focus") return { type: action.type, focus: action.focus }; if (action.type === "start") return { type: action.type, seed: action.seed, ...(action.stake ? { stake: action.stake } : {}), ...(action.wagerId ? { wagerId: action.wagerId } : {}) }; return { type: action.type }; }
+function cloneAction(action: MatchPairsAction): MatchPairsAction { if (action.type === "player-reveal") return { type: action.type, index: action.index }; if (action.type === "restart") return { type: action.type, seed: action.seed, difficulty: action.difficulty, ...(action.mode ? { mode: action.mode } : {}), ...(action.focus ? { focus: action.focus } : {}), ...(action.entryKind ? { entryKind: action.entryKind } : {}), ...(action.opponentIds ? { opponentIds: { ...action.opponentIds } } : {}) }; if (action.type === "select-opponent") return { type: action.type, opponentId: action.opponentId, ...(action.actor ? { actor: action.actor } : {}) }; if (action.type === "set-mode") return { type: action.type, mode: action.mode }; if (action.type === "set-focus") return { type: action.type, focus: action.focus }; if (action.type === "set-entry") return { type: action.type, entryKind: action.entryKind }; if (action.type === "start") return { type: action.type, seed: action.seed, ...(action.stake ? { stake: action.stake } : {}), ...(action.wagerId ? { wagerId: action.wagerId } : {}) }; return { type: action.type }; }
 function validateFaces(faces: readonly MatchPairsFace[]): void { const ids = new Set<string>(); for (const face of faces) { assertNonEmpty(face.id, MATCH_PAIRS_ERRORS.invalidFace); assertNonEmpty(face.assetId, MATCH_PAIRS_ERRORS.invalidFace); assertNonEmpty(face.characterId, MATCH_PAIRS_ERRORS.invalidFace); if (face.confusionGroup !== undefined) assertNonEmpty(face.confusionGroup, MATCH_PAIRS_ERRORS.invalidFace); assert(!ids.has(face.id), `${MATCH_PAIRS_ERRORS.duplicateFaceId}:${face.id}`); ids.add(face.id); } }
 function validateOpponents(opponents: readonly MatchPairsOpponent[]): void { assert(opponents.length > 1, MATCH_PAIRS_ERRORS.opponentMissing); const ids = new Set<string>(); for (const opponent of opponents) { assertNonEmpty(opponent.id, MATCH_PAIRS_ERRORS.invalidOpponent); assertNonEmpty(opponent.name, MATCH_PAIRS_ERRORS.invalidOpponent); for (const portrait of [...Object.values(opponent.portraits), opponent.despairPortrait]) assertNonEmpty(portrait, MATCH_PAIRS_ERRORS.invalidOpponent); assert(Number.isInteger(opponent.memoryCapacity) && opponent.memoryCapacity >= 2 && opponent.memoryCapacity <= 8, MATCH_PAIRS_ERRORS.invalidOpponent); for (const value of [opponent.observationRate, opponent.recallAccuracy, opponent.memoryRetention, opponent.consistency, opponent.streakComposure]) assert(Number.isFinite(value) && value >= 0 && value <= 1, MATCH_PAIRS_ERRORS.invalidOpponent); assert(["explore", "recheck", "mixed"].includes(opponent.searchStyle), MATCH_PAIRS_ERRORS.invalidOpponent); assert([1, 2, 3].includes(opponent.difficultyTier), MATCH_PAIRS_ERRORS.invalidOpponent); assert(opponent.winCreditMultiplier === 1.5 || opponent.winCreditMultiplier === 2 || opponent.winCreditMultiplier === 2.5, MATCH_PAIRS_ERRORS.invalidOpponent); assert(!ids.has(opponent.id), `${MATCH_PAIRS_ERRORS.duplicateOpponentId}:${opponent.id}`); ids.add(opponent.id); } }
 function findOpponent(opponents: readonly MatchPairsOpponent[], id: string): MatchPairsOpponent { const opponent = opponents.find((candidate) => candidate.id === id); assert(opponent, `${MATCH_PAIRS_ERRORS.opponentMissing}:${id}`); return opponent; }

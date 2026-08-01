@@ -416,8 +416,8 @@ test("plays for free, records, and restores the public image-only match-pairs ta
   await expect(page.getByRole("heading", { name: "짝맞추기" })).toBeVisible();
   expect(await page.locator(".match-pairs-card-front").evaluateAll((fronts) => fronts.every((front) => (front.textContent ?? "").trim() === ""))).toBe(true);
   await expect(page.locator(".match-pairs-card-front img").first()).toHaveAttribute("alt", "");
-  await expect(page.getByText("직접 대국은 무료입니다. 예정된 NPC 대국 베팅은 카지노 플로어의 통합 관전 시장에서 받습니다.", { exact: true })).toBeVisible();
-  await page.getByRole("button", { name: "대국 시작", exact: true }).click();
+  await expect(page.getByText("연습 대국은 포인트 증감 없이 자유롭게 플레이합니다.", { exact: true })).toBeVisible();
+  await page.getByRole("button", { name: "연습 시작", exact: true }).click();
   await expect(page.locator(".match-pairs-ready-panel")).toHaveCount(0);
   const pairs = await page.locator(".match-pairs-card").evaluateAll((cards) => {
     const indexes = new Map<string, number[]>();
@@ -436,7 +436,7 @@ test("plays for free, records, and restores the public image-only match-pairs ta
     if (pair === 0) {
       const pending = await page.evaluate(async () => {
         const database = await new Function("return import('/src/lib/database.ts')")();
-        return { wallet: await database.readWallet(), wager: (await database.listGameWagers("temerosa-match-pairs:versus-2"))[0] };
+        return { wallet: await database.readWallet(), wager: (await database.listGameWagers("temerosa-match-pairs:versus-3"))[0] };
       });
       expect(pending.wallet.balance).toBe(37);
       expect(pending.wager).toBeUndefined();
@@ -450,7 +450,7 @@ test("plays for free, records, and restores the public image-only match-pairs ta
   await expect(page.locator(".match-pairs-result")).toContainText("상대 전적 · 1승 0패");
   const persisted = await page.evaluate(async () => {
     const database = await new Function("return import('/src/lib/database.ts')")();
-    return { wallet: await database.readWallet(), wagers: await database.listGameWagers("temerosa-match-pairs:versus-2"), records: await database.listMatchRecordsForSession("temerosa-match-pairs:versus-2", 10) };
+    return { wallet: await database.readWallet(), wagers: await database.listGameWagers("temerosa-match-pairs:versus-3"), records: await database.listMatchRecordsForSession("temerosa-match-pairs:versus-3", 10) };
   });
   expect(persisted.wallet.balance).toBe(37);
   expect(persisted.wagers).toHaveLength(0);

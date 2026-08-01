@@ -88,6 +88,16 @@ export interface MatchRecord {
     multiplier: PredictionMultiplier;
     reservedAmount: number;
     won: boolean;
+    termsVersion?: string;
+    targetScore?: number;
+    actualScore?: number;
+  };
+  matchPairs?: {
+    entryKind: "practice" | "house-challenge" | "spread-wager";
+    performanceScore: number;
+    attempts: number;
+    challengeAward: number;
+    targetScore?: number;
   };
   psychology?: {
     inspectedCards: number;

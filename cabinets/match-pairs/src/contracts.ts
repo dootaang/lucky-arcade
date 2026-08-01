@@ -1,9 +1,13 @@
-export const MATCH_PAIRS_VERSION = "match-pairs/0.4" as const;
-export const MATCH_PAIRS_STATE_CONTRACT = "match-pairs-state/0.4" as const;
+export const MATCH_PAIRS_VERSION = "match-pairs/0.5" as const;
+export const MATCH_PAIRS_STATE_CONTRACT = "match-pairs-state/0.5" as const;
+/** Legacy fixed-win paytable. Kept only to identify and close old receipts. */
 export const MATCH_PAIRS_TERMS_VERSION = "match-pairs-paytable/0.3" as const;
+export const MATCH_PAIRS_SPREAD_TERMS_VERSION = "match-pairs-spread/0.1" as const;
+export const MATCH_PAIRS_CHALLENGE_REWARD_VERSION = "match-pairs-challenge/0.1" as const;
 
 export type MatchPairsDifficulty = "easy" | "normal";
 export type MatchPairsMode = "play" | "spectate";
+export type MatchPairsEntryKind = "practice" | "house-challenge" | "spread-wager";
 export type MatchPairsFocus = "relaxed" | "standard" | "sharp";
 export type MatchPairsStatus = "ready" | "playing" | "checking" | "complete";
 /** Stable internal seat ids. In spectate mode both seats are NPC controlled. */
@@ -83,10 +87,11 @@ export type MatchPairsAction =
   | { type: "npc-reveal" }
   | { type: "resolve" }
   | { type: "set-mode"; mode: MatchPairsMode }
+  | { type: "set-entry"; entryKind: MatchPairsEntryKind }
   | { type: "set-focus"; focus: MatchPairsFocus }
   | { type: "select-opponent"; opponentId: string; actor?: MatchPairsActor }
   | { type: "random-opponents" }
-  | { type: "restart"; seed: string; difficulty: MatchPairsDifficulty; mode?: MatchPairsMode; focus?: MatchPairsFocus; opponentIds?: MatchPairsOpponentSelection };
+  | { type: "restart"; seed: string; difficulty: MatchPairsDifficulty; mode?: MatchPairsMode; entryKind?: MatchPairsEntryKind; focus?: MatchPairsFocus; opponentIds?: MatchPairsOpponentSelection };
 
 export interface MatchPairsHistoryEntry { sequence: number; action: MatchPairsAction; }
 export interface MatchPairsLastResolution { actor: MatchPairsActor; matched: boolean; pairId: string | null; }
@@ -99,6 +104,7 @@ export interface MatchPairsState {
   seed: string;
   sequence: number;
   mode: MatchPairsMode;
+  entryKind: MatchPairsEntryKind;
   focus: MatchPairsFocus;
   difficulty: MatchPairsDifficulty;
   status: MatchPairsStatus;
@@ -142,6 +148,7 @@ export function isMatchPairsState(value: unknown): value is MatchPairsState {
   const state = value as Partial<MatchPairsState>;
   if (state.contract !== MATCH_PAIRS_STATE_CONTRACT || state.version !== MATCH_PAIRS_VERSION) return false;
   if (typeof state.packVersion !== "string" || typeof state.sessionId !== "string" || typeof state.seed !== "string") return false;
+  if (!state.entryKind || !["practice", "house-challenge", "spread-wager"].includes(state.entryKind)) return false;
   if (!Number.isInteger(state.sequence) || !Number.isInteger(state.attempts) || !Number.isInteger(state.turnNumber) || !Number.isInteger(state.creditAmount) || state.creditAmount! < 0) return false;
   if (state.mode !== "play" && state.mode !== "spectate" || !state.difficulty || !(state.difficulty in MATCH_PAIRS_PAIR_COUNTS)) return false;
   if (!MATCH_PAIRS_FOCUS_LEVELS.includes(state.focus as MatchPairsFocus)) return false;

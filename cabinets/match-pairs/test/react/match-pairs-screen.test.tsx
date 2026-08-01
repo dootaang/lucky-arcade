@@ -43,8 +43,8 @@ describe("match pairs screen markup", () => {
     expect(markup).toContain('alt=""');
     expect(markup).toContain('aria-label="A1 카드 뒤집기"');
     expect(markup).toContain(`aria-label="${lastCoordinate} 카드 뒤집기"`);
-    expect(markup).toContain("10 P · 2배로 시작");
-    expect(markup).toContain("승리 시 35 P 반환");
+    expect(markup).toContain("연습 시작");
+    expect(markup).toContain("포인트 증감 없이 자유롭게 플레이");
     expect(markup).not.toContain("화면에 나오면 안 되는 인물");
     expect(markup).not.toContain("title=");
   });
@@ -64,6 +64,36 @@ describe("match pairs screen markup", () => {
     expect(markup).toContain(`나 ${complete.claims.player.length}짝`);
     expect(markup).not.toContain("화면에 나오면 안 되는 인물");
     expect(markup).not.toContain("표정");
+  });
+
+  it("shows the frozen spread target and symmetric maximum loss and gain", () => {
+    const ready = reduceMatchPairs(faces, opponents, createMatchPairsState(faces, opponents, "pack", "spread", "easy", opponent.id, "session"), { type: "set-entry", entryKind: "spread-wager" });
+    const markup = renderToStaticMarkup(<MatchPairsScreen
+      faces={faces}
+      opponents={opponents}
+      assets={allAssets}
+      packVersion="pack"
+      seed="spread"
+      sessionId="session"
+      initialState={ready}
+      walletBalance={100}
+      wageringEnabled
+      spreadQuotes={[{
+        contract: "match-pairs-spread/0.1",
+        quoteId: `${opponent.id}:easy:relaxed`,
+        pricingVersion: "temerosa-match-pairs-spread/0.1",
+        opponentId: opponent.id,
+        difficulty: "easy",
+        focus: "relaxed",
+        targetScore: 12,
+        estimatedCoverRateBps: 4_500,
+        sampleSize: 600,
+        available: true,
+      }]}
+    />);
+    expect(markup).toContain("하우스 기준 12점 초과");
+    expect(markup).toContain("최대 손익 −20 P / +20 P");
+    expect(markup).toContain("10 P · 2배로 시작");
   });
 
   it("uses stable row and column coordinates for both difficulties", () => {
@@ -141,7 +171,7 @@ describe("match pairs checking timer", () => {
 });
 
 function autoplay(seed: string): MatchPairsState {
-  let state = reduceMatchPairs(faces, opponents, createMatchPairsState(faces, opponents, "pack", seed, "easy", opponent.id, "session"), { type: "start", seed: `${seed}:deal`, stake: 10, wagerId: `wager:${seed}` });
+  let state = reduceMatchPairs(faces, opponents, createMatchPairsState(faces, opponents, "pack", seed, "easy", opponent.id, "session"), { type: "start", seed: `${seed}:deal` });
   for (const pairId of new Set(state.cards.map((card) => card.pairId))) {
     const indexes = state.cards.flatMap((card, index) => card.pairId === pairId ? [index] : []);
     state = reduceMatchPairs(faces, opponents, state, { type: "player-reveal", index: indexes[0]! });
