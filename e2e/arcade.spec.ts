@@ -85,6 +85,10 @@ test("opens the sole public Venue with six open tables and every built-in previe
   await expect(page.locator(".table-card.playable").filter({ hasText: "슬롯 777" })).toContainText("10 P부터");
   await expect(page.locator(".table-card.playable").filter({ hasText: "하이로우" })).toContainText("10 P부터");
   await expect(page.locator(".table-card.playable").filter({ hasText: "파이브 카드 드로 포커" }).getByRole("button", { name: "시작", exact: true })).toBeVisible();
+  // Rooms that cannot be entered stay folded behind one line until asked for.
+  await expect(page.locator(".table-locked")).not.toHaveAttribute("open", "");
+  await expect(page.locator(".table-locked > summary")).toContainText("개장 준비 중");
+  await page.locator(".table-locked > summary").click();
   await expect(page.locator(".table-card.coming-soon").filter({ hasText: "텍사스 홀덤" })).toContainText("개장 준비 중");
   await expect(page.locator(".table-card.coming-soon")).toHaveCount(11);
   await expect(page.locator(".table-card.coming-soon .admin-preview-entry")).toHaveCount(10);
@@ -102,12 +106,14 @@ test("loads the living ledger lazily and reuses the casino manifest in a game", 
   await expect(page.locator(".casino-side-market")).toBeVisible();
   await expect(page.getByRole("heading", { name: "통합 관전 사이드 베팅" })).toBeVisible();
   expect(await page.locator(".side-market-outcomes button").count()).toBeGreaterThan(1);
-  await expect(page.locator(".casino-ledger-board caption")).toContainText("명예의 전당");
+  await expect(page.locator(".ledger-board-head")).toContainText("명예의 전당");
   await expect(page.getByRole("button", { name: /^(최근 손익|최근 \d+일 손익|7일 손익)$/ })).toHaveAttribute("aria-pressed", "true");
   await page.getByRole("button", { name: "잔고", exact: true }).click();
   await expect(page.getByRole("button", { name: "잔고", exact: true })).toHaveAttribute("aria-pressed", "true");
   await expect(page.locator(".casino-ledger-board thead")).toContainText("잔고");
-  await expect(page.locator(".casino-ledger-board tbody tr")).toHaveCount(6);
+  // The first three seats are a podium; four and down stay tabular. Six entries either way.
+  await expect(page.locator(".ledger-podium-seat")).toHaveCount(3);
+  await expect(page.locator(".casino-ledger-board tbody tr")).toHaveCount(3);
   await page.locator(".ledger-board-switch button").filter({ hasText: "전체 보기" }).click();
   await expect(page.locator(".casino-record-room")).toBeVisible();
   await expect(page.locator(".record-ranking tbody tr")).toHaveCount(30);

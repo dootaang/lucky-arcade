@@ -229,10 +229,24 @@ export default function CasinoLedgerPanel({
   <section className="casino-ledger-panel" aria-label="카지노 활동 원장" data-ledger-utc-second={currentUtcSecond}>
     <div className="casino-ledger-board">
       <span className="ca-brackets" aria-hidden="true" />
+      <div className="ledger-board-head">
+        <strong className="ca-serif">명예의 전당</strong>
+        <span className="ledger-board-switch"><button aria-pressed={leaderboardMode === "profit"} onClick={() => setLeaderboardMode("profit")}>{profitLabel}</button><button aria-pressed={leaderboardMode === "balance"} onClick={() => setLeaderboardMode("balance")}>잔고</button><button onClick={()=>{setSelectedNpcId(undefined);setRecordRoomOpen(true);}}>전체 보기</button></span>
+      </div>
+      {/* The first three seats are the point of a hall of fame; a table row
+          states them but does not show them. Ranks four and down stay tabular. */}
+      <ol className="ledger-podium" aria-label="상위 세 자리">{leaderboard.filter((entry) => entry.rank <= 3).map((entry) => <li key={`${entry.kind}:${entry.id}`} className={`ledger-podium-seat is-rank-${entry.rank}`}>
+        <button onClick={()=>{setSelectedNpcId(entry.kind==="user"?"player:local":entry.id);setRecordRoomOpen(true);}}>
+          <span className="ledger-podium-rank ca-label">{entry.rank}위</span>
+          {entry.kind === "npc" && <LedgerPortrait npcId={entry.id} name={entry.name} src={portraits[entry.id]} crowned={entry.rank === 1} />}
+          <CasinoPersonName qualifiedName={entry.name}/>
+          <span className="ca-num">{leaderboardMode === "profit" ? signedPoints(entry.periodProfit ?? 0) : `${entry.balance.toLocaleString("ko-KR")} P`}</span>
+        </button>
+      </li>)}</ol>
       <table>
-        <caption className="ca-serif">명예의 전당 <span className="ledger-board-switch"><button aria-pressed={leaderboardMode === "profit"} onClick={() => setLeaderboardMode("profit")}>{profitLabel}</button><button aria-pressed={leaderboardMode === "balance"} onClick={() => setLeaderboardMode("balance")}>잔고</button><button onClick={()=>{setSelectedNpcId(undefined);setRecordRoomOpen(true);}}>전체 보기</button></span></caption>
+        <caption className="ledger-board-caption">{leaderboardMode === "profit" ? profitLabel : "잔고"} 4위 이하</caption>
         <thead><tr><th scope="col">순위</th><th scope="col">이름</th><th scope="col">{leaderboardMode === "profit" ? profitLabel : "잔고"}</th></tr></thead>
-        <tbody ref={boardRef}>{leaderboard.map((entry) => <tr
+        <tbody ref={boardRef}>{leaderboard.filter((entry) => entry.rank > 3).map((entry) => <tr
           key={`${entry.kind}:${entry.id}`}
           {...(entry.kind === "npc" ? { "data-npc": entry.id } : {})}
           className={`${entry.kind === "user" ? "is-user" : ""}${entry.kind === "npc" && balanceMoves[entry.id] ? ` is-${balanceMoves[entry.id]}` : ""}`}

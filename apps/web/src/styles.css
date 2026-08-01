@@ -73,7 +73,11 @@ html[data-theme="light"] { color-scheme:light; --canvas:#f5f4ef; --surface:#fff;
    leaks in — the accent, the inherited text colour — has to be pinned here,
    or the light theme paints dark-on-dark inside it. */
 .venue-active .casino-floor{position:relative;isolation:isolate;overflow:hidden;border-color:#5b4526;background:none;box-shadow:0 26px 90px #0007,inset 0 1px 0 #f3bd5514;--accent:#f3bd55;--line:#3b3427;--muted:#b0a795;color:#f2ede1}
-.venue-active .floor-backdrop{position:absolute;inset:0;z-index:0;border-radius:inherit;pointer-events:none}
+/* The room is felt, the archive is slate. Only the ground and the tables take
+   the green; the ledger rail keeps --ca-surface so the split stays legible.
+   .ca-tableau draws its dust over var(--ca-void), so scoping the token here
+   recolours the whole floor without touching the kit. */
+.venue-active .floor-backdrop{position:absolute;inset:0;z-index:0;border-radius:inherit;pointer-events:none;--ca-void:#091310}
 .venue-active .casino-floor>header,.venue-active .table-grid{position:relative;z-index:1}
 .venue-active .casino-floor>header{position:relative;isolation:isolate;min-height:220px;display:grid;align-content:end;margin:calc(clamp(22px,4vw,44px) * -1) calc(clamp(22px,4vw,44px) * -1) 0;padding:clamp(28px,5vw,54px) clamp(22px,4vw,44px) clamp(18px,3vw,26px);border-radius:26px 26px 0 0;overflow:hidden}
 .venue-active .casino-floor>header>.floor-hero-art{position:absolute;inset:0;z-index:-2;width:100%;height:100%;object-fit:cover;object-position:center 42%;filter:saturate(.72) contrast(1.06)}
@@ -82,9 +86,12 @@ html[data-theme="light"] { color-scheme:light; --canvas:#f5f4ef; --surface:#fff;
 .venue-active .casino-floor>header h2{color:#f7edd8;text-shadow:0 2px 18px #0009}
 .venue-active .casino-floor>header p{color:#c8c2b2;text-shadow:0 1px 10px #0009}
 @media(max-width:700px){.venue-active .casino-floor>header{min-height:170px;margin:-20px -20px 0;padding:26px 20px 16px;border-radius:22px 22px 0 0}}
-.venue-active .table-card{position:relative;display:flex;flex-direction:column;align-items:flex-start;overflow:hidden;border-color:#3b3427;background:linear-gradient(160deg,#191d24,#14161b)}
-.venue-active .table-card.playable{border-color:#7d6334;background:radial-gradient(circle at 108% -10%,#f3bd5522,transparent 46%),linear-gradient(160deg,#1c2028,#15181e)}
+.venue-active .table-card{position:relative;display:flex;flex-direction:column;align-items:flex-start;overflow:hidden;border-color:#2f3a30;background:linear-gradient(160deg,#16241f,#101a17)}
+.venue-active .table-card.playable{border-color:#6d6334;background:radial-gradient(circle at 108% -10%,#f3bd5522,transparent 46%),linear-gradient(160deg,#1a2b25,#12201b)}
 .venue-active .table-suit{position:absolute;top:6px;right:16px;z-index:0;color:#f3bd55;opacity:.085;font-size:clamp(58px,9vw,92px);line-height:1;pointer-events:none;user-select:none}
+/* Bleeding the suit off the corner gives each row its own mark without an image.
+   The card already clips, so the crop is the composition. */
+.venue-active .live-table-card .table-suit{top:auto;right:-8px;bottom:-26px;font-size:clamp(84px,11vw,132px);opacity:.06}
 .venue-active .table-card>*:not(.table-suit):not(.ca-brackets):not(.ca-scan):not(.live-table-progress){position:relative;z-index:1}
 .venue-active .table-group{display:inline-flex;align-items:center;gap:7px;color:#e6c36c}
 .venue-active .table-card small{color:#bda875;letter-spacing:.01em}
@@ -92,6 +99,13 @@ html[data-theme="light"] { color-scheme:light; --canvas:#f5f4ef; --surface:#fff;
 .venue-active .table-card.coming-soon strong{align-self:flex-start;margin-top:auto}
 .venue-active .table-locked-divider{grid-column:1/-1;display:flex;align-items:center;gap:16px;margin:24px 0 6px;color:#9c8f78}
 .venue-active .table-locked-divider::before,.venue-active .table-locked-divider::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,transparent,#6d5a32,transparent)}
+/* The divider is the disclosure now: one line until asked. */
+.venue-active .table-locked>summary{min-height:44px;cursor:pointer;list-style:none;transition:color .18s ease}
+.venue-active .table-locked>summary::-webkit-details-marker{display:none}
+.venue-active .table-locked>summary:hover{color:#d6c8ab}
+.venue-active .table-locked>summary b{color:#e6c36c;font-variant-numeric:tabular-nums}
+.venue-active .table-locked-chevron{flex:none;transition:transform .2s ease}
+.venue-active .table-locked[open]>summary .table-locked-chevron{transform:rotate(180deg)}
 .venue-active .table-card.coming-soon{opacity:.58}
 .venue-active .table-card.coming-soon .table-suit{opacity:.05}
 .venue-active .table-grid{grid-template-columns:1fr;gap:8px;margin-top:18px}
@@ -115,7 +129,7 @@ html[data-theme="light"] { color-scheme:light; --canvas:#f5f4ef; --surface:#fff;
   .venue-active .casino-floor>.casino-floor-status{grid-column:1/-1}
   .venue-active .casino-floor>.casino-live-grid,
   .venue-active .casino-floor>.casino-side-market,
-  .venue-active .casino-floor>.table-grid{grid-column:1}
+  .venue-active .casino-floor>.table-locked{grid-column:1}
   /* 원장은 헤더·상태바 아래부터 끝까지를 자기 영역으로 잡고 그 안에서 붙는다.
      패널 자체 2열 배치는 420px 최소폭을 요구하므로 여기서는 1열로 세운다. */
   .venue-active .casino-floor>.casino-ledger-panel{

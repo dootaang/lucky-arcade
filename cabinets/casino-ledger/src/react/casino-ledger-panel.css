@@ -345,11 +345,71 @@
    one column that peaks near 260px even on an 864px card. The row simply cannot
    hold three seats, so below 900px guests and last result take their own rows —
    the same shape the narrow-viewport rules already use. */
+/* In the rail the ledger is 400px wide while the window is not, so the same
+   trick the table cards use applies here: react to the panel's own width.
+   Qualified names like "레일라 폰 테메로사 · √2" wrap instead of clipping. */
+.casino-ledger-panel{container-type:inline-size}
+@container (max-width:460px){
+  .casino-ledger-board .casino-person-name-text,
+  .ledger-activity-line>b,
+  .ledger-settlement-line>div b{white-space:normal;overflow:visible}
+  /* Stacked in the rail there is no sibling to match heights with, and the
+     podium made 330px too short to hold six seats. Let the board grow. */
+  .casino-ledger-board{height:auto}
+}
+
+/* Hall of fame: the first three seats get a podium, four and down stay a table.
+   The board was a row flex holding a single table; three stacked children need
+   the column direction stated. */
+.casino-ledger-board{flex-direction:column;align-items:stretch}
+.ledger-board-head{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+.ledger-board-head>strong{font-size:.95rem}
+.ledger-board-head .ledger-board-switch{margin-left:auto}
+.ledger-board-caption{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.ledger-podium{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;align-items:end;margin:0 0 10px;padding:0;list-style:none}
+.ledger-podium-seat>button{display:grid;justify-items:center;gap:5px;width:100%;padding:10px 5px 9px;border:1px solid color-mix(in srgb,var(--ca-gold) 16%,transparent);border-radius:12px;background:color-mix(in srgb,var(--ca-raised) 76%,transparent);color:inherit;font:inherit;cursor:pointer;text-align:center;transition:border-color .18s ease}
+.ledger-podium-seat>button:hover{border-color:color-mix(in srgb,var(--ca-gold) 52%,transparent)}
+/* A third of a 400px rail cannot hold "쿠드랴프카 · Bestiaization" on one line,
+   and a podium whose names are cut is worse than a table. The chip drops. */
+.ledger-podium-seat .casino-person-name{width:100%;justify-content:center;font-size:.74rem;font-weight:700}
+.ledger-podium-seat .casino-person-name-text{flex:1 1 100%;text-align:center;white-space:normal;overflow:visible}
+.ledger-podium-seat .ca-num{font-size:.72rem;font-variant-numeric:tabular-nums}
+.ledger-podium-rank{font-size:.56rem}
+/* Silver left, gold centre, bronze right — the shape a podium is read in. */
+.ledger-podium-seat.is-rank-1{order:2}
+.ledger-podium-seat.is-rank-2{order:1}
+.ledger-podium-seat.is-rank-3{order:3}
+.is-rank-1>button{padding-top:16px;border-color:color-mix(in srgb,var(--ca-gold) 46%,transparent);background:linear-gradient(180deg,color-mix(in srgb,var(--ca-gold) 13%,var(--ca-raised)),var(--ca-raised))}
+.is-rank-1 .ledger-podium-rank{color:var(--ca-gold-bright)}
+.is-rank-2 .ledger-podium-rank{color:#aeb8c2}
+.is-rank-3 .ledger-podium-rank{color:#c09067}
+
 .casino-live-grid{container-type:inline-size}
 @container (max-width:900px){
-  .live-table-card{grid-template-columns:1fr 78px auto;min-height:126px}
-  .live-table-players{grid-column:1/3;grid-row:2;min-height:42px}
-  .live-table-result{grid-column:1/3;grid-row:3}
-  .venue-active .live-table-card.playable button{grid-column:3;grid-row:1/4}
+  /* The art on a table is the table: its own pieces, lit from above, on felt.
+     A cover image would say the same thing with an asset we do not have, so the
+     stage becomes a lit alcove and the game's loop is the picture inside it. */
+  .live-table-stage{
+    height:auto;aspect-ratio:1/1;min-height:64px;margin:0;border-radius:13px;
+    background:
+      radial-gradient(130% 84% at 50% -12%,color-mix(in srgb,var(--ca-gold) 24%,transparent),transparent 60%),
+      radial-gradient(circle at 50% 120%,color-mix(in srgb,var(--ca-felt) 62%,transparent),transparent 58%),
+      linear-gradient(165deg,#1a2c25,#0d1714);
+    box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--ca-gold) 15%,transparent),inset 0 9px 20px -12px #000;
+  }
+  /* Title, alcove, guests, action across one line; the last result underneath.
+     A 1fr title column left ~300px of nothing between the name and the art. */
+  .live-table-card{grid-template-columns:auto 78px minmax(0,1fr) auto;min-height:104px;align-items:center}
+  .live-table-card>h3{grid-column:1;grid-row:1}
+  .live-table-stage{grid-column:2;grid-row:1}
+  .live-table-players{grid-column:3;grid-row:1;min-height:42px;flex-wrap:wrap}
+  .live-table-result{grid-column:1/4;grid-row:2}
+  .venue-active .live-table-card.playable button{grid-column:4;grid-row:1/3}
   .live-player b{overflow:visible;white-space:normal}
+  /* The kit's reflection read as a sheen when the card clipped it at 88px. On a
+     taller card it is fully visible and looks like a second, half-drawn button. */
+  .venue-active .live-table-card.playable button{-webkit-box-reflect:unset}
+  /* The last result is one sentence; the chip should not push itself onto a
+     second line while the row still has room. */
+  .live-table-result .casino-person-name-text{flex:0 1 auto}
 }

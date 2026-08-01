@@ -149,8 +149,14 @@ function VenueFloor({ venue, balance, onPlay, onPreview, onBalanceChange }: { ve
       entryLabel: "시작",
       meta: `${entry.manifest.estimatedMinutes.min}~${entry.manifest.estimatedMinutes.max}분 · ${entry.manifest.entry === "wager" ? `${entry.manifest.wagerTiers?.[0] ?? 0} P부터` : "포인트 없이 시작"}`,
     }))} /></Suspense>
-    <div className="table-grid">
-      <p className="table-locked-divider ca-label" aria-hidden="true">개장 준비 중</p>
+    {/* Eleven rooms that cannot be entered took more height than the six that
+        can. They stay one line until someone asks for them. */}
+    <details className="table-locked">
+      <summary className="table-locked-divider ca-label">
+        개장 준비 중 <b>{preparing.length + plannedTables.length}</b>
+        <svg className="table-locked-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
+      </summary>
+      <div className="table-grid">
       {preparing.map(({ entry }) => <article className="table-card coming-soon" key={entry.manifest.id}>
         <span className="table-suit" aria-hidden="true">{TABLE_SUITS[entry.manifest.id] ?? "♠"}</span>
         <span className="table-group ca-label">{entry.badge}</span>
@@ -164,7 +170,8 @@ function VenueFloor({ venue, balance, onPlay, onPreview, onBalanceChange }: { ve
         <h3 className="ca-serif">{table.title}</h3>
         <strong>준비 중</strong>
       </article>)}
-    </div>
+      </div>
+    </details>
   </section>;
 }
 
