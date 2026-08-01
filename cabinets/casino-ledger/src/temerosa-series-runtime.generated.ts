@@ -7,8 +7,8 @@ export const TEMEROSA_SERIES_RUNTIME_ROSTER: readonly TemerosaFlowRosterRecord[]
     "series": "overture",
     "sourcePersonaKey": "elton-carrasco",
     "canonicalPersonKey": "elton-carrasco",
-    "displayName": "Elton Carrasco",
-    "qualifiedName": "Elton Carrasco · 서곡",
+    "displayName": "엘튼 카라스코",
+    "qualifiedName": "엘튼 카라스코 · Overture",
     "role": "gambler",
     "status": "confirmed",
     "loreEvidence": [
@@ -23,8 +23,8 @@ export const TEMEROSA_SERIES_RUNTIME_ROSTER: readonly TemerosaFlowRosterRecord[]
     "series": "overture",
     "sourcePersonaKey": "hab",
     "canonicalPersonKey": "hab",
-    "displayName": "hab",
-    "qualifiedName": "hab · 서곡",
+    "displayName": "하브",
+    "qualifiedName": "하브 · Overture",
     "role": "gambler",
     "status": "confirmed",
     "loreEvidence": [
@@ -39,8 +39,8 @@ export const TEMEROSA_SERIES_RUNTIME_ROSTER: readonly TemerosaFlowRosterRecord[]
     "series": "overture",
     "sourcePersonaKey": "ishmael",
     "canonicalPersonKey": "ishmael",
-    "displayName": "Ishmael",
-    "qualifiedName": "Ishmael · 서곡",
+    "displayName": "이슈메일",
+    "qualifiedName": "이슈메일 · Overture",
     "role": "gambler",
     "status": "confirmed",
     "loreEvidence": [
@@ -55,8 +55,8 @@ export const TEMEROSA_SERIES_RUNTIME_ROSTER: readonly TemerosaFlowRosterRecord[]
     "series": "overture",
     "sourcePersonaKey": "kano",
     "canonicalPersonKey": "kano",
-    "displayName": "Kano",
-    "qualifiedName": "Kano · 서곡",
+    "displayName": "카노",
+    "qualifiedName": "카노 · Overture",
     "role": "gambler",
     "status": "confirmed",
     "loreEvidence": [
@@ -71,8 +71,8 @@ export const TEMEROSA_SERIES_RUNTIME_ROSTER: readonly TemerosaFlowRosterRecord[]
     "series": "overture",
     "sourcePersonaKey": "licanica",
     "canonicalPersonKey": "licanica",
-    "displayName": "Licanica",
-    "qualifiedName": "Licanica · 서곡",
+    "displayName": "라카니카",
+    "qualifiedName": "라카니카 · Overture",
     "role": "gambler",
     "status": "confirmed",
     "loreEvidence": [
@@ -87,8 +87,8 @@ export const TEMEROSA_SERIES_RUNTIME_ROSTER: readonly TemerosaFlowRosterRecord[]
     "series": "overture",
     "sourcePersonaKey": "lyla",
     "canonicalPersonKey": "lyla",
-    "displayName": "Lyla",
-    "qualifiedName": "Lyla · 서곡",
+    "displayName": "라일라",
+    "qualifiedName": "라일라 · Overture",
     "role": "gambler",
     "status": "confirmed",
     "loreEvidence": [
@@ -103,8 +103,8 @@ export const TEMEROSA_SERIES_RUNTIME_ROSTER: readonly TemerosaFlowRosterRecord[]
     "series": "overture",
     "sourcePersonaKey": "mascot",
     "canonicalPersonKey": "mascot",
-    "displayName": "mascot",
-    "qualifiedName": "mascot · 서곡",
+    "displayName": "마스코트",
+    "qualifiedName": "마스코트 · Overture",
     "role": "gambler",
     "status": "confirmed",
     "loreEvidence": [
@@ -119,8 +119,8 @@ export const TEMEROSA_SERIES_RUNTIME_ROSTER: readonly TemerosaFlowRosterRecord[]
     "series": "overture",
     "sourcePersonaKey": "merry-pip",
     "canonicalPersonKey": "merry-pip",
-    "displayName": "Merry-pip",
-    "qualifiedName": "Merry-pip · 서곡",
+    "displayName": "메리-핍",
+    "qualifiedName": "메리-핍 · Overture",
     "role": "gambler",
     "status": "confirmed",
     "loreEvidence": [
@@ -135,8 +135,8 @@ export const TEMEROSA_SERIES_RUNTIME_ROSTER: readonly TemerosaFlowRosterRecord[]
     "series": "overture",
     "sourcePersonaKey": "mortem",
     "canonicalPersonKey": "mortem",
-    "displayName": "Mortem",
-    "qualifiedName": "Mortem · 서곡",
+    "displayName": "모르템",
+    "qualifiedName": "모르템 · Overture",
     "role": "gambler",
     "status": "confirmed",
     "loreEvidence": [
@@ -151,8 +151,8 @@ export const TEMEROSA_SERIES_RUNTIME_ROSTER: readonly TemerosaFlowRosterRecord[]
     "series": "overture",
     "sourcePersonaKey": "pale",
     "canonicalPersonKey": "pale",
-    "displayName": "Pale",
-    "qualifiedName": "Pale · 서곡",
+    "displayName": "페일",
+    "qualifiedName": "페일 · Overture",
     "role": "gambler",
     "status": "confirmed",
     "loreEvidence": [
@@ -167,8 +167,8 @@ export const TEMEROSA_SERIES_RUNTIME_ROSTER: readonly TemerosaFlowRosterRecord[]
     "series": "overture",
     "sourcePersonaKey": "septendecilliono",
     "canonicalPersonKey": "septendecilliono",
-    "displayName": "septendecilliono",
-    "qualifiedName": "septendecilliono · 서곡",
+    "displayName": "셉텐데실리오노",
+    "qualifiedName": "셉텐데실리오노 · Overture",
     "role": "gambler",
     "status": "confirmed",
     "loreEvidence": [
@@ -183,8 +183,8 @@ export const TEMEROSA_SERIES_RUNTIME_ROSTER: readonly TemerosaFlowRosterRecord[]
     "series": "overture",
     "sourcePersonaKey": "tashtego",
     "canonicalPersonKey": "tashtego",
-    "displayName": "Tashtego",
-    "qualifiedName": "Tashtego · 서곡",
+    "displayName": "테슈테고",
+    "qualifiedName": "테슈테고 · Overture",
     "role": "gambler",
     "status": "confirmed",
     "loreEvidence": [
@@ -199,8 +199,8 @@ export const TEMEROSA_SERIES_RUNTIME_ROSTER: readonly TemerosaFlowRosterRecord[]
     "series": "root2",
     "sourcePersonaKey": "ayase",
     "canonicalPersonKey": "ayase",
-    "displayName": "Ayase (아야세)",
-    "qualifiedName": "Ayase (아야세) · √2",
+    "displayName": "아야세",
+    "qualifiedName": "아야세 · √2",
     "role": "gambler",
     "status": "confirmed",
     "loreEvidence": [
@@ -215,8 +215,8 @@ export const TEMEROSA_SERIES_RUNTIME_ROSTER: readonly TemerosaFlowRosterRecord[]
     "series": "root2",
     "sourcePersonaKey": "dismas",
     "canonicalPersonKey": "dismas",
-    "displayName": "Dismas (디스마스)",
-    "qualifiedName": "Dismas (디스마스) · √2",
+    "displayName": "디스마스",
+    "qualifiedName": "디스마스 · √2",
     "role": "gambler",
     "status": "confirmed",
     "loreEvidence": [
@@ -231,8 +231,8 @@ export const TEMEROSA_SERIES_RUNTIME_ROSTER: readonly TemerosaFlowRosterRecord[]
     "series": "root2",
     "sourcePersonaKey": "hab",
     "canonicalPersonKey": "hab",
-    "displayName": "Hab (허브)",
-    "qualifiedName": "Hab (허브) · √2",
+    "displayName": "허브",
+    "qualifiedName": "허브 · √2",
     "role": "gambler",
     "status": "confirmed",
     "loreEvidence": [
@@ -247,8 +247,8 @@ export const TEMEROSA_SERIES_RUNTIME_ROSTER: readonly TemerosaFlowRosterRecord[]
     "series": "root2",
     "sourcePersonaKey": "ishmael",
     "canonicalPersonKey": "ishmael",
-    "displayName": "Ismael (이슈메일)",
-    "qualifiedName": "Ismael (이슈메일) · √2",
+    "displayName": "이슈메일",
+    "qualifiedName": "이슈메일 · √2",
     "role": "gambler",
     "status": "confirmed",
     "loreEvidence": [
@@ -263,8 +263,8 @@ export const TEMEROSA_SERIES_RUNTIME_ROSTER: readonly TemerosaFlowRosterRecord[]
     "series": "root2",
     "sourcePersonaKey": "kano",
     "canonicalPersonKey": "kano",
-    "displayName": "Kano Ameri (카노 아메리)",
-    "qualifiedName": "Kano Ameri (카노 아메리) · √2",
+    "displayName": "카노 아메리",
+    "qualifiedName": "카노 아메리 · √2",
     "role": "gambler",
     "status": "confirmed",
     "loreEvidence": [
@@ -279,8 +279,8 @@ export const TEMEROSA_SERIES_RUNTIME_ROSTER: readonly TemerosaFlowRosterRecord[]
     "series": "root2",
     "sourcePersonaKey": "lyla",
     "canonicalPersonKey": "lyla",
-    "displayName": "Lyla (라일라)",
-    "qualifiedName": "Lyla (라일라) · √2",
+    "displayName": "라일라",
+    "qualifiedName": "라일라 · √2",
     "role": "gambler",
     "status": "confirmed",
     "loreEvidence": [
@@ -295,8 +295,8 @@ export const TEMEROSA_SERIES_RUNTIME_ROSTER: readonly TemerosaFlowRosterRecord[]
     "series": "root2",
     "sourcePersonaKey": "merry-pip",
     "canonicalPersonKey": "merry-pip",
-    "displayName": "Merry-pip (메리-핍)",
-    "qualifiedName": "Merry-pip (메리-핍) · √2",
+    "displayName": "메리-핍",
+    "qualifiedName": "메리-핍 · √2",
     "role": "gambler",
     "status": "confirmed",
     "loreEvidence": [
@@ -311,8 +311,8 @@ export const TEMEROSA_SERIES_RUNTIME_ROSTER: readonly TemerosaFlowRosterRecord[]
     "series": "root2",
     "sourcePersonaKey": "mortem",
     "canonicalPersonKey": "mortem",
-    "displayName": "Mortem (모르템)",
-    "qualifiedName": "Mortem (모르템) · √2",
+    "displayName": "모르템",
+    "qualifiedName": "모르템 · √2",
     "role": "gambler",
     "status": "confirmed",
     "loreEvidence": [
@@ -327,8 +327,8 @@ export const TEMEROSA_SERIES_RUNTIME_ROSTER: readonly TemerosaFlowRosterRecord[]
     "series": "root2",
     "sourcePersonaKey": "nevy",
     "canonicalPersonKey": "nevy",
-    "displayName": "Nevy Krakentus",
-    "qualifiedName": "Nevy Krakentus · √2",
+    "displayName": "니비 크라켄투스",
+    "qualifiedName": "니비 크라켄투스 · √2",
     "role": "gambler",
     "status": "confirmed",
     "loreEvidence": [
@@ -343,8 +343,8 @@ export const TEMEROSA_SERIES_RUNTIME_ROSTER: readonly TemerosaFlowRosterRecord[]
     "series": "root2",
     "sourcePersonaKey": "nieun",
     "canonicalPersonKey": "nieun",
-    "displayName": "Nieun (니은)",
-    "qualifiedName": "Nieun (니은) · √2",
+    "displayName": "니은",
+    "qualifiedName": "니은 · √2",
     "role": "gambler",
     "status": "confirmed",
     "loreEvidence": [
@@ -359,8 +359,8 @@ export const TEMEROSA_SERIES_RUNTIME_ROSTER: readonly TemerosaFlowRosterRecord[]
     "series": "root2",
     "sourcePersonaKey": "nostalgia",
     "canonicalPersonKey": "nostalgia",
-    "displayName": "nostalgia (노스텔지아)",
-    "qualifiedName": "nostalgia (노스텔지아) · √2",
+    "displayName": "노스텔지아",
+    "qualifiedName": "노스텔지아 · √2",
     "role": "gambler",
     "status": "confirmed",
     "loreEvidence": [
@@ -375,8 +375,8 @@ export const TEMEROSA_SERIES_RUNTIME_ROSTER: readonly TemerosaFlowRosterRecord[]
     "series": "root2",
     "sourcePersonaKey": "pale",
     "canonicalPersonKey": "pale",
-    "displayName": "Pale (페일)",
-    "qualifiedName": "Pale (페일) · √2",
+    "displayName": "페일",
+    "qualifiedName": "페일 · √2",
     "role": "gambler",
     "status": "confirmed",
     "loreEvidence": [
@@ -391,8 +391,8 @@ export const TEMEROSA_SERIES_RUNTIME_ROSTER: readonly TemerosaFlowRosterRecord[]
     "series": "root2",
     "sourcePersonaKey": "presser",
     "canonicalPersonKey": "presser",
-    "displayName": "Presser Esser 프렛서 엣서",
-    "qualifiedName": "Presser Esser 프렛서 엣서 · √2",
+    "displayName": "프렛서 엣서",
+    "qualifiedName": "프렛서 엣서 · √2",
     "role": "gambler",
     "status": "confirmed",
     "loreEvidence": [
@@ -407,8 +407,8 @@ export const TEMEROSA_SERIES_RUNTIME_ROSTER: readonly TemerosaFlowRosterRecord[]
     "series": "root2",
     "sourcePersonaKey": "reila",
     "canonicalPersonKey": "lyla",
-    "displayName": "Reila von Temerosa (레일라 폰 테메로사)",
-    "qualifiedName": "Reila von Temerosa (레일라 폰 테메로사) · √2",
+    "displayName": "레일라 폰 테메로사",
+    "qualifiedName": "레일라 폰 테메로사 · √2",
     "role": "gambler",
     "status": "confirmed",
     "loreEvidence": [
@@ -423,8 +423,8 @@ export const TEMEROSA_SERIES_RUNTIME_ROSTER: readonly TemerosaFlowRosterRecord[]
     "series": "root2",
     "sourcePersonaKey": "revi",
     "canonicalPersonKey": "revi",
-    "displayName": "Revi (레비)",
-    "qualifiedName": "Revi (레비) · √2",
+    "displayName": "레비",
+    "qualifiedName": "레비 · √2",
     "role": "gambler",
     "status": "confirmed",
     "loreEvidence": [
@@ -439,8 +439,8 @@ export const TEMEROSA_SERIES_RUNTIME_ROSTER: readonly TemerosaFlowRosterRecord[]
     "series": "root2",
     "sourcePersonaKey": "septendecilliono",
     "canonicalPersonKey": "septendecilliono",
-    "displayName": "Septendecilliono (셉텐데실리오노)",
-    "qualifiedName": "Septendecilliono (셉텐데실리오노) · √2",
+    "displayName": "셉텐데실리오노",
+    "qualifiedName": "셉텐데실리오노 · √2",
     "role": "gambler",
     "status": "confirmed",
     "loreEvidence": [
@@ -455,8 +455,8 @@ export const TEMEROSA_SERIES_RUNTIME_ROSTER: readonly TemerosaFlowRosterRecord[]
     "series": "root2",
     "sourcePersonaKey": "tashtego",
     "canonicalPersonKey": "tashtego",
-    "displayName": "Tashtego (테슈테고)",
-    "qualifiedName": "Tashtego (테슈테고) · √2",
+    "displayName": "테슈테고",
+    "qualifiedName": "테슈테고 · √2",
     "role": "gambler",
     "status": "confirmed",
     "loreEvidence": [
@@ -471,8 +471,8 @@ export const TEMEROSA_SERIES_RUNTIME_ROSTER: readonly TemerosaFlowRosterRecord[]
     "series": "bestiaization",
     "sourcePersonaKey": "a",
     "canonicalPersonKey": "hab",
-    "displayName": "[A] ([A])",
-    "qualifiedName": "[A] ([A]) · 베스티아화",
+    "displayName": "[A]",
+    "qualifiedName": "[A] · Bestiaization",
     "role": "gambler",
     "status": "confirmed",
     "loreEvidence": [
@@ -487,8 +487,8 @@ export const TEMEROSA_SERIES_RUNTIME_ROSTER: readonly TemerosaFlowRosterRecord[]
     "series": "bestiaization",
     "sourcePersonaKey": "adesha",
     "canonicalPersonKey": "adesha",
-    "displayName": "Adesha (아데샤)",
-    "qualifiedName": "Adesha (아데샤) · 베스티아화",
+    "displayName": "아데샤",
+    "qualifiedName": "아데샤 · Bestiaization",
     "role": "gambler",
     "status": "confirmed",
     "loreEvidence": [
@@ -503,8 +503,8 @@ export const TEMEROSA_SERIES_RUNTIME_ROSTER: readonly TemerosaFlowRosterRecord[]
     "series": "bestiaization",
     "sourcePersonaKey": "alger",
     "canonicalPersonKey": "alger",
-    "displayName": "Alger (알제)",
-    "qualifiedName": "Alger (알제) · 베스티아화",
+    "displayName": "알제",
+    "qualifiedName": "알제 · Bestiaization",
     "role": "gambler",
     "status": "confirmed",
     "loreEvidence": [
@@ -519,8 +519,8 @@ export const TEMEROSA_SERIES_RUNTIME_ROSTER: readonly TemerosaFlowRosterRecord[]
     "series": "bestiaization",
     "sourcePersonaKey": "anna",
     "canonicalPersonKey": "anna",
-    "displayName": "Anna Nazareth (안나 나자레아)",
-    "qualifiedName": "Anna Nazareth (안나 나자레아) · 베스티아화",
+    "displayName": "안나 나자레아",
+    "qualifiedName": "안나 나자레아 · Bestiaization",
     "role": "gambler",
     "status": "confirmed",
     "loreEvidence": [
@@ -535,8 +535,8 @@ export const TEMEROSA_SERIES_RUNTIME_ROSTER: readonly TemerosaFlowRosterRecord[]
     "series": "bestiaization",
     "sourcePersonaKey": "apollyon",
     "canonicalPersonKey": "apollyon",
-    "displayName": "Apollyon Aite (아폴리온 아이테)",
-    "qualifiedName": "Apollyon Aite (아폴리온 아이테) · 베스티아화",
+    "displayName": "아폴리온 아이테",
+    "qualifiedName": "아폴리온 아이테 · Bestiaization",
     "role": "gambler",
     "status": "confirmed",
     "loreEvidence": [
@@ -551,8 +551,8 @@ export const TEMEROSA_SERIES_RUNTIME_ROSTER: readonly TemerosaFlowRosterRecord[]
     "series": "bestiaization",
     "sourcePersonaKey": "bamcapis",
     "canonicalPersonKey": "bamcapis",
-    "displayName": "Bamcapis (밤카피스)",
-    "qualifiedName": "Bamcapis (밤카피스) · 베스티아화",
+    "displayName": "밤카피스",
+    "qualifiedName": "밤카피스 · Bestiaization",
     "role": "gambler",
     "status": "confirmed",
     "loreEvidence": [
@@ -567,8 +567,8 @@ export const TEMEROSA_SERIES_RUNTIME_ROSTER: readonly TemerosaFlowRosterRecord[]
     "series": "bestiaization",
     "sourcePersonaKey": "bche",
     "canonicalPersonKey": "bche",
-    "displayName": "Bche (브체)",
-    "qualifiedName": "Bche (브체) · 베스티아화",
+    "displayName": "브체",
+    "qualifiedName": "브체 · Bestiaization",
     "role": "gambler",
     "status": "confirmed",
     "loreEvidence": [
@@ -583,8 +583,8 @@ export const TEMEROSA_SERIES_RUNTIME_ROSTER: readonly TemerosaFlowRosterRecord[]
     "series": "bestiaization",
     "sourcePersonaKey": "boris-leblanc",
     "canonicalPersonKey": "boris-leblanc",
-    "displayName": "Boris Leblanc (보리스 르블랑)",
-    "qualifiedName": "Boris Leblanc (보리스 르블랑) · 베스티아화",
+    "displayName": "보리스 르블랑",
+    "qualifiedName": "보리스 르블랑 · Bestiaization",
     "role": "gambler",
     "status": "confirmed",
     "loreEvidence": [
@@ -599,8 +599,8 @@ export const TEMEROSA_SERIES_RUNTIME_ROSTER: readonly TemerosaFlowRosterRecord[]
     "series": "bestiaization",
     "sourcePersonaKey": "cab",
     "canonicalPersonKey": "cab",
-    "displayName": "Cab (캐브)",
-    "qualifiedName": "Cab (캐브) · 베스티아화",
+    "displayName": "캐브",
+    "qualifiedName": "캐브 · Bestiaization",
     "role": "gambler",
     "status": "confirmed",
     "loreEvidence": [
@@ -615,8 +615,8 @@ export const TEMEROSA_SERIES_RUNTIME_ROSTER: readonly TemerosaFlowRosterRecord[]
     "series": "bestiaization",
     "sourcePersonaKey": "camille",
     "canonicalPersonKey": "camille",
-    "displayName": "Camille (카미유)",
-    "qualifiedName": "Camille (카미유) · 베스티아화",
+    "displayName": "카미유",
+    "qualifiedName": "카미유 · Bestiaization",
     "role": "gambler",
     "status": "confirmed",
     "loreEvidence": [
@@ -631,8 +631,8 @@ export const TEMEROSA_SERIES_RUNTIME_ROSTER: readonly TemerosaFlowRosterRecord[]
     "series": "bestiaization",
     "sourcePersonaKey": "cicero",
     "canonicalPersonKey": "cicero",
-    "displayName": "Cicero (키케로)",
-    "qualifiedName": "Cicero (키케로) · 베스티아화",
+    "displayName": "키케로",
+    "qualifiedName": "키케로 · Bestiaization",
     "role": "gambler",
     "status": "confirmed",
     "loreEvidence": [
@@ -647,8 +647,8 @@ export const TEMEROSA_SERIES_RUNTIME_ROSTER: readonly TemerosaFlowRosterRecord[]
     "series": "bestiaization",
     "sourcePersonaKey": "cradle",
     "canonicalPersonKey": "cradle",
-    "displayName": "Cradle (크레이들)",
-    "qualifiedName": "Cradle (크레이들) · 베스티아화",
+    "displayName": "크레이들",
+    "qualifiedName": "크레이들 · Bestiaization",
     "role": "gambler",
     "status": "confirmed",
     "loreEvidence": [
@@ -663,8 +663,8 @@ export const TEMEROSA_SERIES_RUNTIME_ROSTER: readonly TemerosaFlowRosterRecord[]
     "series": "bestiaization",
     "sourcePersonaKey": "deokbae",
     "canonicalPersonKey": "deokbae",
-    "displayName": "Kim Deokbae (김덕배)",
-    "qualifiedName": "Kim Deokbae (김덕배) · 베스티아화",
+    "displayName": "김덕배",
+    "qualifiedName": "김덕배 · Bestiaization",
     "role": "gambler",
     "status": "confirmed",
     "loreEvidence": [
@@ -679,8 +679,8 @@ export const TEMEROSA_SERIES_RUNTIME_ROSTER: readonly TemerosaFlowRosterRecord[]
     "series": "bestiaization",
     "sourcePersonaKey": "diamo",
     "canonicalPersonKey": "diamo",
-    "displayName": "Diamo (디아모)",
-    "qualifiedName": "Diamo (디아모) · 베스티아화",
+    "displayName": "디아모",
+    "qualifiedName": "디아모 · Bestiaization",
     "role": "gambler",
     "status": "confirmed",
     "loreEvidence": [
@@ -695,8 +695,8 @@ export const TEMEROSA_SERIES_RUNTIME_ROSTER: readonly TemerosaFlowRosterRecord[]
     "series": "bestiaization",
     "sourcePersonaKey": "dorsinea",
     "canonicalPersonKey": "dorsinea",
-    "displayName": "Dorsinea (Don Quixote Dorsinea) (도르시네아)",
-    "qualifiedName": "Dorsinea (Don Quixote Dorsinea) (도르시네아) · 베스티아화",
+    "displayName": "도르시네아",
+    "qualifiedName": "도르시네아 · Bestiaization",
     "role": "gambler",
     "status": "confirmed",
     "loreEvidence": [
@@ -711,8 +711,8 @@ export const TEMEROSA_SERIES_RUNTIME_ROSTER: readonly TemerosaFlowRosterRecord[]
     "series": "bestiaization",
     "sourcePersonaKey": "echo",
     "canonicalPersonKey": "echo",
-    "displayName": "Echo (에코)",
-    "qualifiedName": "Echo (에코) · 베스티아화",
+    "displayName": "에코",
+    "qualifiedName": "에코 · Bestiaization",
     "role": "gambler",
     "status": "confirmed",
     "loreEvidence": [
@@ -727,8 +727,8 @@ export const TEMEROSA_SERIES_RUNTIME_ROSTER: readonly TemerosaFlowRosterRecord[]
     "series": "bestiaization",
     "sourcePersonaKey": "flask",
     "canonicalPersonKey": "flask",
-    "displayName": "Flask (플라스크)",
-    "qualifiedName": "Flask (플라스크) · 베스티아화",
+    "displayName": "플라스크",
+    "qualifiedName": "플라스크 · Bestiaization",
     "role": "gambler",
     "status": "confirmed",
     "loreEvidence": [
@@ -743,8 +743,8 @@ export const TEMEROSA_SERIES_RUNTIME_ROSTER: readonly TemerosaFlowRosterRecord[]
     "series": "bestiaization",
     "sourcePersonaKey": "francis",
     "canonicalPersonKey": "francis",
-    "displayName": "Francis (프란시스)",
-    "qualifiedName": "Francis (프란시스) · 베스티아화",
+    "displayName": "프란시스",
+    "qualifiedName": "프란시스 · Bestiaization",
     "role": "gambler",
     "status": "confirmed",
     "loreEvidence": [
@@ -759,8 +759,8 @@ export const TEMEROSA_SERIES_RUNTIME_ROSTER: readonly TemerosaFlowRosterRecord[]
     "series": "bestiaization",
     "sourcePersonaKey": "gestas",
     "canonicalPersonKey": "gestas",
-    "displayName": "Gestas (게스타스)",
-    "qualifiedName": "Gestas (게스타스) · 베스티아화",
+    "displayName": "게스타스",
+    "qualifiedName": "게스타스 · Bestiaization",
     "role": "gambler",
     "status": "confirmed",
     "loreEvidence": [
@@ -775,8 +775,8 @@ export const TEMEROSA_SERIES_RUNTIME_ROSTER: readonly TemerosaFlowRosterRecord[]
     "series": "bestiaization",
     "sourcePersonaKey": "habwen",
     "canonicalPersonKey": "habwen",
-    "displayName": "Habwen (하브웬)",
-    "qualifiedName": "Habwen (하브웬) · 베스티아화",
+    "displayName": "하브웬",
+    "qualifiedName": "하브웬 · Bestiaization",
     "role": "gambler",
     "status": "confirmed",
     "loreEvidence": [
@@ -791,8 +791,8 @@ export const TEMEROSA_SERIES_RUNTIME_ROSTER: readonly TemerosaFlowRosterRecord[]
     "series": "bestiaization",
     "sourcePersonaKey": "hiro",
     "canonicalPersonKey": "hiro",
-    "displayName": "Hiro Kaneda (히로 카네다)",
-    "qualifiedName": "Hiro Kaneda (히로 카네다) · 베스티아화",
+    "displayName": "히로 카네다",
+    "qualifiedName": "히로 카네다 · Bestiaization",
     "role": "gambler",
     "status": "confirmed",
     "loreEvidence": [
@@ -807,8 +807,8 @@ export const TEMEROSA_SERIES_RUNTIME_ROSTER: readonly TemerosaFlowRosterRecord[]
     "series": "bestiaization",
     "sourcePersonaKey": "iweleth",
     "canonicalPersonKey": "iweleth",
-    "displayName": "Iweleth (이웰레스)",
-    "qualifiedName": "Iweleth (이웰레스) · 베스티아화",
+    "displayName": "이웰레스",
+    "qualifiedName": "이웰레스 · Bestiaization",
     "role": "gambler",
     "status": "confirmed",
     "loreEvidence": [
@@ -823,8 +823,8 @@ export const TEMEROSA_SERIES_RUNTIME_ROSTER: readonly TemerosaFlowRosterRecord[]
     "series": "bestiaization",
     "sourcePersonaKey": "jia",
     "canonicalPersonKey": "jia",
-    "displayName": "Jia (지아)",
-    "qualifiedName": "Jia (지아) · 베스티아화",
+    "displayName": "지아",
+    "qualifiedName": "지아 · Bestiaization",
     "role": "gambler",
     "status": "confirmed",
     "loreEvidence": [
@@ -839,8 +839,8 @@ export const TEMEROSA_SERIES_RUNTIME_ROSTER: readonly TemerosaFlowRosterRecord[]
     "series": "bestiaization",
     "sourcePersonaKey": "katrinka",
     "canonicalPersonKey": "katrinka",
-    "displayName": "Katrinka (카트린카)",
-    "qualifiedName": "Katrinka (카트린카) · 베스티아화",
+    "displayName": "카트린카",
+    "qualifiedName": "카트린카 · Bestiaization",
     "role": "gambler",
     "status": "confirmed",
     "loreEvidence": [
@@ -855,8 +855,8 @@ export const TEMEROSA_SERIES_RUNTIME_ROSTER: readonly TemerosaFlowRosterRecord[]
     "series": "bestiaization",
     "sourcePersonaKey": "kreva",
     "canonicalPersonKey": "kreva",
-    "displayName": "Kreva (크레바)",
-    "qualifiedName": "Kreva (크레바) · 베스티아화",
+    "displayName": "크레바",
+    "qualifiedName": "크레바 · Bestiaization",
     "role": "gambler",
     "status": "confirmed",
     "loreEvidence": [
@@ -871,8 +871,8 @@ export const TEMEROSA_SERIES_RUNTIME_ROSTER: readonly TemerosaFlowRosterRecord[]
     "series": "bestiaization",
     "sourcePersonaKey": "kudryavka",
     "canonicalPersonKey": "kudryavka",
-    "displayName": "Kudryavka (쿠드랴프카)",
-    "qualifiedName": "Kudryavka (쿠드랴프카) · 베스티아화",
+    "displayName": "쿠드랴프카",
+    "qualifiedName": "쿠드랴프카 · Bestiaization",
     "role": "gambler",
     "status": "confirmed",
     "loreEvidence": [
@@ -887,8 +887,8 @@ export const TEMEROSA_SERIES_RUNTIME_ROSTER: readonly TemerosaFlowRosterRecord[]
     "series": "bestiaization",
     "sourcePersonaKey": "levillotte",
     "canonicalPersonKey": "levillotte",
-    "displayName": "Levillotte (레빌로트)",
-    "qualifiedName": "Levillotte (레빌로트) · 베스티아화",
+    "displayName": "레빌로트",
+    "qualifiedName": "레빌로트 · Bestiaization",
     "role": "gambler",
     "status": "confirmed",
     "loreEvidence": [
@@ -903,8 +903,8 @@ export const TEMEROSA_SERIES_RUNTIME_ROSTER: readonly TemerosaFlowRosterRecord[]
     "series": "bestiaization",
     "sourcePersonaKey": "lilim",
     "canonicalPersonKey": "lilim",
-    "displayName": "Lilim (릴림)",
-    "qualifiedName": "Lilim (릴림) · 베스티아화",
+    "displayName": "릴림",
+    "qualifiedName": "릴림 · Bestiaization",
     "role": "gambler",
     "status": "confirmed",
     "loreEvidence": [
@@ -919,8 +919,8 @@ export const TEMEROSA_SERIES_RUNTIME_ROSTER: readonly TemerosaFlowRosterRecord[]
     "series": "bestiaization",
     "sourcePersonaKey": "limet",
     "canonicalPersonKey": "limet",
-    "displayName": "Limet (리멧)",
-    "qualifiedName": "Limet (리멧) · 베스티아화",
+    "displayName": "리멧",
+    "qualifiedName": "리멧 · Bestiaization",
     "role": "gambler",
     "status": "confirmed",
     "loreEvidence": [
@@ -935,8 +935,8 @@ export const TEMEROSA_SERIES_RUNTIME_ROSTER: readonly TemerosaFlowRosterRecord[]
     "series": "bestiaization",
     "sourcePersonaKey": "lyla",
     "canonicalPersonKey": "lyla",
-    "displayName": "Lyla (라일라)",
-    "qualifiedName": "Lyla (라일라) · 베스티아화",
+    "displayName": "라일라",
+    "qualifiedName": "라일라 · Bestiaization",
     "role": "gambler",
     "status": "confirmed",
     "loreEvidence": [
@@ -951,8 +951,8 @@ export const TEMEROSA_SERIES_RUNTIME_ROSTER: readonly TemerosaFlowRosterRecord[]
     "series": "bestiaization",
     "sourcePersonaKey": "machina",
     "canonicalPersonKey": "machina",
-    "displayName": "Machina (마키나)",
-    "qualifiedName": "Machina (마키나) · 베스티아화",
+    "displayName": "마키나",
+    "qualifiedName": "마키나 · Bestiaization",
     "role": "gambler",
     "status": "confirmed",
     "loreEvidence": [
@@ -967,8 +967,8 @@ export const TEMEROSA_SERIES_RUNTIME_ROSTER: readonly TemerosaFlowRosterRecord[]
     "series": "bestiaization",
     "sourcePersonaKey": "maryhub",
     "canonicalPersonKey": "merry-pip",
-    "displayName": "Maryhub Starfall (메리허브 스타폴)",
-    "qualifiedName": "Maryhub Starfall (메리허브 스타폴) · 베스티아화",
+    "displayName": "메리허브 스타폴",
+    "qualifiedName": "메리허브 스타폴 · Bestiaization",
     "role": "gambler",
     "status": "confirmed",
     "loreEvidence": [
@@ -983,8 +983,8 @@ export const TEMEROSA_SERIES_RUNTIME_ROSTER: readonly TemerosaFlowRosterRecord[]
     "series": "bestiaization",
     "sourcePersonaKey": "morsisa",
     "canonicalPersonKey": "morsisa",
-    "displayName": "Morsisa (모르시사)",
-    "qualifiedName": "Morsisa (모르시사) · 베스티아화",
+    "displayName": "모르시사",
+    "qualifiedName": "모르시사 · Bestiaization",
     "role": "gambler",
     "status": "confirmed",
     "loreEvidence": [
@@ -999,8 +999,8 @@ export const TEMEROSA_SERIES_RUNTIME_ROSTER: readonly TemerosaFlowRosterRecord[]
     "series": "bestiaization",
     "sourcePersonaKey": "nayuta",
     "canonicalPersonKey": "nayuta",
-    "displayName": "Nayuta (10^60) (나유타)",
-    "qualifiedName": "Nayuta (10^60) (나유타) · 베스티아화",
+    "displayName": "나유타",
+    "qualifiedName": "나유타 · Bestiaization",
     "role": "gambler",
     "status": "confirmed",
     "loreEvidence": [
@@ -1015,8 +1015,8 @@ export const TEMEROSA_SERIES_RUNTIME_ROSTER: readonly TemerosaFlowRosterRecord[]
     "series": "bestiaization",
     "sourcePersonaKey": "nieun",
     "canonicalPersonKey": "nieun",
-    "displayName": "Nieun (Park Nieun) (니은)",
-    "qualifiedName": "Nieun (Park Nieun) (니은) · 베스티아화",
+    "displayName": "니은",
+    "qualifiedName": "니은 · Bestiaization",
     "role": "gambler",
     "status": "confirmed",
     "loreEvidence": [
@@ -1031,8 +1031,8 @@ export const TEMEROSA_SERIES_RUNTIME_ROSTER: readonly TemerosaFlowRosterRecord[]
     "series": "bestiaization",
     "sourcePersonaKey": "nostalgia",
     "canonicalPersonKey": "nostalgia",
-    "displayName": "Nostalgia (노스탤지아)",
-    "qualifiedName": "Nostalgia (노스탤지아) · 베스티아화",
+    "displayName": "노스탤지아",
+    "qualifiedName": "노스탤지아 · Bestiaization",
     "role": "gambler",
     "status": "confirmed",
     "loreEvidence": [
@@ -1047,8 +1047,8 @@ export const TEMEROSA_SERIES_RUNTIME_ROSTER: readonly TemerosaFlowRosterRecord[]
     "series": "bestiaization",
     "sourcePersonaKey": "phaeo",
     "canonicalPersonKey": "phaeo",
-    "displayName": "Phaeo (폐어)",
-    "qualifiedName": "Phaeo (폐어) · 베스티아화",
+    "displayName": "폐어",
+    "qualifiedName": "폐어 · Bestiaization",
     "role": "gambler",
     "status": "confirmed",
     "loreEvidence": [
@@ -1063,8 +1063,8 @@ export const TEMEROSA_SERIES_RUNTIME_ROSTER: readonly TemerosaFlowRosterRecord[]
     "series": "bestiaization",
     "sourcePersonaKey": "raven",
     "canonicalPersonKey": "raven",
-    "displayName": "Raven (레이븐)",
-    "qualifiedName": "Raven (레이븐) · 베스티아화",
+    "displayName": "레이븐",
+    "qualifiedName": "레이븐 · Bestiaization",
     "role": "gambler",
     "status": "confirmed",
     "loreEvidence": [
@@ -1079,8 +1079,8 @@ export const TEMEROSA_SERIES_RUNTIME_ROSTER: readonly TemerosaFlowRosterRecord[]
     "series": "bestiaization",
     "sourcePersonaKey": "renoa",
     "canonicalPersonKey": "renoa",
-    "displayName": "Renoa (레노아)",
-    "qualifiedName": "Renoa (레노아) · 베스티아화",
+    "displayName": "레노아",
+    "qualifiedName": "레노아 · Bestiaization",
     "role": "gambler",
     "status": "confirmed",
     "loreEvidence": [
@@ -1095,8 +1095,8 @@ export const TEMEROSA_SERIES_RUNTIME_ROSTER: readonly TemerosaFlowRosterRecord[]
     "series": "bestiaization",
     "sourcePersonaKey": "sakabus",
     "canonicalPersonKey": "sakabus",
-    "displayName": "Sakabus (사카바스)",
-    "qualifiedName": "Sakabus (사카바스) · 베스티아화",
+    "displayName": "사카바스",
+    "qualifiedName": "사카바스 · Bestiaization",
     "role": "gambler",
     "status": "confirmed",
     "loreEvidence": [
@@ -1111,8 +1111,8 @@ export const TEMEROSA_SERIES_RUNTIME_ROSTER: readonly TemerosaFlowRosterRecord[]
     "series": "bestiaization",
     "sourcePersonaKey": "snow-rim",
     "canonicalPersonKey": "snow-rim",
-    "displayName": "Snow Rim (설림/雪琳)",
-    "qualifiedName": "Snow Rim (설림/雪琳) · 베스티아화",
+    "displayName": "설림/雪琳",
+    "qualifiedName": "설림/雪琳 · Bestiaization",
     "role": "gambler",
     "status": "confirmed",
     "loreEvidence": [
@@ -1127,8 +1127,8 @@ export const TEMEROSA_SERIES_RUNTIME_ROSTER: readonly TemerosaFlowRosterRecord[]
     "series": "bestiaization",
     "sourcePersonaKey": "spiril",
     "canonicalPersonKey": "spiril",
-    "displayName": "Spiril (스피릴)",
-    "qualifiedName": "Spiril (스피릴) · 베스티아화",
+    "displayName": "스피릴",
+    "qualifiedName": "스피릴 · Bestiaization",
     "role": "gambler",
     "status": "confirmed",
     "loreEvidence": [
@@ -1143,8 +1143,8 @@ export const TEMEROSA_SERIES_RUNTIME_ROSTER: readonly TemerosaFlowRosterRecord[]
     "series": "bestiaization",
     "sourcePersonaKey": "strelka",
     "canonicalPersonKey": "strelka",
-    "displayName": "Strelka (스트렐카)",
-    "qualifiedName": "Strelka (스트렐카) · 베스티아화",
+    "displayName": "스트렐카",
+    "qualifiedName": "스트렐카 · Bestiaization",
     "role": "gambler",
     "status": "confirmed",
     "loreEvidence": [
@@ -1159,8 +1159,8 @@ export const TEMEROSA_SERIES_RUNTIME_ROSTER: readonly TemerosaFlowRosterRecord[]
     "series": "bestiaization",
     "sourcePersonaKey": "temute",
     "canonicalPersonKey": "temute",
-    "displayName": "Temute (테뮤테)",
-    "qualifiedName": "Temute (테뮤테) · 베스티아화",
+    "displayName": "테뮤테",
+    "qualifiedName": "테뮤테 · Bestiaization",
     "role": "gambler",
     "status": "confirmed",
     "loreEvidence": [
@@ -1175,8 +1175,8 @@ export const TEMEROSA_SERIES_RUNTIME_ROSTER: readonly TemerosaFlowRosterRecord[]
     "series": "bestiaization",
     "sourcePersonaKey": "traver",
     "canonicalPersonKey": "traver",
-    "displayName": "Traver (트레버)",
-    "qualifiedName": "Traver (트레버) · 베스티아화",
+    "displayName": "트레버",
+    "qualifiedName": "트레버 · Bestiaization",
     "role": "gambler",
     "status": "confirmed",
     "loreEvidence": [
@@ -1191,8 +1191,8 @@ export const TEMEROSA_SERIES_RUNTIME_ROSTER: readonly TemerosaFlowRosterRecord[]
     "series": "bestiaization",
     "sourcePersonaKey": "ttaengchil",
     "canonicalPersonKey": "ttaengchil",
-    "displayName": "Ttaengchil-i (땡칠이)",
-    "qualifiedName": "Ttaengchil-i (땡칠이) · 베스티아화",
+    "displayName": "땡칠이",
+    "qualifiedName": "땡칠이 · Bestiaization",
     "role": "gambler",
     "status": "confirmed",
     "loreEvidence": [
@@ -1207,8 +1207,8 @@ export const TEMEROSA_SERIES_RUNTIME_ROSTER: readonly TemerosaFlowRosterRecord[]
     "series": "bestiaization",
     "sourcePersonaKey": "tumit-tu",
     "canonicalPersonKey": "tumit-tu",
-    "displayName": "Tumit-Tu (튜밋튜)",
-    "qualifiedName": "Tumit-Tu (튜밋튜) · 베스티아화",
+    "displayName": "튜밋튜",
+    "qualifiedName": "튜밋튜 · Bestiaization",
     "role": "gambler",
     "status": "confirmed",
     "loreEvidence": [
@@ -1223,8 +1223,8 @@ export const TEMEROSA_SERIES_RUNTIME_ROSTER: readonly TemerosaFlowRosterRecord[]
     "series": "bestiaization",
     "sourcePersonaKey": "yul",
     "canonicalPersonKey": "yul",
-    "displayName": "Yul (율)",
-    "qualifiedName": "Yul (율) · 베스티아화",
+    "displayName": "율",
+    "qualifiedName": "율 · Bestiaization",
     "role": "gambler",
     "status": "confirmed",
     "loreEvidence": [
@@ -1240,7 +1240,7 @@ export const TEMEROSA_SERIES_RUNTIME_ROSTER: readonly TemerosaFlowRosterRecord[]
     "sourcePersonaKey": "a",
     "canonicalPersonKey": "hab",
     "displayName": "[A]",
-    "qualifiedName": "[A] · 피날레",
+    "qualifiedName": "[A] · Finale",
     "role": "gambler",
     "status": "confirmed",
     "loreEvidence": [
@@ -1255,8 +1255,8 @@ export const TEMEROSA_SERIES_RUNTIME_ROSTER: readonly TemerosaFlowRosterRecord[]
     "series": "finale",
     "sourcePersonaKey": "aberrant-mia",
     "canonicalPersonKey": "aberrant-mia",
-    "displayName": "Aberrant MIA (이형 미아)",
-    "qualifiedName": "Aberrant MIA (이형 미아) · 피날레",
+    "displayName": "이형 미아",
+    "qualifiedName": "이형 미아 · Finale",
     "role": "gambler",
     "status": "confirmed",
     "loreEvidence": [
@@ -1271,8 +1271,8 @@ export const TEMEROSA_SERIES_RUNTIME_ROSTER: readonly TemerosaFlowRosterRecord[]
     "series": "finale",
     "sourcePersonaKey": "alger",
     "canonicalPersonKey": "alger",
-    "displayName": "Alger (알제)",
-    "qualifiedName": "Alger (알제) · 피날레",
+    "displayName": "알제",
+    "qualifiedName": "알제 · Finale",
     "role": "gambler",
     "status": "confirmed",
     "loreEvidence": [
@@ -1287,8 +1287,8 @@ export const TEMEROSA_SERIES_RUNTIME_ROSTER: readonly TemerosaFlowRosterRecord[]
     "series": "finale",
     "sourcePersonaKey": "apollyon",
     "canonicalPersonKey": "apollyon",
-    "displayName": "Apollyon Aite (아폴리온 아이테)",
-    "qualifiedName": "Apollyon Aite (아폴리온 아이테) · 피날레",
+    "displayName": "아폴리온 아이테",
+    "qualifiedName": "아폴리온 아이테 · Finale",
     "role": "gambler",
     "status": "confirmed",
     "loreEvidence": [
@@ -1303,8 +1303,8 @@ export const TEMEROSA_SERIES_RUNTIME_ROSTER: readonly TemerosaFlowRosterRecord[]
     "series": "finale",
     "sourcePersonaKey": "bamcapis",
     "canonicalPersonKey": "bamcapis",
-    "displayName": "밤카피스 (Bamcapis)",
-    "qualifiedName": "밤카피스 (Bamcapis) · 피날레",
+    "displayName": "밤카피스",
+    "qualifiedName": "밤카피스 · Finale",
     "role": "gambler",
     "status": "confirmed",
     "loreEvidence": [
@@ -1319,8 +1319,8 @@ export const TEMEROSA_SERIES_RUNTIME_ROSTER: readonly TemerosaFlowRosterRecord[]
     "series": "finale",
     "sourcePersonaKey": "beta",
     "canonicalPersonKey": "nieun",
-    "displayName": "베타 (Beta)",
-    "qualifiedName": "베타 (Beta) · 피날레",
+    "displayName": "베타",
+    "qualifiedName": "베타 · Finale",
     "role": "gambler",
     "status": "confirmed",
     "loreEvidence": [
@@ -1335,8 +1335,8 @@ export const TEMEROSA_SERIES_RUNTIME_ROSTER: readonly TemerosaFlowRosterRecord[]
     "series": "finale",
     "sourcePersonaKey": "echo",
     "canonicalPersonKey": "echo",
-    "displayName": "에코 (Echo)",
-    "qualifiedName": "에코 (Echo) · 피날레",
+    "displayName": "에코",
+    "qualifiedName": "에코 · Finale",
     "role": "gambler",
     "status": "confirmed",
     "loreEvidence": [
@@ -1351,8 +1351,8 @@ export const TEMEROSA_SERIES_RUNTIME_ROSTER: readonly TemerosaFlowRosterRecord[]
     "series": "finale",
     "sourcePersonaKey": "flask",
     "canonicalPersonKey": "flask",
-    "displayName": "Flask (플라스크)",
-    "qualifiedName": "Flask (플라스크) · 피날레",
+    "displayName": "플라스크",
+    "qualifiedName": "플라스크 · Finale",
     "role": "gambler",
     "status": "confirmed",
     "loreEvidence": [
@@ -1367,8 +1367,8 @@ export const TEMEROSA_SERIES_RUNTIME_ROSTER: readonly TemerosaFlowRosterRecord[]
     "series": "finale",
     "sourcePersonaKey": "jia",
     "canonicalPersonKey": "jia",
-    "displayName": "Jia (지아)",
-    "qualifiedName": "Jia (지아) · 피날레",
+    "displayName": "지아",
+    "qualifiedName": "지아 · Finale",
     "role": "gambler",
     "status": "confirmed",
     "loreEvidence": [
@@ -1383,8 +1383,8 @@ export const TEMEROSA_SERIES_RUNTIME_ROSTER: readonly TemerosaFlowRosterRecord[]
     "series": "finale",
     "sourcePersonaKey": "kano",
     "canonicalPersonKey": "kano",
-    "displayName": "카노 (Kano)",
-    "qualifiedName": "카노 (Kano) · 피날레",
+    "displayName": "카노",
+    "qualifiedName": "카노 · Finale",
     "role": "gambler",
     "status": "confirmed",
     "loreEvidence": [
@@ -1399,8 +1399,8 @@ export const TEMEROSA_SERIES_RUNTIME_ROSTER: readonly TemerosaFlowRosterRecord[]
     "series": "finale",
     "sourcePersonaKey": "lilim",
     "canonicalPersonKey": "lilim",
-    "displayName": "Lilim (릴림)",
-    "qualifiedName": "Lilim (릴림) · 피날레",
+    "displayName": "릴림",
+    "qualifiedName": "릴림 · Finale",
     "role": "gambler",
     "status": "confirmed",
     "loreEvidence": [
@@ -1415,8 +1415,8 @@ export const TEMEROSA_SERIES_RUNTIME_ROSTER: readonly TemerosaFlowRosterRecord[]
     "series": "finale",
     "sourcePersonaKey": "limet",
     "canonicalPersonKey": "limet",
-    "displayName": "리멧 아이테 (Limet Aite)",
-    "qualifiedName": "리멧 아이테 (Limet Aite) · 피날레",
+    "displayName": "리멧 아이테",
+    "qualifiedName": "리멧 아이테 · Finale",
     "role": "gambler",
     "status": "confirmed",
     "loreEvidence": [
@@ -1431,8 +1431,8 @@ export const TEMEROSA_SERIES_RUNTIME_ROSTER: readonly TemerosaFlowRosterRecord[]
     "series": "finale",
     "sourcePersonaKey": "mascot",
     "canonicalPersonKey": "mascot",
-    "displayName": "마스코트 (Mascot)",
-    "qualifiedName": "마스코트 (Mascot) · 피날레",
+    "displayName": "마스코트",
+    "qualifiedName": "마스코트 · Finale",
     "role": "gambler",
     "status": "confirmed",
     "loreEvidence": [
@@ -1447,8 +1447,8 @@ export const TEMEROSA_SERIES_RUNTIME_ROSTER: readonly TemerosaFlowRosterRecord[]
     "series": "finale",
     "sourcePersonaKey": "nantucket",
     "canonicalPersonKey": "ishmael",
-    "displayName": "Nantucket (낸터켓)",
-    "qualifiedName": "Nantucket (낸터켓) · 피날레",
+    "displayName": "낸터켓",
+    "qualifiedName": "낸터켓 · Finale",
     "role": "gambler",
     "status": "confirmed",
     "loreEvidence": [
@@ -1463,8 +1463,8 @@ export const TEMEROSA_SERIES_RUNTIME_ROSTER: readonly TemerosaFlowRosterRecord[]
     "series": "finale",
     "sourcePersonaKey": "nayuta",
     "canonicalPersonKey": "nayuta",
-    "displayName": "Nayuta (나유타)",
-    "qualifiedName": "Nayuta (나유타) · 피날레",
+    "displayName": "나유타",
+    "qualifiedName": "나유타 · Finale",
     "role": "gambler",
     "status": "confirmed",
     "loreEvidence": [
@@ -1479,8 +1479,8 @@ export const TEMEROSA_SERIES_RUNTIME_ROSTER: readonly TemerosaFlowRosterRecord[]
     "series": "finale",
     "sourcePersonaKey": "nieun",
     "canonicalPersonKey": "nieun",
-    "displayName": "니은 (Nieun)",
-    "qualifiedName": "니은 (Nieun) · 피날레",
+    "displayName": "니은",
+    "qualifiedName": "니은 · Finale",
     "role": "gambler",
     "status": "confirmed",
     "loreEvidence": [
@@ -1495,8 +1495,8 @@ export const TEMEROSA_SERIES_RUNTIME_ROSTER: readonly TemerosaFlowRosterRecord[]
     "series": "finale",
     "sourcePersonaKey": "nostalgia",
     "canonicalPersonKey": "nostalgia",
-    "displayName": "노스텔지아 델레르페 (Nostalgia Delerpe)",
-    "qualifiedName": "노스텔지아 델레르페 (Nostalgia Delerpe) · 피날레",
+    "displayName": "노스텔지아 델레르페",
+    "qualifiedName": "노스텔지아 델레르페 · Finale",
     "role": "gambler",
     "status": "confirmed",
     "loreEvidence": [
@@ -1511,8 +1511,8 @@ export const TEMEROSA_SERIES_RUNTIME_ROSTER: readonly TemerosaFlowRosterRecord[]
     "series": "finale",
     "sourcePersonaKey": "pale",
     "canonicalPersonKey": "pale",
-    "displayName": "Pale (페일)",
-    "qualifiedName": "Pale (페일) · 피날레",
+    "displayName": "페일",
+    "qualifiedName": "페일 · Finale",
     "role": "gambler",
     "status": "confirmed",
     "loreEvidence": [
@@ -1527,8 +1527,8 @@ export const TEMEROSA_SERIES_RUNTIME_ROSTER: readonly TemerosaFlowRosterRecord[]
     "series": "finale",
     "sourcePersonaKey": "renoa",
     "canonicalPersonKey": "renoa",
-    "displayName": "Renoa (레노아)",
-    "qualifiedName": "Renoa (레노아) · 피날레",
+    "displayName": "레노아",
+    "qualifiedName": "레노아 · Finale",
     "role": "gambler",
     "status": "confirmed",
     "loreEvidence": [
@@ -1543,8 +1543,8 @@ export const TEMEROSA_SERIES_RUNTIME_ROSTER: readonly TemerosaFlowRosterRecord[]
     "series": "finale",
     "sourcePersonaKey": "shino",
     "canonicalPersonKey": "shino",
-    "displayName": "시노 (Shino)",
-    "qualifiedName": "시노 (Shino) · 피날레",
+    "displayName": "시노",
+    "qualifiedName": "시노 · Finale",
     "role": "gambler",
     "status": "confirmed",
     "loreEvidence": [
@@ -1559,8 +1559,8 @@ export const TEMEROSA_SERIES_RUNTIME_ROSTER: readonly TemerosaFlowRosterRecord[]
     "series": "finale",
     "sourcePersonaKey": "tashtego",
     "canonicalPersonKey": "tashtego",
-    "displayName": "Tashtego (태슈테고)",
-    "qualifiedName": "Tashtego (태슈테고) · 피날레",
+    "displayName": "태슈테고",
+    "qualifiedName": "태슈테고 · Finale",
     "role": "gambler",
     "status": "confirmed",
     "loreEvidence": [
@@ -1575,8 +1575,8 @@ export const TEMEROSA_SERIES_RUNTIME_ROSTER: readonly TemerosaFlowRosterRecord[]
     "series": "finale",
     "sourcePersonaKey": "ttaengchil",
     "canonicalPersonKey": "ttaengchil",
-    "displayName": "땡칠이 (Ttaengchil-i)",
-    "qualifiedName": "땡칠이 (Ttaengchil-i) · 피날레",
+    "displayName": "땡칠이",
+    "qualifiedName": "땡칠이 · Finale",
     "role": "gambler",
     "status": "confirmed",
     "loreEvidence": [
@@ -1633,8 +1633,8 @@ export const TEMEROSA_SERIES_AUTHORED_PROFILES: Readonly<Record<string, Readonly
       ],
       "activeHours": [
         {
-          "startMinute": 1080,
-          "endMinute": 1440,
+          "startMinute": 0,
+          "endMinute": 360,
           "weight": 1
         }
       ]
@@ -1740,8 +1740,8 @@ export const TEMEROSA_SERIES_AUTHORED_PROFILES: Readonly<Record<string, Readonly
       ],
       "activeHours": [
         {
-          "startMinute": 1080,
-          "endMinute": 1440,
+          "startMinute": 360,
+          "endMinute": 720,
           "weight": 1
         }
       ]
@@ -1843,8 +1843,8 @@ export const TEMEROSA_SERIES_AUTHORED_PROFILES: Readonly<Record<string, Readonly
       ],
       "activeHours": [
         {
-          "startMinute": 1080,
-          "endMinute": 1440,
+          "startMinute": 720,
+          "endMinute": 1080,
           "weight": 1
         }
       ]
@@ -2041,8 +2041,8 @@ export const TEMEROSA_SERIES_AUTHORED_PROFILES: Readonly<Record<string, Readonly
       ],
       "activeHours": [
         {
-          "startMinute": 1080,
-          "endMinute": 1440,
+          "startMinute": 0,
+          "endMinute": 360,
           "weight": 1
         }
       ]
@@ -2140,8 +2140,8 @@ export const TEMEROSA_SERIES_AUTHORED_PROFILES: Readonly<Record<string, Readonly
       ],
       "activeHours": [
         {
-          "startMinute": 1080,
-          "endMinute": 1440,
+          "startMinute": 360,
+          "endMinute": 720,
           "weight": 1
         }
       ]
@@ -2247,8 +2247,8 @@ export const TEMEROSA_SERIES_AUTHORED_PROFILES: Readonly<Record<string, Readonly
       ],
       "activeHours": [
         {
-          "startMinute": 1080,
-          "endMinute": 1440,
+          "startMinute": 720,
+          "endMinute": 1080,
           "weight": 1
         }
       ]
@@ -2453,8 +2453,8 @@ export const TEMEROSA_SERIES_AUTHORED_PROFILES: Readonly<Record<string, Readonly
       ],
       "activeHours": [
         {
-          "startMinute": 1080,
-          "endMinute": 1440,
+          "startMinute": 0,
+          "endMinute": 360,
           "weight": 1
         }
       ]
@@ -2556,8 +2556,8 @@ export const TEMEROSA_SERIES_AUTHORED_PROFILES: Readonly<Record<string, Readonly
       ],
       "activeHours": [
         {
-          "startMinute": 1080,
-          "endMinute": 1440,
+          "startMinute": 360,
+          "endMinute": 720,
           "weight": 1
         }
       ]
@@ -2659,8 +2659,8 @@ export const TEMEROSA_SERIES_AUTHORED_PROFILES: Readonly<Record<string, Readonly
       ],
       "activeHours": [
         {
-          "startMinute": 1080,
-          "endMinute": 1440,
+          "startMinute": 720,
+          "endMinute": 1080,
           "weight": 1
         }
       ]
@@ -2865,8 +2865,8 @@ export const TEMEROSA_SERIES_AUTHORED_PROFILES: Readonly<Record<string, Readonly
       ],
       "activeHours": [
         {
-          "startMinute": 1080,
-          "endMinute": 1440,
+          "startMinute": 0,
+          "endMinute": 360,
           "weight": 1
         }
       ]
@@ -2968,8 +2968,8 @@ export const TEMEROSA_SERIES_AUTHORED_PROFILES: Readonly<Record<string, Readonly
       ],
       "activeHours": [
         {
-          "startMinute": 1080,
-          "endMinute": 1440,
+          "startMinute": 360,
+          "endMinute": 720,
           "weight": 1
         }
       ]
@@ -3071,8 +3071,8 @@ export const TEMEROSA_SERIES_AUTHORED_PROFILES: Readonly<Record<string, Readonly
       ],
       "activeHours": [
         {
-          "startMinute": 1080,
-          "endMinute": 1440,
+          "startMinute": 720,
+          "endMinute": 1080,
           "weight": 1
         }
       ]
@@ -3277,8 +3277,8 @@ export const TEMEROSA_SERIES_AUTHORED_PROFILES: Readonly<Record<string, Readonly
       ],
       "activeHours": [
         {
-          "startMinute": 1080,
-          "endMinute": 1440,
+          "startMinute": 0,
+          "endMinute": 360,
           "weight": 1
         }
       ]
@@ -3380,8 +3380,8 @@ export const TEMEROSA_SERIES_AUTHORED_PROFILES: Readonly<Record<string, Readonly
       ],
       "activeHours": [
         {
-          "startMinute": 1080,
-          "endMinute": 1440,
+          "startMinute": 360,
+          "endMinute": 720,
           "weight": 1
         }
       ]
@@ -3483,8 +3483,8 @@ export const TEMEROSA_SERIES_AUTHORED_PROFILES: Readonly<Record<string, Readonly
       ],
       "activeHours": [
         {
-          "startMinute": 1080,
-          "endMinute": 1440,
+          "startMinute": 720,
+          "endMinute": 1080,
           "weight": 1
         }
       ]
@@ -3689,8 +3689,8 @@ export const TEMEROSA_SERIES_AUTHORED_PROFILES: Readonly<Record<string, Readonly
       ],
       "activeHours": [
         {
-          "startMinute": 1080,
-          "endMinute": 1440,
+          "startMinute": 0,
+          "endMinute": 360,
           "weight": 1
         }
       ]
@@ -3796,8 +3796,8 @@ export const TEMEROSA_SERIES_AUTHORED_PROFILES: Readonly<Record<string, Readonly
       ],
       "activeHours": [
         {
-          "startMinute": 1080,
-          "endMinute": 1440,
+          "startMinute": 360,
+          "endMinute": 720,
           "weight": 1
         }
       ]
@@ -3903,8 +3903,8 @@ export const TEMEROSA_SERIES_AUTHORED_PROFILES: Readonly<Record<string, Readonly
       ],
       "activeHours": [
         {
-          "startMinute": 1080,
-          "endMinute": 1440,
+          "startMinute": 720,
+          "endMinute": 1080,
           "weight": 1
         }
       ]
@@ -4109,8 +4109,8 @@ export const TEMEROSA_SERIES_AUTHORED_PROFILES: Readonly<Record<string, Readonly
       ],
       "activeHours": [
         {
-          "startMinute": 1080,
-          "endMinute": 1440,
+          "startMinute": 0,
+          "endMinute": 360,
           "weight": 1
         }
       ]
@@ -4212,8 +4212,8 @@ export const TEMEROSA_SERIES_AUTHORED_PROFILES: Readonly<Record<string, Readonly
       ],
       "activeHours": [
         {
-          "startMinute": 1080,
-          "endMinute": 1440,
+          "startMinute": 360,
+          "endMinute": 720,
           "weight": 1
         }
       ]
@@ -4315,8 +4315,8 @@ export const TEMEROSA_SERIES_AUTHORED_PROFILES: Readonly<Record<string, Readonly
       ],
       "activeHours": [
         {
-          "startMinute": 1080,
-          "endMinute": 1440,
+          "startMinute": 720,
+          "endMinute": 1080,
           "weight": 1
         }
       ]
@@ -4521,8 +4521,8 @@ export const TEMEROSA_SERIES_AUTHORED_PROFILES: Readonly<Record<string, Readonly
       ],
       "activeHours": [
         {
-          "startMinute": 1080,
-          "endMinute": 1440,
+          "startMinute": 0,
+          "endMinute": 360,
           "weight": 1
         }
       ]
@@ -4628,8 +4628,8 @@ export const TEMEROSA_SERIES_AUTHORED_PROFILES: Readonly<Record<string, Readonly
       ],
       "activeHours": [
         {
-          "startMinute": 1080,
-          "endMinute": 1440,
+          "startMinute": 360,
+          "endMinute": 720,
           "weight": 1
         }
       ]
@@ -4747,8 +4747,8 @@ export const TEMEROSA_SERIES_AUTHORED_PROFILES: Readonly<Record<string, Readonly
       ],
       "activeHours": [
         {
-          "startMinute": 1080,
-          "endMinute": 1440,
+          "startMinute": 720,
+          "endMinute": 1080,
           "weight": 1
         }
       ]
@@ -4985,8 +4985,8 @@ export const TEMEROSA_SERIES_AUTHORED_PROFILES: Readonly<Record<string, Readonly
       ],
       "activeHours": [
         {
-          "startMinute": 1080,
-          "endMinute": 1440,
+          "startMinute": 0,
+          "endMinute": 360,
           "weight": 1
         }
       ]
@@ -5112,8 +5112,8 @@ export const TEMEROSA_SERIES_AUTHORED_PROFILES: Readonly<Record<string, Readonly
       ],
       "activeHours": [
         {
-          "startMinute": 1080,
-          "endMinute": 1440,
+          "startMinute": 360,
+          "endMinute": 720,
           "weight": 1
         }
       ]
@@ -5227,8 +5227,8 @@ export const TEMEROSA_SERIES_AUTHORED_PROFILES: Readonly<Record<string, Readonly
       ],
       "activeHours": [
         {
-          "startMinute": 1080,
-          "endMinute": 1440,
+          "startMinute": 720,
+          "endMinute": 1080,
           "weight": 1
         }
       ]
@@ -5461,8 +5461,8 @@ export const TEMEROSA_SERIES_AUTHORED_PROFILES: Readonly<Record<string, Readonly
       ],
       "activeHours": [
         {
-          "startMinute": 1080,
-          "endMinute": 1440,
+          "startMinute": 0,
+          "endMinute": 360,
           "weight": 1
         }
       ]
@@ -5568,8 +5568,8 @@ export const TEMEROSA_SERIES_AUTHORED_PROFILES: Readonly<Record<string, Readonly
       ],
       "activeHours": [
         {
-          "startMinute": 1080,
-          "endMinute": 1440,
+          "startMinute": 360,
+          "endMinute": 720,
           "weight": 1
         }
       ]
@@ -5683,8 +5683,8 @@ export const TEMEROSA_SERIES_AUTHORED_PROFILES: Readonly<Record<string, Readonly
       ],
       "activeHours": [
         {
-          "startMinute": 1080,
-          "endMinute": 1440,
+          "startMinute": 720,
+          "endMinute": 1080,
           "weight": 1
         }
       ]
@@ -5937,8 +5937,8 @@ export const TEMEROSA_SERIES_AUTHORED_PROFILES: Readonly<Record<string, Readonly
       ],
       "activeHours": [
         {
-          "startMinute": 1080,
-          "endMinute": 1440,
+          "startMinute": 0,
+          "endMinute": 360,
           "weight": 1
         }
       ]
@@ -6064,8 +6064,8 @@ export const TEMEROSA_SERIES_AUTHORED_PROFILES: Readonly<Record<string, Readonly
       ],
       "activeHours": [
         {
-          "startMinute": 1080,
-          "endMinute": 1440,
+          "startMinute": 360,
+          "endMinute": 720,
           "weight": 1
         }
       ]
@@ -6191,8 +6191,8 @@ export const TEMEROSA_SERIES_AUTHORED_PROFILES: Readonly<Record<string, Readonly
       ],
       "activeHours": [
         {
-          "startMinute": 1080,
-          "endMinute": 1440,
+          "startMinute": 720,
+          "endMinute": 1080,
           "weight": 1
         }
       ]
@@ -6421,8 +6421,8 @@ export const TEMEROSA_SERIES_AUTHORED_PROFILES: Readonly<Record<string, Readonly
       ],
       "activeHours": [
         {
-          "startMinute": 1080,
-          "endMinute": 1440,
+          "startMinute": 0,
+          "endMinute": 360,
           "weight": 1
         }
       ]
@@ -6536,8 +6536,8 @@ export const TEMEROSA_SERIES_AUTHORED_PROFILES: Readonly<Record<string, Readonly
       ],
       "activeHours": [
         {
-          "startMinute": 1080,
-          "endMinute": 1440,
+          "startMinute": 360,
+          "endMinute": 720,
           "weight": 1
         }
       ]
@@ -6643,8 +6643,8 @@ export const TEMEROSA_SERIES_AUTHORED_PROFILES: Readonly<Record<string, Readonly
       ],
       "activeHours": [
         {
-          "startMinute": 1080,
-          "endMinute": 1440,
+          "startMinute": 720,
+          "endMinute": 1080,
           "weight": 1
         }
       ]
@@ -6853,8 +6853,8 @@ export const TEMEROSA_SERIES_AUTHORED_PROFILES: Readonly<Record<string, Readonly
       ],
       "activeHours": [
         {
-          "startMinute": 1080,
-          "endMinute": 1440,
+          "startMinute": 0,
+          "endMinute": 360,
           "weight": 1
         }
       ]
@@ -6968,8 +6968,8 @@ export const TEMEROSA_SERIES_AUTHORED_PROFILES: Readonly<Record<string, Readonly
       ],
       "activeHours": [
         {
-          "startMinute": 1080,
-          "endMinute": 1440,
+          "startMinute": 360,
+          "endMinute": 720,
           "weight": 1
         }
       ]
@@ -7087,8 +7087,8 @@ export const TEMEROSA_SERIES_AUTHORED_PROFILES: Readonly<Record<string, Readonly
       ],
       "activeHours": [
         {
-          "startMinute": 1080,
-          "endMinute": 1440,
+          "startMinute": 720,
+          "endMinute": 1080,
           "weight": 1
         }
       ]
@@ -7293,8 +7293,8 @@ export const TEMEROSA_SERIES_AUTHORED_PROFILES: Readonly<Record<string, Readonly
       ],
       "activeHours": [
         {
-          "startMinute": 1080,
-          "endMinute": 1440,
+          "startMinute": 0,
+          "endMinute": 360,
           "weight": 1
         }
       ]
@@ -7420,8 +7420,8 @@ export const TEMEROSA_SERIES_AUTHORED_PROFILES: Readonly<Record<string, Readonly
       ],
       "activeHours": [
         {
-          "startMinute": 1080,
-          "endMinute": 1440,
+          "startMinute": 360,
+          "endMinute": 720,
           "weight": 1
         }
       ]
@@ -7539,8 +7539,8 @@ export const TEMEROSA_SERIES_AUTHORED_PROFILES: Readonly<Record<string, Readonly
       ],
       "activeHours": [
         {
-          "startMinute": 1080,
-          "endMinute": 1440,
+          "startMinute": 720,
+          "endMinute": 1080,
           "weight": 1
         }
       ]
@@ -7785,8 +7785,8 @@ export const TEMEROSA_SERIES_AUTHORED_PROFILES: Readonly<Record<string, Readonly
       ],
       "activeHours": [
         {
-          "startMinute": 1080,
-          "endMinute": 1440,
+          "startMinute": 0,
+          "endMinute": 360,
           "weight": 1
         }
       ]
@@ -7900,8 +7900,8 @@ export const TEMEROSA_SERIES_AUTHORED_PROFILES: Readonly<Record<string, Readonly
       ],
       "activeHours": [
         {
-          "startMinute": 1080,
-          "endMinute": 1440,
+          "startMinute": 360,
+          "endMinute": 720,
           "weight": 1
         }
       ]
@@ -8015,8 +8015,8 @@ export const TEMEROSA_SERIES_AUTHORED_PROFILES: Readonly<Record<string, Readonly
       ],
       "activeHours": [
         {
-          "startMinute": 1080,
-          "endMinute": 1440,
+          "startMinute": 720,
+          "endMinute": 1080,
           "weight": 1
         }
       ]
@@ -8261,8 +8261,8 @@ export const TEMEROSA_SERIES_AUTHORED_PROFILES: Readonly<Record<string, Readonly
       ],
       "activeHours": [
         {
-          "startMinute": 1080,
-          "endMinute": 1440,
+          "startMinute": 0,
+          "endMinute": 360,
           "weight": 1
         }
       ]
@@ -8380,8 +8380,8 @@ export const TEMEROSA_SERIES_AUTHORED_PROFILES: Readonly<Record<string, Readonly
       ],
       "activeHours": [
         {
-          "startMinute": 1080,
-          "endMinute": 1440,
+          "startMinute": 360,
+          "endMinute": 720,
           "weight": 1
         }
       ]
@@ -8495,8 +8495,8 @@ export const TEMEROSA_SERIES_AUTHORED_PROFILES: Readonly<Record<string, Readonly
       ],
       "activeHours": [
         {
-          "startMinute": 1080,
-          "endMinute": 1440,
+          "startMinute": 720,
+          "endMinute": 1080,
           "weight": 1
         }
       ]
@@ -8721,8 +8721,8 @@ export const TEMEROSA_SERIES_AUTHORED_PROFILES: Readonly<Record<string, Readonly
       ],
       "activeHours": [
         {
-          "startMinute": 1080,
-          "endMinute": 1440,
+          "startMinute": 0,
+          "endMinute": 360,
           "weight": 1
         }
       ]
@@ -8848,8 +8848,8 @@ export const TEMEROSA_SERIES_AUTHORED_PROFILES: Readonly<Record<string, Readonly
       ],
       "activeHours": [
         {
-          "startMinute": 1080,
-          "endMinute": 1440,
+          "startMinute": 360,
+          "endMinute": 720,
           "weight": 1
         }
       ]
@@ -8975,8 +8975,8 @@ export const TEMEROSA_SERIES_AUTHORED_PROFILES: Readonly<Record<string, Readonly
       ],
       "activeHours": [
         {
-          "startMinute": 1080,
-          "endMinute": 1440,
+          "startMinute": 720,
+          "endMinute": 1080,
           "weight": 1
         }
       ]
@@ -9193,8 +9193,8 @@ export const TEMEROSA_SERIES_AUTHORED_PROFILES: Readonly<Record<string, Readonly
       ],
       "activeHours": [
         {
-          "startMinute": 1080,
-          "endMinute": 1440,
+          "startMinute": 0,
+          "endMinute": 360,
           "weight": 1
         }
       ]
@@ -9300,8 +9300,8 @@ export const TEMEROSA_SERIES_AUTHORED_PROFILES: Readonly<Record<string, Readonly
       ],
       "activeHours": [
         {
-          "startMinute": 1080,
-          "endMinute": 1440,
+          "startMinute": 360,
+          "endMinute": 720,
           "weight": 1
         }
       ]
@@ -9411,8 +9411,8 @@ export const TEMEROSA_SERIES_AUTHORED_PROFILES: Readonly<Record<string, Readonly
       ],
       "activeHours": [
         {
-          "startMinute": 1080,
-          "endMinute": 1440,
+          "startMinute": 720,
+          "endMinute": 1080,
           "weight": 1
         }
       ]
@@ -9641,8 +9641,8 @@ export const TEMEROSA_SERIES_AUTHORED_PROFILES: Readonly<Record<string, Readonly
       ],
       "activeHours": [
         {
-          "startMinute": 1080,
-          "endMinute": 1440,
+          "startMinute": 0,
+          "endMinute": 360,
           "weight": 1
         }
       ]
@@ -9768,8 +9768,8 @@ export const TEMEROSA_SERIES_AUTHORED_PROFILES: Readonly<Record<string, Readonly
       ],
       "activeHours": [
         {
-          "startMinute": 1080,
-          "endMinute": 1440,
+          "startMinute": 360,
+          "endMinute": 720,
           "weight": 1
         }
       ]
@@ -9895,8 +9895,8 @@ export const TEMEROSA_SERIES_AUTHORED_PROFILES: Readonly<Record<string, Readonly
       ],
       "activeHours": [
         {
-          "startMinute": 1080,
-          "endMinute": 1440,
+          "startMinute": 720,
+          "endMinute": 1080,
           "weight": 1
         }
       ]
@@ -10149,8 +10149,8 @@ export const TEMEROSA_SERIES_AUTHORED_PROFILES: Readonly<Record<string, Readonly
       ],
       "activeHours": [
         {
-          "startMinute": 1080,
-          "endMinute": 1440,
+          "startMinute": 0,
+          "endMinute": 360,
           "weight": 1
         }
       ]
@@ -10264,8 +10264,8 @@ export const TEMEROSA_SERIES_AUTHORED_PROFILES: Readonly<Record<string, Readonly
       ],
       "activeHours": [
         {
-          "startMinute": 1080,
-          "endMinute": 1440,
+          "startMinute": 360,
+          "endMinute": 720,
           "weight": 1
         }
       ]
@@ -10367,8 +10367,8 @@ export const TEMEROSA_SERIES_AUTHORED_PROFILES: Readonly<Record<string, Readonly
       ],
       "activeHours": [
         {
-          "startMinute": 1080,
-          "endMinute": 1440,
+          "startMinute": 720,
+          "endMinute": 1080,
           "weight": 1
         }
       ]
@@ -10597,8 +10597,8 @@ export const TEMEROSA_SERIES_AUTHORED_PROFILES: Readonly<Record<string, Readonly
       ],
       "activeHours": [
         {
-          "startMinute": 1080,
-          "endMinute": 1440,
+          "startMinute": 0,
+          "endMinute": 360,
           "weight": 1
         }
       ]
@@ -10700,8 +10700,8 @@ export const TEMEROSA_SERIES_AUTHORED_PROFILES: Readonly<Record<string, Readonly
       ],
       "activeHours": [
         {
-          "startMinute": 1080,
-          "endMinute": 1440,
+          "startMinute": 360,
+          "endMinute": 720,
           "weight": 1
         }
       ]
@@ -10803,8 +10803,8 @@ export const TEMEROSA_SERIES_AUTHORED_PROFILES: Readonly<Record<string, Readonly
       ],
       "activeHours": [
         {
-          "startMinute": 1080,
-          "endMinute": 1440,
+          "startMinute": 720,
+          "endMinute": 1080,
           "weight": 1
         }
       ]
@@ -11009,8 +11009,8 @@ export const TEMEROSA_SERIES_AUTHORED_PROFILES: Readonly<Record<string, Readonly
       ],
       "activeHours": [
         {
-          "startMinute": 1080,
-          "endMinute": 1440,
+          "startMinute": 0,
+          "endMinute": 360,
           "weight": 1
         }
       ]
@@ -11112,8 +11112,8 @@ export const TEMEROSA_SERIES_AUTHORED_PROFILES: Readonly<Record<string, Readonly
       ],
       "activeHours": [
         {
-          "startMinute": 1080,
-          "endMinute": 1440,
+          "startMinute": 360,
+          "endMinute": 720,
           "weight": 1
         }
       ]
@@ -11227,8 +11227,8 @@ export const TEMEROSA_SERIES_AUTHORED_PROFILES: Readonly<Record<string, Readonly
       ],
       "activeHours": [
         {
-          "startMinute": 1080,
-          "endMinute": 1440,
+          "startMinute": 720,
+          "endMinute": 1080,
           "weight": 1
         }
       ]
@@ -11445,8 +11445,8 @@ export const TEMEROSA_SERIES_AUTHORED_PROFILES: Readonly<Record<string, Readonly
       ],
       "activeHours": [
         {
-          "startMinute": 1080,
-          "endMinute": 1440,
+          "startMinute": 0,
+          "endMinute": 360,
           "weight": 1
         }
       ]
@@ -11548,8 +11548,8 @@ export const TEMEROSA_SERIES_AUTHORED_PROFILES: Readonly<Record<string, Readonly
       ],
       "activeHours": [
         {
-          "startMinute": 1080,
-          "endMinute": 1440,
+          "startMinute": 360,
+          "endMinute": 720,
           "weight": 1
         }
       ]
@@ -11651,8 +11651,8 @@ export const TEMEROSA_SERIES_AUTHORED_PROFILES: Readonly<Record<string, Readonly
       ],
       "activeHours": [
         {
-          "startMinute": 1080,
-          "endMinute": 1440,
+          "startMinute": 720,
+          "endMinute": 1080,
           "weight": 1
         }
       ]
@@ -11869,8 +11869,8 @@ export const TEMEROSA_SERIES_AUTHORED_PROFILES: Readonly<Record<string, Readonly
       ],
       "activeHours": [
         {
-          "startMinute": 1080,
-          "endMinute": 1440,
+          "startMinute": 0,
+          "endMinute": 360,
           "weight": 1
         }
       ]
@@ -11984,8 +11984,8 @@ export const TEMEROSA_SERIES_AUTHORED_PROFILES: Readonly<Record<string, Readonly
       ],
       "activeHours": [
         {
-          "startMinute": 1080,
-          "endMinute": 1440,
+          "startMinute": 360,
+          "endMinute": 720,
           "weight": 1
         }
       ]
@@ -12099,8 +12099,8 @@ export const TEMEROSA_SERIES_AUTHORED_PROFILES: Readonly<Record<string, Readonly
       ],
       "activeHours": [
         {
-          "startMinute": 1080,
-          "endMinute": 1440,
+          "startMinute": 720,
+          "endMinute": 1080,
           "weight": 1
         }
       ]
@@ -12317,8 +12317,8 @@ export const TEMEROSA_SERIES_AUTHORED_PROFILES: Readonly<Record<string, Readonly
       ],
       "activeHours": [
         {
-          "startMinute": 1080,
-          "endMinute": 1440,
+          "startMinute": 0,
+          "endMinute": 360,
           "weight": 1
         }
       ]
@@ -12420,8 +12420,8 @@ export const TEMEROSA_SERIES_AUTHORED_PROFILES: Readonly<Record<string, Readonly
       ],
       "activeHours": [
         {
-          "startMinute": 1080,
-          "endMinute": 1440,
+          "startMinute": 360,
+          "endMinute": 720,
           "weight": 1
         }
       ]
@@ -12523,8 +12523,8 @@ export const TEMEROSA_SERIES_AUTHORED_PROFILES: Readonly<Record<string, Readonly
       ],
       "activeHours": [
         {
-          "startMinute": 1080,
-          "endMinute": 1440,
+          "startMinute": 720,
+          "endMinute": 1080,
           "weight": 1
         }
       ]
@@ -12589,6 +12589,7 @@ export const TEMEROSA_SERIES_AUTHORED_PROFILES: Readonly<Record<string, Readonly
 });
 
 export const TEMEROSA_SERIES_CASINO_SEAT_IDS: readonly string[] = Object.freeze([
+  "temerosa:overture:mascot",
   "temerosa:root2:ayase",
   "temerosa:root2:dismas",
   "temerosa:root2:hab",
@@ -12670,4 +12671,4 @@ export const TEMEROSA_SERIES_CASINO_SEAT_IDS: readonly string[] = Object.freeze(
   "temerosa:finale:tashtego",
   "temerosa:finale:ttaengchil"
 ]);
-export const TEMEROSA_SERIES_RUNTIME_SOURCE = Object.freeze({ rosterContract: "temerosa-series-npc-inventory/0.2", profileContract: "temerosa-series-casino-profiles/0.1", identityRule: "series-and-source-persona", ledgerProfiles: 99, casinoSeats: 80 } as const);
+export const TEMEROSA_SERIES_RUNTIME_SOURCE = Object.freeze({ rosterContract: "temerosa-series-npc-inventory/0.2", profileContract: "temerosa-series-casino-profiles/0.1", identityRule: "series-and-source-persona", ledgerProfiles: 99, casinoSeats: 81 } as const);

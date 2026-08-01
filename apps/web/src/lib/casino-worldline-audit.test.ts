@@ -27,7 +27,7 @@ describe("npc-ledger/1.2 canonical transition audit",()=>{
     expect(TEMEROSA_FLOW_RELEASE_AUDIT).toMatchObject({
       status:"active-with-warnings",
       blockers:[],
-      warnings:["seven-day-supply-drift","one-year-supply-drift","one-year-activity-gap","ten-year-audit-pending"],
+      warnings:["seven-day-supply-drift","one-year-supply-drift","ten-year-audit-pending"],
     });
 
     const farFuture=casinoUtcSecondAtKstDay(TEMEROSA_FLOW_EPOCH_KST_DAY+3_650);

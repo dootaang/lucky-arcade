@@ -28,6 +28,7 @@ import { reconcileSideMarketWagers, reserveSideMarketWager } from "../../lib/sid
 import CasinoSideMarket from "./casino-side-market.tsx";
 
 const LEGACY_PORTRAITS: Readonly<Record<string, string>> = Object.freeze({
+  "temerosa:guest:nemo": temerosaContentUrl("0.8.0", "assets/margin/npc-nemo-neutral/sm.webp"),
   pale: temerosaContentUrl("0.6.0", "assets/margin/gallery-finale-pale-neutral/sm.webp"),
   kano: temerosaContentUrl("0.6.0", "assets/margin/gallery-finale-kano-neutral/sm.webp"),
   bacikal: temerosaContentUrl("0.6.0", "assets/margin/gallery-bestiaization-bacikal-neutral/sm.webp"),

@@ -11,7 +11,7 @@
 | 항목 | 수 |
 |---|---:|
 | 전체 명부 | 116 |
-| 사용 가능 | 107 |
+| 사용 가능 | 113 |
 | 승인 가능 | 89 |
 | 오너 검토 필요 | 27 |
 | 제외 권고 (`unavailable`) | 9 |
@@ -27,8 +27,8 @@
 
 ### 초상 없음 또는 소유권 불충분 — 9
 
-- Overture: `licanica`, `mascot`, `mortem`
-- Bestiaization: `boris-leblanc`, `gestas`, `iweleth`, `kudryavka`, `leviathan`, `sherirus`
+- Overture: `mortem` (표시 계층에서 √2 동일 인물 초상 사용)
+- Bestiaization: `leviathan`, `sherirus`
 
 ### 감정 폴백 — 12
 
@@ -53,6 +53,6 @@ Temute와 Tumit-Tu는 정확 중복이지만 명부 ID를 변경하거나 자동
 - 다른 시리즈 폴백: 0
 - 금지 이름·경로: 0
 - 원본 CHARX·추출물·PNG 공개 팩 포함: 0
-- WebP: 626개, 25,900,664 bytes
+- WebP: 644개, 26,730,920 bytes
 
 연락판 PNG는 로컬 임시 디렉터리에만 만들었고 커밋하지 않는다. 원본은 읽기 전용으로 열었으며 이동·수정·삭제하지 않았다.

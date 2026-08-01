@@ -1,6 +1,6 @@
 {
   "contract": "temerosa-series-npc-inventory/0.2",
-  "generatedAt": "2026-07-31T10:47:51.888Z",
+  "generatedAt": "2026-08-01T03:45:42.643Z",
   "identityRule": "series-and-source-persona",
   "sources": [
     {
@@ -41,7 +41,7 @@
     "loreBacked": 112,
     "imageOnly": 4,
     "houseRoles": 2,
-    "assetCandidates": 1616,
+    "assetCandidates": 1622,
     "roles": {
       "gambler": 114,
       "dealer": 0,
@@ -53,13 +53,13 @@
       "needs-confirmation": 4
     },
     "portraits": {
-      "complete": 95,
-      "partial": 13,
-      "missing": 8
+      "complete": 96,
+      "partial": 17,
+      "missing": 3
     },
     "releaseEligibility": {
-      "casino-ready": 87,
-      "ledger-only": 21,
+      "casino-ready": 88,
+      "ledger-only": 20,
       "house-only": 2,
       "blocked": 4,
       "excluded": 2
@@ -512,16 +512,25 @@
           "contentSha256": "f539a567ff460d34cf92a060166e4ae43dee2ec9f8078e6167f3edcbb1e0265e"
         }
       ],
-      "assetCandidates": [],
+      "assetCandidates": [
+        {
+          "assetId": "3f3d3b04a700ad69:120:d4be61fc6323",
+          "name": "Licanica",
+          "path": "assets/other/image/121.webp",
+          "expression": "standing"
+        }
+      ],
       "role": "gambler",
       "status": "confirmed",
       "portraitAvailability": {
-        "status": "missing",
-        "assetCandidateCount": 0,
-        "seatRoles": []
+        "status": "partial",
+        "assetCandidateCount": 1,
+        "seatRoles": [
+          "neutral"
+        ]
       },
       "releaseEligibility": "ledger-only",
-      "pendingReason": "seat-portrait-assets-missing"
+      "pendingReason": "seat-portrait-role-coverage-incomplete"
     },
     {
       "id": "temerosa:overture:lyla",
@@ -634,6 +643,12 @@
       ],
       "assetCandidates": [
         {
+          "assetId": "3f3d3b04a700ad69:60:bb763625f6ee",
+          "name": "Lyla.mascot",
+          "path": "assets/other/image/61.png",
+          "expression": "standing"
+        },
+        {
           "assetId": "3f3d3b04a700ad69:61:fe529c77283e",
           "name": "Lyla.embarrassed",
           "path": "assets/other/image/62.png",
@@ -691,16 +706,17 @@
       "role": "gambler",
       "status": "confirmed",
       "portraitAvailability": {
-        "status": "partial",
-        "assetCandidateCount": 9,
+        "status": "complete",
+        "assetCandidateCount": 10,
         "seatRoles": [
+          "neutral",
           "pleased",
           "tense",
           "despair"
         ]
       },
-      "releaseEligibility": "ledger-only",
-      "pendingReason": "seat-portrait-role-coverage-incomplete"
+      "releaseEligibility": "casino-ready",
+      "pendingReason": "runtime-integration-not-wired"
     },
     {
       "id": "temerosa:overture:merry-pip",
@@ -3552,16 +3568,25 @@
           "contentSha256": "087214263283bb1d77d67cddf9cf3a04fb100e4b4387c9b05423afcfc244342e"
         }
       ],
-      "assetCandidates": [],
+      "assetCandidates": [
+        {
+          "assetId": "336eb710913afbc8:3:1eda6e8b9430",
+          "name": "Boris",
+          "path": "assets/other/image/4.png",
+          "expression": "standing"
+        }
+      ],
       "role": "gambler",
       "status": "confirmed",
       "portraitAvailability": {
-        "status": "missing",
-        "assetCandidateCount": 0,
-        "seatRoles": []
+        "status": "partial",
+        "assetCandidateCount": 1,
+        "seatRoles": [
+          "neutral"
+        ]
       },
       "releaseEligibility": "ledger-only",
-      "pendingReason": "seat-portrait-assets-missing"
+      "pendingReason": "seat-portrait-role-coverage-incomplete"
     },
     {
       "id": "temerosa:bestiaization:cab",
@@ -4495,16 +4520,25 @@
           "contentSha256": "7bbac43aefccb2581fdf1c59540a3029aff98e1288c6b9066328b0cb81aa7c40"
         }
       ],
-      "assetCandidates": [],
+      "assetCandidates": [
+        {
+          "assetId": "336eb710913afbc8:81:8796023279b8",
+          "name": "Gestas",
+          "path": "assets/other/image/82.png",
+          "expression": "standing"
+        }
+      ],
       "role": "gambler",
       "status": "confirmed",
       "portraitAvailability": {
-        "status": "missing",
-        "assetCandidateCount": 0,
-        "seatRoles": []
+        "status": "partial",
+        "assetCandidateCount": 1,
+        "seatRoles": [
+          "neutral"
+        ]
       },
       "releaseEligibility": "ledger-only",
-      "pendingReason": "seat-portrait-assets-missing"
+      "pendingReason": "seat-portrait-role-coverage-incomplete"
     },
     {
       "id": "temerosa:bestiaization:habwen",
@@ -4671,16 +4705,25 @@
           "contentSha256": "a387ebf5debc7bf97f3785f9c8e322b6bafdedd3499f763fdc345df271e47c8c"
         }
       ],
-      "assetCandidates": [],
+      "assetCandidates": [
+        {
+          "assetId": "336eb710913afbc8:80:70793ef69e3e",
+          "name": "Iweleth",
+          "path": "assets/other/image/81.png",
+          "expression": "standing"
+        }
+      ],
       "role": "gambler",
       "status": "confirmed",
       "portraitAvailability": {
-        "status": "missing",
-        "assetCandidateCount": 0,
-        "seatRoles": []
+        "status": "partial",
+        "assetCandidateCount": 1,
+        "seatRoles": [
+          "neutral"
+        ]
       },
       "releaseEligibility": "ledger-only",
-      "pendingReason": "seat-portrait-assets-missing"
+      "pendingReason": "seat-portrait-role-coverage-incomplete"
     },
     {
       "id": "temerosa:bestiaization:jia",
@@ -4963,16 +5006,25 @@
           "contentSha256": "43382c7c178934ad5893981d5e79d8f8afe3c174fec89e770125d541f0706a92"
         }
       ],
-      "assetCandidates": [],
+      "assetCandidates": [
+        {
+          "assetId": "336eb710913afbc8:6:71caf0b9cb61",
+          "name": "Kudryavka",
+          "path": "assets/other/image/7.png",
+          "expression": "standing"
+        }
+      ],
       "role": "gambler",
       "status": "confirmed",
       "portraitAvailability": {
-        "status": "missing",
-        "assetCandidateCount": 0,
-        "seatRoles": []
+        "status": "partial",
+        "assetCandidateCount": 1,
+        "seatRoles": [
+          "neutral"
+        ]
       },
       "releaseEligibility": "ledger-only",
-      "pendingReason": "seat-portrait-assets-missing"
+      "pendingReason": "seat-portrait-role-coverage-incomplete"
     },
     {
       "id": "temerosa:bestiaization:leviathan",

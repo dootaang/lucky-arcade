@@ -4,7 +4,7 @@
 > CHARX 원문은 포함하지 않고 로어 항목의 키·SHA-256과 자산 경로만 증거로 남긴다.
 
 총 116명 · 로어 근거 112명 · 이미지 전용 후보 4명 · 하우스 역할 2명
-초상 complete 95명 · partial 13명 · missing 8명
+초상 complete 96명 · partial 17명 · missing 3명
 
 ## overture — 12명
 
@@ -14,9 +14,9 @@
 | `temerosa:overture:hab` | hab · 서곡 | gambler | 1 | partial (pleased, tense, despair) | ledger-only | seat-portrait-role-coverage-incomplete |
 | `temerosa:overture:ishmael` | Ishmael · 서곡 | gambler | 1 | partial (pleased, tense, despair) | ledger-only | seat-portrait-role-coverage-incomplete |
 | `temerosa:overture:kano` | Kano · 서곡 | gambler | 1 | partial (pleased, tense, despair) | ledger-only | seat-portrait-role-coverage-incomplete |
-| `temerosa:overture:licanica` | Licanica · 서곡 | gambler | 1 | missing (none) | ledger-only | seat-portrait-assets-missing |
+| `temerosa:overture:licanica` | Licanica · 서곡 | gambler | 1 | partial (neutral) | ledger-only | seat-portrait-role-coverage-incomplete |
 | `temerosa:overture:lyla` | Lyla · 서곡 | gambler | 1 | partial (pleased, tense, despair) | ledger-only | seat-portrait-role-coverage-incomplete |
-| `temerosa:overture:mascot` | mascot · 서곡 | gambler | 1 | partial (pleased, tense, despair) | ledger-only | seat-portrait-role-coverage-incomplete |
+| `temerosa:overture:mascot` | mascot · 서곡 | gambler | 1 | complete (neutral, pleased, tense, despair) | casino-ready | runtime-integration-not-wired |
 | `temerosa:overture:merry-pip` | Merry-pip · 서곡 | gambler | 1 | partial (pleased, tense, despair) | ledger-only | seat-portrait-role-coverage-incomplete |
 | `temerosa:overture:mortem` | Mortem · 서곡 | gambler | 1 | missing (none) | ledger-only | seat-portrait-assets-missing |
 | `temerosa:overture:pale` | Pale · 서곡 | gambler | 1 | partial (pleased, tense, despair) | ledger-only | seat-portrait-role-coverage-incomplete |
@@ -58,7 +58,7 @@
 | `temerosa:bestiaization:bacikal` | Bacikal (바치칼) · 베스티아화 | gambler | 1 | complete (neutral, pleased, tense, despair) | excluded | standard-casino-roster-excluded |
 | `temerosa:bestiaization:bamcapis` | Bamcapis (밤카피스) · 베스티아화 | gambler | 1 | complete (neutral, pleased, tense, despair) | casino-ready | runtime-integration-not-wired |
 | `temerosa:bestiaization:bche` | Bche (브체) · 베스티아화 | gambler | 1 | complete (neutral, pleased, tense, despair) | casino-ready | runtime-integration-not-wired |
-| `temerosa:bestiaization:boris-leblanc` | Boris Leblanc (보리스 르블랑) · 베스티아화 | gambler | 1 | missing (none) | ledger-only | seat-portrait-assets-missing |
+| `temerosa:bestiaization:boris-leblanc` | Boris Leblanc (보리스 르블랑) · 베스티아화 | gambler | 1 | partial (neutral) | ledger-only | seat-portrait-role-coverage-incomplete |
 | `temerosa:bestiaization:cab` | Cab (캐브) · 베스티아화 | gambler | 1 | complete (neutral, pleased, tense, despair) | casino-ready | runtime-integration-not-wired |
 | `temerosa:bestiaization:camille` | Camille (카미유) · 베스티아화 | gambler | 1 | complete (neutral, pleased, tense, despair) | casino-ready | runtime-integration-not-wired |
 | `temerosa:bestiaization:cicero` | Cicero (키케로) · 베스티아화 | gambler | 1 | complete (neutral, pleased, tense, despair) | casino-ready | runtime-integration-not-wired |
@@ -71,14 +71,14 @@
 | `temerosa:bestiaization:female` | Female · 베스티아화 | gambler | 0 | complete (neutral, pleased, tense, despair) | blocked | source-persona-lore-confirmation-required |
 | `temerosa:bestiaization:flask` | Flask (플라스크) · 베스티아화 | gambler | 1 | complete (neutral, pleased, tense, despair) | casino-ready | runtime-integration-not-wired |
 | `temerosa:bestiaization:francis` | Francis (프란시스) · 베스티아화 | gambler | 1 | partial (neutral, tense, despair) | ledger-only | seat-portrait-role-coverage-incomplete |
-| `temerosa:bestiaization:gestas` | Gestas (게스타스) · 베스티아화 | gambler | 1 | missing (none) | ledger-only | seat-portrait-assets-missing |
+| `temerosa:bestiaization:gestas` | Gestas (게스타스) · 베스티아화 | gambler | 1 | partial (neutral) | ledger-only | seat-portrait-role-coverage-incomplete |
 | `temerosa:bestiaization:habwen` | Habwen (하브웬) · 베스티아화 | gambler | 1 | complete (neutral, pleased, tense, despair) | casino-ready | runtime-integration-not-wired |
 | `temerosa:bestiaization:hiro` | Hiro Kaneda (히로 카네다) · 베스티아화 | gambler | 1 | complete (neutral, pleased, tense, despair) | casino-ready | runtime-integration-not-wired |
-| `temerosa:bestiaization:iweleth` | Iweleth (이웰레스) · 베스티아화 | gambler | 1 | missing (none) | ledger-only | seat-portrait-assets-missing |
+| `temerosa:bestiaization:iweleth` | Iweleth (이웰레스) · 베스티아화 | gambler | 1 | partial (neutral) | ledger-only | seat-portrait-role-coverage-incomplete |
 | `temerosa:bestiaization:jia` | Jia (지아) · 베스티아화 | gambler | 1 | complete (neutral, pleased, tense, despair) | casino-ready | runtime-integration-not-wired |
 | `temerosa:bestiaization:katrinka` | Katrinka (카트린카) · 베스티아화 | gambler | 1 | complete (neutral, pleased, tense, despair) | casino-ready | runtime-integration-not-wired |
 | `temerosa:bestiaization:kreva` | Kreva (크레바) · 베스티아화 | gambler | 1 | complete (neutral, pleased, tense, despair) | casino-ready | runtime-integration-not-wired |
-| `temerosa:bestiaization:kudryavka` | Kudryavka (쿠드랴프카) · 베스티아화 | gambler | 1 | missing (none) | ledger-only | seat-portrait-assets-missing |
+| `temerosa:bestiaization:kudryavka` | Kudryavka (쿠드랴프카) · 베스티아화 | gambler | 1 | partial (neutral) | ledger-only | seat-portrait-role-coverage-incomplete |
 | `temerosa:bestiaization:leviathan` | Leviathan (레비아탄) · 베스티아화 | gambler | 1 | missing (none) | ledger-only | seat-portrait-assets-missing |
 | `temerosa:bestiaization:levillotte` | Levillotte (레빌로트) · 베스티아화 | gambler | 1 | complete (neutral, pleased, tense, despair) | casino-ready | runtime-integration-not-wired |
 | `temerosa:bestiaization:lilim` | Lilim (릴림) · 베스티아화 | gambler | 1 | complete (neutral, pleased, tense, despair) | casino-ready | runtime-integration-not-wired |

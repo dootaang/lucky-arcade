@@ -11,18 +11,18 @@
 | 항목 | 결과 |
 |---|---:|
 | NPC 소유 관계 | 116 |
-| 초상 사용 가능 | 107 |
+| 초상 사용 가능 | 113 |
 | `unavailable` | 9 |
 | 사후 승인 가능 | 89 |
 | `owner-review-needed` | 27 |
 | sm/md/lg 소유 관계 | 641 |
 | 감정 폴백 | 12 |
 | 고유 원본 바이트 해시 | 415 |
-| 고유 WebP 파생 파일 | 626 |
-| 이미지 용량 | 25,900,664 bytes |
+| 고유 WebP 파생 파일 | 644 |
+| 이미지 용량 | 26,730,920 bytes |
 | 팩 전체 파일 | 629 |
 
-팩에는 원본 CHARX나 추출 디렉터리를 넣지 않았다. 공개 파일은 WebP 파생본 626개, `manifest.json`, `audit.json`, `review.html`뿐이다.
+팩에는 원본 CHARX나 추출 디렉터리를 넣지 않았다. 공개 파일은 WebP 파생본 644개, `manifest.json`, `audit.json`, `review.html`뿐이다.
 
 ## 자동 선택과 출처 규칙
 
@@ -56,17 +56,13 @@
 
 ## 이미지 누락 목록
 
-다음 9명은 안전하거나 자기 소유임을 증명할 후보가 없어 임의 생성하지 않고 `unavailable`로 남겼다.
+단독 파일명 초상을 정식 후보로 인정해 Licanica·Mascot·Boris Leblanc·Gestas·Iweleth·Kudryavka를 연결했다. 다음 3명은 같은 시리즈 안에 자기 소유 후보가 없어 `unavailable`로 남겼다.
 
-- `temerosa:overture:licanica`
-- `temerosa:overture:mascot`
 - `temerosa:overture:mortem`
-- `temerosa:bestiaization:boris-leblanc`
-- `temerosa:bestiaization:gestas`
-- `temerosa:bestiaization:iweleth`
-- `temerosa:bestiaization:kudryavka`
 - `temerosa:bestiaization:leviathan`
 - `temerosa:bestiaization:sherirus`
+
+표시 계층에서 Overture Mortem은 동일 인물인 √2 Mortem 초상을 명시적으로 사용한다. 특별 출전자 `temerosa:guest:nemo`는 기존 0.8.0 마법소녀 네모 초상으로 연결한다. 두 경우 모두 원장 신원과 잔고는 합치지 않는다.
 
 ## 감정 폴백 목록
 

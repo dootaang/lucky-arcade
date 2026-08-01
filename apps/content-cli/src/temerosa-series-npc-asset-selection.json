@@ -170,12 +170,40 @@
       "npcId": "temerosa:overture:licanica",
       "series": "overture",
       "sourceFingerprint": "3f3d3b04a700ad69fa2270f5308dc096d08b00cab0fa412d299d1336a6875407",
-      "status": "unavailable",
-      "reason": "no-safe-image-candidates",
+      "status": "selected",
+      "emotions": {
+        "neutral": {
+          "assetId": "3f3d3b04a700ad69:120:d4be61fc6323",
+          "name": "Licanica",
+          "sourceEntryPath": "assets/other/image/121.webp",
+          "sourceExpression": "standing"
+        },
+        "pleased": {
+          "assetId": "3f3d3b04a700ad69:120:d4be61fc6323",
+          "name": "Licanica",
+          "sourceEntryPath": "assets/other/image/121.webp",
+          "sourceExpression": "standing",
+          "fallbackFrom": "neutral"
+        },
+        "tense": {
+          "assetId": "3f3d3b04a700ad69:120:d4be61fc6323",
+          "name": "Licanica",
+          "sourceEntryPath": "assets/other/image/121.webp",
+          "sourceExpression": "standing",
+          "fallbackFrom": "neutral"
+        },
+        "despair": {
+          "assetId": "3f3d3b04a700ad69:120:d4be61fc6323",
+          "name": "Licanica",
+          "sourceEntryPath": "assets/other/image/121.webp",
+          "sourceExpression": "standing",
+          "fallbackFrom": "neutral"
+        }
+      },
       "visualReview": {
         "status": "owner-review-needed",
         "reasons": [
-          "portrait-unavailable"
+          "post-implementation-review-required"
         ]
       }
     },
@@ -222,12 +250,40 @@
       "npcId": "temerosa:overture:mascot",
       "series": "overture",
       "sourceFingerprint": "3f3d3b04a700ad69fa2270f5308dc096d08b00cab0fa412d299d1336a6875407",
-      "status": "unavailable",
-      "reason": "no-owned-image-candidates",
+      "status": "selected",
+      "emotions": {
+        "neutral": {
+          "assetId": "3f3d3b04a700ad69:60:bb763625f6ee",
+          "name": "Lyla.mascot",
+          "sourceEntryPath": "assets/other/image/61.png",
+          "sourceExpression": "standing"
+        },
+        "pleased": {
+          "assetId": "3f3d3b04a700ad69:60:bb763625f6ee",
+          "name": "Lyla.mascot",
+          "sourceEntryPath": "assets/other/image/61.png",
+          "sourceExpression": "standing",
+          "fallbackFrom": "neutral"
+        },
+        "tense": {
+          "assetId": "3f3d3b04a700ad69:60:bb763625f6ee",
+          "name": "Lyla.mascot",
+          "sourceEntryPath": "assets/other/image/61.png",
+          "sourceExpression": "standing",
+          "fallbackFrom": "neutral"
+        },
+        "despair": {
+          "assetId": "3f3d3b04a700ad69:60:bb763625f6ee",
+          "name": "Lyla.mascot",
+          "sourceEntryPath": "assets/other/image/61.png",
+          "sourceExpression": "standing",
+          "fallbackFrom": "neutral"
+        }
+      },
       "visualReview": {
         "status": "owner-review-needed",
         "reasons": [
-          "portrait-unavailable"
+          "post-implementation-review-required"
         ]
       }
     },
@@ -1318,12 +1374,17 @@
       "npcId": "temerosa:bestiaization:boris-leblanc",
       "series": "bestiaization",
       "sourceFingerprint": "336eb710913afbc8e95eae3e7be0f33994e169c41eefe746c9ffb300ec64e825",
-      "status": "unavailable",
-      "reason": "no-safe-image-candidates",
+      "status": "selected",
+      "emotions": {
+        "neutral": { "assetId": "336eb710913afbc8:3:1eda6e8b9430", "name": "Boris", "sourceEntryPath": "assets/other/image/4.png", "sourceExpression": "standing" },
+        "pleased": { "assetId": "336eb710913afbc8:3:1eda6e8b9430", "name": "Boris", "sourceEntryPath": "assets/other/image/4.png", "sourceExpression": "standing", "fallbackFrom": "neutral" },
+        "tense": { "assetId": "336eb710913afbc8:3:1eda6e8b9430", "name": "Boris", "sourceEntryPath": "assets/other/image/4.png", "sourceExpression": "standing", "fallbackFrom": "neutral" },
+        "despair": { "assetId": "336eb710913afbc8:3:1eda6e8b9430", "name": "Boris", "sourceEntryPath": "assets/other/image/4.png", "sourceExpression": "standing", "fallbackFrom": "neutral" }
+      },
       "visualReview": {
         "status": "owner-review-needed",
         "reasons": [
-          "portrait-unavailable"
+          "post-implementation-review-required"
         ]
       }
     },
@@ -1762,12 +1823,17 @@
       "npcId": "temerosa:bestiaization:gestas",
       "series": "bestiaization",
       "sourceFingerprint": "336eb710913afbc8e95eae3e7be0f33994e169c41eefe746c9ffb300ec64e825",
-      "status": "unavailable",
-      "reason": "no-safe-image-candidates",
+      "status": "selected",
+      "emotions": {
+        "neutral": { "assetId": "336eb710913afbc8:81:8796023279b8", "name": "Gestas", "sourceEntryPath": "assets/other/image/82.png", "sourceExpression": "standing" },
+        "pleased": { "assetId": "336eb710913afbc8:81:8796023279b8", "name": "Gestas", "sourceEntryPath": "assets/other/image/82.png", "sourceExpression": "standing", "fallbackFrom": "neutral" },
+        "tense": { "assetId": "336eb710913afbc8:81:8796023279b8", "name": "Gestas", "sourceEntryPath": "assets/other/image/82.png", "sourceExpression": "standing", "fallbackFrom": "neutral" },
+        "despair": { "assetId": "336eb710913afbc8:81:8796023279b8", "name": "Gestas", "sourceEntryPath": "assets/other/image/82.png", "sourceExpression": "standing", "fallbackFrom": "neutral" }
+      },
       "visualReview": {
         "status": "owner-review-needed",
         "reasons": [
-          "portrait-unavailable"
+          "post-implementation-review-required"
         ]
       }
     },
@@ -1845,12 +1911,17 @@
       "npcId": "temerosa:bestiaization:iweleth",
       "series": "bestiaization",
       "sourceFingerprint": "336eb710913afbc8e95eae3e7be0f33994e169c41eefe746c9ffb300ec64e825",
-      "status": "unavailable",
-      "reason": "no-safe-image-candidates",
+      "status": "selected",
+      "emotions": {
+        "neutral": { "assetId": "336eb710913afbc8:80:70793ef69e3e", "name": "Iweleth", "sourceEntryPath": "assets/other/image/81.png", "sourceExpression": "standing" },
+        "pleased": { "assetId": "336eb710913afbc8:80:70793ef69e3e", "name": "Iweleth", "sourceEntryPath": "assets/other/image/81.png", "sourceExpression": "standing", "fallbackFrom": "neutral" },
+        "tense": { "assetId": "336eb710913afbc8:80:70793ef69e3e", "name": "Iweleth", "sourceEntryPath": "assets/other/image/81.png", "sourceExpression": "standing", "fallbackFrom": "neutral" },
+        "despair": { "assetId": "336eb710913afbc8:80:70793ef69e3e", "name": "Iweleth", "sourceEntryPath": "assets/other/image/81.png", "sourceExpression": "standing", "fallbackFrom": "neutral" }
+      },
       "visualReview": {
         "status": "owner-review-needed",
         "reasons": [
-          "portrait-unavailable"
+          "post-implementation-review-required"
         ]
       }
     },
@@ -1963,12 +2034,17 @@
       "npcId": "temerosa:bestiaization:kudryavka",
       "series": "bestiaization",
       "sourceFingerprint": "336eb710913afbc8e95eae3e7be0f33994e169c41eefe746c9ffb300ec64e825",
-      "status": "unavailable",
-      "reason": "no-safe-image-candidates",
+      "status": "selected",
+      "emotions": {
+        "neutral": { "assetId": "336eb710913afbc8:6:71caf0b9cb61", "name": "Kudryavka", "sourceEntryPath": "assets/other/image/7.png", "sourceExpression": "standing" },
+        "pleased": { "assetId": "336eb710913afbc8:6:71caf0b9cb61", "name": "Kudryavka", "sourceEntryPath": "assets/other/image/7.png", "sourceExpression": "standing", "fallbackFrom": "neutral" },
+        "tense": { "assetId": "336eb710913afbc8:6:71caf0b9cb61", "name": "Kudryavka", "sourceEntryPath": "assets/other/image/7.png", "sourceExpression": "standing", "fallbackFrom": "neutral" },
+        "despair": { "assetId": "336eb710913afbc8:6:71caf0b9cb61", "name": "Kudryavka", "sourceEntryPath": "assets/other/image/7.png", "sourceExpression": "standing", "fallbackFrom": "neutral" }
+      },
       "visualReview": {
         "status": "owner-review-needed",
         "reasons": [
-          "portrait-unavailable"
+          "post-implementation-review-required"
         ]
       }
     },

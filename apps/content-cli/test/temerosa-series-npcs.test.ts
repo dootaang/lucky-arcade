@@ -16,10 +16,10 @@ describe("Temerosa four-series NPC census", () => {
     expect(Object.fromEntries(inventory.sources.map((source) => [source.series, source.npcRecords]))).toEqual({ overture: 12, root2: 18, bestiaization: 57, finale: 29 });
     expect(inventory.totals.roles).toEqual({ gambler: 114, dealer: 0, host: 0, house: 2 });
     expect(inventory.totals.statuses).toEqual({ confirmed: 112, "needs-confirmation": 4 });
-    expect(inventory.totals.portraits).toEqual({ complete: 95, partial: 13, missing: 8 });
+    expect(inventory.totals.portraits).toEqual({ complete: 96, partial: 17, missing: 3 });
     expect(inventory.totals.releaseEligibility).toEqual({
-      "casino-ready": 87,
-      "ledger-only": 21,
+      "casino-ready": 88,
+      "ledger-only": 20,
       "house-only": 2,
       blocked: 4,
       excluded: 2,

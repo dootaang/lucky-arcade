@@ -2,7 +2,7 @@
   "contract": "temerosa-series-npc-portrait-pack/0.2",
   "packId": "temerosa-series-npcs",
   "version": "0.2.0",
-  "generatedAt": "2026-08-01T00:36:13.869Z",
+  "generatedAt": "2026-08-01T03:48:23.853Z",
   "identityRule": "series-and-source-persona",
   "policy": {
     "originalsRedistributed": false,
@@ -33,13 +33,13 @@
   ],
   "totals": {
     "npcs": 116,
-    "available": 107,
-    "unavailable": 9,
-    "portraitOwnerships": 641,
-    "emotionFallbacks": 12,
-    "uniqueSourceImages": 415,
-    "uniqueImageFiles": 626,
-    "imageBytes": 25900664,
+    "available": 113,
+    "unavailable": 3,
+    "portraitOwnerships": 677,
+    "emotionFallbacks": 30,
+    "uniqueSourceImages": 421,
+    "uniqueImageFiles": 644,
+    "imageBytes": 26730920,
     "approved": 89,
     "ownerReviewNeeded": 27
   },
@@ -639,12 +639,148 @@
     {
       "npcId": "temerosa:overture:licanica",
       "series": "overture",
-      "status": "unavailable",
-      "reason": "no-safe-image-candidates",
+      "status": "available",
+      "sm": {
+        "scale": "sm",
+        "emotion": "neutral",
+        "path": "assets/sm/df5dda1b92c3c2351a7bbe0ea0683361.webp",
+        "mime": "image/webp",
+        "width": 137,
+        "height": 200,
+        "bytes": 4322,
+        "sha256": "df5dda1b92c3c2351a7bbe0ea06833619a1888b33c87b9d95e1f9dd4f0ad899d",
+        "source": {
+          "series": "overture",
+          "assetId": "3f3d3b04a700ad69:120:d4be61fc6323",
+          "entryPath": "assets/other/image/121.webp",
+          "name": "Licanica",
+          "expression": "standing",
+          "mime": "image/webp",
+          "width": 832,
+          "height": 1216,
+          "bytes": 65300,
+          "sha256": "ed6527931813d72e5178d4ad654c67bc5fef31f450e422601b4b648079071917"
+        }
+      },
+      "md": {
+        "neutral": {
+          "scale": "md",
+          "emotion": "neutral",
+          "path": "assets/md/f00d8d3c743591ab9e5c1aee145ce6e3.webp",
+          "mime": "image/webp",
+          "width": 411,
+          "height": 600,
+          "bytes": 25484,
+          "sha256": "f00d8d3c743591ab9e5c1aee145ce6e3a7b19103b9f39a2aad88d00086f73cc2",
+          "source": {
+            "series": "overture",
+            "assetId": "3f3d3b04a700ad69:120:d4be61fc6323",
+            "entryPath": "assets/other/image/121.webp",
+            "name": "Licanica",
+            "expression": "standing",
+            "mime": "image/webp",
+            "width": 832,
+            "height": 1216,
+            "bytes": 65300,
+            "sha256": "ed6527931813d72e5178d4ad654c67bc5fef31f450e422601b4b648079071917"
+          }
+        },
+        "pleased": {
+          "scale": "md",
+          "path": "assets/md/f00d8d3c743591ab9e5c1aee145ce6e3.webp",
+          "mime": "image/webp",
+          "width": 411,
+          "height": 600,
+          "bytes": 25484,
+          "sha256": "f00d8d3c743591ab9e5c1aee145ce6e3a7b19103b9f39a2aad88d00086f73cc2",
+          "emotion": "pleased",
+          "source": {
+            "series": "overture",
+            "assetId": "3f3d3b04a700ad69:120:d4be61fc6323",
+            "entryPath": "assets/other/image/121.webp",
+            "name": "Licanica",
+            "expression": "standing",
+            "mime": "image/webp",
+            "width": 832,
+            "height": 1216,
+            "bytes": 65300,
+            "sha256": "ed6527931813d72e5178d4ad654c67bc5fef31f450e422601b4b648079071917"
+          },
+          "fallbackFrom": "neutral"
+        },
+        "tense": {
+          "scale": "md",
+          "path": "assets/md/f00d8d3c743591ab9e5c1aee145ce6e3.webp",
+          "mime": "image/webp",
+          "width": 411,
+          "height": 600,
+          "bytes": 25484,
+          "sha256": "f00d8d3c743591ab9e5c1aee145ce6e3a7b19103b9f39a2aad88d00086f73cc2",
+          "emotion": "tense",
+          "source": {
+            "series": "overture",
+            "assetId": "3f3d3b04a700ad69:120:d4be61fc6323",
+            "entryPath": "assets/other/image/121.webp",
+            "name": "Licanica",
+            "expression": "standing",
+            "mime": "image/webp",
+            "width": 832,
+            "height": 1216,
+            "bytes": 65300,
+            "sha256": "ed6527931813d72e5178d4ad654c67bc5fef31f450e422601b4b648079071917"
+          },
+          "fallbackFrom": "neutral"
+        },
+        "despair": {
+          "scale": "md",
+          "path": "assets/md/f00d8d3c743591ab9e5c1aee145ce6e3.webp",
+          "mime": "image/webp",
+          "width": 411,
+          "height": 600,
+          "bytes": 25484,
+          "sha256": "f00d8d3c743591ab9e5c1aee145ce6e3a7b19103b9f39a2aad88d00086f73cc2",
+          "emotion": "despair",
+          "source": {
+            "series": "overture",
+            "assetId": "3f3d3b04a700ad69:120:d4be61fc6323",
+            "entryPath": "assets/other/image/121.webp",
+            "name": "Licanica",
+            "expression": "standing",
+            "mime": "image/webp",
+            "width": 832,
+            "height": 1216,
+            "bytes": 65300,
+            "sha256": "ed6527931813d72e5178d4ad654c67bc5fef31f450e422601b4b648079071917"
+          },
+          "fallbackFrom": "neutral"
+        }
+      },
+      "lg": {
+        "scale": "lg",
+        "emotion": "neutral",
+        "path": "assets/lg/97cf2d09a261b51603847c641f9e03f3.webp",
+        "mime": "image/webp",
+        "width": 821,
+        "height": 1200,
+        "bytes": 71970,
+        "sha256": "97cf2d09a261b51603847c641f9e03f3dae956a64ff83a1825e42ef8c84c53ae",
+        "source": {
+          "series": "overture",
+          "assetId": "3f3d3b04a700ad69:120:d4be61fc6323",
+          "entryPath": "assets/other/image/121.webp",
+          "name": "Licanica",
+          "expression": "standing",
+          "mime": "image/webp",
+          "width": 832,
+          "height": 1216,
+          "bytes": 65300,
+          "sha256": "ed6527931813d72e5178d4ad654c67bc5fef31f450e422601b4b648079071917"
+        }
+      },
       "visualReview": {
         "status": "owner-review-needed",
         "reasons": [
-          "portrait-unavailable"
+          "post-implementation-review-required"
         ]
       }
     },
@@ -799,12 +935,148 @@
     {
       "npcId": "temerosa:overture:mascot",
       "series": "overture",
-      "status": "unavailable",
-      "reason": "no-owned-image-candidates",
+      "status": "available",
+      "sm": {
+        "scale": "sm",
+        "emotion": "neutral",
+        "path": "assets/sm/b8adae5b7fefcf4e3c43dd68cb283c4e.webp",
+        "mime": "image/webp",
+        "width": 160,
+        "height": 160,
+        "bytes": 4444,
+        "sha256": "b8adae5b7fefcf4e3c43dd68cb283c4ee60dfd16140a66c2efa1f89730cbe31c",
+        "source": {
+          "series": "overture",
+          "assetId": "3f3d3b04a700ad69:60:bb763625f6ee",
+          "entryPath": "assets/other/image/61.png",
+          "name": "Lyla.mascot",
+          "expression": "standing",
+          "mime": "image/webp",
+          "width": 1120,
+          "height": 1120,
+          "bytes": 68578,
+          "sha256": "ebc269d21234d5e386dcb0918f769130504d76cbb0e313ecac2a87cdfde56c60"
+        }
+      },
+      "md": {
+        "neutral": {
+          "scale": "md",
+          "emotion": "neutral",
+          "path": "assets/md/46d58849a93f1bd81b2648f9063b8d4f.webp",
+          "mime": "image/webp",
+          "width": 480,
+          "height": 480,
+          "bytes": 26384,
+          "sha256": "46d58849a93f1bd81b2648f9063b8d4f9283640b3579f14e9236ae5c602bbe6c",
+          "source": {
+            "series": "overture",
+            "assetId": "3f3d3b04a700ad69:60:bb763625f6ee",
+            "entryPath": "assets/other/image/61.png",
+            "name": "Lyla.mascot",
+            "expression": "standing",
+            "mime": "image/webp",
+            "width": 1120,
+            "height": 1120,
+            "bytes": 68578,
+            "sha256": "ebc269d21234d5e386dcb0918f769130504d76cbb0e313ecac2a87cdfde56c60"
+          }
+        },
+        "pleased": {
+          "scale": "md",
+          "path": "assets/md/46d58849a93f1bd81b2648f9063b8d4f.webp",
+          "mime": "image/webp",
+          "width": 480,
+          "height": 480,
+          "bytes": 26384,
+          "sha256": "46d58849a93f1bd81b2648f9063b8d4f9283640b3579f14e9236ae5c602bbe6c",
+          "emotion": "pleased",
+          "source": {
+            "series": "overture",
+            "assetId": "3f3d3b04a700ad69:60:bb763625f6ee",
+            "entryPath": "assets/other/image/61.png",
+            "name": "Lyla.mascot",
+            "expression": "standing",
+            "mime": "image/webp",
+            "width": 1120,
+            "height": 1120,
+            "bytes": 68578,
+            "sha256": "ebc269d21234d5e386dcb0918f769130504d76cbb0e313ecac2a87cdfde56c60"
+          },
+          "fallbackFrom": "neutral"
+        },
+        "tense": {
+          "scale": "md",
+          "path": "assets/md/46d58849a93f1bd81b2648f9063b8d4f.webp",
+          "mime": "image/webp",
+          "width": 480,
+          "height": 480,
+          "bytes": 26384,
+          "sha256": "46d58849a93f1bd81b2648f9063b8d4f9283640b3579f14e9236ae5c602bbe6c",
+          "emotion": "tense",
+          "source": {
+            "series": "overture",
+            "assetId": "3f3d3b04a700ad69:60:bb763625f6ee",
+            "entryPath": "assets/other/image/61.png",
+            "name": "Lyla.mascot",
+            "expression": "standing",
+            "mime": "image/webp",
+            "width": 1120,
+            "height": 1120,
+            "bytes": 68578,
+            "sha256": "ebc269d21234d5e386dcb0918f769130504d76cbb0e313ecac2a87cdfde56c60"
+          },
+          "fallbackFrom": "neutral"
+        },
+        "despair": {
+          "scale": "md",
+          "path": "assets/md/46d58849a93f1bd81b2648f9063b8d4f.webp",
+          "mime": "image/webp",
+          "width": 480,
+          "height": 480,
+          "bytes": 26384,
+          "sha256": "46d58849a93f1bd81b2648f9063b8d4f9283640b3579f14e9236ae5c602bbe6c",
+          "emotion": "despair",
+          "source": {
+            "series": "overture",
+            "assetId": "3f3d3b04a700ad69:60:bb763625f6ee",
+            "entryPath": "assets/other/image/61.png",
+            "name": "Lyla.mascot",
+            "expression": "standing",
+            "mime": "image/webp",
+            "width": 1120,
+            "height": 1120,
+            "bytes": 68578,
+            "sha256": "ebc269d21234d5e386dcb0918f769130504d76cbb0e313ecac2a87cdfde56c60"
+          },
+          "fallbackFrom": "neutral"
+        }
+      },
+      "lg": {
+        "scale": "lg",
+        "emotion": "neutral",
+        "path": "assets/lg/8d975b215a35f33f7ca222a75a278961.webp",
+        "mime": "image/webp",
+        "width": 960,
+        "height": 960,
+        "bytes": 70408,
+        "sha256": "8d975b215a35f33f7ca222a75a278961b40d1a54a19565a00d2ead04f0bf8bde",
+        "source": {
+          "series": "overture",
+          "assetId": "3f3d3b04a700ad69:60:bb763625f6ee",
+          "entryPath": "assets/other/image/61.png",
+          "name": "Lyla.mascot",
+          "expression": "standing",
+          "mime": "image/webp",
+          "width": 1120,
+          "height": 1120,
+          "bytes": 68578,
+          "sha256": "ebc269d21234d5e386dcb0918f769130504d76cbb0e313ecac2a87cdfde56c60"
+        }
+      },
       "visualReview": {
         "status": "owner-review-needed",
         "reasons": [
-          "portrait-unavailable"
+          "post-implementation-review-required"
         ]
       }
     },
@@ -5111,12 +5383,148 @@
     {
       "npcId": "temerosa:bestiaization:boris-leblanc",
       "series": "bestiaization",
-      "status": "unavailable",
-      "reason": "no-safe-image-candidates",
+      "status": "available",
+      "sm": {
+        "scale": "sm",
+        "emotion": "neutral",
+        "path": "assets/sm/07d91e82c64e5754054e7974971ae246.webp",
+        "mime": "image/webp",
+        "width": 133,
+        "height": 200,
+        "bytes": 5592,
+        "sha256": "07d91e82c64e5754054e7974971ae246de8fdc16617a15850cf24523bf365565",
+        "source": {
+          "series": "bestiaization",
+          "assetId": "336eb710913afbc8:3:1eda6e8b9430",
+          "entryPath": "assets/other/image/4.png",
+          "name": "Boris",
+          "expression": "standing",
+          "mime": "image/webp",
+          "width": 896,
+          "height": 1344,
+          "bytes": 88584,
+          "sha256": "043b9532fdcc25affc724492da5536fc228c39f6147a3c65a87887c87abeea19"
+        }
+      },
+      "md": {
+        "neutral": {
+          "scale": "md",
+          "emotion": "neutral",
+          "path": "assets/md/b1ab7bc9f1f891e923e754c8d041f6b6.webp",
+          "mime": "image/webp",
+          "width": 400,
+          "height": 600,
+          "bytes": 34346,
+          "sha256": "b1ab7bc9f1f891e923e754c8d041f6b69a66a57b020099d79655b4354909c28a",
+          "source": {
+            "series": "bestiaization",
+            "assetId": "336eb710913afbc8:3:1eda6e8b9430",
+            "entryPath": "assets/other/image/4.png",
+            "name": "Boris",
+            "expression": "standing",
+            "mime": "image/webp",
+            "width": 896,
+            "height": 1344,
+            "bytes": 88584,
+            "sha256": "043b9532fdcc25affc724492da5536fc228c39f6147a3c65a87887c87abeea19"
+          }
+        },
+        "pleased": {
+          "scale": "md",
+          "path": "assets/md/b1ab7bc9f1f891e923e754c8d041f6b6.webp",
+          "mime": "image/webp",
+          "width": 400,
+          "height": 600,
+          "bytes": 34346,
+          "sha256": "b1ab7bc9f1f891e923e754c8d041f6b69a66a57b020099d79655b4354909c28a",
+          "emotion": "pleased",
+          "source": {
+            "series": "bestiaization",
+            "assetId": "336eb710913afbc8:3:1eda6e8b9430",
+            "entryPath": "assets/other/image/4.png",
+            "name": "Boris",
+            "expression": "standing",
+            "mime": "image/webp",
+            "width": 896,
+            "height": 1344,
+            "bytes": 88584,
+            "sha256": "043b9532fdcc25affc724492da5536fc228c39f6147a3c65a87887c87abeea19"
+          },
+          "fallbackFrom": "neutral"
+        },
+        "tense": {
+          "scale": "md",
+          "path": "assets/md/b1ab7bc9f1f891e923e754c8d041f6b6.webp",
+          "mime": "image/webp",
+          "width": 400,
+          "height": 600,
+          "bytes": 34346,
+          "sha256": "b1ab7bc9f1f891e923e754c8d041f6b69a66a57b020099d79655b4354909c28a",
+          "emotion": "tense",
+          "source": {
+            "series": "bestiaization",
+            "assetId": "336eb710913afbc8:3:1eda6e8b9430",
+            "entryPath": "assets/other/image/4.png",
+            "name": "Boris",
+            "expression": "standing",
+            "mime": "image/webp",
+            "width": 896,
+            "height": 1344,
+            "bytes": 88584,
+            "sha256": "043b9532fdcc25affc724492da5536fc228c39f6147a3c65a87887c87abeea19"
+          },
+          "fallbackFrom": "neutral"
+        },
+        "despair": {
+          "scale": "md",
+          "path": "assets/md/b1ab7bc9f1f891e923e754c8d041f6b6.webp",
+          "mime": "image/webp",
+          "width": 400,
+          "height": 600,
+          "bytes": 34346,
+          "sha256": "b1ab7bc9f1f891e923e754c8d041f6b69a66a57b020099d79655b4354909c28a",
+          "emotion": "despair",
+          "source": {
+            "series": "bestiaization",
+            "assetId": "336eb710913afbc8:3:1eda6e8b9430",
+            "entryPath": "assets/other/image/4.png",
+            "name": "Boris",
+            "expression": "standing",
+            "mime": "image/webp",
+            "width": 896,
+            "height": 1344,
+            "bytes": 88584,
+            "sha256": "043b9532fdcc25affc724492da5536fc228c39f6147a3c65a87887c87abeea19"
+          },
+          "fallbackFrom": "neutral"
+        }
+      },
+      "lg": {
+        "scale": "lg",
+        "emotion": "neutral",
+        "path": "assets/lg/bd9a4f19653a3b71fcefafd2789a6840.webp",
+        "mime": "image/webp",
+        "width": 800,
+        "height": 1200,
+        "bytes": 93632,
+        "sha256": "bd9a4f19653a3b71fcefafd2789a6840ed74a8e861d6b4b54e921886f49043e3",
+        "source": {
+          "series": "bestiaization",
+          "assetId": "336eb710913afbc8:3:1eda6e8b9430",
+          "entryPath": "assets/other/image/4.png",
+          "name": "Boris",
+          "expression": "standing",
+          "mime": "image/webp",
+          "width": 896,
+          "height": 1344,
+          "bytes": 88584,
+          "sha256": "043b9532fdcc25affc724492da5536fc228c39f6147a3c65a87887c87abeea19"
+        }
+      },
       "visualReview": {
         "status": "owner-review-needed",
         "reasons": [
-          "portrait-unavailable"
+          "post-implementation-review-required"
         ]
       }
     },
@@ -6838,12 +7246,148 @@
     {
       "npcId": "temerosa:bestiaization:gestas",
       "series": "bestiaization",
-      "status": "unavailable",
-      "reason": "no-safe-image-candidates",
+      "status": "available",
+      "sm": {
+        "scale": "sm",
+        "emotion": "neutral",
+        "path": "assets/sm/87e2b68c802909204934e16628d026a8.webp",
+        "mime": "image/webp",
+        "width": 114,
+        "height": 200,
+        "bytes": 3240,
+        "sha256": "87e2b68c802909204934e16628d026a8edb8278292e9352cea9a04cdb64a3357",
+        "source": {
+          "series": "bestiaization",
+          "assetId": "336eb710913afbc8:81:8796023279b8",
+          "entryPath": "assets/other/image/82.png",
+          "name": "Gestas",
+          "expression": "standing",
+          "mime": "image/webp",
+          "width": 1024,
+          "height": 1792,
+          "bytes": 212058,
+          "sha256": "7665b09f9696f7fa9ec097281241ac91ff8a58dcb45e9d89fc23be6b86f545d2"
+        }
+      },
+      "md": {
+        "neutral": {
+          "scale": "md",
+          "emotion": "neutral",
+          "path": "assets/md/7e194faec0d8fe3240e90eb1a54c48bc.webp",
+          "mime": "image/webp",
+          "width": 343,
+          "height": 600,
+          "bytes": 22350,
+          "sha256": "7e194faec0d8fe3240e90eb1a54c48bcb5b937b529a95fbec652b5ac0e15780b",
+          "source": {
+            "series": "bestiaization",
+            "assetId": "336eb710913afbc8:81:8796023279b8",
+            "entryPath": "assets/other/image/82.png",
+            "name": "Gestas",
+            "expression": "standing",
+            "mime": "image/webp",
+            "width": 1024,
+            "height": 1792,
+            "bytes": 212058,
+            "sha256": "7665b09f9696f7fa9ec097281241ac91ff8a58dcb45e9d89fc23be6b86f545d2"
+          }
+        },
+        "pleased": {
+          "scale": "md",
+          "path": "assets/md/7e194faec0d8fe3240e90eb1a54c48bc.webp",
+          "mime": "image/webp",
+          "width": 343,
+          "height": 600,
+          "bytes": 22350,
+          "sha256": "7e194faec0d8fe3240e90eb1a54c48bcb5b937b529a95fbec652b5ac0e15780b",
+          "emotion": "pleased",
+          "source": {
+            "series": "bestiaization",
+            "assetId": "336eb710913afbc8:81:8796023279b8",
+            "entryPath": "assets/other/image/82.png",
+            "name": "Gestas",
+            "expression": "standing",
+            "mime": "image/webp",
+            "width": 1024,
+            "height": 1792,
+            "bytes": 212058,
+            "sha256": "7665b09f9696f7fa9ec097281241ac91ff8a58dcb45e9d89fc23be6b86f545d2"
+          },
+          "fallbackFrom": "neutral"
+        },
+        "tense": {
+          "scale": "md",
+          "path": "assets/md/7e194faec0d8fe3240e90eb1a54c48bc.webp",
+          "mime": "image/webp",
+          "width": 343,
+          "height": 600,
+          "bytes": 22350,
+          "sha256": "7e194faec0d8fe3240e90eb1a54c48bcb5b937b529a95fbec652b5ac0e15780b",
+          "emotion": "tense",
+          "source": {
+            "series": "bestiaization",
+            "assetId": "336eb710913afbc8:81:8796023279b8",
+            "entryPath": "assets/other/image/82.png",
+            "name": "Gestas",
+            "expression": "standing",
+            "mime": "image/webp",
+            "width": 1024,
+            "height": 1792,
+            "bytes": 212058,
+            "sha256": "7665b09f9696f7fa9ec097281241ac91ff8a58dcb45e9d89fc23be6b86f545d2"
+          },
+          "fallbackFrom": "neutral"
+        },
+        "despair": {
+          "scale": "md",
+          "path": "assets/md/7e194faec0d8fe3240e90eb1a54c48bc.webp",
+          "mime": "image/webp",
+          "width": 343,
+          "height": 600,
+          "bytes": 22350,
+          "sha256": "7e194faec0d8fe3240e90eb1a54c48bcb5b937b529a95fbec652b5ac0e15780b",
+          "emotion": "despair",
+          "source": {
+            "series": "bestiaization",
+            "assetId": "336eb710913afbc8:81:8796023279b8",
+            "entryPath": "assets/other/image/82.png",
+            "name": "Gestas",
+            "expression": "standing",
+            "mime": "image/webp",
+            "width": 1024,
+            "height": 1792,
+            "bytes": 212058,
+            "sha256": "7665b09f9696f7fa9ec097281241ac91ff8a58dcb45e9d89fc23be6b86f545d2"
+          },
+          "fallbackFrom": "neutral"
+        }
+      },
+      "lg": {
+        "scale": "lg",
+        "emotion": "neutral",
+        "path": "assets/lg/44c34442c85f7ae2e019b2ec2c5b5332.webp",
+        "mime": "image/webp",
+        "width": 686,
+        "height": 1200,
+        "bytes": 109890,
+        "sha256": "44c34442c85f7ae2e019b2ec2c5b53321386ef540ef545bbc4456002b6e81ed3",
+        "source": {
+          "series": "bestiaization",
+          "assetId": "336eb710913afbc8:81:8796023279b8",
+          "entryPath": "assets/other/image/82.png",
+          "name": "Gestas",
+          "expression": "standing",
+          "mime": "image/webp",
+          "width": 1024,
+          "height": 1792,
+          "bytes": 212058,
+          "sha256": "7665b09f9696f7fa9ec097281241ac91ff8a58dcb45e9d89fc23be6b86f545d2"
+        }
+      },
       "visualReview": {
         "status": "owner-review-needed",
         "reasons": [
-          "portrait-unavailable"
+          "post-implementation-review-required"
         ]
       }
     },
@@ -7134,12 +7678,148 @@
     {
       "npcId": "temerosa:bestiaization:iweleth",
       "series": "bestiaization",
-      "status": "unavailable",
-      "reason": "no-safe-image-candidates",
+      "status": "available",
+      "sm": {
+        "scale": "sm",
+        "emotion": "neutral",
+        "path": "assets/sm/c4cfc730b4b2ca6a9bed83faa3f94e1f.webp",
+        "mime": "image/webp",
+        "width": 133,
+        "height": 200,
+        "bytes": 4642,
+        "sha256": "c4cfc730b4b2ca6a9bed83faa3f94e1fd5b828228b6b6345d84fbe45415ee0be",
+        "source": {
+          "series": "bestiaization",
+          "assetId": "336eb710913afbc8:80:70793ef69e3e",
+          "entryPath": "assets/other/image/81.png",
+          "name": "Iweleth",
+          "expression": "standing",
+          "mime": "image/webp",
+          "width": 768,
+          "height": 1152,
+          "bytes": 49114,
+          "sha256": "30ca5f20bb22081cb8f1fabea9b0db6874d9f20c117594542f077a2f9ceacd03"
+        }
+      },
+      "md": {
+        "neutral": {
+          "scale": "md",
+          "emotion": "neutral",
+          "path": "assets/md/995f5e5534e93168011452987d33c5a2.webp",
+          "mime": "image/webp",
+          "width": 400,
+          "height": 600,
+          "bytes": 24572,
+          "sha256": "995f5e5534e93168011452987d33c5a2b86af69778acdbb9e87d34a38ca90a6a",
+          "source": {
+            "series": "bestiaization",
+            "assetId": "336eb710913afbc8:80:70793ef69e3e",
+            "entryPath": "assets/other/image/81.png",
+            "name": "Iweleth",
+            "expression": "standing",
+            "mime": "image/webp",
+            "width": 768,
+            "height": 1152,
+            "bytes": 49114,
+            "sha256": "30ca5f20bb22081cb8f1fabea9b0db6874d9f20c117594542f077a2f9ceacd03"
+          }
+        },
+        "pleased": {
+          "scale": "md",
+          "path": "assets/md/995f5e5534e93168011452987d33c5a2.webp",
+          "mime": "image/webp",
+          "width": 400,
+          "height": 600,
+          "bytes": 24572,
+          "sha256": "995f5e5534e93168011452987d33c5a2b86af69778acdbb9e87d34a38ca90a6a",
+          "emotion": "pleased",
+          "source": {
+            "series": "bestiaization",
+            "assetId": "336eb710913afbc8:80:70793ef69e3e",
+            "entryPath": "assets/other/image/81.png",
+            "name": "Iweleth",
+            "expression": "standing",
+            "mime": "image/webp",
+            "width": 768,
+            "height": 1152,
+            "bytes": 49114,
+            "sha256": "30ca5f20bb22081cb8f1fabea9b0db6874d9f20c117594542f077a2f9ceacd03"
+          },
+          "fallbackFrom": "neutral"
+        },
+        "tense": {
+          "scale": "md",
+          "path": "assets/md/995f5e5534e93168011452987d33c5a2.webp",
+          "mime": "image/webp",
+          "width": 400,
+          "height": 600,
+          "bytes": 24572,
+          "sha256": "995f5e5534e93168011452987d33c5a2b86af69778acdbb9e87d34a38ca90a6a",
+          "emotion": "tense",
+          "source": {
+            "series": "bestiaization",
+            "assetId": "336eb710913afbc8:80:70793ef69e3e",
+            "entryPath": "assets/other/image/81.png",
+            "name": "Iweleth",
+            "expression": "standing",
+            "mime": "image/webp",
+            "width": 768,
+            "height": 1152,
+            "bytes": 49114,
+            "sha256": "30ca5f20bb22081cb8f1fabea9b0db6874d9f20c117594542f077a2f9ceacd03"
+          },
+          "fallbackFrom": "neutral"
+        },
+        "despair": {
+          "scale": "md",
+          "path": "assets/md/995f5e5534e93168011452987d33c5a2.webp",
+          "mime": "image/webp",
+          "width": 400,
+          "height": 600,
+          "bytes": 24572,
+          "sha256": "995f5e5534e93168011452987d33c5a2b86af69778acdbb9e87d34a38ca90a6a",
+          "emotion": "despair",
+          "source": {
+            "series": "bestiaization",
+            "assetId": "336eb710913afbc8:80:70793ef69e3e",
+            "entryPath": "assets/other/image/81.png",
+            "name": "Iweleth",
+            "expression": "standing",
+            "mime": "image/webp",
+            "width": 768,
+            "height": 1152,
+            "bytes": 49114,
+            "sha256": "30ca5f20bb22081cb8f1fabea9b0db6874d9f20c117594542f077a2f9ceacd03"
+          },
+          "fallbackFrom": "neutral"
+        }
+      },
+      "lg": {
+        "scale": "lg",
+        "emotion": "neutral",
+        "path": "assets/lg/8f26fca122825460ce650bb98d4dfd14.webp",
+        "mime": "image/webp",
+        "width": 768,
+        "height": 1152,
+        "bytes": 57414,
+        "sha256": "8f26fca122825460ce650bb98d4dfd14ab5bcbd1075adb2f1d72bb354e45bffe",
+        "source": {
+          "series": "bestiaization",
+          "assetId": "336eb710913afbc8:80:70793ef69e3e",
+          "entryPath": "assets/other/image/81.png",
+          "name": "Iweleth",
+          "expression": "standing",
+          "mime": "image/webp",
+          "width": 768,
+          "height": 1152,
+          "bytes": 49114,
+          "sha256": "30ca5f20bb22081cb8f1fabea9b0db6874d9f20c117594542f077a2f9ceacd03"
+        }
+      },
       "visualReview": {
         "status": "owner-review-needed",
         "reasons": [
-          "portrait-unavailable"
+          "post-implementation-review-required"
         ]
       }
     },
@@ -7572,12 +8252,148 @@
     {
       "npcId": "temerosa:bestiaization:kudryavka",
       "series": "bestiaization",
-      "status": "unavailable",
-      "reason": "no-safe-image-candidates",
+      "status": "available",
+      "sm": {
+        "scale": "sm",
+        "emotion": "neutral",
+        "path": "assets/sm/4f4eaa45c5658813db1d7df3ea1af447.webp",
+        "mime": "image/webp",
+        "width": 160,
+        "height": 160,
+        "bytes": 5120,
+        "sha256": "4f4eaa45c5658813db1d7df3ea1af447678ccfa2455ecc51115b4ac5030140cc",
+        "source": {
+          "series": "bestiaization",
+          "assetId": "336eb710913afbc8:6:71caf0b9cb61",
+          "entryPath": "assets/other/image/7.png",
+          "name": "Kudryavka",
+          "expression": "standing",
+          "mime": "image/webp",
+          "width": 1024,
+          "height": 1024,
+          "bytes": 233976,
+          "sha256": "c1e1f51c57e992c8f2a3154005fc05afe6eeed62270a13cb432a70513ded18c6"
+        }
+      },
+      "md": {
+        "neutral": {
+          "scale": "md",
+          "emotion": "neutral",
+          "path": "assets/md/73cc1276b024c6a284530fe50b8765ef.webp",
+          "mime": "image/webp",
+          "width": 480,
+          "height": 480,
+          "bytes": 42316,
+          "sha256": "73cc1276b024c6a284530fe50b8765ef00483edb4d100ee651da57d573877f7c",
+          "source": {
+            "series": "bestiaization",
+            "assetId": "336eb710913afbc8:6:71caf0b9cb61",
+            "entryPath": "assets/other/image/7.png",
+            "name": "Kudryavka",
+            "expression": "standing",
+            "mime": "image/webp",
+            "width": 1024,
+            "height": 1024,
+            "bytes": 233976,
+            "sha256": "c1e1f51c57e992c8f2a3154005fc05afe6eeed62270a13cb432a70513ded18c6"
+          }
+        },
+        "pleased": {
+          "scale": "md",
+          "path": "assets/md/73cc1276b024c6a284530fe50b8765ef.webp",
+          "mime": "image/webp",
+          "width": 480,
+          "height": 480,
+          "bytes": 42316,
+          "sha256": "73cc1276b024c6a284530fe50b8765ef00483edb4d100ee651da57d573877f7c",
+          "emotion": "pleased",
+          "source": {
+            "series": "bestiaization",
+            "assetId": "336eb710913afbc8:6:71caf0b9cb61",
+            "entryPath": "assets/other/image/7.png",
+            "name": "Kudryavka",
+            "expression": "standing",
+            "mime": "image/webp",
+            "width": 1024,
+            "height": 1024,
+            "bytes": 233976,
+            "sha256": "c1e1f51c57e992c8f2a3154005fc05afe6eeed62270a13cb432a70513ded18c6"
+          },
+          "fallbackFrom": "neutral"
+        },
+        "tense": {
+          "scale": "md",
+          "path": "assets/md/73cc1276b024c6a284530fe50b8765ef.webp",
+          "mime": "image/webp",
+          "width": 480,
+          "height": 480,
+          "bytes": 42316,
+          "sha256": "73cc1276b024c6a284530fe50b8765ef00483edb4d100ee651da57d573877f7c",
+          "emotion": "tense",
+          "source": {
+            "series": "bestiaization",
+            "assetId": "336eb710913afbc8:6:71caf0b9cb61",
+            "entryPath": "assets/other/image/7.png",
+            "name": "Kudryavka",
+            "expression": "standing",
+            "mime": "image/webp",
+            "width": 1024,
+            "height": 1024,
+            "bytes": 233976,
+            "sha256": "c1e1f51c57e992c8f2a3154005fc05afe6eeed62270a13cb432a70513ded18c6"
+          },
+          "fallbackFrom": "neutral"
+        },
+        "despair": {
+          "scale": "md",
+          "path": "assets/md/73cc1276b024c6a284530fe50b8765ef.webp",
+          "mime": "image/webp",
+          "width": 480,
+          "height": 480,
+          "bytes": 42316,
+          "sha256": "73cc1276b024c6a284530fe50b8765ef00483edb4d100ee651da57d573877f7c",
+          "emotion": "despair",
+          "source": {
+            "series": "bestiaization",
+            "assetId": "336eb710913afbc8:6:71caf0b9cb61",
+            "entryPath": "assets/other/image/7.png",
+            "name": "Kudryavka",
+            "expression": "standing",
+            "mime": "image/webp",
+            "width": 1024,
+            "height": 1024,
+            "bytes": 233976,
+            "sha256": "c1e1f51c57e992c8f2a3154005fc05afe6eeed62270a13cb432a70513ded18c6"
+          },
+          "fallbackFrom": "neutral"
+        }
+      },
+      "lg": {
+        "scale": "lg",
+        "emotion": "neutral",
+        "path": "assets/lg/e58d3542310e57a333700c75cd1e4967.webp",
+        "mime": "image/webp",
+        "width": 960,
+        "height": 960,
+        "bytes": 224130,
+        "sha256": "e58d3542310e57a333700c75cd1e4967a702b70bf906071c9635a7a14047dd5f",
+        "source": {
+          "series": "bestiaization",
+          "assetId": "336eb710913afbc8:6:71caf0b9cb61",
+          "entryPath": "assets/other/image/7.png",
+          "name": "Kudryavka",
+          "expression": "standing",
+          "mime": "image/webp",
+          "width": 1024,
+          "height": 1024,
+          "bytes": 233976,
+          "sha256": "c1e1f51c57e992c8f2a3154005fc05afe6eeed62270a13cb432a70513ded18c6"
+        }
+      },
       "visualReview": {
         "status": "owner-review-needed",
         "reasons": [
-          "portrait-unavailable"
+          "post-implementation-review-required"
         ]
       }
     },

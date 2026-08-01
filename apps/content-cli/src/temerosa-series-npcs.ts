@@ -103,6 +103,26 @@ const SEAT_ROLE_EXPRESSIONS: Readonly<Record<TemerosaSeriesNpcSeatRole, readonly
   despair: ["sad", "cry", "teardrop", "disappointed", "embarrassed"],
 };
 
+/**
+ * Some CHARX portraits are deliberately named as a bare character name rather
+ * than as an expression sheet.  They are still owned, usable portraits; the
+ * casino may reuse that one neutral image for the other presentation moods.
+ * Keep this allow-list narrow so arbitrary lore illustrations never become a
+ * person's face merely because their filename happens to resemble an alias.
+ */
+const VERIFIED_STANDALONE_PORTRAITS: Readonly<Partial<Record<TemerosaSeriesKey, Readonly<Record<string, string>>>>> = {
+  overture: Object.freeze({
+    licanica: "licanica",
+    "lyla-mascot": "mascot",
+  }),
+  bestiaization: Object.freeze({
+    boris: "boris-leblanc",
+    gestas: "gestas",
+    iweleth: "iweleth",
+    kudryavka: "kudryavka",
+  }),
+};
+
 const STANDARD_ROSTER_EXCLUSIONS = new Set([
   "temerosa:bestiaization:bacikal",
   "temerosa:finale:bacikal",
@@ -177,7 +197,7 @@ export function buildTemerosaSeriesNpcInventory(cards: Readonly<Record<TemerosaS
 export function extractSeriesRecords(series: TemerosaSeriesKey, card: ParsedCard): TemerosaSeriesNpcRecord[] {
   const entries = card.moduleLorebooks.flatMap((book) => book).filter(isObject);
   const loreDrafts = extractLoreDrafts(series, entries);
-  const imageGroups = normalizeImageGroups(series, groupExpressionAssets(card));
+  const imageGroups = normalizeImageGroups(series, groupExpressionAssets(series, card));
   const records = new Map<string, TemerosaSeriesNpcRecord>();
 
   for (const draft of loreDrafts) {
@@ -268,25 +288,29 @@ function startMarker(series: TemerosaSeriesKey, comment: string): boolean {
   return comment.startsWith("등장인물 | NPC");
 }
 
-function groupExpressionAssets(card: ParsedCard): Map<string, SeriesNpcAssetCandidate[]> {
-  const groups = new Map<string, { assets: SeriesNpcAssetCandidate[]; expressions: Set<string> }>();
+function groupExpressionAssets(series: TemerosaSeriesKey, card: ParsedCard): Map<string, SeriesNpcAssetCandidate[]> {
+  const groups = new Map<string, { assets: SeriesNpcAssetCandidate[]; expressions: Set<string>; verifiedStandalone: boolean }>();
+  const standalone = VERIFIED_STANDALONE_PORTRAITS[series] ?? {};
   for (const asset of card.assets) {
     if (!asset.mime.startsWith("image/") || TEMEROSA_FORBIDDEN_ASSET_NAME.test(asset.name) || TEMEROSA_FORBIDDEN_ASSET_NAME.test(asset.path ?? "")) continue;
     const normalized = normalizeCasinoAssetName(asset.name.replace(/\.(?:png|jpe?g|webp|gif|avif)$/iu, "")).value;
     const expression = EXPRESSION_SUFFIXES.find((suffix) => normalized.endsWith(`-${suffix}`));
-    if (!expression) continue;
-    let rawIdentity = normalized.slice(0, -(expression.length + 1));
+    const standaloneIdentity = standalone[normalized];
+    if (!expression && !standaloneIdentity) continue;
+    let rawIdentity = standaloneIdentity ?? normalized.slice(0, -(expression!.length + 1));
     rawIdentity = rawIdentity.replace(/-(?:closed|opened)-eyes$/u, "");
     const identity = normalizeIdentityKey(rawIdentity);
     if (!identity) continue;
-    const group = groups.get(identity) ?? { assets: [], expressions: new Set<string>() };
-    group.expressions.add(expression);
-    group.assets.push({ assetId: asset.id, name: asset.name, ...(asset.path ? { path: asset.path } : {}), expression });
+    const group = groups.get(identity) ?? { assets: [], expressions: new Set<string>(), verifiedStandalone: false };
+    const resolvedExpression = expression ?? "standing";
+    group.expressions.add(resolvedExpression);
+    group.verifiedStandalone ||= Boolean(standaloneIdentity);
+    group.assets.push({ assetId: asset.id, name: asset.name, ...(asset.path ? { path: asset.path } : {}), expression: resolvedExpression });
     groups.set(identity, group);
   }
   const output = new Map<string, SeriesNpcAssetCandidate[]>();
   for (const [identity, group] of groups) {
-    if (group.expressions.size < 2) continue;
+    if (group.expressions.size < 2 && !group.verifiedStandalone) continue;
     output.set(identity, group.assets);
   }
   return output;

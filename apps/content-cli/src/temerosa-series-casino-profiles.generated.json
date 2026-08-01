@@ -2,7 +2,7 @@
   "contract": "temerosa-series-casino-profiles/0.1",
   "generatedFrom": {
     "rosterContract": "temerosa-series-npc-inventory/0.2",
-    "rosterGeneratedAt": "2026-07-31T10:47:51.888Z"
+    "rosterGeneratedAt": "2026-08-01T03:45:42.643Z"
   },
   "identityRule": "series-and-source-persona",
   "profiles": [

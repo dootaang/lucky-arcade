@@ -4,13 +4,7 @@
   "version": "0.2.0",
   "status": "passed",
   "missingNpcIds": [
-    "temerosa:overture:licanica",
-    "temerosa:overture:mascot",
     "temerosa:overture:mortem",
-    "temerosa:bestiaization:boris-leblanc",
-    "temerosa:bestiaization:gestas",
-    "temerosa:bestiaization:iweleth",
-    "temerosa:bestiaization:kudryavka",
     "temerosa:bestiaization:leviathan",
     "temerosa:bestiaization:sherirus"
   ],
@@ -36,9 +30,39 @@
       "fallbackFrom": "angry"
     },
     {
+      "npcId": "temerosa:overture:licanica",
+      "emotion": "pleased",
+      "fallbackFrom": "neutral"
+    },
+    {
+      "npcId": "temerosa:overture:licanica",
+      "emotion": "tense",
+      "fallbackFrom": "neutral"
+    },
+    {
+      "npcId": "temerosa:overture:licanica",
+      "emotion": "despair",
+      "fallbackFrom": "neutral"
+    },
+    {
       "npcId": "temerosa:overture:lyla",
       "emotion": "neutral",
       "fallbackFrom": "embarrassed"
+    },
+    {
+      "npcId": "temerosa:overture:mascot",
+      "emotion": "pleased",
+      "fallbackFrom": "neutral"
+    },
+    {
+      "npcId": "temerosa:overture:mascot",
+      "emotion": "tense",
+      "fallbackFrom": "neutral"
+    },
+    {
+      "npcId": "temerosa:overture:mascot",
+      "emotion": "despair",
+      "fallbackFrom": "neutral"
     },
     {
       "npcId": "temerosa:overture:merry-pip",
@@ -66,6 +90,21 @@
       "fallbackFrom": "neutral"
     },
     {
+      "npcId": "temerosa:bestiaization:boris-leblanc",
+      "emotion": "pleased",
+      "fallbackFrom": "neutral"
+    },
+    {
+      "npcId": "temerosa:bestiaization:boris-leblanc",
+      "emotion": "tense",
+      "fallbackFrom": "neutral"
+    },
+    {
+      "npcId": "temerosa:bestiaization:boris-leblanc",
+      "emotion": "despair",
+      "fallbackFrom": "neutral"
+    },
+    {
       "npcId": "temerosa:bestiaization:dorsinea",
       "emotion": "despair",
       "fallbackFrom": "neutral"
@@ -73,6 +112,51 @@
     {
       "npcId": "temerosa:bestiaization:francis",
       "emotion": "pleased",
+      "fallbackFrom": "neutral"
+    },
+    {
+      "npcId": "temerosa:bestiaization:gestas",
+      "emotion": "pleased",
+      "fallbackFrom": "neutral"
+    },
+    {
+      "npcId": "temerosa:bestiaization:gestas",
+      "emotion": "tense",
+      "fallbackFrom": "neutral"
+    },
+    {
+      "npcId": "temerosa:bestiaization:gestas",
+      "emotion": "despair",
+      "fallbackFrom": "neutral"
+    },
+    {
+      "npcId": "temerosa:bestiaization:iweleth",
+      "emotion": "pleased",
+      "fallbackFrom": "neutral"
+    },
+    {
+      "npcId": "temerosa:bestiaization:iweleth",
+      "emotion": "tense",
+      "fallbackFrom": "neutral"
+    },
+    {
+      "npcId": "temerosa:bestiaization:iweleth",
+      "emotion": "despair",
+      "fallbackFrom": "neutral"
+    },
+    {
+      "npcId": "temerosa:bestiaization:kudryavka",
+      "emotion": "pleased",
+      "fallbackFrom": "neutral"
+    },
+    {
+      "npcId": "temerosa:bestiaization:kudryavka",
+      "emotion": "tense",
+      "fallbackFrom": "neutral"
+    },
+    {
+      "npcId": "temerosa:bestiaization:kudryavka",
+      "emotion": "despair",
       "fallbackFrom": "neutral"
     }
   ],
@@ -205,7 +289,7 @@
     {
       "npcId": "temerosa:overture:licanica",
       "reasons": [
-        "portrait-unavailable"
+        "post-implementation-review-required"
       ]
     },
     {
@@ -217,7 +301,7 @@
     {
       "npcId": "temerosa:overture:mascot",
       "reasons": [
-        "portrait-unavailable"
+        "post-implementation-review-required"
       ]
     },
     {
@@ -259,7 +343,7 @@
     {
       "npcId": "temerosa:bestiaization:boris-leblanc",
       "reasons": [
-        "portrait-unavailable"
+        "post-implementation-review-required"
       ]
     },
     {
@@ -283,19 +367,19 @@
     {
       "npcId": "temerosa:bestiaization:gestas",
       "reasons": [
-        "portrait-unavailable"
+        "post-implementation-review-required"
       ]
     },
     {
       "npcId": "temerosa:bestiaization:iweleth",
       "reasons": [
-        "portrait-unavailable"
+        "post-implementation-review-required"
       ]
     },
     {
       "npcId": "temerosa:bestiaization:kudryavka",
       "reasons": [
-        "portrait-unavailable"
+        "post-implementation-review-required"
       ]
     },
     {
@@ -341,6 +425,6 @@
       ]
     }
   ],
-  "uniqueImageFiles": 626,
-  "imageBytes": 25900664
+  "uniqueImageFiles": 644,
+  "imageBytes": 26730920
 }

@@ -30,8 +30,8 @@ describe("Temerosa four-series NPC portrait pack", () => {
     const inventory = await json<TemerosaSeriesNpcInventory>(inventoryPath), selection = await json<SeriesNpcAssetSelection>(selectionPath);
     expect(() => assertSeriesNpcAssetSelection(selection, inventory)).not.toThrow();
     expect(selection.items).toHaveLength(116);
-    expect(selection.items.filter((item) => item.status === "selected")).toHaveLength(107);
-    expect(selection.items.filter((item) => item.status === "unavailable")).toHaveLength(9);
+    expect(selection.items.filter((item) => item.status === "selected")).toHaveLength(113);
+    expect(selection.items.filter((item) => item.status === "unavailable")).toHaveLength(3);
     expect(selection.policy).toMatchObject({ crossSeriesFallback: false, manualVisualPrecheck: false, postImplementationVisualReview: "completed" });
     expect(selection.items.filter((item) => item.npcId.endsWith(":pale")).map((item) => item.npcId).sort()).toEqual([
       "temerosa:finale:pale", "temerosa:overture:pale", "temerosa:root2:pale",
@@ -41,12 +41,11 @@ describe("Temerosa four-series NPC portrait pack", () => {
   it("retains unavailable NPCs and emotion fallbacks as auditable manifest data", async () => {
     const manifest = await json<SeriesNpcPortraitPackManifest>(`${packRoot}/manifest.json`), audit = await json<SeriesNpcAssetAudit>(`${packRoot}/audit.json`);
     expect(manifest).toMatchObject({ contract: "temerosa-series-npc-portrait-pack/0.2", packId: "temerosa-series-npcs", version: "0.2.0" });
-    expect(manifest.totals).toMatchObject({ npcs: 116, available: 107, unavailable: 9, portraitOwnerships: 641, emotionFallbacks: 12, uniqueSourceImages: 415, uniqueImageFiles: 626, imageBytes: 25_900_664, approved: 89, ownerReviewNeeded: 27 });
+    expect(manifest.totals).toMatchObject({ npcs: 116, available: 113, unavailable: 3, portraitOwnerships: 677, emotionFallbacks: 30, uniqueSourceImages: 421, uniqueImageFiles: 644, imageBytes: 26_730_920, approved: 89, ownerReviewNeeded: 27 });
     expect(audit.missingNpcIds).toEqual([
-      "temerosa:overture:licanica", "temerosa:overture:mascot", "temerosa:overture:mortem", "temerosa:bestiaization:boris-leblanc", "temerosa:bestiaization:gestas",
-      "temerosa:bestiaization:iweleth", "temerosa:bestiaization:kudryavka", "temerosa:bestiaization:leviathan", "temerosa:bestiaization:sherirus",
+      "temerosa:overture:mortem", "temerosa:bestiaization:leviathan", "temerosa:bestiaization:sherirus",
     ]);
-    expect(audit.emotionFallbacks).toHaveLength(12);
+    expect(audit.emotionFallbacks).toHaveLength(30);
     expect(audit.approvedNpcIds).toHaveLength(89);
     expect(audit.ownerReviewNeeded).toHaveLength(27);
   });
@@ -54,8 +53,8 @@ describe("Temerosa four-series NPC portrait pack", () => {
   it("keeps mechanically verified source ownership corrections in the selection", async () => {
     const selection = await json<SeriesNpcAssetSelection>(selectionPath);
     const byId = new Map(selection.items.map((item) => [item.npcId, item]));
-    expect(byId.get("temerosa:overture:mascot")).toMatchObject({ status: "unavailable", reason: "no-owned-image-candidates" });
     const ownership: Readonly<Record<string, RegExp>> = {
+      "temerosa:overture:mascot": /^Lyla\.mascot$/iu,
       "temerosa:overture:kano": /^K(?:a|o)no[._]/iu,
       "temerosa:root2:nostalgia": /^Nostalgia[._]/iu,
       "temerosa:bestiaization:bacikal": /^Bacikal[._]/iu,
@@ -89,7 +88,7 @@ describe("Temerosa four-series NPC portrait pack", () => {
   it("verifies every unique path, byte size, hash, dimensions, and actual MIME", async () => {
     const manifest = await json<SeriesNpcPortraitPackManifest>(`${packRoot}/manifest.json`);
     const audit = await auditSeriesNpcPortraitPack(packRoot, manifest);
-    expect(audit).toMatchObject({ status: "passed", uniqueImageFiles: 626, imageBytes: 25_900_664 });
+    expect(audit).toMatchObject({ status: "passed", uniqueImageFiles: 644, imageBytes: 26_730_920 });
     expect(audit.forbiddenAssetMatches).toEqual([]);
     expect(audit.mimeMismatches).toEqual([]);
     expect(audit.enlargedVariants).toEqual([]);
@@ -104,7 +103,7 @@ describe("Temerosa four-series NPC portrait pack", () => {
     expect(files).toContain("manifest.json");
     expect(files).toContain("audit.json");
     expect(files).toContain("review.html");
-    expect(files.filter((path) => path.endsWith(".webp"))).toHaveLength(626);
+    expect(files.filter((path) => path.endsWith(".webp"))).toHaveLength(644);
     expect(files.every((path) => /^(?:assets\/(?:sm|md|lg)\/[a-f0-9]{32}\.webp|manifest\.json|audit\.json|review\.html)$/u.test(path))).toBe(true);
     expect(files.some((path) => /(?:charx|\.tmp-|extracted|assets\/other\/image)/iu.test(path))).toBe(false);
   });

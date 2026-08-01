@@ -141,7 +141,7 @@ export function loadTemerosaCasinoManifest(): Promise<TemerosaManifestLoad> {
 
 /** Loads the four-series portrait pack only after a series-NPC surface asks for it. */
 export function loadTemerosaSeriesNpcAssets():Promise<TemerosaSeriesNpcAssetBundle>{
-  seriesNpcAssetPromise??=fetch("/content/temerosa-series-npcs/0.2.0/manifest.json").then(async(response)=>{
+  seriesNpcAssetPromise??=fetch("/content/temerosa-series-npcs/0.2.0/manifest.json",{cache:"no-store"}).then(async(response)=>{
     if(!response.ok)throw new Error("temerosa_series_npc_manifest_missing");
     const manifest=await response.json() as TemerosaSeriesNpcManifest;
     if(manifest.contract!=="temerosa-series-npc-portrait-pack/0.2"||manifest.packId!=="temerosa-series-npcs"||manifest.version!=="0.2.0")throw new Error("temerosa_series_npc_manifest_invalid");
@@ -163,8 +163,12 @@ export function loadTemerosaSeriesNpcAssets():Promise<TemerosaSeriesNpcAssetBund
 export async function resolveTemerosaSeriesNpcPortrait(npcId:string,intent:TemerosaSeriesNpcPortraitIntent):Promise<string|undefined>{
   if(!npcId.startsWith("temerosa:"))return undefined;
   const bundle=await loadTemerosaSeriesNpcAssets();
-  if(bundle.unavailableNpcIds.includes(npcId))return undefined;
-  return intent==="detail"?bundle.detailAssets[npcId]:bundle.thumbAssets[npcId];
+  const portraitId=npcId==="temerosa:overture:mortem"?"temerosa:root2:mortem":npcId;
+  if(npcId==="temerosa:guest:nemo")return intent==="detail"
+    ? contentUrl("0.8.0","assets/margin/npc-nemo-neutral/lg.webp")
+    : contentUrl("0.8.0","assets/margin/npc-nemo-neutral/sm.webp");
+  if(bundle.unavailableNpcIds.includes(portraitId))return undefined;
+  return intent==="detail"?bundle.detailAssets[portraitId]:bundle.thumbAssets[portraitId];
 }
 
 function fetchManifest(version: string): Promise<TemerosaManifestLoad> {

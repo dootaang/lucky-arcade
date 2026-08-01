@@ -18,7 +18,7 @@ const EMOTION_PREFERENCES: Readonly<Record<Emotion, readonly string[]>> = {
 };
 const VERIFIED_CANDIDATE_OWNERSHIP: Readonly<Record<string, RegExp>> = {
   "temerosa:overture:kano": /^K(?:a|o)no[._]/iu,
-  "temerosa:overture:mascot": /^Mascot[._]/iu,
+  "temerosa:overture:mascot": /^Lyla\.mascot$/iu,
   "temerosa:root2:nostalgia": /^Nostalgia[._]/iu,
   "temerosa:bestiaization:bacikal": /^Bacikal[._]/iu,
   "temerosa:bestiaization:cradle": /^Cradle[._]/iu,
@@ -364,7 +364,7 @@ async function createVariant(staging: string, scale: PortraitScale, emotion: Emo
 function withoutRaw(source: ResolvedSource): PortraitVariant["source"] { const { raw: _raw, ...value } = source; return value; }
 
 function assertInventory(inventory: TemerosaSeriesNpcInventory): void {
-  if (inventory.contract !== "temerosa-series-npc-inventory/0.2" || inventory.identityRule !== "series-and-source-persona" || inventory.records.length !== 116 || inventory.totals.assetCandidates !== 1616) throw new Error("series_asset_inventory_invalid");
+  if (inventory.contract !== "temerosa-series-npc-inventory/0.2" || inventory.identityRule !== "series-and-source-persona" || inventory.records.length !== 116 || inventory.totals.assetCandidates !== 1622) throw new Error("series_asset_inventory_invalid");
 }
 
 function assertManifest(manifest: SeriesNpcPortraitPackManifest, inventory: TemerosaSeriesNpcInventory): void {

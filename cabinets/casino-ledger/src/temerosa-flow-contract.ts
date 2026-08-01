@@ -22,9 +22,9 @@ export const TEMEROSA_CASINO_RELEASE_FLAGS_ACTIVE:Readonly<TemerosaCasinoRelease
 export const TEMEROSA_FLOW_RELEASE_AUDIT=Object.freeze({
   status:"active-with-warnings" as const,
   blockers:Object.freeze([] as const),
-  warnings:Object.freeze(["seven-day-supply-drift","one-year-supply-drift","one-year-activity-gap","ten-year-audit-pending"] as const),
-  sevenDays:Object.freeze({npcCount:102,supplyChangeBps:-1_681,averageSettlementGapSeconds:24.91,minimumHouseBalance:100_384,houseCurtailedOperatingExpenses:0}),
-  oneYear:Object.freeze({supplyChangeBps:2_329,averageSettlementGapSeconds:26.13,minimumHouseBalance:50_012,houseCurtailedOperatingExpenses:0}),
+  warnings:Object.freeze(["seven-day-supply-drift","one-year-supply-drift","ten-year-audit-pending"] as const),
+  sevenDays:Object.freeze({npcCount:102,supplyChangeBps:-2_781,averageSettlementGapSeconds:22.26,minimumHouseBalance:90_887,houseCurtailedOperatingExpenses:0}),
+  oneYear:Object.freeze({supplyChangeBps:-920,averageSettlementGapSeconds:24.66,minimumHouseBalance:50_003,houseCurtailedOperatingExpenses:0}),
   tenYears:Object.freeze({status:"pending" as const}),
 });
 export const TEMEROSA_FLOW_RELEASE_READY:boolean=Array.from(TEMEROSA_FLOW_RELEASE_AUDIT.blockers).length===0;

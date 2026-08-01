@@ -22,9 +22,9 @@ describe("Temerosa flow ledger cutover",()=>{
   });
 
   it("connects only the audited series-persona intersection",()=>{
-    expect(TEMEROSA_SERIES_RUNTIME_SOURCE).toMatchObject({ledgerProfiles:99,casinoSeats:80,identityRule:"series-and-source-persona"});
+    expect(TEMEROSA_SERIES_RUNTIME_SOURCE).toMatchObject({ledgerProfiles:99,casinoSeats:81,identityRule:"series-and-source-persona"});
     expect(TEMEROSA_FLOW_NPC_GAMBLING_PROFILES).toHaveLength(102);
-    expect(TEMEROSA_SERIES_CASINO_SEAT_IDS).toHaveLength(80);
+    expect(TEMEROSA_SERIES_CASINO_SEAT_IDS).toHaveLength(81);
     expect(TEMEROSA_FLOW_PROFILE_EXCLUSIONS).toEqual([]);
     expect(TEMEROSA_FLOW_NPC_GAMBLING_PROFILES.some((profile)=>profile.id.includes(":bacikal"))).toBe(false);
     expect(TEMEROSA_FLOW_NPC_GAMBLING_PROFILES.some((profile)=>profile.id.includes(":wares"))).toBe(false);
@@ -64,12 +64,30 @@ describe("Temerosa flow ledger cutover",()=>{
 
   it("records the audited one-year drift as live operating warnings",()=>{
     const report=TEMEROSA_FLOW_RELEASE_AUDIT.oneYear;
-    expect(report.supplyChangeBps).toBeGreaterThan(1_000);
-    expect(report.averageSettlementGapSeconds).toBeGreaterThan(25);
+    expect(report.supplyChangeBps).toBeLessThan(-300);
+    expect(report.averageSettlementGapSeconds).toBeGreaterThanOrEqual(10);
+    expect(report.averageSettlementGapSeconds).toBeLessThanOrEqual(25);
     expect(report.houseCurtailedOperatingExpenses).toBe(0);
     expect(TEMEROSA_FLOW_RELEASE_AUDIT.warnings).toContain("one-year-supply-drift");
-    expect(TEMEROSA_FLOW_RELEASE_AUDIT.warnings).toContain("one-year-activity-gap");
+    expect(TEMEROSA_FLOW_RELEASE_AUDIT.warnings).not.toContain("one-year-activity-gap");
     expect(report.minimumHouseBalance).toBeGreaterThanOrEqual(TEMEROSA_FLOW_NPC_LEDGER_CONTRACT.houseOperatingPolicy!.protectedReserve);
+  });
+
+  it("publishes Korean character names with official series labels",()=>{
+    const names=new Map(TEMEROSA_FLOW_NPC_GAMBLING_PROFILES.map((profile)=>[profile.id,profile.name]));
+    expect(names.get("temerosa:bestiaization:camille")).toBe("카미유 · Bestiaization");
+    expect(names.get("temerosa:finale:pale")).toBe("페일 · Finale");
+    expect(names.get("temerosa:overture:licanica")).toBe("라카니카 · Overture");
+    expect([...names.entries()].filter(([id])=>id.startsWith("temerosa:")&&!id.startsWith("temerosa:guest:")).every(([,name])=>!/[A-Za-z]+\s*\([^)]*[가-힣]/u.test(name))).toBe(true);
+  });
+
+  it("keeps newly integrated series NPCs active outside the old evening-only period",()=>{
+    const legacy=new Set<string>(Object.values(TEMEROSA_LEGACY_NPC_SUCCESSORS));
+    const openings=Object.fromEntries(TEMEROSA_FLOW_NPC_GAMBLING_PROFILES.map((profile)=>[profile.id,profile.openingBalance]));
+    const plan=casinoDayPlan(TEMEROSA_FLOW_NPC_GAMBLING_PROFILES,0,openings,TEMEROSA_FLOW_NPC_LEDGER_CONTRACT);
+    const daytimeNewIds=new Set(plan.visits.filter((visit)=>visit.startedAtSecondOfDay<18*3_600).flatMap((visit)=>visit.participantIds).filter((id)=>!legacy.has(id)));
+    expect(daytimeNewIds.size).toBeGreaterThan(0);
+    expect(new Set(plan.visits.flatMap((visit)=>visit.participantIds).filter((id)=>!legacy.has(id))).size).toBeGreaterThan(60);
   });
 
   it("keeps series accounts while scheduling cabinet-compatible spectator replays",()=>{
