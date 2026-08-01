@@ -126,7 +126,17 @@ export function FiveCardDrawScreen(props:FiveCardDrawScreenProps):ReactElement {
   function selectableOpponents():readonly FiveCardDrawOpponentView[]{return props.opponents.filter((opponent)=>props.opponentAvailability?.[opponent.id]?.available!==false&&opponentCanAfford(opponent));}
   function changeCount(value:2|3|4):void {setPlayerCount(value);setSelectedIds((current)=>fillUnique(current,value-1,selectableOpponents()));}
   function selectOpponent(id:string):void {setSelectedIds((current)=>{const active=current.slice(0,playerCount-1);if(active.includes(id))return active.filter((candidate)=>candidate!==id);return active.length<playerCount-1?[...active,id]:[...active.slice(0,-1),id];});}
-  function randomize():void {const available=selectableOpponents();if(available.length<playerCount-1)return;const random=new Uint32Array(1);crypto.getRandomValues(random);const start=random[0]!%available.length;setSelectedIds(Array.from({length:playerCount-1},(_,index)=>available[(start+index*7)%available.length]!.id));}
+  function randomize():void {
+    const available=[...selectableOpponents()];
+    if(available.length<playerCount-1)return;
+    const random=new Uint32Array(available.length);
+    crypto.getRandomValues(random);
+    for(let index=available.length-1;index>0;index-=1){
+      const swapIndex=random[index]!%(index+1);
+      [available[index],available[swapIndex]]=[available[swapIndex]!,available[index]!];
+    }
+    setSelectedIds(available.slice(0,playerCount-1).map((opponent)=>opponent.id));
+  }
   function toggle(card:string):void {if(!canSelectCards())return;setSelectedCards((current)=>{const next=new Set(current);if(next.has(card))next.delete(card);else if(next.size<3)next.add(card);return next;});}
   function exchange():void {props.onAction({type:"exchange",cardIds:[...selectedCards] as StandardCardId[]});setSelectedCards(new Set());setInspectedSeat(null);}
   function canSelectCards():boolean {return settled&&props.state.phase==="drawing"&&props.state.currentActorId==="player";}
