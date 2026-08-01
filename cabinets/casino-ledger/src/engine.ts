@@ -1,7 +1,7 @@
 import { WAGER_MULTIPLIERS, XorShift32, type WagerMultiplier } from "@lucky-arcade/engine";
 import { NPC_INCOME_AMOUNTS } from "./economy.ts";
 import { NPC_FLOW_ECONOMY_CONTRACT, assertNpcExternalIncomeProfile, npcFlowEconomyDay } from "./flow-economy.ts";
-import { DEFAULT_HOUSE_OPERATING_COST_POLICY,createHouseOperatingExpensePlan,houseDailyActivityFromPlan } from "./house-operations.ts";
+import { DEFAULT_HOUSE_OPERATING_COST_POLICY,createHouseOperatingExpensePlan,houseDailyActivityFromPlan,houseGrossGamingRevenueFromSessions } from "./house-operations.ts";
 import {
   CASINO_SECONDS_PER_DAY,
   casinoKstDayAtUtcSecond,
@@ -65,7 +65,7 @@ const FLOW_PVP_RAKE_BPS = 750;
 
 interface VisitIntent { npcId: string; second: number; ordinal: number; tableId: CasinoTableId }
 interface MatchDraft { matchId: string; visitId: string; tableId: CasinoTableId; participantIds: readonly string[]; startsAtSecondOfDay: number; settlesAtSecondOfDay: number }
-const DAY_PLAN_CACHE = new Map<string,CasinoDayPlan>();
+const DAY_PLAN_CACHES = new WeakMap<NpcLedgerContract,Map<string,CasinoDayPlan>>();
 interface FlowServiceState { nextDay:number; houseBalance:number; npcBalances:Record<string,number>; houseOpenings:number[] }
 const FLOW_SERVICE_STATE = new WeakMap<NpcLedgerContract,FlowServiceState>();
 
@@ -83,6 +83,24 @@ export function casinoDayPlan(
   return buildCasinoDayPlan(profiles,dayIndex,openingBalances,contract,balanceEvents,houseOpeningBalance);
 }
 
+/**
+ * Pure 1.2 entry point for sequential consumers that already own the previous
+ * house close. Removing every in-memory cache leaves this result unchanged.
+ */
+export function casinoDayPlanWithHouseOpening(
+  profiles: readonly NpcGamblingProfile[],
+  dayIndex: number,
+  openingBalances: Readonly<Record<string, number>>,
+  contract: NpcLedgerContract,
+  houseOpeningBalance: number,
+  balanceEvents: readonly NpcBalanceEvent[] = Object.freeze([]),
+): CasinoDayPlan {
+  validateDay(profiles,dayIndex,openingBalances,contract);
+  validateBalanceEvents(balanceEvents,profiles);
+  if(contract.version!=="npc-ledger/1.2"||!Number.isSafeInteger(houseOpeningBalance)||houseOpeningBalance<0)throw new Error("npc_ledger_invalid_house_opening");
+  return buildCasinoDayPlan(profiles,dayIndex,openingBalances,contract,balanceEvents,houseOpeningBalance);
+}
+
 function buildCasinoDayPlan(
   profiles: readonly NpcGamblingProfile[],
   dayIndex: number,
@@ -92,8 +110,9 @@ function buildCasinoDayPlan(
   houseOpeningBalance?: number,
 ): CasinoDayPlan {
   const cacheKey=profiles===contract.profiles&&balanceEvents.length===0?`${contract.version}:${contract.seedVersion}:${housePolicyCacheKey(contract)}:${dayIndex}:${houseOpeningBalance??"legacy"}:${profiles.map((profile)=>openingBalances[profile.id]).join(",")}`:undefined;
-  const cached=cacheKey===undefined?undefined:DAY_PLAN_CACHE.get(cacheKey);
-  if(cached){DAY_PLAN_CACHE.delete(cacheKey!);DAY_PLAN_CACHE.set(cacheKey!,cached);return cached;}
+  const contractCache=cacheKey===undefined?undefined:dayPlanCacheFor(contract);
+  const cached=cacheKey===undefined?undefined:contractCache!.get(cacheKey);
+  if(cached){contractCache!.delete(cacheKey!);contractCache!.set(cacheKey!,cached);return cached;}
   const byId = new Map(profiles.map((profile) => [profile.id, profile]));
   const visits = createVisits(profiles, dayIndex, contract);
   const drafts = visits.flatMap((visit) => createMatchDrafts(visit, dayIndex, contract))
@@ -118,7 +137,7 @@ function buildCasinoDayPlan(
 
   if(contract.version==="npc-ledger/1.2"){
     const plan=buildFlowCasinoDayPlan({profiles,dayIndex,contract,visits,drafts,balances,visitOpening,output,incomes,appliedIncome,orderedEvents,houseOpeningBalance:houseOpeningBalance!});
-    if(cacheKey!==undefined){DAY_PLAN_CACHE.set(cacheKey,plan);while(DAY_PLAN_CACHE.size>16)DAY_PLAN_CACHE.delete(DAY_PLAN_CACHE.keys().next().value!);}
+    if(cacheKey!==undefined)cacheDayPlan(contractCache!,cacheKey,plan);
     return plan;
   }
 
@@ -167,7 +186,7 @@ function buildCasinoDayPlan(
     predictions: Object.freeze(predictions),
     sessions: freezeSessions(output),
   });
-  if(cacheKey!==undefined){DAY_PLAN_CACHE.set(cacheKey,plan);while(DAY_PLAN_CACHE.size>16)DAY_PLAN_CACHE.delete(DAY_PLAN_CACHE.keys().next().value!);}
+  if(cacheKey!==undefined)cacheDayPlan(contractCache!,cacheKey,plan);
   return plan;
 }
 
@@ -199,10 +218,11 @@ function buildFlowCasinoDayPlan(input:{
     while(pending.length>0&&pending[0]!.settlesAt<=second){
       const settlement=pending.shift()!;
       outstandingLiability-=settlement.liability;
+      const matchRevenue=houseGrossGamingRevenueFromSessions(settlement.rows.map((row)=>row.session));
+      grossHouseRevenue+=matchRevenue;
       for(const {npcId,session} of settlement.rows){
         reservedByNpc[npcId]!-=session.reservedAmount;
         balances[npcId]!+=session.delta;
-        if(isHouseRiskTable(session.tableId))grossHouseRevenue+=Math.max(0,-session.delta);
         houseBalance-=session.delta;
       }
     }
@@ -227,9 +247,8 @@ function buildFlowCasinoDayPlan(input:{
       const terms=chooseOldMaidExposure(participants,Object.fromEntries(participants.map((profile)=>[profile.id,availableBalance(profile.id)])),termsRng,true);
       if(terms.exposure===0)continue;
       const nextProvision=incrementalOperatingProvision(draft,visits,acceptedDrafts,acceptedVisitEnds,policy);
-      // Old maid is zero-sum for the house. It remains available even while
-      // house-risk tables are reduced. Its activity cost may therefore remain
-      // an explicit release blocker; it must not be disguised as game risk.
+      const revenueProvision=Math.floor(grossHouseRevenue*policy.positiveGamingRevenueRateBps/10_000);
+      if(houseBalance-outstandingLiability-policy.protectedReserve-nextProvision-revenueProvision<0)continue;
       const settlement=createPendingSessions(draft,participants,balances,reservedByNpc,output,(tempBalances,tempOutput)=>settlePaidOldMaid(draft,participants,tempBalances,tempOutput,terms.stake,terms.multiplier,terms.exposure,resultRng));
       operatingProvision=acceptOperatingProvision(draft,acceptedDrafts,acceptedVisitEnds,nextProvision);
       acceptPending(settlement,0,pending,reservedByNpc,output);matches.push(matchFromDraft(draft,terms.stake,terms.multiplier));continue;
@@ -241,11 +260,15 @@ function buildFlowCasinoDayPlan(input:{
     const requiredProvision=nextProvision+revenueProvision;
     const rawCapacity=houseBalance-outstandingLiability-policy.protectedReserve-requiredProvision;
     if(rawCapacity<0&&isHouseRiskTable(draft.tableId)){curtailedHouseRiskRounds+=1;continue;}
-    // PVP has no negative house liability (draw/zero-sum plus a published
-    // rake), so it remains open even when the risk-table envelope is empty.
     const capacity=Math.max(0,rawCapacity);
     const available=Object.fromEntries(participants.map((profile)=>[profile.id,availableBalance(profile.id)]));
-    const terms=chooseSharedExposure(participants,available,reference,termsRng,true,isHouseRiskTable(draft.tableId)?capacity:Number.MAX_SAFE_INTEGER,draft.tableId);
+    const pvpTermsAllowed=isHouseRiskTable(draft.tableId)?undefined:(stake:Exclude<NpcStake,0>,multiplier:WagerMultiplier)=>{
+      const rake=pvpRake(stake*multiplier);
+      const revenueIncrement=Math.floor((grossHouseRevenue+rake)*policy.positiveGamingRevenueRateBps/10_000)-revenueProvision;
+      const marginalOperatingProvision=nextProvision-operatingProvision+revenueIncrement;
+      return rawCapacity>=0||rake>=marginalOperatingProvision;
+    };
+    const terms=chooseSharedExposure(participants,available,reference,termsRng,true,isHouseRiskTable(draft.tableId)?capacity:Number.MAX_SAFE_INTEGER,draft.tableId,pvpTermsAllowed);
     if(terms.exposure===0){if(isHouseRiskTable(draft.tableId))curtailedHouseRiskRounds+=1;continue;}
     const liability=houseMaximumRoundLiability(draft.tableId,terms.stake,terms.multiplier);
     const settlement=createPendingSessions(draft,participants,balances,reservedByNpc,output,(tempBalances,tempOutput)=>{
@@ -342,6 +365,8 @@ function housePolicyCacheKey(contract:NpcLedgerContract):string{
   const policy=contract.houseOperatingPolicy;
   return policy===undefined?"legacy":[policy.baseFacilityCost,policy.activeTableHourCost,policy.perHundredRoundsCost,policy.positiveGamingRevenueRateBps,policy.protectedReserve,policy.settlementSecondOfDay].join(",");
 }
+function dayPlanCacheFor(contract:NpcLedgerContract):Map<string,CasinoDayPlan>{let cache=DAY_PLAN_CACHES.get(contract);if(!cache){cache=new Map();DAY_PLAN_CACHES.set(contract,cache);}return cache;}
+function cacheDayPlan(cache:Map<string,CasinoDayPlan>,key:string,plan:CasinoDayPlan):void{cache.set(key,plan);while(cache.size>16)cache.delete(cache.keys().next().value!);}
 
 export function casinoDaySessions(
   profiles: readonly NpcGamblingProfile[], dayIndex: number, openingBalances: Readonly<Record<string, number>>, contract: NpcLedgerContract,
@@ -550,14 +575,16 @@ function settlePvp(plan: MatchDraft, tableId: "temerosa-match-pairs"|"indian-pok
   const leftScore = skill(left!) + (rng.next()-.5)*.9;
   const rightScore = skill(right!) + (rng.next()-.5)*.9;
   const exposure = stake*multiplier;
-  const termsVersion=flowEconomy?`temerosa-pvp-rake/1.0:${tableId}`:tableId==="temerosa-five-card-draw"?"temerosa-five-card-draw-ledger/1.0":`${tableId}-ledger/0.5`;
+  const termsVersion=flowEconomy?`temerosa-pvp-rake/1.1:${tableId}`:tableId==="temerosa-five-card-draw"?"temerosa-five-card-draw-ledger/1.0":`${tableId}-ledger/0.5`;
+  const rake=flowEconomy?pvpRake(exposure):0;
   if (Math.abs(leftScore-rightScore) < .035) {
-    for (const profile of profiles) addSession(profile.id, plan, stake, exposure, exposure, "draw", termsVersion, balances, output);
+    const distributable=exposure*2-rake;
+    addSession(left!.id,plan,stake,exposure,Math.ceil(distributable/2),"draw",termsVersion,balances,output);
+    addSession(right!.id,plan,stake,exposure,Math.floor(distributable/2),"draw",termsVersion,balances,output);
     return;
   }
   const winner = leftScore > rightScore ? left! : right!;
   const loser = winner.id === left!.id ? right! : left!;
-  const rake=flowEconomy?Math.max(1,Math.floor(exposure*2*FLOW_PVP_RAKE_BPS/10_000)):0;
   addSession(winner.id, plan, stake, exposure, exposure*2-rake, "win", termsVersion, balances, output);
   addSession(loser.id, plan, stake, exposure, 0, "loss", termsVersion, balances, output);
 }
@@ -628,20 +655,21 @@ function addSession(
   }));
 }
 
-function chooseSharedExposure(profiles: readonly NpcGamblingProfile[], balances: Readonly<Record<string,number>>, dayOpening: Readonly<Record<string,number>>, rng: XorShift32,allowMinimum:boolean,maximumHouseLiability=Number.MAX_SAFE_INTEGER,tableId:CasinoTableId="indian-poker"): {stake: Exclude<NpcStake,0>; multiplier: WagerMultiplier; exposure:number} {
+function chooseSharedExposure(profiles: readonly NpcGamblingProfile[], balances: Readonly<Record<string,number>>, dayOpening: Readonly<Record<string,number>>, rng: XorShift32,allowMinimum:boolean,maximumHouseLiability=Number.MAX_SAFE_INTEGER,tableId:CasinoTableId="indian-poker",termsAllowed:(undefined|((stake:Exclude<NpcStake,0>,multiplier:WagerMultiplier)=>boolean))=undefined): {stake: Exclude<NpcStake,0>; multiplier: WagerMultiplier; exposure:number} {
   const initiator = profiles[0]!;
   const maximum = Math.min(...profiles.map((profile) => allowMinimum?affordableMaximumExposure(profile,balances[profile.id]!,20):Math.floor(Math.min(balances[profile.id]!,Math.max(0,balances[profile.id]!*profile.maxExposureRatio)))));
-  const stakes = PAID_STAKES.filter((stake) => stake*2 <= maximum&&houseMaximumRoundLiability(tableId,stake,2)<=maximumHouseLiability);
+  const stakes = PAID_STAKES.filter((stake) => stake*2 <= maximum&&WAGER_MULTIPLIERS.some((multiplier)=>stake*multiplier<=maximum&&houseMaximumRoundLiability(tableId,stake,multiplier)<=maximumHouseLiability&&(termsAllowed?.(stake,multiplier)??true)));
   if (stakes.length === 0) return { stake:10, multiplier:2, exposure:0 };
   const pnl = balances[initiator.id]!-dayOpening[initiator.id]!;
   const tilt = pnl < 0 ? initiator.lossChasing : pnl > 0 ? initiator.winPressing : .5;
   const stakeWeights = stakes.map((_,index) => 1 + index*initiator.riskAppetite*4 + (pnl < 0 ? index*tilt*2 : 0));
   const stake = stakes[drawWeightedIndex(stakeWeights,rng)]!;
-  const legalMultipliers = WAGER_MULTIPLIERS.filter((value) => stake*value <= maximum&&houseMaximumRoundLiability(tableId,stake,value)<=maximumHouseLiability);
+  const legalMultipliers = WAGER_MULTIPLIERS.filter((value) => stake*value <= maximum&&houseMaximumRoundLiability(tableId,stake,value)<=maximumHouseLiability&&(termsAllowed?.(stake,value)??true));
   const weights = legalMultipliers.map((value) => 1 + (value-2)*(initiator.riskAppetite*.9+tilt*.35));
   const multiplier = legalMultipliers[drawWeightedIndex(weights,rng)]!;
   return { stake, multiplier, exposure:stake*multiplier };
 }
+function pvpRake(exposure:number):number{return Math.max(1,Math.floor(exposure*2*FLOW_PVP_RAKE_BPS/10_000));}
 
 function chooseOldMaidExposure(profiles: readonly NpcGamblingProfile[], balances: Readonly<Record<string,number>>, rng: XorShift32,allowMinimum:boolean): {stake:Exclude<NpcStake,0>;multiplier:WagerMultiplier;exposure:number} {
   const lossUnits = profiles.length >= 4 ? 1.5 : 1;

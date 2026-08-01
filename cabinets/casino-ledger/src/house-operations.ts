@@ -108,8 +108,7 @@ export function houseDailyActivityFromPlan(input: {
     return total + Math.max(0, end - visit.startedAtSecondOfDay);
   }, 0);
   const settledRoundCount = input.plan.matches.filter((match) => match.settlesAtSecondOfDay <= through).length;
-  const grossGamingRevenue = Object.values(input.plan.sessions).flat().reduce((total, session) =>
-    session.secondOfDay <= through && isHouseTableId(session.tableId) ? total + Math.max(0, -session.delta) : total, 0);
+  const grossGamingRevenue = houseGrossGamingRevenueFromSessions(Object.values(input.plan.sessions).flat().filter((session)=>session.secondOfDay<=through));
   return Object.freeze({
     absoluteKstDay: input.absoluteKstDay,
     houseBalance: input.houseBalance,
@@ -133,7 +132,15 @@ function assertPolicy(policy: Readonly<HouseOperatingCostPolicy>): void {
   }
   if (policy.positiveGamingRevenueRateBps > 10_000 || policy.settlementSecondOfDay >= 86_400) throw new Error("house_operating_policy_invalid");
 }
-
-function isHouseTableId(tableId: string): boolean {
-  return tableId === "temerosa-slot" || tableId === "temerosa-high-low";
+/** Positive house revenue, grouped atomically by match rather than by losing row. */
+export function houseGrossGamingRevenueFromSessions(sessions:readonly {matchId:string;tableId:string;delta:number}[]):number{
+  const matches=new Map<string,{tableId:string;houseDelta:number;losingRows:number}>();
+  for(const session of sessions){
+    if(session.tableId==="npc-income")continue;
+    const match=matches.get(session.matchId)??{tableId:session.tableId,houseDelta:0,losingRows:0};
+    match.houseDelta-=session.delta;
+    match.losingRows+=Math.max(0,-session.delta);
+    matches.set(session.matchId,match);
+  }
+  return [...matches.values()].reduce((sum,match)=>sum+(match.tableId==="temerosa-slot"||match.tableId==="temerosa-high-low"?match.losingRows:Math.max(0,match.houseDelta)),0);
 }

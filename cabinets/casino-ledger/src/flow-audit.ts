@@ -1,4 +1,4 @@
-import { casinoDayPlan } from "./engine.ts";
+import { casinoDayPlanWithHouseOpening } from "./engine.ts";
 import { TEMEROSA_HOUSE_OPENING_CAPITAL } from "./economy.ts";
 import type { NpcLedgerContract } from "./contracts.ts";
 import { npcFlowEconomyTransactions } from "./flow-economy.ts";
@@ -43,7 +43,7 @@ export function auditCasinoFlowEconomy(contract:NpcLedgerContract,days:number,op
   const houseOpeningBalance=contract.houseOpeningBalance??TEMEROSA_HOUSE_OPENING_CAPITAL;
   let houseBalance=houseOpeningBalance,minimumHouseBalance=houseOpeningBalance,houseGamingProfit=0,houseOperatingExpenses=0,houseCurtailedOperatingExpenses=0;
   for(let dayIndex=0;dayIndex<days;dayIndex+=1){
-    const plan=casinoDayPlan(profiles,dayIndex,balances,contract);
+    const plan=casinoDayPlanWithHouseOpening(profiles,dayIndex,balances,contract,houseBalance);
     totalRounds+=plan.matches.length;
     for(const transaction of npcFlowEconomyTransactions(contract.externalIncomeProfiles??[],contract.epochKstDay+dayIndex))postingImbalance+=transaction.postings.reduce((sum,posting)=>sum+posting.delta,0);
     const sessions=Object.values(plan.sessions).flat();

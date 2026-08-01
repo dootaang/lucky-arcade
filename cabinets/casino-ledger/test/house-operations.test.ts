@@ -5,6 +5,7 @@ import {
   applyCasinoTransactions,
   createHouseOperatingExpensePlan,
   houseMaximumExposure,
+  houseGrossGamingRevenueFromSessions,
   internalMoneySupply,
 } from "../src/index.ts";
 
@@ -55,5 +56,15 @@ describe("activity-based house operations", () => {
     const balances = applyCasinoTransactions({ [TEMEROSA_HOUSE_ACCOUNT_ID]: 150_000 }, [plan.transaction!]);
     expect(internalMoneySupply(balances)).toBe(150_000 - plan.paidAmount);
     expect(balances[TEMEROSA_HOUSE_ACCOUNT_ID]).toBeGreaterThanOrEqual(DEFAULT_HOUSE_OPERATING_COST_POLICY.protectedReserve);
+  });
+
+  it("counts net positive house revenue once per atomic PVP match",()=>{
+    expect(houseGrossGamingRevenueFromSessions([
+      {matchId:"pvp:1",tableId:"indian-poker",delta:93},
+      {matchId:"pvp:1",tableId:"indian-poker",delta:-100},
+      {matchId:"old-maid:1",tableId:"temerosa-old-maid",delta:30},
+      {matchId:"old-maid:1",tableId:"temerosa-old-maid",delta:-30},
+      {matchId:"income:1",tableId:"npc-income",delta:500},
+    ])).toBe(7);
   });
 });

@@ -20,10 +20,10 @@ export interface TemerosaCasinoReleaseFlags{flowEconomy:boolean}
 export const TEMEROSA_CASINO_RELEASE_FLAGS_DISABLED:Readonly<TemerosaCasinoReleaseFlags>=Object.freeze({flowEconomy:false});
 export const TEMEROSA_FLOW_RELEASE_AUDIT=Object.freeze({
   status:"blocked" as const,
-  blockers:Object.freeze(["seven-day-supply-drift","one-year-house-service-curtailment","ten-year-house-service-curtailment","ten-year-supply-drift"] as const),
-  sevenDays:Object.freeze({npcCount:102,supplyChangeBps:-1_064,averageSettlementGapSeconds:24.63,minimumHouseBalance:110_577,houseCurtailedOperatingExpenses:0}),
-  oneYear:Object.freeze({supplyChangeBps:206,averageSettlementGapSeconds:24.91,minimumHouseBalance:50_000,houseCurtailedOperatingExpenses:20_997}),
-  tenYears:Object.freeze({supplyChangeBps:20_635,averageSettlementGapSeconds:24.84,minimumHouseBalance:50_000,houseCurtailedOperatingExpenses:174_974}),
+  blockers:Object.freeze(["seven-day-supply-drift","one-year-supply-drift","one-year-activity-gap","ten-year-audit-pending"] as const),
+  sevenDays:Object.freeze({npcCount:102,supplyChangeBps:-1_681,averageSettlementGapSeconds:24.91,minimumHouseBalance:100_384,houseCurtailedOperatingExpenses:0}),
+  oneYear:Object.freeze({supplyChangeBps:2_329,averageSettlementGapSeconds:26.13,minimumHouseBalance:50_012,houseCurtailedOperatingExpenses:0}),
+  tenYears:Object.freeze({status:"pending" as const}),
 });
 export const TEMEROSA_FLOW_RELEASE_READY:boolean=Array.from(TEMEROSA_FLOW_RELEASE_AUDIT.blockers).length===0;
 
@@ -74,7 +74,7 @@ export const TEMEROSA_FLOW_NPC_LEDGER_CONTRACT:NpcLedgerContract=Object.freeze({
   profiles:TEMEROSA_FLOW_NPC_GAMBLING_PROFILES,externalIncomeProfiles:TEMEROSA_FLOW_EXTERNAL_INCOME_PROFILES,
   behaviors:TEMEROSA_FLOW_NPC_BEHAVIORS,houseOpeningBalance:LEGACY_HOUSE_CLOSE-NEW_ACCOUNT_CAPITAL,
   // 16.40 P per settled round: a decimal service-unit rate, billed in 100-round batches.
-  houseOperatingPolicy:Object.freeze({...DEFAULT_HOUSE_OPERATING_COST_POLICY,perHundredRoundsCost:1_640,positiveGamingRevenueRateBps:1_856}),
+  houseOperatingPolicy:Object.freeze({...DEFAULT_HOUSE_OPERATING_COST_POLICY,perHundredRoundsCost:1_640,positiveGamingRevenueRateBps:1_856,settlementSecondOfDay:86_399}),
   predecessor:Object.freeze({profiles:TEMEROSA_NPC_GAMBLING_PROFILES,contract:TEMEROSA_NPC_LEDGER_CONTRACT}),
   profitHistory:legacyProfitHistory(),
 });

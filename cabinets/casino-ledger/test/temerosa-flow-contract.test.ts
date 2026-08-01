@@ -46,7 +46,7 @@ describe("Temerosa flow ledger cutover",()=>{
 
   it("keeps the candidate locked even with a flag while a frozen audit blocker remains",()=>{
     const boundary=casinoUtcSecondAtKstDay(TEMEROSA_FLOW_EPOCH_KST_DAY);
-    expect(TEMEROSA_FLOW_RELEASE_AUDIT.blockers).toContain("ten-year-house-service-curtailment");
+    expect(TEMEROSA_FLOW_RELEASE_AUDIT.blockers).toContain("ten-year-audit-pending");
     expect(temerosaCasinoLedgerAtUtcSecond(boundary-1,{flowEconomy:true}).contract.version).toBe("npc-ledger/1.1");
     expect(temerosaCasinoLedgerAtUtcSecond(boundary,{flowEconomy:true}).contract.version).toBe("npc-ledger/1.1");
   });
@@ -60,12 +60,13 @@ describe("Temerosa flow ledger cutover",()=>{
     expect(events.some((event)=>event.matchId===first.matchId&&event.code==="table-enter")).toBe(true);
   });
 
-  it("keeps one-year supply in band but records unpaid service as a blocker",()=>{
+  it("records one-year service collapse and supply drift as release blockers",()=>{
     const report=auditCasinoFlowEconomy(TEMEROSA_FLOW_NPC_LEDGER_CONTRACT,365);
-    expect(report.supplyChangeBps).toBeGreaterThanOrEqual(-1_000);
-    expect(report.supplyChangeBps).toBeLessThanOrEqual(1_000);
-    expect(report.houseCurtailedOperatingExpenses).toBeGreaterThan(0);
-    expect(TEMEROSA_FLOW_RELEASE_AUDIT.blockers).toContain("one-year-house-service-curtailment");
+    expect(report.supplyChangeBps).toBeGreaterThan(1_000);
+    expect(report.averageSettlementGapSeconds).toBeGreaterThan(25);
+    expect(report.houseCurtailedOperatingExpenses).toBe(0);
+    expect(TEMEROSA_FLOW_RELEASE_AUDIT.blockers).toContain("one-year-supply-drift");
+    expect(TEMEROSA_FLOW_RELEASE_AUDIT.blockers).toContain("one-year-activity-gap");
     expect(report.minimumHouseBalance).toBeGreaterThanOrEqual(TEMEROSA_FLOW_NPC_LEDGER_CONTRACT.houseOperatingPolicy!.protectedReserve);
     expect(report.reenteredAfterIncomeNpcCount).toBeGreaterThan(0);
     expect(report).toMatchObject(TEMEROSA_FLOW_RELEASE_AUDIT.oneYear);
