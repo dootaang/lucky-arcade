@@ -1,4 +1,5 @@
 import { casinoMarketCredit, type CasinoSpectatorMarket, type CasinoSpectatorSchedule } from "@lucky-arcade/casino-ledger";
+import { CasinoPersonName, casinoLedgerEmotionForProfit, useCasinoLedgerPortrait } from "@lucky-arcade/casino-ledger/react";
 import type { WagerMultiplier } from "@lucky-arcade/engine";
 import type { GameWagerReceipt, PredictionStake } from "@lucky-arcade/persistence";
 import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
@@ -13,12 +14,13 @@ const KST_TIME = new Intl.DateTimeFormat("ko-KR", { timeZone: "Asia/Seoul", hour
 const CasinoSideMarketReplayView = lazy(() => import("./casino-side-market-replay-view.tsx"));
 
 export default function CasinoSideMarket({
-  schedule, ticketMarkets, wagers, balance, currentUtcSecond, busy, error, onBet,
+  schedule, ticketMarkets, wagers, balance, npcPeriodProfits, currentUtcSecond, busy, error, onBet,
 }: {
   schedule: CasinoSpectatorSchedule;
   ticketMarkets: readonly CasinoSpectatorMarket[];
   wagers: readonly GameWagerReceipt[];
   balance: number;
+  npcPeriodProfits: Readonly<Record<string,number>>;
   currentUtcSecond: number;
   busy: boolean;
   error?: string;
@@ -98,7 +100,7 @@ export default function CasinoSideMarket({
     <div className="side-market-body">
       <div className="side-market-matchup">
         <span>{kstTime(market.startsAtUtcSecond)} · {market.rulesLabel}</span>
-        <h4>{market.outcomes.filter((outcome) => outcome.npcId).map((outcome) => outcome.label).join("  VS  ")}</h4>
+        <h4 className="side-market-matchup-names">{market.outcomes.filter((outcome) => outcome.npcId).map((outcome,index) => <span key={outcome.outcomeId}>{index>0&&<i>VS</i>}<CasinoPersonName qualifiedName={outcome.label}/></span>)}</h4>
         <small>카지노 원장이 만든 결정론 대진입니다. 대진을 고쳐 만들거나 같은 시장을 다시 걸 수 없습니다.</small>
       </div>
       <div className="side-market-outcomes" aria-label={`${marketLabel} 선택`}>
@@ -106,7 +108,11 @@ export default function CasinoSideMarket({
           const won = market.winningOutcomeId === outcome.outcomeId;
           const resultClass = market.phase === "settled" && market.winningOutcomeId ? won ? "is-winner" : "is-loser" : "";
           return <button key={outcome.outcomeId} aria-pressed={(choice?.outcomeId ?? outcomeId) === outcome.outcomeId} disabled={!pricingReady || Boolean(wager) || market.phase !== "open" || busy} className={resultClass} onClick={() => setOutcomeId(outcome.outcomeId)}>
-            <strong>{outcome.label}</strong><span>{pricingReady ? `${decimalOdds(outcome.quote.payoutBps)}배` : "계산 중"}</span><small>{pricingReady ? `실전 표본 ${(outcome.quote.probabilityBps / 100).toFixed(1)}%` : "실제 CPU 대국 분석"}</small>
+            <strong className="side-market-outcome-person">
+              {outcome.npcId&&<SideMarketPortrait npcId={outcome.npcId} name={outcome.label} periodProfit={npcPeriodProfits[outcome.npcId]??0}/>}
+              <CasinoPersonName qualifiedName={outcome.label}/>
+            </strong>
+            <span className="side-market-odds">{pricingReady ? `${decimalOdds(outcome.quote.payoutBps)}배` : "계산 중"}</span><small>{pricingReady ? `실전 표본 ${(outcome.quote.probabilityBps / 100).toFixed(1)}%` : "실제 CPU 대국 분석"}</small>
           </button>;
         })}
       </div>
@@ -133,6 +139,18 @@ export default function CasinoSideMarket({
     {historyOpen && <SideMarketHistory wagers={wagers.slice(0, 20)} markets={ticketMarkets} onClose={() => setHistoryOpen(false)} onReplay={(ticketMarket) => { setHistoryOpen(false); setReplayMarket(ticketMarket); }} />}
     {replayMarket && <Suspense fallback={null}><CasinoSideMarketReplayView market={replayMarket} currentUtcSecond={currentUtcSecond} onClose={() => setReplayMarket(undefined)} /></Suspense>}
   </section>;
+}
+
+function SideMarketPortrait({npcId,name,periodProfit}:{npcId:string;name:string;periodProfit:number}):React.ReactElement{
+  const resolved=useCasinoLedgerPortrait(npcId,{emotion:casinoLedgerEmotionForProfit(periodProfit)},undefined);
+  return <span className="side-market-portrait" aria-hidden="true"><i>{name.slice(0,1)}</i>{resolved&&<SideMarketPortraitImage key={resolved} src={resolved}/>}</span>;
+}
+
+function SideMarketPortraitImage({src}:{src:string}):React.ReactElement|null{
+  const [loaded,setLoaded]=useState(false);
+  const [failed,setFailed]=useState(false);
+  if(failed)return null;
+  return <img className={loaded?"is-loaded":""} src={src} alt="" width={411} height={600} loading="lazy" decoding="async" onLoad={()=>setLoaded(true)} onError={()=>setFailed(true)}/>;
 }
 
 function SideMarketHistory({ wagers, markets, onClose, onReplay }: { wagers: readonly GameWagerReceipt[]; markets: readonly CasinoSpectatorMarket[]; onClose(): void; onReplay(market: CasinoSpectatorMarket): void }): React.ReactElement {

@@ -120,6 +120,8 @@ function VenueCard({ venue, eager, onEnter }: { venue: VenueManifest; eager: boo
 
 const plannedTables = [{ group: "교환소", title: "알제의 교환소" }] as const;
 
+const FLOOR_HERO_ART = "/content/temerosa-casino-floor/0.1.0/assets/floor-mist-basin/md.webp";
+
 /** A suit stamped on each table, so a bare card still reads as a casino table. */
 const TABLE_SUITS: Record<string, string> = { "temerosa-old-maid": "♠", "temerosa-match-pairs": "♥", "temerosa-slot": "♦", "indian-poker": "♦", "temerosa-high-low": "♠", "temerosa-blackjack": "♣", "temerosa-doubt": "♦", "temerosa-one-card": "♥", "temerosa-texas-holdem": "♠", "temerosa-five-card-draw": "♣", "temerosa-video-poker": "♦", "lucky-derby-lab": "♠", "temerosa-margin": "♥", "temerosa-favorite-cup": "♥", "temerosa-echo-memory": "♣", "temerosa-pequod-expedition": "♠", "관전석": "♠", "알제의 교환소": "♦" };
 
@@ -133,7 +135,13 @@ function VenueFloor({ venue, balance, onPlay, onPreview, onBalanceChange }: { ve
   return <section className="casino-floor" aria-labelledby="floor-heading">
     <span className="floor-backdrop ca-tableau" aria-hidden="true" />
     <span className="ca-spotlight" aria-hidden="true" />
-    <header><span className="eyebrow">여백의 카지노 플로어</span><h2 id="floor-heading" className="ca-serif">테이블을 골라주세요</h2><p>현재 실제로 운영 중인 테이블만 입장할 수 있습니다.</p></header>
+    <header>
+      {/* temerosa-casino-floor/0.1.0 ships four 960x540 plates marked
+          `use: "table-art"` that nothing rendered. A landscape belongs behind
+          the heading, not under a table card whose state signals it would fight. */}
+      <img className="floor-hero-art" src={FLOOR_HERO_ART} alt="" width={960} height={540} loading="eager" fetchPriority="high" aria-hidden="true" onError={(event) => { event.currentTarget.hidden = true; }} />
+      <span className="eyebrow">여백의 카지노 플로어</span><h2 id="floor-heading" className="ca-serif">테이블을 골라주세요</h2><p>현재 실제로 운영 중인 테이블만 입장할 수 있습니다.</p>
+    </header>
     <Suspense fallback={<section className="casino-ledger-loading ca-label">원장 정리 중…</section>}><CasinoLedgerView userBalance={balance} onBalanceChange={onBalanceChange} onPlay={onPlay} tables={playable.map(({ entry }) => ({
       id: entry.manifest.id as CasinoTableId,
       title: entry.manifest.title.replace("테메로세 ", ""),

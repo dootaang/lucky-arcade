@@ -89,7 +89,8 @@ export interface TemerosaSeriesNpcAssetBundle {
   unavailableNpcIds: readonly string[];
 }
 
-export type TemerosaSeriesNpcPortraitIntent = "sm" | "detail";
+export type TemerosaSeriesNpcPortraitEmotion = "neutral" | "pleased" | "tense" | "despair";
+export type TemerosaSeriesNpcPortraitIntent = "sm" | "detail" | { emotion: TemerosaSeriesNpcPortraitEmotion };
 
 export function loadTemerosaPilotAssets(): Promise<Readonly<Record<string, string>>> {
   assetPromise ??= Promise.all(PACKS.map((version) => fetchManifest(version).then((loaded) => loaded.manifest))).then((manifests) => {
@@ -168,6 +169,7 @@ export async function resolveTemerosaSeriesNpcPortrait(npcId:string,intent:Temer
     ? contentUrl("0.8.0","assets/margin/npc-nemo-neutral/lg.webp")
     : contentUrl("0.8.0","assets/margin/npc-nemo-neutral/sm.webp");
   if(bundle.unavailableNpcIds.includes(portraitId))return undefined;
+  if(typeof intent!=="string")return bundle.assets[portraitId]?.[intent.emotion]??bundle.assets[portraitId]?.neutral;
   return intent==="detail"?bundle.detailAssets[portraitId]:bundle.thumbAssets[portraitId];
 }
 

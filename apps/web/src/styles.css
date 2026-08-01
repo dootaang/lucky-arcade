@@ -4,7 +4,9 @@
 * { box-sizing: border-box; }
 html { background: var(--canvas); }
 /* tabular-nums keeps the pill from twitching while the balance counts up. */
-.lobby-wallet{margin-left:auto;padding:7px 11px;border:1px solid color-mix(in srgb,#d9b85d 40%,transparent);border-radius:999px;color:#d9b85d;font-variant-numeric:tabular-nums}
+/* The pill sits on page chrome, so it has to follow the theme. A hardcoded
+   dark-theme gold reads at 1.7:1 on the light canvas. */
+.lobby-wallet{display:inline-flex;align-items:center;min-height:44px;margin-left:auto;padding:0 15px;border:1px solid color-mix(in srgb,var(--accent) 45%,var(--line));border-radius:999px;background:color-mix(in srgb,var(--accent) 10%,var(--surface));color:var(--accent);font-weight:800;font-variant-numeric:tabular-nums}
 body { margin: 0; min-width: 320px; color: var(--text); font-family: Inter, Pretendard, "Noto Sans KR", system-ui, sans-serif; background: var(--canvas); }
 button { color: inherit; font: inherit; }
 button, [role="button"] { -webkit-tap-highlight-color: transparent; }
@@ -24,7 +26,9 @@ button, [role="button"] { -webkit-tap-highlight-color: transparent; }
 .game-shell { min-height:100dvh; padding:22px clamp(18px,4vw,60px) 60px; background:radial-gradient(circle at 50% 0,color-mix(in srgb,var(--accent) 9%,transparent),transparent 38%),var(--canvas); }.game-header { display:grid; grid-template-columns:auto 1fr auto; align-items:center; gap:15px; max-width:1200px; margin:0 auto 28px; }.game-header h1 { margin:0; font-size:1.2rem; }.game-header>div>span { color:var(--accent); font-size:.58rem; letter-spacing:.14em; }.game-meters { display:flex; gap:8px; }.game-meters span { border:1px solid var(--line); border-radius:99px; padding:8px 12px; color:var(--muted); font-size:.75rem; }.game-meters b { color:var(--text); }.mission-card,.result-card { display:grid; max-width:580px; min-height:420px; place-items:center; align-content:center; gap:13px; margin:8vh auto 0; border:1px solid color-mix(in srgb,var(--accent) 48%,var(--line)); border-radius:28px; padding:45px; text-align:center; background:linear-gradient(145deg,color-mix(in srgb,var(--accent) 9%,var(--surface)),var(--surface)); box-shadow:0 30px 80px #0005; }.mission-card>svg { color:var(--accent); }.mission-card h2,.result-card h2 { margin:0; font-size:clamp(1.8rem,5vw,3rem); line-height:1.2; }.mission-card p,.result-card p { max-width:410px; color:var(--muted); line-height:1.65; }.neon-button { margin-top:10px; box-shadow:0 0 24px color-mix(in srgb,var(--accent) 30%,transparent); }.objective { display:flex; max-width:1200px; min-height:58px; align-items:center; gap:10px; margin:0 auto 16px; border:1px solid var(--line); border-radius:16px; padding:10px 16px; background:var(--surface); }.objective svg { color:var(--accent); }.objective span,.objective small { color:var(--muted); font-size:.74rem; }.objective strong { margin-right:auto; }.record-grid { display:grid; max-width:1200px; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:14px; margin:auto; }.lore-record { position:relative; min-height:230px; overflow:hidden; border:1px solid var(--line); border-radius:20px; padding:26px; background:var(--surface); animation:reveal .24s ease-out; }.lore-record h2 { margin:10px 0; }.lore-record p { max-height:330px; overflow:auto; color:var(--muted); font-size:.85rem; line-height:1.7; white-space:pre-wrap; }.record-number { color:var(--accent); font:700 .72rem ui-monospace,monospace; }.clue-dock { position:sticky; bottom:14px; display:grid; max-width:1200px; grid-template-columns:auto 1fr; gap:18px; margin:20px auto 0; border:1px solid color-mix(in srgb,var(--accent) 38%,var(--line)); border-radius:18px; padding:15px; background:color-mix(in srgb,var(--surface) 93%,transparent); box-shadow:0 15px 50px #0008; backdrop-filter:blur(14px); }.clue-dock>div:first-child { display:grid; grid-template-columns:auto auto; align-items:center; gap:3px 7px; }.clue-dock svg { color:var(--accent); }.clue-dock small { grid-column:2; color:var(--muted); font-size:.65rem; }.clue-list { display:flex; flex-wrap:wrap; justify-content:flex-end; gap:8px; }.clue-list button { min-height:44px; border:1px solid var(--line); border-radius:99px; padding:8px 15px; background:var(--surface-raised); cursor:pointer; }.clue-list button:hover { border-color:var(--accent); color:var(--accent); }.result-card.won { border-color:#66d694; }.result-card.lost { border-color:#ff8c8c; }@keyframes reveal{from{opacity:0;transform:translateY(8px)}}
 .mobile-menu,.close-menu,.sidebar-scrim { display:none; }
 .desktop-sidebar-close{display:grid;width:30px;height:30px;place-items:center;margin-left:auto;border:0;border-radius:9px;background:transparent;color:var(--muted);cursor:pointer}.desktop-sidebar-close:hover{color:var(--text);background:var(--surface-raised)}.desktop-sidebar-close svg{width:17px;height:17px}.desktop-sidebar-open{position:fixed;top:18px;left:18px;z-index:25;display:grid;width:44px;height:44px;place-items:center;border:1px solid var(--line);border-radius:13px;background:color-mix(in srgb,var(--surface) 94%,transparent);box-shadow:0 8px 28px #0005;cursor:pointer;backdrop-filter:blur(12px)}.app-layout.sidebar-collapsed{grid-template-columns:1fr}.app-layout.sidebar-collapsed>.sidebar{display:none}.app-layout.sidebar-collapsed .dashboard{padding-left:clamp(70px,7vw,104px)}
-html[data-theme="light"] { color-scheme:light; --canvas:#f5f4ef; --surface:#fff; --surface-raised:#eeece4; --line:#d9d5c9; --text:#17191d; --muted:#666b73; --accent:#b76a12; --focus:#245fa8; }
+/* --accent doubles as text on near-white surfaces (the wallet pill, eyebrows),
+   so it has to clear 4.5:1 there. #b76a12 only reached 3.7:1. */
+html[data-theme="light"] { color-scheme:light; --canvas:#f5f4ef; --surface:#fff; --surface-raised:#eeece4; --line:#d9d5c9; --text:#17191d; --muted:#666b73; --accent:#8a5209; --focus:#245fa8; }
 @media(max-width:900px){.app-layout,.app-layout.sidebar-collapsed{display:block}.app-layout.sidebar-collapsed>.sidebar{display:flex}.app-layout.sidebar-collapsed .dashboard{padding-left:clamp(20px,4vw,64px)}.desktop-sidebar-open,.desktop-sidebar-close{display:none}.sidebar{position:fixed;left:0;transform:translateX(-105%);width:min(82vw,280px);transition:transform .2s}.sidebar.open{transform:none}.sidebar-scrim{position:fixed;inset:0;z-index:15;display:block;border:0;background:#0009}.mobile-menu{position:fixed;right:14px;bottom:14px;z-index:14;display:grid;width:52px;height:52px;place-items:center;border:1px solid var(--line);border-radius:16px;background:var(--accent);color:#16110a}.close-menu{display:grid;margin-left:auto;border:0;background:transparent}.dashboard{padding-top:24px}.topbar{padding-right:50px}.stat-grid{grid-template-columns:repeat(2,1fr)}.cabinet-card{grid-template-columns:auto 1fr}.cabinet-action{grid-column:1/-1;justify-items:stretch}.detail-panel dl{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:600px){.import-zone{grid-template-columns:1fr;text-align:center;justify-items:center}.import-zone small,.error-message{grid-column:1}.hero-panel{align-items:start;flex-direction:column}.stat-grid{grid-template-columns:1fr 1fr}.cabinet-card{grid-template-columns:1fr}.cabinet-symbol{width:52px;height:52px}.game-header{grid-template-columns:auto 1fr}.game-meters{grid-column:1/-1;justify-content:flex-end}.mission-card,.result-card{min-height:360px;margin-top:4vh;padding:28px 20px}.clue-dock{position:static;grid-template-columns:1fr}.clue-list{justify-content:flex-start}.record-grid{grid-template-columns:1fr}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
@@ -65,11 +69,19 @@ html[data-theme="light"] { color-scheme:light; --canvas:#f5f4ef; --surface:#fff;
 
 /* Temerosa casino floor. Scoped under .venue-active so the neutral lobby is
    structurally out of reach. Parts come from @lucky-arcade/ui/casino.css. */
-.venue-active .casino-floor{position:relative;isolation:isolate;overflow:hidden;border-color:#5b4526;background:none;box-shadow:0 26px 90px #0007,inset 0 1px 0 #f3bd5514}
+/* The floor is a room: it stays dark on either theme. Anything themed that
+   leaks in — the accent, the inherited text colour — has to be pinned here,
+   or the light theme paints dark-on-dark inside it. */
+.venue-active .casino-floor{position:relative;isolation:isolate;overflow:hidden;border-color:#5b4526;background:none;box-shadow:0 26px 90px #0007,inset 0 1px 0 #f3bd5514;--accent:#f3bd55;--line:#3b3427;--muted:#b0a795;color:#f2ede1}
 .venue-active .floor-backdrop{position:absolute;inset:0;z-index:0;border-radius:inherit;pointer-events:none}
 .venue-active .casino-floor>header,.venue-active .table-grid{position:relative;z-index:1}
-.venue-active .casino-floor>header h2{color:#f7edd8;text-shadow:0 2px 18px #f3bd5522}
-.venue-active .casino-floor>header p{color:#b0a795}
+.venue-active .casino-floor>header{position:relative;isolation:isolate;min-height:220px;display:grid;align-content:end;margin:calc(clamp(22px,4vw,44px) * -1) calc(clamp(22px,4vw,44px) * -1) 0;padding:clamp(28px,5vw,54px) clamp(22px,4vw,44px) clamp(18px,3vw,26px);border-radius:26px 26px 0 0;overflow:hidden}
+.venue-active .casino-floor>header>.floor-hero-art{position:absolute;inset:0;z-index:-2;width:100%;height:100%;object-fit:cover;object-position:center 42%;filter:saturate(.72) contrast(1.06)}
+/* The plate lives at the top; the copy sits on a ground dark enough to read. */
+.venue-active .casino-floor>header::after{position:absolute;inset:0;z-index:-1;content:"";background:linear-gradient(to top,#0c0f14 4%,#0c0f14e6 34%,#0c0f1466 68%,#0c0f1433 100%),linear-gradient(96deg,#0c0f14b3,#0c0f1440 46%,transparent 74%)}
+.venue-active .casino-floor>header h2{color:#f7edd8;text-shadow:0 2px 18px #0009}
+.venue-active .casino-floor>header p{color:#c8c2b2;text-shadow:0 1px 10px #0009}
+@media(max-width:700px){.venue-active .casino-floor>header{min-height:170px;margin:-20px -20px 0;padding:26px 20px 16px;border-radius:22px 22px 0 0}}
 .venue-active .table-card{position:relative;display:flex;flex-direction:column;align-items:flex-start;overflow:hidden;border-color:#3b3427;background:linear-gradient(160deg,#191d24,#14161b)}
 .venue-active .table-card.playable{border-color:#7d6334;background:radial-gradient(circle at 108% -10%,#f3bd5522,transparent 46%),linear-gradient(160deg,#1c2028,#15181e)}
 .venue-active .table-suit{position:absolute;top:6px;right:16px;z-index:0;color:#f3bd55;opacity:.085;font-size:clamp(58px,9vw,92px);line-height:1;pointer-events:none;user-select:none}
@@ -120,14 +132,15 @@ html[data-theme="light"] { color-scheme:light; --canvas:#f5f4ef; --surface:#fff;
 .admin-preview-gate label { display: grid; gap: 0.35rem; font-weight: 750; }
 .admin-preview-gate input { min-height: 2.9rem; padding: 0.6rem 0.75rem; color: #fff7e6; background: #070c0a; border: 1px solid #72623c; border-radius: 0.55rem; font: inherit; }
 .admin-preview-gate form > div { display: flex; justify-content: flex-end; gap: 0.55rem; }
-.admin-preview-gate button,
-.admin-preview-entry { min-height: 2.55rem; padding: 0.55rem 0.85rem; border: 1px solid rgb(225 187 94 / 55%); border-radius: 0.55rem; font: inherit; font-weight: 800; cursor: pointer; }
-.admin-preview-gate button[type="submit"],
-.admin-preview-entry { color: #171106; background: #e1bb5e; }
+.admin-preview-gate button { min-height: 2.75rem; padding: 0.55rem 0.85rem; border: 1px solid rgb(225 187 94 / 55%); border-radius: 0.55rem; font: inherit; font-weight: 800; cursor: pointer; }
+.admin-preview-gate button[type="submit"] { color: #171106; background: #e1bb5e; }
 .admin-preview-gate button[type="button"] { color: #f8f0dc; background: transparent; }
 .admin-preview-gate small { color: #aaa393; line-height: 1.45; }
 .admin-preview-error { padding: 0.6rem; color: #ffd7d0; background: #5a211f; border-radius: 0.5rem; }
-.admin-preview-entry { position: relative; z-index: 1; margin-top: 0.45rem; }
+/* Admin-only, and there are ten of them against six real table CTAs. Filling
+   them gold inverts the floor's attention. Ghost outline, never the gold fill. */
+.admin-preview-entry { position: relative; z-index: 1; min-height: 44px; margin-top: 0.45rem; padding: 0 0.9rem; border: 1px solid #3b4a43; border-radius: 0.6rem; background: transparent; color: #8a978f; font: inherit; font-size: 0.78rem; font-weight: 700; cursor: pointer; white-space: nowrap; transition: color .18s ease, border-color .18s ease; }
+.admin-preview-entry:hover { color: #c6d0c9; border-color: #5d6f66; }
 
 .favorite-marathon-shell { min-height: 100dvh; background: radial-gradient(circle at 50% -10%, rgb(225 187 94 / 12%), transparent 42%), var(--canvas); }
 .favorite-marathon-setup { display: grid; width: min(68rem, calc(100% - 2rem)); gap: 1.2rem; margin: 1.5rem auto 4rem; }

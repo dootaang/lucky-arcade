@@ -160,7 +160,9 @@ export default function CasinoLedgerView({ userBalance, tables, onPlay, onBalanc
         setMarketError(code === "game_outcome_already_wagered" ? "이 대국에는 이미 베팅했습니다." : code === "insufficient_points" ? "예약할 포인트가 부족합니다." : code === "side_market_closed" ? "방금 베팅 접수가 마감됐습니다." : code === "casino_counterparty_insufficient_points" ? "하우스 노출 한도에 도달해 이 베팅을 받을 수 없습니다." : "베팅을 예약하지 못했습니다.");
       } finally { setMarketBusy(false); }
     };
-    return <><CasinoSideMarket schedule={sideMarketSchedule} ticketMarkets={ticketMarkets} wagers={sideWagers} balance={userBalance} currentUtcSecond={currentUtcSecond} busy={marketBusy} {...(marketError ? { error: marketError } : {})} onBet={placeSideBet} /><CasinoLedgerPanel
+    const sideMarket = <CasinoSideMarket schedule={sideMarketSchedule} ticketMarkets={ticketMarkets} wagers={sideWagers} balance={userBalance} npcPeriodProfits={profitPeriod.profits} currentUtcSecond={currentUtcSecond} busy={marketBusy} {...(marketError ? { error: marketError } : {})} onBet={placeSideBet} />;
+    return <><CasinoLedgerPanel
+      afterTables={sideMarket}
       profiles={profiles}
       npcBalances={liveBalances}
       npcSevenDayProfits={profitPeriod.profits}

@@ -8,7 +8,8 @@ import type { CasinoLedgerSourceId, CasinoTableId, NpcGamblingProfile, NpcMatchS
 import { isWaresHouseIdentity, TEMEROSA_HOUSE_ACCOUNT_ID } from "../economy.ts";
 import "./casino-ledger-panel.css";
 
-export type CasinoLedgerPortraitIntent = "sm" | "detail";
+export type CasinoLedgerPortraitEmotion = "neutral" | "pleased" | "tense" | "despair";
+export type CasinoLedgerPortraitIntent = "sm" | "detail" | { emotion: CasinoLedgerPortraitEmotion };
 export type CasinoLedgerPortraitResolver = (npcId: string, intent: CasinoLedgerPortraitIntent) => Promise<string | undefined>;
 
 const CasinoLedgerPortraitContext = createContext<CasinoLedgerPortraitResolver | undefined>(undefined);
@@ -16,6 +17,31 @@ const CasinoLedgerPortraitContext = createContext<CasinoLedgerPortraitResolver |
 /** Keeps app-owned portrait manifests out of the ledger package and its initial bundle. */
 export function CasinoLedgerPortraitProvider({ resolve, children }: { resolve: CasinoLedgerPortraitResolver; children: React.ReactNode }): React.ReactElement {
   return <CasinoLedgerPortraitContext.Provider value={resolve}>{children}</CasinoLedgerPortraitContext.Provider>;
+}
+
+export interface CasinoQualifiedNameParts { name: string; series?: string; }
+
+/** The tail is the canonical series label; names themselves may contain the separator. */
+export function splitCasinoQualifiedName(qualifiedName: string): CasinoQualifiedNameParts {
+  const separator = " · ";
+  const index = qualifiedName.lastIndexOf(separator);
+  if (index < 0) return { name: qualifiedName };
+  return { name: qualifiedName.slice(0, index), series: qualifiedName.slice(index + separator.length) };
+}
+
+export function casinoLedgerEmotionForProfit(net: number): CasinoLedgerPortraitEmotion {
+  if (net > 0) return "pleased";
+  if (net === 0) return "neutral";
+  if (net <= -100) return "despair";
+  return "tense";
+}
+
+export function CasinoPersonName({ qualifiedName }: { qualifiedName: string }): React.ReactElement {
+  const { name, series } = splitCasinoQualifiedName(qualifiedName);
+  return <span className="casino-person-name" title={qualifiedName} aria-label={qualifiedName}>
+    <span className="casino-person-name-text">{name}</span>
+    {series && <span className="casino-series-chip" data-series={series}>{series}</span>}
+  </span>;
 }
 
 export function isPublicCasinoLedgerIdentity(npcId: string): boolean {
@@ -57,6 +83,9 @@ export interface CasinoLedgerPanelProps {
   tables: readonly CasinoLiveTable[];
   onPlay(id: string): void;
   loadNpcHistory(npcId: string, days: number): readonly NpcRoundSettlement[];
+  /** Slotted between the tables and the ledger, so time-sensitive surfaces
+      (the spectator market) sit above the archive without preceding the tables. */
+  afterTables?: React.ReactNode;
 }
 
 export interface CasinoLiveTable {
@@ -87,6 +116,7 @@ export default function CasinoLedgerPanel({
   tables,
   onPlay,
   loadNpcHistory,
+  afterTables,
 }: CasinoLedgerPanelProps): React.ReactElement {
   const [leaderboardMode, setLeaderboardMode] = useState<"profit" | "balance">("profit");
   const [recordRoomOpen,setRecordRoomOpen]=useState(false);
@@ -174,38 +204,8 @@ export default function CasinoLedgerPanel({
     {economySummary&&(npcEconomyDetails?<><span className="ca-label economy-top-up">{casinoEconomyHeadline(economySummary.npcTopUpsToday)}</span><span className={`ca-label ${gainLossClass(economySummary.houseGamingProfitToday)}`}>하우스 게임 손익 {signedPoints(economySummary.houseGamingProfitToday)}</span><span className="ca-label economy-cost">운영비 −{economySummary.houseOperatingExpensesToday.toLocaleString("ko-KR")} P</span><span className={`ca-label ${gainLossClass(economySummary.houseGamingProfitToday-economySummary.houseOperatingExpensesToday)}`}>하우스 순손익 {signedPoints(economySummary.houseGamingProfitToday-economySummary.houseOperatingExpensesToday)}</span><span className="ca-label">진행 중 테이블 {economySummary.activeTableCount}</span><span className="ca-label">카지노 안 NPC {economySummary.presentNpcCount}</span></>:<><span className="ca-label">오늘 NPC 투입 +{economySummary.npcTopUpsToday.toLocaleString("ko-KR")} P</span><span className="ca-label">하우스 게임 {signedPoints(economySummary.houseGamingProfitToday)}</span><span className="ca-label">운영비 −{economySummary.houseOperatingExpensesToday.toLocaleString("ko-KR")} P</span><span className="ca-label">가동 {economySummary.activeTableCount} · 입장 {economySummary.presentNpcCount}</span></>)}
     {seatedCount === 0 && nextArrivalAt !== undefined && <span className="ca-label">다음 입장 {formatCasinoKstTime(nextArrivalAt)}</span>}
   </div>
-  <section className="casino-ledger-panel" aria-label="카지노 활동 원장" data-ledger-utc-second={currentUtcSecond}>
-    <div className="casino-ledger-board">
-      <span className="ca-brackets" aria-hidden="true" />
-      <table>
-        <caption className="ca-serif">명예의 전당 <span className="ledger-board-switch"><button aria-pressed={leaderboardMode === "profit"} onClick={() => setLeaderboardMode("profit")}>{profitLabel}</button><button aria-pressed={leaderboardMode === "balance"} onClick={() => setLeaderboardMode("balance")}>잔고</button><button onClick={()=>{setSelectedNpcId(undefined);setRecordRoomOpen(true);}}>전체 보기</button></span></caption>
-        <thead><tr><th scope="col">순위</th><th scope="col">이름</th><th scope="col">{leaderboardMode === "profit" ? profitLabel : "잔고"}</th></tr></thead>
-        <tbody ref={boardRef}>{leaderboard.map((entry) => <tr
-          key={`${entry.kind}:${entry.id}`}
-          {...(entry.kind === "npc" ? { "data-npc": entry.id } : {})}
-          className={`${entry.kind === "user" ? "is-user" : ""}${entry.kind === "npc" && balanceMoves[entry.id] ? ` is-${balanceMoves[entry.id]}` : ""}`}
-          style={{ "--ledger-depth": `${(Math.abs(leaderboardMode === "profit" ? entry.periodProfit ?? 0 : entry.balance) / topBalance * 100).toFixed(2)}%` } as React.CSSProperties}
-        >
-          <td className="ca-num">{entry.rank}</td>
-          <th scope="row"><button className="ledger-person ledger-person-button" onClick={()=>{setSelectedNpcId(entry.kind==="user"?"player:local":entry.id);setRecordRoomOpen(true);}}>
-            {entry.kind === "npc" && entry.rank <= 3 && <LedgerPortrait npcId={entry.id} name={entry.name} src={portraits[entry.id]} crowned={entry.rank === 1} />}
-            {entry.name}
-          </button></th>
-          <td className="ca-num">{leaderboardMode === "profit" ? <NumberTicker value={entry.periodProfit ?? 0} prefix={(entry.periodProfit ?? 0) > 0 ? "+" : ""} suffix=" P" durationMs={650} /> : <NumberTicker value={entry.balance} suffix=" P" durationMs={650} />}</td>
-        </tr>)}</tbody>
-      </table>
-    </div>
-    <section className="casino-ledger-settlements" aria-labelledby="settlement-heading">
-      <div className="ledger-heading"><span id="settlement-heading">최근 정산</span><small>실제 잔고 변동</small></div>
-      <ol>{recentSettlements.map((settlement) => <li key={settlement.matchId}><SettlementLine settlement={settlement} names={names} currentUtcSecond={currentUtcSecond} /></li>)}</ol>
-    </section>
-    <div className="casino-ledger-activity">
-      <div className="ledger-heading"><span><i className="ca-live" aria-hidden="true" /> LIVE PLAY TAPE</span><small>{lastMinuteCount} ACTIONS / 60s{clockSource === "device" ? " · 기기 시간" : ""}</small></div>
-      <div className="ledger-tape-columns" aria-hidden="true"><span>PLAYER</span><span>AGE</span><span>TABLE · ACTION</span><span>STAKE / P&amp;L</span></div>
-      <div className="ledger-motion" aria-hidden="true">{tape.map((event, index) => <TapeLine key={event.id} event={event} names={names} currentUtcSecond={currentUtcSecond} newest={index === 0} />)}</div>
-      <ol className="ledger-static" aria-label="최근 카지노 활동 세 건">{tape.slice(0, 3).map((event) => <li key={event.id}><TapeLine event={event} names={names} currentUtcSecond={currentUtcSecond} /></li>)}</ol>
-    </div>
-  </section>
+  {/* The floor's job is seating the player, so the tables come before the ledger.
+      Reading the room is secondary to joining it. */}
   <section className="casino-live-grid" aria-label="운영 중인 게임 테이블">
     {tables.map((table) => {
       const latest = settlements.find((settlement) => settlement.tableId === table.id);
@@ -224,6 +224,39 @@ export default function CasinoLedgerPanel({
         onPlay={() => onPlay(table.id)}
       />;
     })}
+  </section>
+  {afterTables}
+  <section className="casino-ledger-panel" aria-label="카지노 활동 원장" data-ledger-utc-second={currentUtcSecond}>
+    <div className="casino-ledger-board">
+      <span className="ca-brackets" aria-hidden="true" />
+      <table>
+        <caption className="ca-serif">명예의 전당 <span className="ledger-board-switch"><button aria-pressed={leaderboardMode === "profit"} onClick={() => setLeaderboardMode("profit")}>{profitLabel}</button><button aria-pressed={leaderboardMode === "balance"} onClick={() => setLeaderboardMode("balance")}>잔고</button><button onClick={()=>{setSelectedNpcId(undefined);setRecordRoomOpen(true);}}>전체 보기</button></span></caption>
+        <thead><tr><th scope="col">순위</th><th scope="col">이름</th><th scope="col">{leaderboardMode === "profit" ? profitLabel : "잔고"}</th></tr></thead>
+        <tbody ref={boardRef}>{leaderboard.map((entry) => <tr
+          key={`${entry.kind}:${entry.id}`}
+          {...(entry.kind === "npc" ? { "data-npc": entry.id } : {})}
+          className={`${entry.kind === "user" ? "is-user" : ""}${entry.kind === "npc" && balanceMoves[entry.id] ? ` is-${balanceMoves[entry.id]}` : ""}`}
+          style={{ "--ledger-depth": `${(Math.abs(leaderboardMode === "profit" ? entry.periodProfit ?? 0 : entry.balance) / topBalance * 100).toFixed(2)}%` } as React.CSSProperties}
+        >
+          <td className="ca-num">{entry.rank}</td>
+          <th scope="row"><button className="ledger-person ledger-person-button" onClick={()=>{setSelectedNpcId(entry.kind==="user"?"player:local":entry.id);setRecordRoomOpen(true);}}>
+            {entry.kind === "npc" && entry.rank <= 3 && <LedgerPortrait npcId={entry.id} name={entry.name} src={portraits[entry.id]} crowned={entry.rank === 1} />}
+            <CasinoPersonName qualifiedName={entry.name}/>
+          </button></th>
+          <td className="ca-num">{leaderboardMode === "profit" ? <NumberTicker value={entry.periodProfit ?? 0} prefix={(entry.periodProfit ?? 0) > 0 ? "+" : ""} suffix=" P" durationMs={650} /> : <NumberTicker value={entry.balance} suffix=" P" durationMs={650} />}</td>
+        </tr>)}</tbody>
+      </table>
+    </div>
+    <section className="casino-ledger-settlements" aria-labelledby="settlement-heading">
+      <div className="ledger-heading"><span id="settlement-heading">최근 정산</span><small>실제 잔고 변동</small></div>
+      <ol>{recentSettlements.map((settlement) => <li key={settlement.matchId}><SettlementLine settlement={settlement} names={names} currentUtcSecond={currentUtcSecond} /></li>)}</ol>
+    </section>
+    <div className="casino-ledger-activity">
+      <div className="ledger-heading"><span><i className="ca-live" aria-hidden="true" /> LIVE PLAY TAPE</span><small>{lastMinuteCount} ACTIONS / 60s{clockSource === "device" ? " · 기기 시간" : ""}</small></div>
+      <div className="ledger-tape-columns" aria-hidden="true"><span>PLAYER</span><span>AGE</span><span>TABLE · ACTION</span><span>STAKE / P&amp;L</span></div>
+      <div className="ledger-motion" aria-hidden="true">{tape.map((event, index) => <TapeLine key={event.id} event={event} names={names} currentUtcSecond={currentUtcSecond} newest={index === 0} />)}</div>
+      <ol className="ledger-static" aria-label="최근 카지노 활동 세 건">{tape.slice(0, 3).map((event) => <li key={event.id}><TapeLine event={event} names={names} currentUtcSecond={currentUtcSecond} /></li>)}</ol>
+    </div>
   </section>
   {recordRoomOpen&&<CasinoRecordRoom
     leaderboard={fullLeaderboard} leaderboardMode={leaderboardMode} profitLabel={profitLabel} selectedNpcId={selectedNpcId}
@@ -272,17 +305,18 @@ function CasinoRecordRoom({leaderboard,leaderboardMode,profitLabel,selectedNpcId
   const selected=selectedNpcId==="player:local"?leaderboard.find((entry)=>entry.kind==="user"):leaderboard.find((entry)=>entry.kind==="npc"&&entry.id===selectedNpcId);
   const filtered=tableFilter==="all"?entries:entries.filter((entry)=>entry.tableId===tableFilter);
   const report=selectedNpcId?casinoNpcLedgerReport(selectedNpcId,filtered):undefined;
+  const periodNet=selectedNpcId?casinoNpcLedgerReport(selectedNpcId,entries).net:0;
   return <div className="casino-record-backdrop" onMouseDown={(event)=>{if(event.currentTarget===event.target)onClose();}}>
     <section className="casino-record-room" role="dialog" aria-modal="true" aria-labelledby="casino-record-title">
-      <header><div>{selected?<button className="record-back" onClick={onBack}>← 전체 순위</button>:<span className="ca-label">CASINO ARCHIVE</span>}<h2 id="casino-record-title" className="ca-serif">{selected?`${selected.name}의 카지노 원장`:"명예의 전당 전체 순위"}</h2></div><button className="record-close" onClick={onClose} aria-label="기록실 닫기">×</button></header>
-      {!selected?<div className="record-ranking-wrap"><table className="record-ranking"><caption>{leaderboardMode==="profit"?`${profitLabel} 순위`:"현재 잔고 순위"}</caption><thead><tr><th>순위</th><th>이름</th><th>{leaderboardMode==="profit"?profitLabel:"잔고"}</th></tr></thead><tbody>{leaderboard.slice(0,rankingVisible).map((entry)=><tr key={`${entry.kind}:${entry.id}`} className={entry.kind==="user"?"is-user":""}><td className="ca-num">{entry.rank}</td><th scope="row"><button onClick={()=>onSelect(entry.kind==="user"?"player:local":entry.id)}>{entry.kind==="npc"&&<LedgerPortrait npcId={entry.id} name={entry.name} src={portraits[entry.id]} crowned={entry.rank===1}/>}<span>{entry.name}</span></button></th><td className="ca-num">{leaderboardMode==="profit"?signedPoints(entry.periodProfit??0):`${entry.balance} P`}</td></tr>)}</tbody></table>{leaderboard.length>rankingVisible&&<button className="record-more" onClick={()=>setRankingVisible((value)=>value+30)}>30명 더 보기</button>}</div>
+      <header><div>{selected?<button className="record-back" onClick={onBack}>← 전체 순위</button>:<span className="ca-label">CASINO ARCHIVE</span>}<h2 id="casino-record-title" className="ca-serif">{selected?<><CasinoPersonName qualifiedName={selected.name}/><span className="record-title-suffix">의 카지노 원장</span></>:"명예의 전당 전체 순위"}</h2></div><button className="record-close" onClick={onClose} aria-label="기록실 닫기">×</button></header>
+      {!selected?<div className="record-ranking-wrap"><table className="record-ranking"><caption>{leaderboardMode==="profit"?`${profitLabel} 순위`:"현재 잔고 순위"}</caption><thead><tr><th>순위</th><th>이름</th><th>{leaderboardMode==="profit"?profitLabel:"잔고"}</th></tr></thead><tbody>{leaderboard.slice(0,rankingVisible).map((entry)=><tr key={`${entry.kind}:${entry.id}`} className={entry.kind==="user"?"is-user":""}><td className="ca-num">{entry.rank}</td><th scope="row"><button onClick={()=>onSelect(entry.kind==="user"?"player:local":entry.id)}>{entry.kind==="npc"&&<LedgerPortrait npcId={entry.id} name={entry.name} src={portraits[entry.id]} crowned={entry.rank===1}/>}<CasinoPersonName qualifiedName={entry.name}/></button></th><td className="ca-num">{leaderboardMode==="profit"?signedPoints(entry.periodProfit??0):`${entry.balance} P`}</td></tr>)}</tbody></table>{leaderboard.length>rankingVisible&&<button className="record-more" onClick={()=>setRankingVisible((value)=>value+30)}>30명 더 보기</button>}</div>
       :report&&<div className="npc-ledger-detail">
-        <div className="npc-ledger-hero">{selected.kind==="npc"&&<LedgerPortrait npcId={selected.id} name={selected.name} src={portraits[selected.id]} crowned={selected.rank===1} intent="detail"/>}<div><span className="ca-label">{leaderboardMode==="profit"?profitLabel:"잔고"} {selected.rank}위</span><strong>{selected.balance.toLocaleString("ko-KR")} P</strong></div><div className="record-periods" aria-label="조회 기간">{([1,7,30,0] as const).map((value)=><button key={value} aria-pressed={days===value} onClick={()=>onDays(value)}>{value===0?"전체":value===1?"24시간":`${value}일`}</button>)}</div></div>
+        <div className="npc-ledger-hero">{selected.kind==="npc"&&<LedgerPortrait npcId={selected.id} name={selected.name} src={portraits[selected.id]} crowned={selected.rank===1} intent={{emotion:casinoLedgerEmotionForProfit(periodNet)}}/>}<div><span className="ca-label">{leaderboardMode==="profit"?profitLabel:"잔고"} {selected.rank}위</span><strong>{selected.balance.toLocaleString("ko-KR")} P</strong></div><div className="record-periods" aria-label="조회 기간">{([1,7,30,0] as const).map((value)=><button key={value} aria-pressed={days===value} onClick={()=>onDays(value)}>{value===0?"전체":value===1?"24시간":`${value}일`}</button>)}</div></div>
         <div className="npc-ledger-kpis"><article><span>순손익</span><strong className={report.net>0?"is-gain":report.net<0?"is-loss":""}>{signedPoints(report.net)}</strong></article><article><span>정산</span><strong>{report.settlements}건</strong><small>수익 {report.gains} · 손실 {report.losses}</small></article><article><span>최대 수익</span><strong className="is-gain">{signedPoints(report.largestGain)}</strong></article><article><span>최대 손실</span><strong className="is-loss">{signedPoints(report.largestLoss)}</strong></article></div>
         {economy&&<div className="npc-ledger-kpis npc-economy-kpis"><article><span>외부 재산</span><strong>{economy.externalReserve.toLocaleString("ko-KR")} P</strong></article><article><span>오늘 외부 본업 수입</span><strong>+{economy.grossIncomeToday.toLocaleString("ko-KR")} P</strong></article><article><span>오늘 카지노 투입</span><strong>+{economy.casinoTopUpToday.toLocaleString("ko-KR")} P</strong></article><article><span>오늘 총 판돈</span><strong>{economy.wageredToday.toLocaleString("ko-KR")} P</strong></article></div>}
         <LedgerTrend values={report.dailyNet}/>
         <section className="npc-table-breakdown"><h3>게임별 손익</h3><div>{report.byTable.map((item)=><button key={item.tableId} aria-pressed={tableFilter===item.tableId} onClick={()=>setTableFilter((current)=>current===item.tableId?"all":item.tableId)}><span>{tableName(item.tableId)}</span><small>{item.settlements}건 · 노출 {item.exposure.toLocaleString("ko-KR")} P</small><strong className={item.net>0?"is-gain":item.net<0?"is-loss":""}>{signedPoints(item.net)}</strong></button>)}</div></section>
-        {report.opponents.length>0&&<section className="npc-opponent-summary"><h3>자주 만난 상대</h3><div>{report.opponents.slice(0,5).map((item)=><article key={item.npcId}><span>{names.get(item.npcId)??item.npcId}</span><small>{item.matches}대국</small><strong className={item.net>0?"is-gain":item.net<0?"is-loss":""}>{signedPoints(item.net)}</strong></article>)}</div></section>}
+        {report.opponents.length>0&&<section className="npc-opponent-summary"><h3>자주 만난 상대</h3><div>{report.opponents.slice(0,5).map((item)=><article key={item.npcId}><CasinoPersonName qualifiedName={names.get(item.npcId)??item.npcId}/><small>{item.matches}대국</small><strong className={item.net>0?"is-gain":item.net<0?"is-loss":""}>{signedPoints(item.net)}</strong></article>)}</div></section>}
         <section className="npc-receipts"><div className="ledger-heading"><span>전체 정산 기록</span><small>{tableFilter==="all"?"모든 게임":tableName(tableFilter)}</small></div><ol>{filtered.slice(0,visible).map((entry)=><li key={entry.roundId}><div><strong>{tableName(entry.tableId)} · {settlementLabel(entry,names)}</strong><small>{formatCasinoKstTimestamp(entry.utcSecond)}{entry.participantIds.length>1?` · 상대 ${entry.participantIds.filter((id)=>id!==entry.npcId).map((id)=>names.get(id)??id).join(", ")}`:""}</small></div><span><small>{entry.stake===0?"무료":`${entry.stake} P ×${entry.reservedAmount/entry.stake}`}</small><strong className={entry.delta>0?"is-gain":entry.delta<0?"is-loss":""}>{signedPoints(entry.delta)}</strong></span></li>)}</ol>{filtered.length>visible&&<button className="record-more" onClick={()=>setVisible((value)=>value+50)}>50건 더 보기</button>}</section>
       </div>}
     </section>
@@ -302,40 +336,47 @@ function LedgerTrend({values}:{values:readonly Readonly<{kstDay:number;net:numbe
 function LedgerPortrait({ npcId, name, src, crowned, intent = "sm" }: { npcId: string; name: string; src: string | undefined; crowned: boolean; intent?: CasinoLedgerPortraitIntent }): React.ReactElement {
   const resolved = useCasinoLedgerPortrait(npcId, intent, src);
   const face = <span className="ledger-portrait">
-    <span aria-hidden="true">{name.slice(0, 1)}</span>
-    {resolved && <img src={resolved} alt="" loading="lazy" decoding="async" onError={(event) => { event.currentTarget.hidden = true; }} />}
+    <span className="casino-portrait-initial" aria-hidden="true">{name.slice(0, 1)}</span>
+    {resolved && <CasinoPortraitImage key={resolved} src={resolved} />}
   </span>;
   return crowned ? <HoloFoil className="ledger-crown" tilt={false}>{face}</HoloFoil> : face;
 }
 
-function useCasinoLedgerPortrait(npcId: string, intent: CasinoLedgerPortraitIntent, fallback: string | undefined): string | undefined {
+export function useCasinoLedgerPortrait(npcId: string, intent: CasinoLedgerPortraitIntent, fallback: string | undefined): string | undefined {
   const resolve = useContext(CasinoLedgerPortraitContext);
-  const [resolved,setResolved]=useState<string>();
+  const intentKey=typeof intent==="string"?intent:intent.emotion;
+  const requestKey=`${npcId}\u0000${intentKey}`;
+  const [resolved,setResolved]=useState<Readonly<{key:string;url:string|undefined}>>();
   useEffect(()=>{
     let alive=true;
-    setResolved(undefined);
     if(!resolve||!npcId.startsWith("temerosa:"))return()=>{alive=false;};
-    void resolve(npcId,intent).then((url)=>{if(alive)setResolved(url);}).catch(()=>undefined);
+    void resolve(npcId,intent).then((url)=>{if(alive)setResolved({key:requestKey,url});}).catch(()=>undefined);
     return()=>{alive=false;};
-  },[intent,npcId,resolve]);
-  return resolved??fallback;
+  },[intentKey,npcId,resolve]);
+  return resolved?.key===requestKey?(resolved.url??fallback):fallback;
 }
 
 function LivePlayerPortrait({npcId,name,fallback}:{npcId:string;name:string;fallback:string|undefined}):React.ReactElement{
+  // Seats are 34px wide. Keeping this literal "sm" prevents an md emotion request.
   const resolved=useCasinoLedgerPortrait(npcId,"sm",fallback);
-  return resolved?<img src={resolved} alt="" loading="lazy" decoding="async" onError={(event)=>{event.currentTarget.hidden=true;}}/>:<i aria-hidden="true">{name.slice(0,1)}</i>;
+  return <span className="live-player-portrait"><i aria-hidden="true">{name.slice(0,1)}</i>{resolved&&<CasinoPortraitImage key={resolved} src={resolved}/>}</span>;
+}
+
+function CasinoPortraitImage({src}:{src:string}):React.ReactElement|null{
+  const [loaded,setLoaded]=useState(false);
+  const [failed,setFailed]=useState(false);
+  if(failed)return null;
+  return <img className={loaded?"is-loaded":""} src={src} alt="" loading="lazy" decoding="async" onLoad={()=>setLoaded(true)} onError={()=>setFailed(true)}/>;
 }
 
 function TapeLine({ event, names, currentUtcSecond, newest = false }: { event: CasinoTapeEvent; names: ReadonlyMap<string,string>; currentUtcSecond: number; newest?: boolean }): React.ReactElement {
   const age = Math.max(0, currentUtcSecond - event.utcSecond);
   const name = names.get(event.npcId) ?? event.npcId;
-  const actionLabel = event.predictedNpcId
-    ? `${names.get(event.predictedNpcId)??event.predictedNpcId} ${event.predictionMarket==="joker-holder"?"꼴찌":"우승"} 예측`
-    : event.label;
+  const predictedName=event.predictedNpcId?(names.get(event.predictedNpcId)??event.predictedNpcId):undefined;
   const incomeClass=event.tableId==="npc-income"?event.label.includes("예산 투입")?" is-income-top-up":" is-income-business":"";
   const directionClass = incomeClass || (event.tone === "gain" ? " is-rising" : event.tone === "loss" ? " is-falling" : event.tone ? " is-balanced" : "");
   return <span data-tape-key={event.id} className={`ledger-activity-line is-${event.kind}${event.tone ? ` is-tone-${event.tone}` : ""}${directionClass}${newest ? " is-newest" : ""}`}>
-    <b>{name}</b><small>{ageLabel(age)}</small><span><i>{tableName(event.tableId)}</i> · {actionLabel}</span><strong className="ca-num">{event.delta !== undefined
+    <b><CasinoPersonName qualifiedName={name}/></b><small>{ageLabel(age)}</small><span className="ledger-activity-action"><i>{tableName(event.tableId)}</i> · {predictedName?<><CasinoPersonName qualifiedName={predictedName}/> {event.predictionMarket==="joker-holder"?"꼴찌":"우승"} 예측</>:event.label}</span><strong className="ca-num">{event.delta !== undefined
       ? signedPoints(event.delta)
       : event.stake === 0 ? "FREE" : `${event.stake} P${event.multiplier?` ×${event.multiplier}`:""}`}</strong>
   </span>;
@@ -356,7 +397,7 @@ function SettlementLine({ settlement, names, currentUtcSecond }: { settlement: N
     data-direction={direction}
     aria-label={`${name}, ${tableName(settlement.tableId)}, ${ageLabel(age)}, ${directionLabel} ${Math.abs(delta)} 포인트`}
   >
-    <div><b>{name}</b><small>{ageLabel(age)}</small></div>
+    <div><b><CasinoPersonName qualifiedName={name}/></b><small>{ageLabel(age)}</small></div>
     <span>{tableName(settlement.tableId)} · {settlementLabel(settlement,names)}{leverage === null ? "" : ` · ${leverage}배`}</span>
     <strong><i aria-hidden="true">{symbol}</i> {directionLabel}</strong>
     <NumberTicker value={Math.abs(delta)} prefix={delta > 0 ? "+" : delta < 0 ? "−" : ""} suffix=" P" durationMs={650} className="ca-num ledger-settlement-amount" />
@@ -404,14 +445,14 @@ function LiveTableCard({ table, presences, portraits, names, npcBalances, curren
           {...(backlit ? { style: { "--ca-backlight": `url("${portrait}")` } as React.CSSProperties } : {})}
         >
           <LivePlayerPortrait npcId={presence.npcId} name={names.get(presence.npcId)??presence.npcId} fallback={portrait}/>
-          <b>{names.get(presence.npcId) ?? presence.npcId}</b>
+          <b><CasinoPersonName qualifiedName={names.get(presence.npcId) ?? presence.npcId}/></b>
           {presence.phase === "spectating" && <small>관전</small>}
         </span>;
       })}
       {displayed.length > 3 && <span className="live-player-more">+{displayed.length - 3}</span>}
       {displayed.length === 0 && <span className="live-table-empty">빈 테이블</span>}
     </div>
-    {latest && <small className="live-table-result">최근 · {names.get(latest.npcId) ?? latest.npcId} {latest.delta > 0 ? "+" : ""}{latest.delta} P</small>}
+    {latest && <small className="live-table-result">최근 · <CasinoPersonName qualifiedName={names.get(latest.npcId) ?? latest.npcId}/> {latest.delta > 0 ? "+" : ""}{latest.delta} P</small>}
     <small className="ca-num">{table.meta}</small>
     <button className={`ca-gold-btn ca-press ca-reflect${state === "open" ? " ca-floorlight ca-pulse" : ""}`} onClick={onPlay}>{table.entryLabel}<span aria-hidden="true">▶</span></button>
     <span className="ca-brackets" aria-hidden="true" />
