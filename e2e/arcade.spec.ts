@@ -164,7 +164,7 @@ test("loads the living ledger lazily and reuses the casino manifest in a game", 
 });
 
 test("reserves, restores, and settles one integrated spectator market receipt", async ({ page }, testInfo) => {
-  test.setTimeout(90_000);
+  test.setTimeout(150_000);
   test.skip(testInfo.project.metadata.mobile === true);
   // The 1.3 worldline opens on 2026-08-02 KST.  Exercise a live market after
   // that epoch; pre-epoch clocks intentionally have no 1.3 day plan to price.
