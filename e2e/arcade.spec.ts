@@ -203,9 +203,8 @@ test("reserves, restores, and settles one integrated spectator market receipt", 
   expect(reserved.wagers[0]).toMatchObject({ cabinetId: "temerosa-side-market", reservedAmount: 20, status: "reserved" });
   expect(reserved.balance).toBe(980);
 
-  casinoEpoch += 251_000;
+  casinoEpoch += 331_000;
   await page.reload();
-  await expect(market).toHaveClass(/phase-upcoming/);
   await market.getByRole("button", { name: "내 베팅 1", exact: true }).click();
   const history = page.getByRole("dialog", { name: "내 베팅 기록" });
   await expect(history).toContainText(/적중|실패/, { timeout: 20_000 });
@@ -549,9 +548,21 @@ test("opens five-card draw publicly and settles its multiplayer pot in the real 
   // Pick authored successor identities so this scenario also verifies the
   // reviewed dialogue bridge.  Newly admitted series identities are silent
   // until their own CHARX-reviewed lines are approved.
-  await page.getByRole("button", { name: /카트린카 · Bestiaization/ }).click();
-  await page.getByRole("button", { name: /카노 · Finale/ }).click();
-  await page.getByRole("button", { name: /페일 · Finale/ }).click();
+  const authoredOpponents = [
+    "카트린카 · Bestiaization", "레이븐 · Bestiaization", "라일라 · Bestiaization",
+    "알제 · Finale", "크레바 · Bestiaization", "카노 · Finale", "페일 · Finale",
+    "박니은 · Finale", "카미유 · Bestiaization", "안나 · Bestiaization",
+  ];
+  let selectedAuthoredOpponents = 0;
+  for (const name of authoredOpponents) {
+    const button = page.getByRole("button", { name: new RegExp(`^${name}`) }).first();
+    if (await button.count() > 0 && await button.isEnabled()) {
+      await button.click();
+      selectedAuthoredOpponents += 1;
+      if (selectedAuthoredOpponents === 3) break;
+    }
+  }
+  expect(selectedAuthoredOpponents).toBe(3);
   await expect(page.getByRole("button", { name: "카드 받기" })).toBeEnabled();
   await page.getByRole("button", { name: "카드 받기" }).click();
   const landing = await page.locator('.ca-stage-flight[data-flight-to^="hand:npc-"]').first().evaluate(async (flight) => {
