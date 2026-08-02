@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { casinoSpectatorMarketByIdAt, casinoSpectatorMarketsAt, casinoUtcSecondAtKstDay, TEMEROSA_FLOW_13_NPC_GAMBLING_PROFILES, TEMEROSA_FLOW_13_NPC_LEDGER_CONTRACT } from "@lucky-arcade/casino-ledger";
 import { marketReturnBps } from "@lucky-arcade/engine";
-import { resolveCasinoSideMarketOffer, resolveCasinoSideMarketReplay, supportsNativeSideMarketExperience } from "./casino-side-market-replay.ts";
+import { resolveCasinoSideMarketOffer, resolveCasinoSideMarketReplay, resolveCasinoSideMarketResult, supportsNativeSideMarketExperience } from "./casino-side-market-replay.ts";
 
 const originalFetch = globalThis.fetch;
 
@@ -30,6 +30,8 @@ describe("canonical casino side-market replay", () => {
     const indianMarket=markets.find((market)=>market.tableId==="indian-poker");
     const drawMarket=markets.find((market)=>market.tableId==="temerosa-five-card-draw");
     expect(pairMarket).toBeDefined(); expect(maidMarket).toBeDefined();expect(indianMarket).toBeDefined();expect(drawMarket).toBeDefined();
+    const unstartedMarket=markets.find((market)=>market.phase!=="settled")!;
+    expect(await resolveCasinoSideMarketOffer(unstartedMarket)).toBe(unstartedMarket);
     const pairReplay = await resolveCasinoSideMarketReplay(pairMarket!);
     const maidReplay = await resolveCasinoSideMarketReplay(maidMarket!);
     const indianReplay=await resolveCasinoSideMarketReplay(indianMarket!);
@@ -53,8 +55,11 @@ describe("canonical casino side-market replay", () => {
     const settledClock = { utcSecond: () => pairMarket!.settlesAtUtcSecond + 1, utcMinute: () => Math.floor((pairMarket!.settlesAtUtcSecond + 1) / 60) };
     const settledRaw = casinoSpectatorMarketByIdAt(TEMEROSA_FLOW_13_NPC_GAMBLING_PROFILES, settledClock, TEMEROSA_FLOW_13_NPC_LEDGER_CONTRACT, pairMarket!.marketId)!;
     const settledOffer = await resolveCasinoSideMarketOffer(settledRaw);
+    const settledResult = await resolveCasinoSideMarketResult(settledRaw);
     expect(settledOffer.phase).toBe("settled");
     expect(settledOffer.winningOutcomeId).toBe(pairReplay.winningOutcomeId);
+    expect(settledResult).toEqual({marketId:pairReplay.marketId,winningOutcomeId:pairReplay.winningOutcomeId,resultHash:pairReplay.resultHash});
+    expect("game" in settledResult).toBe(false);
     expect(settledOffer.outcomes.map((outcome) => outcome.quote)).toEqual(pairOffer.outcomes.map((outcome) => outcome.quote));
     expect((await resolveCasinoSideMarketReplay(pairMarket!)).resultHash).toBe(pairReplay.resultHash);
   }, 60_000);

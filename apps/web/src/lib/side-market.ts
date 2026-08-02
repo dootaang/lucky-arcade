@@ -94,18 +94,18 @@ export async function reconcileSideMarketWagers(nowUtcSecond?: number): Promise<
       await invalidateWager({ wagerId: wager.wagerId, reason: "outcome-unavailable" });
       continue;
     }
-    const { resolveCasinoSideMarketOffer, resolveCasinoSideMarketReplay } = await import("./casino-side-market-replay.ts");
-    const [offer, replay] = await Promise.all([resolveCasinoSideMarketOffer(market), resolveCasinoSideMarketReplay(market)]);
+    const { resolveCasinoSideMarketOffer, resolveCasinoSideMarketResult } = await import("./casino-side-market-replay.ts");
+    const [offer, result] = await Promise.all([resolveCasinoSideMarketOffer(market), resolveCasinoSideMarketResult(market)]);
     const currentOutcome = offer.outcomes.find((outcome) => outcome.outcomeId === choice.outcomeId);
     if (!currentOutcome || !sameQuote(currentOutcome.quote, choice.quote) || wager.termsVersion !== CASINO_SPECTATOR_PRICING_VERSION) {
       await invalidateWager({ wagerId: wager.wagerId, reason: "version-mismatch" });
       continue;
     }
-    const won = replay.winningOutcomeId === choice.outcomeId;
+    const won = result.winningOutcomeId === choice.outcomeId;
     await settleWager({
       wagerId: wager.wagerId,
       settlementSequence: market.settlesAtUtcSecond,
-      resultKey: `${market.marketId}:${replay.resultHash}:${replay.winningOutcomeId}`,
+      resultKey: `${market.marketId}:${result.resultHash}:${result.winningOutcomeId}`,
       creditAmount: won ? casinoMarketCredit(wager.reservedAmount, choice.quote) : 0,
     });
   }

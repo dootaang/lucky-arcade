@@ -30,10 +30,11 @@ export default function CasinoSideMarketReplayView({ market, currentUtcSecond, o
 
   useEffect(() => {
     let alive = true;
-    void resolveCasinoSideMarketReplay(market)
+    const controller = new AbortController();
+    void resolveCasinoSideMarketReplay(market, controller.signal)
       .then((value) => { if (alive) setReplay(value); })
-      .catch(() => { if (alive) setError("대국 기록을 불러오지 못했습니다."); });
-    return () => { alive = false; };
+      .catch((error: unknown) => { if (alive && (!(error instanceof DOMException) || error.name !== "AbortError")) setError("대국 기록을 불러오지 못했습니다."); });
+    return () => { alive = false; controller.abort(); };
   }, [market.marketId]);
 
   useEffect(() => {

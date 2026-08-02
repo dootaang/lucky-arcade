@@ -53,32 +53,54 @@ export interface FiveCardDrawSideMarketReplay extends SideMarketReplayBase {
 
 export type CasinoSideMarketReplay = MatchPairsSideMarketReplay | OldMaidSideMarketReplay | IndianPokerSideMarketReplay | FiveCardDrawSideMarketReplay;
 
+export interface CasinoSideMarketResult {
+  readonly marketId: string;
+  readonly winningOutcomeId: string;
+  readonly resultHash: string;
+}
+
+const REPLAY_CACHE_LIMIT = 8;
+const RESULT_CACHE_LIMIT = 24;
+const OFFER_CACHE_LIMIT = 16;
 const replayPromises = new Map<string, Promise<CasinoSideMarketReplay>>();
+const resultPromises = new Map<string, Promise<CasinoSideMarketResult>>();
 const offerPromises = new Map<string, Promise<CasinoSpectatorMarket>>();
 
 /** Loads only audited local content and computes the canonical cabinet replay. */
-export function resolveCasinoSideMarketReplay(market: CasinoSpectatorMarket): Promise<CasinoSideMarketReplay> {
-  const existing = replayPromises.get(market.marketId);
+export function resolveCasinoSideMarketReplay(market: CasinoSpectatorMarket, signal?: AbortSignal): Promise<CasinoSideMarketReplay> {
+  const existing = touch(replayPromises, market.marketId);
   if (existing) return existing;
-  const promise = buildReplay(market).catch((error: unknown) => { replayPromises.delete(market.marketId); throw error; });
-  replayPromises.set(market.marketId, promise);
+  const promise = runReplayTask(market, "replay", signal) as Promise<CasinoSideMarketReplay>;
+  boundedSet(replayPromises, market.marketId, promise, REPLAY_CACHE_LIMIT);
+  void promise.catch(() => replayPromises.delete(market.marketId));
   return promise;
 }
 
-/** Resolves the canonical cabinet replay without delaying the already-priced market. */
+/** Computes only the result transcript: no animation frames or UI assets. */
+export function resolveCasinoSideMarketResult(market: CasinoSpectatorMarket): Promise<CasinoSideMarketResult> {
+  const existing = touch(resultPromises, market.marketId);
+  if (existing) return existing;
+  const promise = runReplayTask(market, "result") as Promise<CasinoSideMarketResult>;
+  boundedSet(resultPromises, market.marketId, promise, RESULT_CACHE_LIMIT);
+  void promise.catch(() => resultPromises.delete(market.marketId));
+  return promise;
+}
+
+/** Open, upcoming and locked markets already contain their canonical quote. */
 export function resolveCasinoSideMarketOffer(market: CasinoSpectatorMarket): Promise<CasinoSpectatorMarket> {
+  if (market.phase !== "settled") return Promise.resolve(market);
   const offerKey = `${market.marketId}:${market.phase}`;
-  const existing = offerPromises.get(offerKey);
+  const existing = touch(offerPromises, offerKey);
   if (existing) return existing;
-  const promise = resolveCasinoSideMarketReplay(market).then((replay) => Object.freeze({
+  const promise = resolveCasinoSideMarketResult(market).then((result) => Object.freeze({
     ...market,
-    ...(market.phase === "settled" ? { winningOutcomeId: replay.winningOutcomeId } : {}),
+    winningOutcomeId: result.winningOutcomeId,
   })).catch((error: unknown) => { offerPromises.delete(offerKey); throw error; });
-  offerPromises.set(offerKey, promise);
+  boundedSet(offerPromises, offerKey, promise, OFFER_CACHE_LIMIT);
   return promise;
 }
 
-async function buildReplay(market: CasinoSpectatorMarket): Promise<CasinoSideMarketReplay> {
+export async function buildCasinoSideMarketReplay(market: CasinoSpectatorMarket, captureFrames = true): Promise<CasinoSideMarketReplay> {
   if (!market.matchId.startsWith("casino-spectator-exhibition/0.3:")) throw new Error("side_market_replay_unsupported_match");
   if (!supportsNativeSideMarketExperience(market.tableId)) throw new Error("side_market_native_experience_missing");
   const bundle = await loadTemerosaCasinoAssets();
@@ -98,6 +120,7 @@ async function buildReplay(market: CasinoSpectatorMarket): Promise<CasinoSideMar
       participantIds,
       difficulty: "normal",
       focus: "standard",
+      captureFrames,
     });
     const winningOutcomeId=marketOutcomeId(market,participantIds,game.winningCharacterId);
     assertMarketOutcome(market,winningOutcomeId);
@@ -109,7 +132,7 @@ async function buildReplay(market: CasinoSpectatorMarket): Promise<CasinoSideMar
     if (market.participantIds.length !== 2) throw new Error("side_market_replay_participant_count");
     const built = await buildIndianPokerParticipants(market.participantIds);
     const participantIds = market.participantIds as unknown as readonly [string, string];
-    const game = createIndianPokerSpectatorReplay({ cartridge: built.cartridge, participantIds, seed, roundCount: 7 });
+    const game = createIndianPokerSpectatorReplay({ cartridge: built.cartridge, participantIds, seed, roundCount: 7, captureFrames });
     const winningOutcomeId = game.winningCharacterId === "draw" ? "draw" : game.winningCharacterId;
     assertMarketOutcome(market, winningOutcomeId);
     return Object.freeze({ contract: SIDE_MARKET_REPLAY_CONTRACT, kind: "indian-poker", marketId: market.marketId, seed,
@@ -119,7 +142,7 @@ async function buildReplay(market: CasinoSpectatorMarket): Promise<CasinoSideMar
   if (market.tableId === "temerosa-five-card-draw") {
     if (market.participantIds.length !== 4) throw new Error("side_market_replay_participant_count");
     const built = await buildFiveCardDrawParticipants(market.participantIds);
-    const game = createFiveCardDrawSpectatorReplay({ participants: built.participants, seed, targetHands: 3 });
+    const game = createFiveCardDrawSpectatorReplay({ participants: built.participants, seed, targetHands: 3, captureFrames });
     const winningOutcomeId = game.winningCharacterId === "draw" ? "draw" : game.winningCharacterId;
     assertMarketOutcome(market, winningOutcomeId);
     return Object.freeze({ contract: SIDE_MARKET_REPLAY_CONTRACT, kind: "five-card-draw", marketId: market.marketId, seed,
@@ -130,11 +153,44 @@ async function buildReplay(market: CasinoSpectatorMarket): Promise<CasinoSideMar
   if (market.participantIds.length !== 4) throw new Error("side_market_replay_participant_count");
   const participantIds = market.participantIds as unknown as readonly [string, string, string, string];
   const cartridge = seriesOldMaidCartridge(createTemerosaCasinoOldMaidCartridge(bundle.contentAssets),seriesRoster);
-  const game = createOldMaidSpectatorReplay({ cartridge, seed, sessionId: `side-market:${market.marketId}`, participantIds });
+  const game = createOldMaidSpectatorReplay({ cartridge, seed, sessionId: `side-market:${market.marketId}`, participantIds, captureFrames });
   const winningOutcomeId=marketOutcomeId(market,participantIds,game.oddCardHolderCharacterId);
   assertMarketOutcome(market,winningOutcomeId);
   return Object.freeze({ contract: SIDE_MARKET_REPLAY_CONTRACT, kind: "old-maid", marketId: market.marketId, seed,
     winningOutcomeId, resultHash: game.resultHash, assets: Object.freeze({...bundle.assets,...seriesAssets}), game, cartridge });
+}
+
+function runReplayTask(market: CasinoSpectatorMarket, mode: "replay" | "result", signal?: AbortSignal): Promise<CasinoSideMarketReplay | CasinoSideMarketResult> {
+  if (typeof Worker === "undefined") return buildCasinoSideMarketReplay(market, mode === "replay").then((replay) => mode === "replay" ? replay : replayResult(replay));
+  return new Promise((resolve, reject) => {
+    const worker = new Worker(new URL("./casino-side-market-replay.worker.ts", import.meta.url), { type: "module" });
+    const cleanup = () => { signal?.removeEventListener("abort", abort); worker.terminate(); };
+    const abort = () => { cleanup(); reject(new DOMException("Replay cancelled", "AbortError")); };
+    worker.onmessage = (event: MessageEvent<{ ok: true; value: CasinoSideMarketReplay | CasinoSideMarketResult } | { ok: false; error: string }>) => {
+      cleanup();
+      if (event.data.ok) resolve(event.data.value); else reject(new Error(event.data.error));
+    };
+    worker.onerror = (event) => { cleanup(); reject(new Error(event.message || "side_market_replay_worker_failed")); };
+    if (signal?.aborted) { abort(); return; }
+    signal?.addEventListener("abort", abort, { once: true });
+    worker.postMessage({ market, mode });
+  });
+}
+
+function replayResult(replay: CasinoSideMarketReplay): CasinoSideMarketResult {
+  return Object.freeze({ marketId: replay.marketId, winningOutcomeId: replay.winningOutcomeId, resultHash: replay.resultHash });
+}
+
+function touch<K, V>(cache: Map<K, V>, key: K): V | undefined {
+  const value = cache.get(key);
+  if (value !== undefined) { cache.delete(key); cache.set(key, value); }
+  return value;
+}
+
+function boundedSet<K, V>(cache: Map<K, V>, key: K, value: V, limit: number): void {
+  cache.delete(key);
+  cache.set(key, value);
+  while (cache.size > limit) cache.delete(cache.keys().next().value as K);
 }
 
 function assertMarketOutcome(market: CasinoSpectatorMarket, winningOutcomeId: string): void {
