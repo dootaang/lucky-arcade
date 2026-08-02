@@ -57,8 +57,11 @@ export type CasinoSideMarketReplay = MatchPairsSideMarketReplay | OldMaidSideMar
 const replayPromises = new Map<string, Promise<CasinoSideMarketReplay>>();
 const offerPromises = new Map<string, Promise<CasinoSpectatorMarket>>();
 const probabilityPromises = new Map<string, Promise<readonly number[]>>();
-const PRICING_SAMPLES = 512;
-const POKER_PRICING_SAMPLES = 192;
+// Quotes are presentation-time estimates, not game truth.  Keep the sample
+// small enough that opening the market cannot monopolise the browser thread;
+// the deterministic cabinet replay still decides the actual result.
+const PRICING_SAMPLES = 64;
+const POKER_PRICING_SAMPLES = 48;
 const HOUSE_RISK_LIMIT = 5_000;
 
 /** Loads only audited local content and computes the canonical cabinet replay. */

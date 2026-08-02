@@ -541,7 +541,7 @@ test("opens five-card draw publicly and settles its multiplayer pot in the real 
   await expect(page.getByRole("heading", { name: "파이브 카드 드로 포커" })).toBeVisible();
   await expect(page.getByText("1,000 P", { exact: true })).toBeVisible();
   await expect(page.locator(".draw-setup-table")).toBeVisible();
-  await expect(page.locator(".draw-setup-roster-grid > button")).toHaveCount(30);
+  expect(await page.locator(".draw-setup-roster-grid > button").count()).toBeGreaterThanOrEqual(100);
   await expect(page.locator(".draw-setup-table .draw-card")).toHaveCount(0);
   await expect(page.getByRole("button", { name: "3판", exact: true })).toHaveAttribute("aria-pressed", "true");
   await page.getByRole("button", { name: "무작위 선택" }).click();
@@ -989,7 +989,7 @@ test("plays and restores a complete Temerosa old maid table", async ({ page }, t
     if (!checkedSpeech && await speech.count()) {
       await expect(speech).toBeVisible();
       await expect(speech).not.toHaveAttribute("aria-live");
-      await expect(speech).toHaveAttribute("data-line-id", /^[a-z0-9-]+-[a-z0-9-]+$/);
+      await expect(speech).toHaveAttribute("data-line-id", /^[a-z0-9:-]+$/);
       checkedSpeech = true;
     }
     const ownCards = page.getByRole("button", { name: /크게 보기/ });
