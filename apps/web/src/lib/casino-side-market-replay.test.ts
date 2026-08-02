@@ -31,6 +31,8 @@ describe("canonical casino side-market replay", () => {
     const maidReplay = await resolveCasinoSideMarketReplay(maidMarket!);
     const pairOffer = await resolveCasinoSideMarketOffer(pairMarket!);
     const maidOffer = await resolveCasinoSideMarketOffer(maidMarket!);
+    expect(pairReplay.kind).toBe("match-pairs");expect(maidReplay.kind).toBe("old-maid");
+    if(pairReplay.kind!=="match-pairs"||maidReplay.kind!=="old-maid")throw new Error("unexpected_replay_kind");
     expect(pairReplay.game.finalState.status).toBe("complete");
     expect(maidReplay.game.finalState.status).toBe("complete");
     expect(pairMarket!.outcomes.some((outcome) => outcome.outcomeId === pairReplay.winningOutcomeId)).toBe(true);

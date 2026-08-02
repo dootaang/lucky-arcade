@@ -98,10 +98,11 @@ function NativeFiveCardDrawExperience({ replay, atlas, initialFrameIndex, onClos
   }, [frameIndex, replay.game.frames.length]);
   const frame = replay.game.frames[frameIndex] ?? replay.game.frames.at(-1);
   if (!frame) throw new Error("five_card_draw_replay_frame_missing");
-  const views = replay.participants.map((participant): FiveCardDrawOpponentView => ({ ...participant,
-    portraits: replay.participantPortraits[participant.id] }));
+  const views = replay.participants.map((participant): FiveCardDrawOpponentView => {const portraits=replay.participantPortraits[participant.id];return { ...participant,
+    ...(portraits?{portraits}:{}) };});
+  const spectatorPlayer=views[0];if(!spectatorPlayer)throw new Error("five_card_draw_spectator_player_missing");
   return <FiveCardDrawScreen state={frame.state} opponents={views} atlas={atlas} balance={0} busy={false} error=""
-    series={frame.series} seriesStats={null} autoContinue={false} beginner={false} presentationOnly spectatorPlayer={views[0]}
+    series={frame.series} seriesStats={null} autoContinue={false} beginner={false} presentationOnly spectatorPlayer={spectatorPlayer}
     onBeginner={()=>undefined} onStart={()=>undefined} onAction={()=>undefined} onReset={()=>undefined} onNextHand={()=>undefined}
     onEndSeries={()=>undefined} onReplaySeries={()=>undefined} onAutoContinue={()=>undefined} onExit={onClose}/>;
 }

@@ -12,7 +12,7 @@ export function buildTemerosaIndianPokerCartridge(contentAssets: readonly Temero
 export function buildTemerosaSeriesIndianPokerCartridge(roster:readonly SeriesGameNpcPresentation[]){
   return createTemerosaIndianPokerCartridge(roster.map((item):IndianPokerCharacter=>({
     id:item.id,name:item.name,appearanceSet:item.id.split(":")[1]??"casino",
-    tellStyle:item.profile.skills.pokerBluff>.65?"bluffer":item.profile.discipline>.72?"guarded":"standard",
+    tellStyle:item.profile.skills.pokerBluff>.65?"bluffer":item.profile.discipline>.72?"guarded":"open",
     portraits:{neutral:item.assetIds.neutral,pleased:item.assetIds.pleased,tense:item.assetIds.tense},despairPortrait:item.assetIds.despair,
     persona:{aggression:unit((item.profile.riskAppetite+item.profile.winPressing)/2),bluffFrequency:unit(item.profile.skills.pokerBluff),
       slowPlay:unit(item.profile.discipline*.55),estimationNoise:unit((1-item.profile.skills.pokerRead)*.24),

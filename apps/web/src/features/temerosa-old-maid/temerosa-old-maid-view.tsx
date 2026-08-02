@@ -1,4 +1,4 @@
-import { OLD_MAID_VERSION, TEMEROSA_OLD_MAID_PACK_VERSION, createOldMaidState, createTemerosaCasinoOldMaidCartridge, isOldMaidState, oldMaidOutcome, reduceOldMaid, restoreOldMaidState, type OldMaidAction, type OldMaidBehaviorLevel, type OldMaidCartridge, type OldMaidPsychologySummary, type OldMaidState } from "@lucky-arcade/old-maid";
+import { OLD_MAID_VERSION, TEMEROSA_OLD_MAID_PACK_VERSION, createOldMaidState, createTemerosaCasinoOldMaidCartridge, isOldMaidState, oldMaidOutcome, reduceOldMaid, restoreOldMaidState, type OldMaidAction, type OldMaidBehaviorLevel, type OldMaidCartridge, type OldMaidCharacter, type OldMaidPsychologySummary, type OldMaidState } from "@lucky-arcade/old-maid";
 import { OldMaidScreen } from "@lucky-arcade/old-maid/react";
 import { makeReceipt, resultHash } from "@lucky-arcade/engine";
 import { useEffect, useState } from "react";
@@ -108,7 +108,7 @@ export default function TemerosaOldMaidView({ onExit }: { onExit(): void }) {
 }
 
 function seriesOldMaidCartridge(base:OldMaidCartridge,roster:readonly SeriesGameNpcPresentation[]):OldMaidCartridge{
-  const characters=roster.map((item)=>({id:item.id,name:item.name,appearanceSet:item.id.split(":")[1]??"casino",
+  const characters:OldMaidCharacter[]=roster.map((item):OldMaidCharacter=>({id:item.id,name:item.name,appearanceSet:item.id.split(":")[1]??"casino",
     tellStyle:item.profile.skills.pokerBluff>.68?"bluffer":item.profile.discipline>.72?"guarded":item.profile.riskAppetite>.72?"open":"standard" as const,
     behavior:{reorderActivity:level(item.profile.riskAppetite),jokerHonesty:level(item.profile.discipline),decoyBias:level(item.profile.skills.pokerBluff),
       consistency:item.profile.discipline>.72?"steady" as const:item.profile.discipline>.43?"adaptive" as const:"erratic" as const,

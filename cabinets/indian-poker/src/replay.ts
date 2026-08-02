@@ -54,7 +54,7 @@ export function createIndianPokerSpectatorReplay(input: {
   const winningCharacterId = state.outcome === "player" ? left.id : state.outcome === "npc" ? right.id : "draw";
   const hash = resultHash({ contract: INDIAN_POKER_SPECTATOR_REPLAY_CONTRACT, participantIds: input.participantIds, seed: input.seed,
     roundCount, actions: frames.map((frame) => frame.action), finalStateHash: resultHash(state) });
-  return Object.freeze({ contract: INDIAN_POKER_SPECTATOR_REPLAY_CONTRACT, participantIds: Object.freeze([left.id, right.id]),
+  return Object.freeze({ contract: INDIAN_POKER_SPECTATOR_REPLAY_CONTRACT, participantIds: Object.freeze([left.id, right.id]) as readonly [string,string],
     seed: input.seed, roundCount, frames: Object.freeze(frames), finalState: state, winningCharacterId, resultHash: hash });
 }
 

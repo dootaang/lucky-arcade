@@ -239,7 +239,7 @@ async function buildIndianPokerParticipants(ids:readonly string[]):Promise<{
     const tense=await resolveTemerosaSeriesNpcPortrait(id,{emotion:"tense"})??neutral;
     const despair=await resolveTemerosaSeriesNpcPortrait(id,{emotion:"despair"})??tense??neutral;
     if(neutral){assets[`${prefix}:neutral`]=neutral;assets[`${prefix}:pleased`]=pleased!;assets[`${prefix}:tense`]=tense!;assets[`${prefix}:despair`]=despair!;}
-    return Object.freeze({id,name:profile.name,appearanceSet:id.split(":")[1]??"casino",tellStyle:profile.skills.pokerBluff>.65?"bluffer":profile.discipline>.7?"guarded":"standard",
+    return Object.freeze({id,name:profile.name,appearanceSet:id.split(":")[1]??"casino",tellStyle:profile.skills.pokerBluff>.65?"bluffer":profile.discipline>.7?"guarded":"open",
       portraits:{neutral:`${prefix}:neutral`,pleased:`${prefix}:pleased`,tense:`${prefix}:tense`},despairPortrait:`${prefix}:despair`,persona:indianPersona(profile)});
   }));
   const tuple=characters as unknown as readonly [IndianPokerCharacter,IndianPokerCharacter];
