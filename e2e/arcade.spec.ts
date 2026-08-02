@@ -166,7 +166,9 @@ test("loads the living ledger lazily and reuses the casino manifest in a game", 
 test("reserves, restores, and settles one integrated spectator market receipt", async ({ page }, testInfo) => {
   test.setTimeout(90_000);
   test.skip(testInfo.project.metadata.mobile === true);
-  let casinoEpoch = Date.parse("2026-07-31T06:00:30Z");
+  // The 1.3 worldline opens on 2026-08-02 KST.  Exercise a live market after
+  // that epoch; pre-epoch clocks intentionally have no 1.3 day plan to price.
+  let casinoEpoch = Date.parse("2026-08-03T06:00:30Z");
   await page.route("**/content/temerosa-margin/0.8.0/manifest.json", async (route) => {
     const response = await route.fetch();
     await route.fulfill({ response, headers: { ...response.headers(), date: new Date(casinoEpoch).toUTCString(), age: "0", "cache-control": "no-store" } });
@@ -544,7 +546,12 @@ test("opens five-card draw publicly and settles its multiplayer pot in the real 
   expect(await page.locator(".draw-setup-roster-grid > button").count()).toBeGreaterThanOrEqual(100);
   await expect(page.locator(".draw-setup-table .draw-card")).toHaveCount(0);
   await expect(page.getByRole("button", { name: "3판", exact: true })).toHaveAttribute("aria-pressed", "true");
-  await page.getByRole("button", { name: "무작위 선택" }).click();
+  // Pick authored successor identities so this scenario also verifies the
+  // reviewed dialogue bridge.  Newly admitted series identities are silent
+  // until their own CHARX-reviewed lines are approved.
+  await page.getByRole("button", { name: /카트린카 · Bestiaization/ }).click();
+  await page.getByRole("button", { name: /카노 · Finale/ }).click();
+  await page.getByRole("button", { name: /페일 · Finale/ }).click();
   await expect(page.getByRole("button", { name: "카드 받기" })).toBeEnabled();
   await page.getByRole("button", { name: "카드 받기" }).click();
   const landing = await page.locator('.ca-stage-flight[data-flight-to^="hand:npc-"]').first().evaluate(async (flight) => {
