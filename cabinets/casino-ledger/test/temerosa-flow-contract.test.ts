@@ -1,5 +1,5 @@
 import {describe,expect,it}from"vitest";
-import {TEMEROSA_CIGENIA_NPC_ID,TEMEROSA_FLOW_13_EPOCH_KST_DAY,TEMEROSA_FLOW_13_NPC_GAMBLING_PROFILES,TEMEROSA_FLOW_13_NPC_LEDGER_CONTRACT,TEMEROSA_FLOW_EPOCH_KST_DAY,TEMEROSA_FLOW_NPC_GAMBLING_PROFILES,TEMEROSA_FLOW_NPC_LEDGER_CONTRACT,TEMEROSA_FLOW_PROFILE_EXCLUSIONS,TEMEROSA_FLOW_RELEASE_AUDIT,TEMEROSA_LEGACY_NPC_SUCCESSORS,TEMEROSA_NPC_GAMBLING_PROFILES,TEMEROSA_NPC_LEDGER_CONTRACT,TEMEROSA_SERIES_CASINO_SEAT_IDS,TEMEROSA_SERIES_RUNTIME_SOURCE,auditCasinoFlowEconomy,casinoDayPlan,casinoPresenceAt,casinoSpectatorScheduleAt,casinoUtcSecondAtKstDay,completedDayBalances,houseBalanceAt,legacyCabinetNpcId,recentNpcPlayEventsAt,temerosaCasinoLedgerAtUtcSecond}from"../src/index.ts";
+import {TEMEROSA_CIGENIA_NPC_ID,TEMEROSA_FLOW_13_EPOCH_KST_DAY,TEMEROSA_FLOW_13_NPC_GAMBLING_PROFILES,TEMEROSA_FLOW_13_NPC_LEDGER_CONTRACT,TEMEROSA_FLOW_EPOCH_KST_DAY,TEMEROSA_FLOW_NPC_GAMBLING_PROFILES,TEMEROSA_FLOW_NPC_LEDGER_CONTRACT,TEMEROSA_FLOW_PROFILE_EXCLUSIONS,TEMEROSA_FLOW_RELEASE_AUDIT,TEMEROSA_LEGACY_NPC_SUCCESSORS,TEMEROSA_NPC_GAMBLING_PROFILES,TEMEROSA_NPC_LEDGER_CONTRACT,TEMEROSA_SERIES_CASINO_SEAT_IDS,TEMEROSA_SERIES_RUNTIME_SOURCE,auditCasinoFlowEconomy,casinoDayPlan,casinoPresenceAt,casinoSpectatorScheduleAt,casinoUtcSecondAtKstDay,completedDayBalances,houseBalanceAt,recentNpcPlayEventsAt,temerosaCasinoLedgerAtUtcSecond}from"../src/index.ts";
 
 describe("Temerosa flow ledger cutover",()=>{
   it("carries every NPC and house close exactly once",()=>{
@@ -91,14 +91,13 @@ describe("Temerosa flow ledger cutover",()=>{
     expect(new Set(plan.visits.flatMap((visit)=>visit.participantIds).filter((id)=>!legacy.has(id))).size).toBeGreaterThan(60);
   });
 
-  it("keeps series accounts while scheduling cabinet-compatible spectator replays",()=>{
+  it("keeps series accounts while scheduling native spectator replays for the full roster",()=>{
     const second=casinoUtcSecondAtKstDay(TEMEROSA_FLOW_EPOCH_KST_DAY,12*3_600);
     const schedule=casinoSpectatorScheduleAt(TEMEROSA_FLOW_NPC_GAMBLING_PROFILES,{utcMinute:()=>Math.floor(second/60)},TEMEROSA_FLOW_NPC_LEDGER_CONTRACT);
     const markets=[...(schedule.current?[schedule.current]:[]),...schedule.upcoming,...schedule.recent];
     expect(markets.length).toBeGreaterThan(0);
     for(const market of markets){
       expect(market.participantIds.every((id)=>TEMEROSA_FLOW_NPC_GAMBLING_PROFILES.some((profile)=>profile.id===id))).toBe(true);
-      expect(market.participantIds.every((id)=>legacyCabinetNpcId(id)!==undefined)).toBe(true);
     }
   });
 
