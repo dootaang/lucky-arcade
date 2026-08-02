@@ -177,7 +177,7 @@ export function FiveCardDrawScreen(props:FiveCardDrawScreenProps):ReactElement {
           const selected=selectedIndex>=0,unavailable=props.opponentAvailability?.[candidate.id]?.available===false,poor=!opponentCanAfford(candidate);
           const blocked=unavailable||poor,portrait=candidate.portraits?.neutral??candidate.portrait;
           const status=unavailable?props.opponentAvailability?.[candidate.id]?.label:poor?"판돈 부족":undefined;
-          return <button key={candidate.id} type="button" className={`${selected?"selected ":""}${blocked?"unavailable":""}`.trim()} aria-pressed={selected} disabled={!selected&&blocked} onClick={()=>selectOpponent(candidate.id)} aria-label={`${candidate.name}${selected?` · ${selectedIndex+1}번 좌석`:status?` · ${status}`:""}`}>
+          return <button key={candidate.id} type="button" data-opponent-id={candidate.id} className={`${selected?"selected ":""}${blocked?"unavailable":""}`.trim()} aria-pressed={selected} disabled={!selected&&blocked} onClick={()=>selectOpponent(candidate.id)} aria-label={`${candidate.name}${selected?` · ${selectedIndex+1}번 좌석`:status?` · ${status}`:""}`}>
             {portrait?<img src={portrait} alt="" loading="lazy"/>:<span className="draw-roster-fallback">{candidate.name.slice(0,1)}</span>}
             {selected&&<b>{selectedIndex+1}</b>}<strong>{candidate.name}</strong>{status&&<small>{status}</small>}
           </button>;

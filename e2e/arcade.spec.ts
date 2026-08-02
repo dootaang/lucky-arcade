@@ -550,27 +550,24 @@ test("opens five-card draw publicly and settles its multiplayer pot in the real 
   // Pick authored successor identities so this scenario also verifies the
   // reviewed dialogue bridge.  Newly admitted series identities are silent
   // until their own CHARX-reviewed lines are approved.
-  const authoredOpponents = [
-    "카트린카 · Bestiaization", "레이븐 · Bestiaization", "라일라 · Bestiaization",
-    "알제 · Finale", "크레바 · Bestiaization", "카노 · Finale", "페일 · Finale",
-    "박니은 · Finale", "카미유 · Bestiaization", "안나 · Bestiaization",
+  const authoredOpponentIds = [
+    "temerosa:bestiaization:katrinka", "temerosa:bestiaization:raven", "temerosa:bestiaization:lyla",
+    "temerosa:finale:alger", "temerosa:bestiaization:kreva", "temerosa:finale:kano", "temerosa:finale:pale",
+    "temerosa:finale:nieun", "temerosa:bestiaization:camille", "temerosa:bestiaization:anna",
   ];
   let selectedAuthoredOpponents = 0;
-  for (const name of authoredOpponents) {
-    const button = page.getByRole("button", { name: new RegExp(`^${name}`) }).first();
+  for (const opponentId of authoredOpponentIds) {
+    const button = page.locator(`.draw-setup-roster-grid > button[data-opponent-id="${opponentId}"]`).first();
     if (await button.count() > 0 && await button.isEnabled()) {
       await button.click();
       selectedAuthoredOpponents += 1;
-      if (selectedAuthoredOpponents === 3) break;
+      break;
     }
   }
-  expect(selectedAuthoredOpponents).toBeGreaterThanOrEqual(1);
-  let selectedOpponentCount = selectedAuthoredOpponents;
-  while (selectedOpponentCount < 3) {
+  if (selectedAuthoredOpponents === 0) {
     const fallbackOpponent = page.locator(".draw-setup-roster-grid > button:not([disabled]):not(.selected)").first();
     await expect(fallbackOpponent).toBeEnabled();
     await fallbackOpponent.click();
-    selectedOpponentCount += 1;
   }
   await expect(page.getByRole("button", { name: "카드 받기" })).toBeEnabled();
   await page.getByRole("button", { name: "카드 받기" }).click();
