@@ -26,6 +26,7 @@ import { personalCasinoWorldlineAt } from "../../lib/casino-worldline.ts";
 import { loadTemerosaCasinoManifest, temerosaContentUrl, type TemerosaManifest } from "../../lib/temerosa-content.ts";
 import { reconcileSideMarketWagers, reserveSideMarketWager } from "../../lib/side-market.ts";
 import CasinoSideMarket from "./casino-side-market.tsx";
+import { summarizeCasinoLedgerActivities } from "./casino-ledger-summary.ts";
 
 const LEGACY_PORTRAITS: Readonly<Record<string, string>> = Object.freeze({
   "temerosa:guest:nemo": temerosaContentUrl("0.8.0", "assets/margin/npc-nemo-neutral/sm.webp"),
@@ -69,6 +70,30 @@ export default function CasinoLedgerView({ userBalance, tables, onPlay, onBalanc
   const earliestProfitDay = ledger?.contract.profitHistory[0]?.kstDay ?? ledger?.contract.epochKstDay ?? 0;
   const profitStartKstDay = absoluteKstDay === undefined ? undefined : Math.max(earliestProfitDay, absoluteKstDay - 6);
   const journalSettlements = useMemo(() => casinoJournalSettlements(journal), [journal]);
+  const renderSnapshot = useMemo(() => {
+    if (!ledger || settlementTick === undefined || absoluteKstDay === undefined || profitStartKstDay === undefined) return undefined;
+    const { profiles, contract } = ledger;
+    const snapshotSecond = settlementTick * 10;
+    const snapshotClock = fixedPresentationClock(snapshotSecond);
+    const worldline = personalCasinoWorldlineAt(profiles, snapshotClock, contract, journal);
+    const periodStartSecond = casinoUtcSecondAtKstDay(profitStartKstDay);
+    const todayStartSecond = casinoUtcSecondAtKstDay(absoluteKstDay);
+    const carriedProfits = contract.profitHistory.filter((entry) => entry.kstDay >= profitStartKstDay).map((entry) => entry.profits);
+    const activitySummary = summarizeCasinoLedgerActivities({ profiles, activities: worldline.activities, journalSettlements, carriedProfits, periodStartSecond, todayStartSecond });
+    const npcEconomyDetails = Object.freeze(Object.fromEntries(profiles.flatMap((profile) => worldline.npcExternalReserves[profile.id] === undefined ? [] : [[profile.id, Object.freeze({
+      externalReserve: worldline.npcExternalReserves[profile.id]!,
+      grossIncomeToday: worldline.npcGrossIncomeToday[profile.id] ?? 0,
+      casinoTopUpToday: worldline.npcCasinoTopUpsToday[profile.id] ?? 0,
+      wageredToday: activitySummary.wageredToday[profile.id] ?? 0,
+    })]])));
+    return Object.freeze({
+      worldline,
+      basePresences: casinoPresenceAt(profiles, snapshotClock, contract),
+      settlements: latestCasinoSettlementsAt(worldline.activities, journalSettlements, snapshotSecond),
+      profitPeriod: Object.freeze({ coveredDays: Math.max(1, Math.min(7, absoluteKstDay - profitStartKstDay + 1)), profits: activitySummary.profits }),
+      npcEconomyDetails,
+    });
+  }, [absoluteKstDay, journal, journalSettlements, ledger, profitStartKstDay, settlementTick]);
   const loadNpcHistory=useCallback((npcId:string,days:number):readonly NpcRoundSettlement[]=>{
     if(!clock||!ledger)return Object.freeze([]);
     const startSecond=days===0?0:clock.utcSecond()-days*86_400;
@@ -127,33 +152,21 @@ export default function CasinoLedgerView({ userBalance, tables, onPlay, onBalanc
   }, [clock, sideWagers,ledger]);
 
   if (!loaded || !clock) return <section className="casino-ledger-loading ca-label" aria-label="카지노 원장 불러오는 중">원장 정리 중…</section>;
-  if(!ledger)return null;
+  if(!ledger||!renderSnapshot)return null;
   try {
     const {profiles,contract}=ledger;
     // Render the selected contract verbatim. The 1.2 contract has 99 four-series
     // runtime identities plus preserved Esther, Riel, and Magical Girl Nemo: 102.
     const currentUtcSecond = clock.utcSecond();
-    const worldline = personalCasinoWorldlineAt(profiles, clock, contract, journal);
-    const periodStartDay = profitStartKstDay ?? absoluteKstDay ?? contract.epochKstDay;
-    const periodStartSecond = casinoUtcSecondAtKstDay(periodStartDay);
-    const carriedProfits = contract.profitHistory.filter((entry)=>entry.kstDay>=periodStartDay);
-    const profitPeriod = { coveredDays: Math.max(1,Math.min(7,(absoluteKstDay??contract.epochKstDay)-periodStartDay+1)), profits: Object.freeze(Object.fromEntries(profiles.map((profile) => [profile.id, worldline.activities.filter((entry)=>entry.npcId===profile.id&&entry.utcSecond>=periodStartSecond&&entry.session.tableId!=="npc-income").reduce((sum,entry)=>sum+entry.session.delta,0)+journalSettlements.filter((entry) => entry.npcId === profile.id && entry.utcSecond >= periodStartSecond&&entry.tableId!=="npc-income").reduce((sum, entry) => sum + entry.delta, 0)+carriedProfits.reduce((sum,entry)=>sum+(entry.profits[profile.id]??0),0)]))) };
+    const { worldline, basePresences, settlements, profitPeriod, npcEconomyDetails } = renderSnapshot;
     const sideMarketSchedule = casinoSpectatorScheduleAt(profiles, clock, contract);
     const sideMarkets = Object.freeze([...(sideMarketSchedule.current ? [sideMarketSchedule.current] : []), ...sideMarketSchedule.upcoming, ...sideMarketSchedule.recent]);
-    const basePresences = casinoPresenceAt(profiles, clock, contract);
     const marketPresences = casinoSpectatorMarketPresencesAt(sideMarkets, currentUtcSecond);
     const marketIds = new Set(marketPresences.map((presence) => presence.npcId));
     const presences = Object.freeze([...basePresences.filter((presence) => !marketIds.has(presence.npcId)), ...marketPresences]);
-    const settlements = latestCasinoSettlementsAt(worldline.activities, journalSettlements, currentUtcSecond);
     const liveBalances = npcLiveBalancesAt(worldline.npcBalances, profiles, presences, clock);
     const houseBalance = worldline.houseBalance;
     const playEvents = recentNpcPlayEventsAt(profiles, clock, contract, 512);
-    const todayStartSecond=casinoUtcSecondAtKstDay(absoluteKstDay??contract.epochKstDay);
-    const npcEconomyDetails=Object.freeze(Object.fromEntries(profiles.flatMap((profile)=>worldline.npcExternalReserves[profile.id]===undefined?[]:[[profile.id,Object.freeze({
-      externalReserve:worldline.npcExternalReserves[profile.id]!,grossIncomeToday:worldline.npcGrossIncomeToday[profile.id]??0,
-      casinoTopUpToday:worldline.npcCasinoTopUpsToday[profile.id]??0,
-      wageredToday:worldline.activities.filter((entry)=>entry.npcId===profile.id&&entry.utcSecond>=todayStartSecond&&entry.session.tableId!=="npc-income").reduce((sum,entry)=>sum+entry.session.reservedAmount,0),
-    })]])));
     const placeSideBet = async (market: CasinoSpectatorMarket, outcomeId: string, stake: PredictionStake, multiplier: WagerMultiplier) => {
       setMarketBusy(true); setMarketError(undefined);
       try {
@@ -198,6 +211,10 @@ export default function CasinoLedgerView({ userBalance, tables, onPlay, onBalanc
   } catch {
     return <section className="casino-ledger-loading ca-label">원장을 정리하지 못했습니다. 게임 테이블은 그대로 이용할 수 있습니다.</section>;
   }
+}
+
+function fixedPresentationClock(utcSecond: number): { utcSecond(): number; utcMinute(): number } {
+  return { utcSecond: () => utcSecond, utcMinute: () => Math.floor(utcSecond / 60) };
 }
 
 function portraitMap(manifest: TemerosaManifest|undefined,profiles:readonly {id:string}[]): Readonly<Record<string, string>> {

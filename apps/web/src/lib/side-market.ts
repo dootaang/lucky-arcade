@@ -39,8 +39,9 @@ export async function reserveSideMarketWager(input: {
   const ledger=temerosaCasinoLedgerAtUtcSecond(now);
   const rawMarket = casinoSpectatorMarketByIdAt(ledger.profiles, fixedClock(now), ledger.contract, input.market.marketId);
   if (!rawMarket || rawMarket.phase !== "open" || now < rawMarket.opensAtUtcSecond || now >= rawMarket.closesAtUtcSecond) throw new Error("side_market_closed");
-  const { resolveCasinoSideMarketOffer } = await import("./casino-side-market-replay-client.ts");
-  const market = await resolveCasinoSideMarketOffer(rawMarket);
+  // Open markets already contain the frozen quote. Replay code is reserved
+  // for due settlement and explicit viewing, not the ordinary betting path.
+  const market = rawMarket;
   const outcome = market.outcomes.find((candidate) => candidate.outcomeId === input.outcomeId);
   if (!outcome) throw new Error("side_market_outcome_missing");
   assertCasinoMarketQuote(outcome.quote);

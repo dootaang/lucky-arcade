@@ -55,6 +55,13 @@ export default function CasinoSideMarket({
   useEffect(() => {
     setOfferedMarket(undefined);
     if (!rawMarket) return;
+    // Open and upcoming markets already carry their canonical quote. Keeping
+    // this synchronous avoids loading all four replay engines merely because
+    // the market scrolled into view.
+    if (rawMarket.phase !== "settled") {
+      setOfferedMarket(rawMarket);
+      return;
+    }
     let alive = true;
     void import("../../lib/casino-side-market-replay-client.ts").then(({ resolveCasinoSideMarketOffer }) => resolveCasinoSideMarketOffer(rawMarket))
       .then((offer) => { if (alive) setOfferedMarket(offer); }).catch(() => undefined);
