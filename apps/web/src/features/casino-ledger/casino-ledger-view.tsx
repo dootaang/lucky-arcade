@@ -17,7 +17,7 @@ import {
 import type { WagerMultiplier } from "@lucky-arcade/engine";
 import type { GameWagerReceipt, PredictionStake } from "@lucky-arcade/persistence";
 import CasinoLedgerPanel, { type CasinoLiveTable } from "@lucky-arcade/casino-ledger/react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useState } from "react";
 import { casinoClockFromSample, deviceCasinoClockSample, rememberCasinoClockSecond, stabilizeCasinoClockSample, type CasinoClockSample } from "../../lib/casino-clock.ts";
 import { latestCasinoSettlementsAt, nextCasinoArrivalAt } from "../../lib/casino-feed.ts";
 import { listCasinoTransactions, readPlayerCasinoProfitSince } from "../../lib/database.ts";
@@ -59,6 +59,12 @@ export default function CasinoLedgerView({ userBalance, tables, onPlay, onBalanc
   const absoluteKstDay = clock ? casinoKstDayAtUtcMinute(clock.utcMinute()) : undefined;
   const currentUtcSecond = clock?.utcSecond();
   const settlementTick = currentUtcSecond === undefined ? undefined : Math.floor(currentUtcSecond / 10);
+  // Persist the second that is actually painted before the browser exposes the
+  // panel. A passive effect can trail the rendered data attribute by one second
+  // when a reload lands exactly on a clock boundary.
+  useLayoutEffect(() => {
+    if (currentUtcSecond !== undefined) rememberCasinoClockSecond(currentUtcSecond);
+  }, [currentUtcSecond]);
   const ledger=useMemo(()=>currentUtcSecond===undefined?undefined:temerosaCasinoLedgerAtUtcSecond(currentUtcSecond),[settlementTick,currentUtcSecond===undefined]);
   const earliestProfitDay = ledger?.contract.profitHistory[0]?.kstDay ?? ledger?.contract.epochKstDay ?? 0;
   const profitStartKstDay = absoluteKstDay === undefined ? undefined : Math.max(earliestProfitDay, absoluteKstDay - 6);

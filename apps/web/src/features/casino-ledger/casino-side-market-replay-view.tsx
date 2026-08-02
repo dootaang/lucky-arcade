@@ -8,7 +8,7 @@ import { FiveCardDrawScreen, type FiveCardDrawOpponentView } from "@lucky-arcade
 import type { CourtAtlas } from "@lucky-arcade/ui/playing-card";
 import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
-import { resolveCasinoSideMarketReplay, type CasinoSideMarketReplay, type FiveCardDrawSideMarketReplay, type IndianPokerSideMarketReplay, type MatchPairsSideMarketReplay, type OldMaidSideMarketReplay } from "../../lib/casino-side-market-replay.ts";
+import { resolveCasinoSideMarketReplay, type CasinoSideMarketReplay, type FiveCardDrawSideMarketReplay, type IndianPokerSideMarketReplay, type MatchPairsSideMarketReplay, type OldMaidSideMarketReplay } from "../../lib/casino-side-market-replay-client.ts";
 import { loadPlayingCardAtlas } from "../../lib/playing-card-atlas.ts";
 import { TEMEROSA_MATCH_PAIRS_LINES } from "../match-pairs/temerosa-match-pairs-lines.ts";
 

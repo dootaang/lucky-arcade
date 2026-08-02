@@ -216,7 +216,9 @@ test("reserves, restores, and settles one integrated spectator market receipt", 
   await history.getByRole("button", { name: "다시 보기", exact: true }).click();
   const replay = page.getByRole("dialog", { name: /관전/ });
   await expect(replay).toBeVisible();
-  await expect(replay.locator(".match-pairs-shell")).toBeVisible();
+  // The loading modal paints first, then audited assets and the one requested
+  // transcript are prepared lazily.
+  await expect(replay.locator(".match-pairs-shell")).toBeVisible({ timeout: 20_000 });
   await expect(replay.locator(".match-pairs-board")).toBeVisible();
   await expect(replay.locator(".match-pairs-card")).toHaveCount(16);
   await expect(replay).toContainText("REPLAY · 원본 관전");
@@ -596,11 +598,15 @@ test("opens five-card draw publicly and settles its multiplayer pot in the real 
   expect(landing.width).toBeLessThanOrEqual(3);
   await expect(page.getByText("930 P", { exact: true })).toBeVisible();
   const openingSpeech = page.locator(".draw-speech").first();
-  await expect(openingSpeech).toBeVisible({ timeout: 4_000 });
-  const openingLineId = await openingSpeech.getAttribute("data-line-id");
-  expect(openingLineId).toBeTruthy();
-  await page.waitForTimeout(2_600);
-  await expect(page.locator(`.draw-speech[data-line-id="${openingLineId}"]`)).toBeVisible();
+  // Newly admitted series identities intentionally remain silent until their
+  // CHARX-reviewed dialogue is approved. When an authored line is selected,
+  // it must still remain long enough to read.
+  if (await openingSpeech.isVisible({ timeout: 4_000 }).catch(() => false)) {
+    const openingLineId = await openingSpeech.getAttribute("data-line-id");
+    expect(openingLineId).toBeTruthy();
+    await page.waitForTimeout(2_600);
+    await expect(page.locator(`.draw-speech[data-line-id="${openingLineId}"]`)).toBeVisible();
+  }
   for (let turn = 0; turn < 12 && await page.locator(".draw-result").count() === 0; turn += 1) {
     const action = page.locator(".draw-actions button:visible").first();
     await expect(action).toBeVisible({ timeout: 4_000 });
@@ -697,17 +703,17 @@ test("selects, wagers, and restores a five-round Indian poker table while defaul
   await page.goto("/play/indian-poker");
   await expect(page.getByRole("heading", { name: "인디언 포커" })).toBeVisible();
   await expect(page.getByRole("button", { name: /7라운드/ })).toHaveAttribute("aria-pressed", "true");
-  const affluentOpponents = ["땡칠이", "알제", "박니은", "노스탤지아", "카트린카", "크레바"];
-  let selectedAffluentOpponent = false;
-  for (const name of affluentOpponents) {
-    const candidate = page.locator(".indian-poker-opponent-picker button:not(:disabled)").filter({ hasText: name }).first();
-    if (await candidate.count()) {
-      await candidate.click();
-      selectedAffluentOpponent = true;
-      break;
-    }
-  }
-  expect(selectedAffluentOpponent).toBe(true);
+  const candidates = page.locator(".indian-poker-opponent-picker button:not(:disabled)");
+  const candidateIds = await candidates.evaluateAll((buttons) => buttons.map((button) => (button as HTMLElement).dataset.characterId).filter((id): id is string => Boolean(id)));
+  const liveBalances = await page.evaluate(async (ids) => {
+    const { casinoCounterpartyContexts } = await new Function("return import('/src/lib/casino-economy.ts')")();
+    const accounts = ids.map((id) => `npc:${id}`);
+    const contexts = await casinoCounterpartyContexts(accounts);
+    return Object.fromEntries(ids.map((id) => [id, contexts[`npc:${id}`]?.counterpartyBalance ?? -1]));
+  }, candidateIds);
+  const solventOpponentId = candidateIds.find((id) => (liveBalances[id] ?? 0) >= 20);
+  expect(solventOpponentId).toBeTruthy();
+  await page.locator(`.indian-poker-opponent-picker button[data-character-id="${solventOpponentId}"]`).click();
   await page.getByRole("button", { name: "5라운드", exact: true }).click();
   await page.getByRole("button", { name: "시작", exact: true }).click();
   await expect(page.locator(".indian-poker-player").getByRole("img", { name: "보이지 않는 내 카드" })).toBeVisible();

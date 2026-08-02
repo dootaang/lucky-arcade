@@ -39,7 +39,7 @@ export async function reserveSideMarketWager(input: {
   const ledger=temerosaCasinoLedgerAtUtcSecond(now);
   const rawMarket = casinoSpectatorMarketByIdAt(ledger.profiles, fixedClock(now), ledger.contract, input.market.marketId);
   if (!rawMarket || rawMarket.phase !== "open" || now < rawMarket.opensAtUtcSecond || now >= rawMarket.closesAtUtcSecond) throw new Error("side_market_closed");
-  const { resolveCasinoSideMarketOffer } = await import("./casino-side-market-replay.ts");
+  const { resolveCasinoSideMarketOffer } = await import("./casino-side-market-replay-client.ts");
   const market = await resolveCasinoSideMarketOffer(rawMarket);
   const outcome = market.outcomes.find((candidate) => candidate.outcomeId === input.outcomeId);
   if (!outcome) throw new Error("side_market_outcome_missing");
@@ -94,7 +94,7 @@ export async function reconcileSideMarketWagers(nowUtcSecond?: number): Promise<
       await invalidateWager({ wagerId: wager.wagerId, reason: "outcome-unavailable" });
       continue;
     }
-    const { resolveCasinoSideMarketOffer, resolveCasinoSideMarketResult } = await import("./casino-side-market-replay.ts");
+    const { resolveCasinoSideMarketOffer, resolveCasinoSideMarketResult } = await import("./casino-side-market-replay-client.ts");
     const [offer, result] = await Promise.all([resolveCasinoSideMarketOffer(market), resolveCasinoSideMarketResult(market)]);
     const currentOutcome = offer.outcomes.find((outcome) => outcome.outcomeId === choice.outcomeId);
     if (!currentOutcome || !sameQuote(currentOutcome.quote, choice.quote) || wager.termsVersion !== CASINO_SPECTATOR_PRICING_VERSION) {

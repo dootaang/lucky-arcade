@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { casinoSpectatorMarketByIdAt, casinoSpectatorMarketsAt, casinoUtcSecondAtKstDay, TEMEROSA_FLOW_13_NPC_GAMBLING_PROFILES, TEMEROSA_FLOW_13_NPC_LEDGER_CONTRACT } from "@lucky-arcade/casino-ledger";
 import { marketReturnBps } from "@lucky-arcade/engine";
-import { resolveCasinoSideMarketOffer, resolveCasinoSideMarketReplay, resolveCasinoSideMarketResult, supportsNativeSideMarketExperience } from "./casino-side-market-replay.ts";
+import { resolveCasinoSideMarketOffer, resolveCasinoSideMarketReplay, resolveCasinoSideMarketResult, supportsNativeSideMarketExperience } from "./casino-side-market-replay-client.ts";
 
 const originalFetch = globalThis.fetch;
 

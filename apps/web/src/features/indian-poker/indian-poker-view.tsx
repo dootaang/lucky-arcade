@@ -169,7 +169,11 @@ export default function IndianPokerView({ onExit }: { onExit(): void }) {
       return next;
     } catch (cause) {
       setBusy(false);
-      setError(cause instanceof Error && cause.message === "insufficient_points" ? "포인트가 부족합니다." : "대국을 시작하지 못했습니다.");
+      setError(cause instanceof Error && cause.message === "insufficient_points"
+        ? "포인트가 부족합니다."
+        : cause instanceof Error && cause.message === "casino_counterparty_insufficient_points"
+          ? "상대의 가용 포인트가 부족합니다. 다른 상대나 판돈을 선택하세요."
+          : "대국을 시작하지 못했습니다.");
       throw cause;
     }
   }

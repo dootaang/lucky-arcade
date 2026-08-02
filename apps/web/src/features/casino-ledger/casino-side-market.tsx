@@ -56,7 +56,7 @@ export default function CasinoSideMarket({
     setOfferedMarket(undefined);
     if (!rawMarket) return;
     let alive = true;
-    void import("../../lib/casino-side-market-replay.ts").then(({ resolveCasinoSideMarketOffer }) => resolveCasinoSideMarketOffer(rawMarket))
+    void import("../../lib/casino-side-market-replay-client.ts").then(({ resolveCasinoSideMarketOffer }) => resolveCasinoSideMarketOffer(rawMarket))
       .then((offer) => { if (alive) setOfferedMarket(offer); }).catch(() => undefined);
     return () => { alive = false; };
   }, [rawMarket?.marketId, rawMarket?.phase]);
