@@ -71,7 +71,8 @@ export interface NpcDrawObservation {
 }
 
 export interface NpcBetObservation {
-  seatId: FiveCardDrawNpcSeatId;
+  /** Spectator replays may let an NPC control the persisted player seat. */
+  seatId: FiveCardDrawSeatId;
   hand: readonly StandardCardId[];
   phase: "opening-bet" | "closing-bet";
   activeSeatCount: number;

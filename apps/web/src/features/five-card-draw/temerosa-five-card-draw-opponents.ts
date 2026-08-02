@@ -2,9 +2,20 @@ import type { FiveCardDrawOpponent } from "@lucky-arcade/five-card-draw";
 import { TEMEROSA_CASINO_BEHAVIOR_PROFILES, TEMEROSA_CASINO_TELL_STYLES, type OldMaidBehaviorProfile, type OldMaidCharacter } from "@lucky-arcade/old-maid";
 import type { TemerosaCasinoPortraitAsset } from "@lucky-arcade/old-maid";
 import { createTemerosaCasinoRoster } from "../../lib/temerosa-casino-roster.ts";
+import { type SeriesGameNpcPresentation, unit } from "../../lib/temerosa-series-game-roster.ts";
 
 export interface TemerosaFiveCardDrawOpponent extends FiveCardDrawOpponent {
   portraitAssetIds: Readonly<Record<"confident" | "neutral" | "uneasy", string>>;
+}
+
+export function createTemerosaSeriesFiveCardDrawOpponents(roster:readonly SeriesGameNpcPresentation[]):readonly TemerosaFiveCardDrawOpponent[]{
+  return Object.freeze(roster.map((item):TemerosaFiveCardDrawOpponent=>({
+    id:item.id,name:item.name,portraitAssetIds:{confident:item.assetIds.pleased,neutral:item.assetIds.neutral,uneasy:item.assetIds.tense},
+    persona:{drawActivity:unit(.25+item.profile.riskAppetite*.65),riskAppetite:unit(item.profile.riskAppetite),
+      signalAttention:unit(item.profile.skills.pokerRead),signalTrust:unit(item.profile.skills.pokerRead)*1.4-.7,
+      deceptionBias:unit(item.profile.skills.pokerBluff),consistency:unit(item.profile.discipline),
+      tellStyle:item.profile.skills.pokerBluff>.68?"bluffer":item.profile.discipline>.72?"guarded":item.profile.riskAppetite>.7?"open":"standard"},
+  })));
 }
 
 /**

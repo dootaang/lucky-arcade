@@ -3,9 +3,13 @@ import { createMatchPairsState } from "@lucky-arcade/match-pairs";
 import { MatchPairsScreen } from "@lucky-arcade/match-pairs/react";
 import { createOldMaidState } from "@lucky-arcade/old-maid";
 import { OldMaidScreen } from "@lucky-arcade/old-maid/react";
+import { IndianPokerScreen } from "@lucky-arcade/indian-poker/react";
+import { FiveCardDrawScreen, type FiveCardDrawOpponentView } from "@lucky-arcade/five-card-draw/react";
+import type { CourtAtlas } from "@lucky-arcade/ui/playing-card";
 import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
-import { resolveCasinoSideMarketReplay, type CasinoSideMarketReplay, type MatchPairsSideMarketReplay, type OldMaidSideMarketReplay } from "../../lib/casino-side-market-replay.ts";
+import { resolveCasinoSideMarketReplay, type CasinoSideMarketReplay, type FiveCardDrawSideMarketReplay, type IndianPokerSideMarketReplay, type MatchPairsSideMarketReplay, type OldMaidSideMarketReplay } from "../../lib/casino-side-market-replay.ts";
+import { loadPlayingCardAtlas } from "../../lib/playing-card-atlas.ts";
 import { TEMEROSA_MATCH_PAIRS_LINES } from "../match-pairs/temerosa-match-pairs-lines.ts";
 
 export default function CasinoSideMarketReplayView({ market, currentUtcSecond, onClose }: { market: CasinoSpectatorMarket; currentUtcSecond: number; onClose(): void }): React.ReactElement {
@@ -13,6 +17,7 @@ export default function CasinoSideMarketReplayView({ market, currentUtcSecond, o
   const [error, setError] = useState("");
   const [revision, setRevision] = useState(0);
   const [syncRevision, setSyncRevision] = useState(0);
+  const [atlas, setAtlas] = useState<CourtAtlas>();
   const live = currentUtcSecond < market.settlesAtUtcSecond;
 
   useEffect(() => {
@@ -32,6 +37,13 @@ export default function CasinoSideMarketReplayView({ market, currentUtcSecond, o
   }, [market.marketId]);
 
   useEffect(() => {
+    if (market.tableId !== "indian-poker" && market.tableId !== "temerosa-five-card-draw") return;
+    let alive = true;
+    void loadPlayingCardAtlas().then((value) => { if (alive) setAtlas(value); }).catch(() => { if (alive) setError("트럼프 카드 세트를 불러오지 못했습니다."); });
+    return () => { alive = false; };
+  }, [market.tableId]);
+
+  useEffect(() => {
     if (!live || revision > 0) return;
     const synchronizeOnReturn = () => { if (document.visibilityState === "visible") setSyncRevision((value) => value + 1); };
     document.addEventListener("visibilitychange", synchronizeOnReturn);
@@ -49,11 +61,15 @@ export default function CasinoSideMarketReplayView({ market, currentUtcSecond, o
   }, [currentUtcSecond, live, market.settlesAtUtcSecond, market.startsAtUtcSecond, replay, revision, syncRevision]);
 
   const restart = () => setRevision((value) => value + 1);
-  const content = replay
-    ? replay.kind === "match-pairs"
-      ? <NativeMatchPairsExperience key={`${replay.marketId}:${revision}:${syncRevision}`} replay={replay} initialFrameIndex={initialFrameIndex} onClose={onClose} onReplay={restart} />
-      : <NativeOldMaidExperience key={`${replay.marketId}:${revision}:${syncRevision}`} replay={replay} onClose={onClose} onReplay={restart} />
-    : null;
+  const content = replay ? replay.kind === "match-pairs"
+    ? <NativeMatchPairsExperience key={`${replay.marketId}:${revision}:${syncRevision}`} replay={replay} initialFrameIndex={initialFrameIndex} onClose={onClose} onReplay={restart} />
+    : replay.kind === "old-maid"
+      ? <NativeOldMaidExperience key={`${replay.marketId}:${revision}:${syncRevision}`} replay={replay} onClose={onClose} onReplay={restart} />
+      : replay.kind === "indian-poker" && atlas
+        ? <NativeIndianPokerExperience key={`${replay.marketId}:${revision}:${syncRevision}`} replay={replay} atlas={atlas} initialFrameIndex={initialFrameIndex} onClose={onClose} />
+        : replay.kind === "five-card-draw" && atlas
+          ? <NativeFiveCardDrawExperience key={`${replay.marketId}:${revision}:${syncRevision}`} replay={replay} atlas={atlas} initialFrameIndex={initialFrameIndex} onClose={onClose} />
+          : null : null;
 
   return createPortal(<div className="side-market-replay-backdrop is-native" role="dialog" aria-modal="true" aria-label={`${market.title} 관전`}>
     {content ? <div className="side-market-native-experience">
@@ -64,6 +80,30 @@ export default function CasinoSideMarketReplayView({ market, currentUtcSecond, o
       <button type="button" className="ca-ghost-btn" onClick={onClose}>닫기</button>
     </section>}
   </div>, document.body);
+}
+
+function NativeIndianPokerExperience({ replay, atlas, initialFrameIndex, onClose }: { replay: IndianPokerSideMarketReplay; atlas: CourtAtlas; initialFrameIndex: number; onClose(): void }): React.ReactElement {
+  const initialState = replay.game.frames[initialFrameIndex]?.state ?? replay.game.frames[0]?.state ?? replay.game.finalState;
+  return <IndianPokerScreen cartridge={replay.cartridge} assets={replay.assets} thumbAssets={replay.assets} atlas={atlas}
+    initialState={initialState} presentationOnly spectatorPlayer={replay.participantCharacters[0]}
+    onStart={async () => initialState} onPersist={async () => undefined} onExit={onClose}/>;
+}
+
+function NativeFiveCardDrawExperience({ replay, atlas, initialFrameIndex, onClose }: { replay: FiveCardDrawSideMarketReplay; atlas: CourtAtlas; initialFrameIndex: number; onClose(): void }): React.ReactElement {
+  const [frameIndex, setFrameIndex] = useState(initialFrameIndex);
+  useEffect(() => {
+    if (frameIndex >= replay.game.frames.length - 1) return;
+    const handle = window.setTimeout(() => setFrameIndex((value) => Math.min(value + 1, replay.game.frames.length - 1)), 850);
+    return () => window.clearTimeout(handle);
+  }, [frameIndex, replay.game.frames.length]);
+  const frame = replay.game.frames[frameIndex] ?? replay.game.frames.at(-1);
+  if (!frame) throw new Error("five_card_draw_replay_frame_missing");
+  const views = replay.participants.map((participant): FiveCardDrawOpponentView => ({ ...participant,
+    portraits: replay.participantPortraits[participant.id] }));
+  return <FiveCardDrawScreen state={frame.state} opponents={views} atlas={atlas} balance={0} busy={false} error=""
+    series={frame.series} seriesStats={null} autoContinue={false} beginner={false} presentationOnly spectatorPlayer={views[0]}
+    onBeginner={()=>undefined} onStart={()=>undefined} onAction={()=>undefined} onReset={()=>undefined} onNextHand={()=>undefined}
+    onEndSeries={()=>undefined} onReplaySeries={()=>undefined} onAutoContinue={()=>undefined} onExit={onClose}/>;
 }
 
 function NativeMatchPairsExperience({ replay, initialFrameIndex, onClose, onReplay }: { replay: MatchPairsSideMarketReplay; initialFrameIndex: number; onClose(): void; onReplay(): void }): React.ReactElement {

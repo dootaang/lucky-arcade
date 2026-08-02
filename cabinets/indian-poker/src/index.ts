@@ -6,6 +6,7 @@ export * from "./deck.ts";
 export * from "./engine.ts";
 export * from "./read.ts";
 export * from "./cartridge.ts";
+export * from "./replay.ts";
 
 export const indianPokerManifest: CabinetManifest = {
   id: "indian-poker",

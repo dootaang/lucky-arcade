@@ -5,7 +5,8 @@ import { useSlideHighlight } from "@lucky-arcade/ui/slide-highlight";
 import { IconArrowLeft, IconCopy, IconHelpCircle, IconRefresh } from "@tabler/icons-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createIndianPokerState, indianPokerAuditTrail, indianPokerRanking, publicIndianPokerCards, reduceIndianPoker } from "../engine.ts";
-import { INDIAN_POKER_BET_SIZES, INDIAN_POKER_ROUND_COUNTS, INDIAN_POKER_STAKES, type IndianPokerAction, type IndianPokerCartridge, type IndianPokerRoundCount, type IndianPokerRoundMove, type IndianPokerStake, type IndianPokerState } from "../contracts.ts";
+import { chooseIndianPokerSpectatorPlayerDecision } from "../replay.ts";
+import { INDIAN_POKER_BET_SIZES, INDIAN_POKER_ROUND_COUNTS, INDIAN_POKER_STAKES, type IndianPokerAction, type IndianPokerCartridge, type IndianPokerCharacter, type IndianPokerRoundCount, type IndianPokerRoundMove, type IndianPokerStake, type IndianPokerState } from "../contracts.ts";
 import "./indian-poker.css";
 
 export interface IndianPokerScreenProps {
@@ -20,13 +21,15 @@ export interface IndianPokerScreenProps {
   initialMultiplier?: WagerMultiplier;
   opponentAvailability?: Readonly<Record<string, { available: boolean; label: string; availableAtUtcSecond?: number }>>;
   opponentRecords?: Readonly<Record<string, { played: number; wins: number; losses: number; draws: number }>>;
+  presentationOnly?: boolean;
+  spectatorPlayer?: IndianPokerCharacter;
   onOpponentSelectionChange?(id: string): void;
   onStart(stake: IndianPokerStake, multiplier: WagerMultiplier, roundCount: IndianPokerRoundCount): Promise<IndianPokerState>;
   onPersist(previous: IndianPokerState, next: IndianPokerState, action: IndianPokerAction): Promise<void>;
   onExit(): void;
 }
 
-export function IndianPokerScreen({ cartridge, assets, thumbAssets, atlas, initialState, walletBalance, busy = false, error, initialMultiplier = 2, opponentAvailability = {}, opponentRecords = {}, onOpponentSelectionChange, onStart, onPersist, onExit }: IndianPokerScreenProps) {
+export function IndianPokerScreen({ cartridge, assets, thumbAssets, atlas, initialState, walletBalance, busy = false, error, initialMultiplier = 2, opponentAvailability = {}, opponentRecords = {}, presentationOnly=false, spectatorPlayer, onOpponentSelectionChange, onStart, onPersist, onExit }: IndianPokerScreenProps) {
   const [state, setState] = useState(() => initialState ?? createIndianPokerState(cartridge, new Date().toISOString().slice(0, 10)));
   const [stake, setStake] = useState<IndianPokerStake>(INDIAN_POKER_STAKES[0]), [multiplier, setMultiplier] = useState<WagerMultiplier>(initialMultiplier);
   const [starting, setStarting] = useState(false), [manualPaused, setManualPaused] = useState(false), [copied, setCopied] = useState<"idle"|"done"|"failed">("idle");
@@ -63,9 +66,19 @@ export function IndianPokerScreen({ cartridge, assets, thumbAssets, atlas, initi
     if(state.status!=="npc-action"||busy)return;const expected=state.sequence;const delay=createPausableDelay(650,()=>{if(stateRef.current.status==="npc-action"&&stateRef.current.sequence===expected)dispatch({type:"npc-act"});});responseDelayRef.current=delay;if(!paused)delay.resume();return()=>{delay.cancel();if(responseDelayRef.current===delay)responseDelayRef.current=null;};
   },[busy,state.sequence,state.status]);
   useEffect(()=>{const delay=responseDelayRef.current;if(!delay)return;if(paused)delay.pause();else delay.resume();},[paused,state.sequence,state.status]);
+  useEffect(()=>{
+    if(!presentationOnly||!spectatorPlayer||busy||paused||(state.status!=="player-action"&&state.status!=="showdown"))return;
+    const expected=state.sequence;
+    const handle=window.setTimeout(()=>{
+      if(stateRef.current.sequence!==expected)return;
+      if(stateRef.current.status==="player-action")dispatch({type:"player-act",decision:chooseIndianPokerSpectatorPlayerDecision(stateRef.current,spectatorPlayer)});
+      else if(stateRef.current.status==="showdown")dispatch({type:"next-round"});
+    },state.status==="showdown"?900:700);
+    return()=>window.clearTimeout(handle);
+  },[busy,paused,presentationOnly,spectatorPlayer,state.sequence,state.status]);
   useEffect(()=>{if(typeof Image==="undefined")return;for(const id of [...Object.values(opponent.portraits),opponent.despairPortrait]){const url=assets[id];if(url){const image=new Image();image.decoding="async";image.src=url;}}},[assets,opponent]);
 
-  const lastRound=state.history.at(-1),showPlayerCard=state.status==="showdown"&&lastRound?.playerCardRevealed===true;
+  const lastRound=state.history.at(-1),showPlayerCard=presentationOnly||state.status==="showdown"&&lastRound?.playerCardRevealed===true;
   const canPause=state.status==="player-action"||state.status==="npc-action",result=state.outcome==="player"?"승리":state.outcome==="npc"?`${opponent.name}의 승리`:"무승부";
   const exposure=wagerExposure(state.status==="ready"?stake:state.stake??stake,multiplier),returned=leveragedWagerCredit(state.stake??stake,state.creditAmount,multiplier);
   const lastMove=state.roundMoves.at(-1),facingNpcBet=state.status==="player-action"&&lastMove?.seatId==="npc"&&lastMove.kind==="bet";
@@ -85,13 +98,13 @@ export function IndianPokerScreen({ cartridge, assets, thumbAssets, atlas, initi
           <div className="indian-poker-stakes">{INDIAN_POKER_STAKES.map((value)=><button key={value} aria-pressed={stake===value} disabled={interactionBusy||(walletBalance??0)<wagerExposure(value,multiplier)} onClick={()=>setStake(value)}>{value} P</button>)}</div>
           <div className="indian-poker-multipliers" aria-label="배율 선택">{WAGER_MULTIPLIERS.map((value)=><button key={value} aria-pressed={multiplier===value} disabled={interactionBusy||(walletBalance??0)<wagerExposure(stake,value)} onClick={()=>setMultiplier(value)}>{value}배</button>)}</div><small>{exposure} P를 최대 손실액으로 예약합니다. 종료 시 남은 칩의 순손익도 {multiplier}배입니다.</small>{selectedOpponentUnavailable&&<p className="indian-poker-availability">선택한 NPC가 다른 테이블에서 게임 중입니다.</p>}<button className="primary" disabled={interactionBusy||selectedOpponentUnavailable||(walletBalance??0)<exposure} onClick={startMatch}>시작</button>
         </section>}
-        {state.status==="player-action"&&<section className="indian-poker-decision"><span className="indian-poker-pot">팟 {state.pot}칩</span><h2>{facingNpcBet?`${opponent.name}가 ${state.currentBet}칩 걸었습니다`:state.roundOpener==="player"&&state.roundMoves.length===0?"당신이 먼저 행동합니다":`${opponent.name}가 체크했습니다`}</h2><p>상대 카드와 당신을 바라보는 표정을 함께 읽으세요.</p><div className="indian-poker-actions">{facingNpcBet?<><button onClick={()=>dispatch({type:"player-act",decision:{kind:"fold"}})}>폴드 · 앤티만 손실</button><button className="primary" disabled={state.playerChips<state.currentBet} onClick={()=>dispatch({type:"player-act",decision:{kind:"call"}})}>콜 · {state.currentBet}칩</button></>:<><button onClick={()=>dispatch({type:"player-act",decision:{kind:"fold"}})}>포기</button><button onClick={()=>dispatch({type:"player-act",decision:{kind:"check"}})}>체크</button>{INDIAN_POKER_BET_SIZES.map((amount)=><button key={amount} className="primary" disabled={state.playerChips<amount} onClick={()=>dispatch({type:"player-act",decision:{kind:"bet",amount}})}>{amount}칩 베팅</button>)}</>}</div></section>}
+        {state.status==="player-action"&&(presentationOnly?<section className="indian-poker-decision"><span className="indian-poker-pot">팟 {state.pot}칩</span><h2>{spectatorPlayer?.name}가 판을 읽는 중…</h2><p>두 NPC의 표정과 베팅 흐름을 그대로 관전합니다.</p></section>:<section className="indian-poker-decision"><span className="indian-poker-pot">팟 {state.pot}칩</span><h2>{facingNpcBet?`${opponent.name}가 ${state.currentBet}칩 걸었습니다`:state.roundOpener==="player"&&state.roundMoves.length===0?"당신이 먼저 행동합니다":`${opponent.name}가 체크했습니다`}</h2><p>상대 카드와 당신을 바라보는 표정을 함께 읽으세요.</p><div className="indian-poker-actions">{facingNpcBet?<><button onClick={()=>dispatch({type:"player-act",decision:{kind:"fold"}})}>폴드 · 앤티만 손실</button><button className="primary" disabled={state.playerChips<state.currentBet} onClick={()=>dispatch({type:"player-act",decision:{kind:"call"}})}>콜 · {state.currentBet}칩</button></>:<><button onClick={()=>dispatch({type:"player-act",decision:{kind:"fold"}})}>포기</button><button onClick={()=>dispatch({type:"player-act",decision:{kind:"check"}})}>체크</button>{INDIAN_POKER_BET_SIZES.map((amount)=><button key={amount} className="primary" disabled={state.playerChips<amount} onClick={()=>dispatch({type:"player-act",decision:{kind:"bet",amount}})}>{amount}칩 베팅</button>)}</>}</div></section>)}
         {state.status==="npc-action"&&<section><span className="indian-poker-pot">팟 {state.pot}칩</span><h2>{opponent.name}가 판을 읽는 중…</h2></section>}
         {state.status==="showdown"&&lastRound&&<section className="indian-poker-round-result"><span className="indian-poker-pot">{lastRound.pot}칩 승부</span><h2>{lastRound.winner==="player"?"라운드 승리":lastRound.winner==="npc"?`${opponent.name}의 라운드 승리`:"같은 숫자 · 무승부"}</h2><p>{actionSummary(lastRound.moves)} · 내 칩 {signed(lastRound.playerChipDelta)}</p>{!lastRound.playerCardRevealed&&<strong className="indian-poker-defense">카드를 숨기고 손실을 {Math.abs(lastRound.playerChipDelta)}칩으로 제한했습니다.</strong>}<button className="primary" onClick={()=>dispatch({type:"next-round"})}>{state.round>=state.roundCount||state.playerChips===0||state.npcChips===0?"최종 결과":"다음 라운드"}</button></section>}
         {state.status==="complete"&&<section className="indian-poker-result"><h2>{result}</h2><p>나 {state.playerChips}칩 · {opponent.name} {state.npcChips}칩</p><small className="indian-poker-record">상대 전적 · {recordLabel(opponentRecords[opponent.id])}</small><strong>{returned.toLocaleString("ko-KR")} P 반환 · {multiplier}배</strong><ol>{indianPokerRanking(state).map((standing)=><li key={standing.seatId}><b>{standing.rank}위</b><span>{standing.seatId==="player"?"플레이어":opponent.name}</span><em>{standing.chips}칩</em></li>)}</ol><div className="indian-poker-result-actions"><button onClick={()=>void copyAudit()}><IconCopy/>{copied==="done"?"복사 완료":copied==="failed"?"복사 실패":"대국 기록 복사"}</button><button className="primary" disabled={busy} onClick={()=>dispatch({type:"restart",seed:`${state.seed}:next:${state.sequence}`})}><IconRefresh/>다시하기</button></div></section>}
         {state.status!=="ready"&&<CardHistory state={state} atlas={atlas}/>} {error&&<p role="alert">{error}</p>}
       </div>
-      <article className="indian-poker-player"><div><strong>플레이어</strong><span>{state.playerChips}칩</span></div><div className="indian-poker-forehead">{state.playerCardId?<ForeheadCard key={state.playerCardId} id={state.playerCardId} atlas={atlas} revealed={showPlayerCard}/>:<EmptyCard/>}</div></article>{paused&&canPause&&<div className="indian-poker-pause-shield" role="status">일시정지됨</div>}
+      <article className={`indian-poker-player${presentationOnly?" is-spectator-npc":""}`}><div>{presentationOnly&&spectatorPlayer&&<img className="indian-poker-player-portrait" src={assets[spectatorPlayer.portraits.neutral]} alt=""/>}<strong>{presentationOnly?spectatorPlayer?.name??"관전 NPC":"플레이어"}</strong><span>{state.playerChips}칩</span></div><div className="indian-poker-forehead">{state.playerCardId?<ForeheadCard key={state.playerCardId} id={state.playerCardId} atlas={atlas} revealed={showPlayerCard}/>:<EmptyCard/>}</div></article>{paused&&canPause&&<div className="indian-poker-pause-shield" role="status">일시정지됨</div>}
     </section>
   </main>;
 }

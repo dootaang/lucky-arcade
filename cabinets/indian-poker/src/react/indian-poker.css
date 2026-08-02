@@ -14,3 +14,4 @@
 }
 @media(prefers-reduced-motion:reduce){.indian-poker-card-scene{animation:none}.indian-poker-card-inner{transition:none}.indian-poker-shell *{transition:none!important}}
 .indian-poker-multipliers{display:flex;justify-content:center;flex-wrap:wrap;gap:8px}.indian-poker-multipliers button[aria-pressed=true]{color:#15201b;background:linear-gradient(#f0d17e,#c3973e);border-color:#f2d98e}
+.indian-poker-player.is-spectator-npc>div:first-child{display:flex;align-items:center;gap:.5rem}.indian-poker-player-portrait{width:2.75rem;height:2.75rem;border-radius:50%;object-fit:cover;object-position:50% 24%;border:1px solid rgba(237,196,93,.72)}

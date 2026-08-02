@@ -1,18 +1,20 @@
-import { OLD_MAID_VERSION, TEMEROSA_OLD_MAID_PACK_VERSION, createOldMaidState, createTemerosaCasinoOldMaidCartridge, isOldMaidState, oldMaidOutcome, reduceOldMaid, restoreOldMaidState, type OldMaidAction, type OldMaidCartridge, type OldMaidPsychologySummary, type OldMaidState } from "@lucky-arcade/old-maid";
+import { OLD_MAID_VERSION, TEMEROSA_OLD_MAID_PACK_VERSION, createOldMaidState, createTemerosaCasinoOldMaidCartridge, isOldMaidState, oldMaidOutcome, reduceOldMaid, restoreOldMaidState, type OldMaidAction, type OldMaidBehaviorLevel, type OldMaidCartridge, type OldMaidPsychologySummary, type OldMaidState } from "@lucky-arcade/old-maid";
 import { OldMaidScreen } from "@lucky-arcade/old-maid/react";
 import { makeReceipt, resultHash } from "@lucky-arcade/engine";
 import { useEffect, useState } from "react";
 import { appendAction, saveSnapshot } from "../../lib/database.ts";
 import { recoverSession } from "../../lib/session-recovery.ts";
 import { loadTemerosaCasinoAssets } from "../../lib/temerosa-content.ts";
+import { loadTemerosaSeriesGameRoster, seriesGameAssetMap, type SeriesGameNpcPresentation } from "../../lib/temerosa-series-game-roster.ts";
 import { loadMatchSummary, recordOldMaidCompletion, type MatchSummary } from "../../lib/match-history.ts";
 import { readCollection, unlockCollectionItem } from "../../lib/collection.ts";
 import { grantOldMaidCompletion, reconcileLatestOldMaidRankReward } from "../../lib/wallet.ts";
 import { invalidatePrediction, listPredictions, settlePrediction } from "../../lib/wager.ts";
 import type { CollectionSnapshot, SpectatorPrediction, WalletSnapshot } from "@lucky-arcade/persistence";
 import { useCasinoOpponentAvailability } from "../casino-ledger/use-casino-opponent-availability.ts";
+import { legacyCabinetNpcId } from "@lucky-arcade/casino-ledger";
 
-const SESSION = "temerosa-old-maid:table-1";
+const SESSION = "temerosa-old-maid:table-2";
 const COLLECTION = "temerosa-old-maid";
 
 export default function TemerosaOldMaidView({ onExit }: { onExit(): void }) {
@@ -27,7 +29,10 @@ export default function TemerosaOldMaidView({ onExit }: { onExit(): void }) {
   useEffect(() => {
     let alive = true;
     void loadTemerosaCasinoAssets().then(async (bundle) => {
-      const cartridge = createTemerosaCasinoOldMaidCartridge(bundle.contentAssets);
+      const baseCartridge = createTemerosaCasinoOldMaidCartridge(bundle.contentAssets);
+      const fallback=Object.values(bundle.assets)[0];if(!fallback)throw new Error("old_maid_fallback_missing");
+      const seriesRoster=await loadTemerosaSeriesGameRoster(fallback),seriesAssets=seriesGameAssetMap(seriesRoster);
+      const cartridge = seriesOldMaidCartridge(baseCartridge,seriesRoster);
       const [recovered, predictions] = await Promise.all([recoverSession<OldMaidState, OldMaidAction>({
         sessionId: SESSION,
         fresh: createOldMaidState(cartridge, new Date().toISOString().slice(0, 10), SESSION),
@@ -47,7 +52,7 @@ export default function TemerosaOldMaidView({ onExit }: { onExit(): void }) {
         if (alive) setWallet(refunded.wallet);
       }
       if (!alive) return;
-      setReady({ thumbAssets: bundle.thumbAssets, assets: bundle.assets, detailAssets: bundle.detailAssets, cartridge, state: recovered.state });
+      setReady({ thumbAssets: Object.freeze({...bundle.thumbAssets,...seriesAssets}), assets: Object.freeze({...bundle.assets,...seriesAssets}), detailAssets: Object.freeze({...bundle.detailAssets,...seriesAssets}), cartridge, state: recovered.state });
       setActivePrediction(predictions.find((prediction) => prediction.outcomeKey === currentOutcomeKey) ?? null);
       if (recovered.state.status === "complete") void loadMatchSummary(SESSION).then(setMatchSummary).catch(() => undefined);
     }).catch(() => { if (alive) setError(true); });
@@ -101,6 +106,18 @@ export default function TemerosaOldMaidView({ onExit }: { onExit(): void }) {
   const economy = wallet && collection ? { balance: wallet.balance, award, unlockedFaceIds: collection.unlockedFaceIds, onUnlock: async () => { const result = await unlockCollectionItem(COLLECTION, ready.cartridge.faces.map((face) => face.id)); setWallet(result.wallet); setCollection(result.collection); } } : undefined;
   return <OldMaidScreen cartridge={ready.cartridge} thumbAssets={ready.thumbAssets} assets={ready.assets} detailAssets={ready.detailAssets} initialState={ready.state} matchSummary={matchSummary} {...(economy ? { economy } : {})} opponentAvailability={availability.opponents} onOpponentSelectionChange={availability.holdOpponents} onPersist={persist} onExit={onExit} />;
 }
+
+function seriesOldMaidCartridge(base:OldMaidCartridge,roster:readonly SeriesGameNpcPresentation[]):OldMaidCartridge{
+  const characters=roster.map((item)=>({id:item.id,name:item.name,appearanceSet:item.id.split(":")[1]??"casino",
+    tellStyle:item.profile.skills.pokerBluff>.68?"bluffer":item.profile.discipline>.72?"guarded":item.profile.riskAppetite>.72?"open":"standard" as const,
+    behavior:{reorderActivity:level(item.profile.riskAppetite),jokerHonesty:level(item.profile.discipline),decoyBias:level(item.profile.skills.pokerBluff),
+      consistency:item.profile.discipline>.72?"steady" as const:item.profile.discipline>.43?"adaptive" as const:"erratic" as const,
+      positionHabit:"none" as const,signalAttention:level(item.profile.skills.pokerRead),counterRead:item.profile.skills.pokerRead>.72?"suspicious" as const:item.profile.skills.pokerRead>.42?"mixed" as const:"literal" as const},
+    portraits:{neutral:item.assetIds.neutral,pleased:item.assetIds.pleased,tense:item.assetIds.tense},despairPortrait:item.assetIds.despair}));
+  const lines=roster.flatMap((item)=>{const legacyId=legacyCabinetNpcId(item.id);return legacyId?(base.lines??[]).filter((line)=>line.characterId===legacyId).map((line)=>({...line,id:`${item.id}:${line.event}`,characterId:item.id})):[];});
+  return {...base,characters,selectableCharacterIds:characters.map((character)=>character.id),lines};
+}
+function level(value:number):OldMaidBehaviorLevel{return value>.7?"high":value>.4?"medium":"low";}
 
 function predictionOutcomeKey(state: Pick<OldMaidState, "seed" | "mode" | "characters" | "spectatorCharacterId">): string {
   if (state.mode === "spectate" && !state.spectatorCharacterId) return "";

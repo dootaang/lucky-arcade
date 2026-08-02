@@ -11,7 +11,6 @@ import {
   matchPairsSpreadCovered,
   parseMatchPairsSpreadChoice,
   reduceMatchPairs,
-  validateMatchPairsLines,
   type MatchPairsAction,
   type MatchPairsEntryKind,
   type MatchPairsMode,
@@ -23,7 +22,7 @@ import {
 } from "@lucky-arcade/match-pairs";
 import { MatchPairsScreen } from "@lucky-arcade/match-pairs/react";
 import { ENGINE_VERSION, XorShift32, makeReceipt, resultHash, wagerExposure, wagerMultiplierFromExposure, type WagerMultiplier } from "@lucky-arcade/engine";
-import { TEMEROSA_HOUSE_ACCOUNT_ID } from "@lucky-arcade/casino-ledger";
+import { TEMEROSA_HOUSE_ACCOUNT_ID, legacyCabinetNpcId } from "@lucky-arcade/casino-ledger";
 import type { GameWagerReceipt, MatchRecord, PredictionMultiplier, PredictionStake } from "@lucky-arcade/persistence";
 import { useEffect, useRef, useState } from "react";
 import { casinoCounterpartyContext, casinoCurrentSecond } from "../../lib/casino-economy.ts";
@@ -31,11 +30,12 @@ import { appendAction, appendMatchRecord, grantCompletionPoints, listMatchRecord
 import { invalidateWager, listWagers, reserveWager, settleWager } from "../../lib/game-wager.ts";
 import { recoverSession } from "../../lib/session-recovery.ts";
 import { loadTemerosaCasinoAssets } from "../../lib/temerosa-content.ts";
+import { loadTemerosaSeriesGameRoster, seriesGameAssetMap } from "../../lib/temerosa-series-game-roster.ts";
 import { readWallet } from "../../lib/wallet.ts";
 import { summarizeOpponentRecords, type OpponentRecordSummary } from "../../lib/opponent-records.ts";
 import { useCasinoOpponentAvailability } from "../casino-ledger/use-casino-opponent-availability.ts";
 import { TEMEROSA_MATCH_PAIRS_LINES } from "./temerosa-match-pairs-lines.ts";
-import { createTemerosaMatchPairsOpponents } from "./temerosa-match-pairs-opponents.ts";
+import { createTemerosaSeriesMatchPairsOpponents } from "./temerosa-match-pairs-opponents.ts";
 import { TEMEROSA_MATCH_PAIRS_FACES, TEMEROSA_MATCH_PAIRS_PACK_VERSION } from "./temerosa-match-pairs-selection.ts";
 import { TEMEROSA_MATCH_PAIRS_SPREAD_QUOTES } from "./temerosa-match-pairs-spreads.generated.ts";
 
@@ -68,9 +68,10 @@ export default function MatchPairsView({ onExit }: { onExit(): void }) {
     let alive = true;
     void Promise.all([loadTemerosaCasinoAssets(), readWallet()]).then(async ([bundle, wallet]) => {
       for (const face of TEMEROSA_MATCH_PAIRS_FACES) if (!bundle.assets[face.assetId]) throw new Error(`match_pairs_asset_missing:${face.assetId}`);
-      const opponents = createTemerosaMatchPairsOpponents(bundle.contentAssets);
-      if (opponents.length !== 30) throw new Error(`match_pairs_opponent_count:${opponents.length}`);
-      validateMatchPairsLines(TEMEROSA_MATCH_PAIRS_LINES, opponents.map((opponent) => opponent.id));
+      const fallback=Object.values(bundle.assets)[0];if(!fallback)throw new Error("match_pairs_fallback_missing");
+      const seriesRoster=await loadTemerosaSeriesGameRoster(fallback),seriesAssets=seriesGameAssetMap(seriesRoster);
+      const opponents = createTemerosaSeriesMatchPairsOpponents(seriesRoster);
+      if (opponents.length < 100) throw new Error(`match_pairs_opponent_count:${opponents.length}`);
       const first = opponents[0];
       if (!first) throw new Error("match_pairs_opponent_missing");
       const recovered = await recoverSession<MatchPairsState, MatchPairsAction>({
@@ -114,7 +115,7 @@ export default function MatchPairsView({ onExit }: { onExit(): void }) {
       opponentsRef.current = opponents;
       setBalance(nextBalance);
       setOpponentRecords(summarizeOpponentRecords(await listMatchRecordsForSession(SESSION, 200)));
-      setReady({ assets: bundle.assets, thumbAssets: bundle.thumbAssets, opponents, state, multiplier: pending ? wagerMultiplierFromExposure(pending.stake, pending.reservedAmount) : 2 });
+      setReady({ assets: Object.freeze({...bundle.assets,...seriesAssets}), thumbAssets: Object.freeze({...bundle.thumbAssets,...seriesAssets}), opponents, state, multiplier: pending ? wagerMultiplierFromExposure(pending.stake, pending.reservedAmount) : 2 });
       availability.holdOpponents(selectedIds(state));
     }).catch(() => { if (alive) setError("짝맞추기 테이블을 준비하지 못했습니다."); });
     return () => { alive = false; };
@@ -207,12 +208,13 @@ export default function MatchPairsView({ onExit }: { onExit(): void }) {
   }
 
   if (!ready) return <main className="game-shell"><div className="game-loading" role={error ? "alert" : undefined}>{error || "짝맞추기 테이블을 준비하고 있어요…"}{error && <button onClick={onExit}>카지노로 돌아가기</button>}</div></main>;
+  const seriesLines=ready.opponents.flatMap((opponent)=>{const legacyId=legacyCabinetNpcId(opponent.id);return legacyId?TEMEROSA_MATCH_PAIRS_LINES.filter((line)=>line.characterId===legacyId).map((line)=>({...line,id:`${opponent.id}:${line.event}`,characterId:opponent.id})):[];});
   return <MatchPairsScreen
     faces={TEMEROSA_MATCH_PAIRS_FACES}
     opponents={ready.opponents}
     assets={ready.assets}
     thumbAssets={ready.thumbAssets}
-    lines={TEMEROSA_MATCH_PAIRS_LINES}
+    lines={seriesLines}
     packVersion={TEMEROSA_MATCH_PAIRS_PACK_VERSION}
     seed={ready.state.seed}
     sessionId={SESSION}

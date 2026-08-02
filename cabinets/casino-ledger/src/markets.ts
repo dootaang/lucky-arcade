@@ -7,10 +7,9 @@ import {
 import { casinoKstDayAtUtcSecond, casinoUtcSecondAtKstDay } from "./casino-time.ts";
 import { casinoDayPlan, completedDayBalances } from "./engine.ts";
 import type { CasinoClock, CasinoTableId, NpcGamblingProfile, NpcLedgerContract, NpcMatch, NpcPresence, NpcSession } from "./contracts.ts";
-import { TEMEROSA_LEGACY_NPC_SUCCESSORS } from "./temerosa-series-migration.ts";
 
-export const CASINO_SPECTATOR_MARKET_CONTRACT = "casino-spectator-market/0.2" as const;
-export const CASINO_SPECTATOR_PRICING_VERSION = "casino-spectator-pricing/0.2" as const;
+export const CASINO_SPECTATOR_MARKET_CONTRACT = "casino-spectator-market/0.3" as const;
+export const CASINO_SPECTATOR_PRICING_VERSION = "casino-spectator-pricing/0.3" as const;
 export const CASINO_SPECTATOR_TARGET_RETURN_BPS = 9_600;
 
 export type CasinoSpectatorMarketKind = "match-winner" | "joker-holder";
@@ -27,7 +26,7 @@ export interface CasinoSpectatorMarket {
   contract: typeof CASINO_SPECTATOR_MARKET_CONTRACT;
   marketId: string;
   matchId: string;
-  tableId: Extract<CasinoTableId, "temerosa-match-pairs" | "temerosa-old-maid">;
+  tableId: Extract<CasinoTableId, "temerosa-match-pairs" | "temerosa-old-maid" | "indian-poker" | "temerosa-five-card-draw">;
   kind: CasinoSpectatorMarketKind;
   participantIds: readonly string[];
   title: string;
@@ -53,22 +52,17 @@ const MARKET_LOCK_SECONDS = 10;
 const MARKET_LOOKAHEAD_SECONDS = 6 * 3_600;
 const MARKET_HISTORY_SECONDS = 20 * 60;
 const HOUSE_RISK_LIMIT = 5_000;
-const EXHIBITION_CYCLE_SECONDS = 300;
+const EXHIBITION_CYCLE_SECONDS = 360;
 const EXHIBITION_CLOSE_OFFSET = 180;
 const EXHIBITION_START_OFFSET = 190;
-const EXHIBITION_SETTLE_OFFSET = 280;
+const EXHIBITION_SETTLE_OFFSET = 350;
+const EXHIBITION_TABLES: readonly CasinoSpectatorMarket["tableId"][] = Object.freeze([
+  "temerosa-match-pairs", "temerosa-old-maid", "indian-poker", "temerosa-five-card-draw",
+]);
 export const CASINO_SPECTATOR_RECENT_SECONDS = 15 * 60;
 export const CASINO_SPECTATOR_RECENT_LIMIT = 3;
 export const CASINO_SPECTATOR_UPCOMING_LIMIT = 2;
 const PRICING_CACHE = new Map<string, readonly CasinoSpectatorMarketOutcome[]>();
-const MATCH_PAIRS_REPLAY_IDS = new Set([
-  "adesha", "alger", "anna", "apollyon", "bche", "camille", "cicero", "cradle", "deokbae", "diamo",
-  "echo", "esther", "hiro", "katrinka", "kreva", "levillotte", "lilim", "lyla", "machina", "morsisa",
-  "nemo", "nieun", "nostalgia", "phaeo", "raven", "temute", "traver", "ttaengchil", "tumit-tu", "yul",
-]);
-const OLD_MAID_REPLAY_IDS = new Set(Object.keys(TEMEROSA_LEGACY_NPC_SUCCESSORS).filter((id)=>id!=="bacikal"));
-const MATCH_PAIRS_REPLAY_ACCOUNT_IDS = replayAccountIds(MATCH_PAIRS_REPLAY_IDS);
-const OLD_MAID_REPLAY_ACCOUNT_IDS = replayAccountIds(OLD_MAID_REPLAY_IDS);
 
 /** Returns the current, recently settled, and next scheduled NPC-only markets. */
 export function casinoSpectatorMarketsAt(
@@ -148,7 +142,7 @@ export function casinoSpectatorMarketByIdAt(
   profiles: readonly NpcGamblingProfile[], clock: CasinoClock, contract: NpcLedgerContract, marketId: string,
 ): CasinoSpectatorMarket | undefined {
   if (!marketId) return undefined;
-  const exhibition = /casino-spectator-exhibition\/0\.[12]:(\d+)$/.exec(marketId);
+  const exhibition = /casino-spectator-exhibition\/0\.[123]:(\d+)$/.exec(marketId);
   if (exhibition) {
     const cycle = Number(exhibition[1]);
     return Number.isSafeInteger(cycle) ? scheduledExhibitionMarket(profiles, contract, cycle, normalizedUtcSecond(clock)) : undefined;
@@ -184,7 +178,7 @@ export function casinoSpectatorMarketPresencesAt(markets: readonly CasinoSpectat
 
 export function assertCasinoSpectatorMarket(market: CasinoSpectatorMarket): void {
   if (market.contract !== CASINO_SPECTATOR_MARKET_CONTRACT || !market.marketId || !market.matchId
-    || !["temerosa-match-pairs", "temerosa-old-maid"].includes(market.tableId)
+    || !EXHIBITION_TABLES.includes(market.tableId)
     || market.participantIds.length < 2 || new Set(market.participantIds).size !== market.participantIds.length
     || market.opensAtUtcSecond >= market.closesAtUtcSecond || market.closesAtUtcSecond >= market.startsAtUtcSecond
     || market.startsAtUtcSecond >= market.settlesAtUtcSecond || market.outcomes.length < 2
@@ -216,7 +210,7 @@ function createMarket(
   settlesAtUtcSecond: number,
 ): CasinoSpectatorMarket {
   const tableId = match.tableId as CasinoSpectatorMarket["tableId"];
-  const kind: CasinoSpectatorMarketKind = tableId === "temerosa-match-pairs" ? "match-winner" : "joker-holder";
+  const kind: CasinoSpectatorMarketKind = tableId === "temerosa-old-maid" ? "joker-holder" : "match-winner";
   const marketId = `${CASINO_SPECTATOR_MARKET_CONTRACT}:${kind}:${match.matchId}`;
   const closesAtUtcSecond = startsAtUtcSecond - MARKET_LOCK_SECONDS;
   const phase: CasinoSpectatorMarketPhase = now < opensAtUtcSecond ? "upcoming" : now < closesAtUtcSecond ? "open" : now < settlesAtUtcSecond ? "locked" : "settled";
@@ -226,8 +220,8 @@ function createMarket(
     contract: CASINO_SPECTATOR_MARKET_CONTRACT,
     marketId, matchId: match.matchId, tableId, kind,
     participantIds: Object.freeze([...match.participantIds]),
-    title: tableId === "temerosa-match-pairs" ? "짝맞추기 승자" : "도둑잡기 마지막 조커",
-    rulesLabel: tableId === "temerosa-match-pairs" ? "NPC 1대1 · 보통 · 12쌍" : `NPC ${match.participantIds.length}인 · 마지막 조커`,
+    title: marketTitle(tableId),
+    rulesLabel: marketRulesLabel(tableId, match.participantIds.length),
     opensAtUtcSecond, closesAtUtcSecond, startsAtUtcSecond, settlesAtUtcSecond, phase, outcomes,
     ...(winningOutcomeId === undefined ? {} : { winningOutcomeId }),
   });
@@ -243,8 +237,8 @@ function scheduledExhibitionMarket(
   const closes = opens + EXHIBITION_CLOSE_OFFSET;
   const starts = opens + EXHIBITION_START_OFFSET;
   const settles = opens + EXHIBITION_SETTLE_OFFSET;
-  const tableId: CasinoSpectatorMarket["tableId"] = cycle % 2 === 0 ? "temerosa-match-pairs" : "temerosa-old-maid";
-  const needed = tableId === "temerosa-match-pairs" ? 2 : 4;
+  const tableId = EXHIBITION_TABLES[cycle % EXHIBITION_TABLES.length]!;
+  const needed = tableId === "temerosa-match-pairs" || tableId === "indian-poker" ? 2 : 4;
   const dayIndex = Math.max(0, casinoKstDayAtUtcSecond(starts) - contract.epochKstDay);
   const opening = dayIndex === 0 ? Object.freeze(Object.fromEntries(profiles.map((profile) => [profile.id, profile.openingBalance]))) : completedDayBalances(profiles, dayIndex - 1, contract);
   const plan = casinoDayPlan(profiles, dayIndex, opening, contract);
@@ -253,15 +247,14 @@ function scheduledExhibitionMarket(
     return dayStart + visit.startedAtSecondOfDay < settles && dayStart + visit.endsAtSecondOfDay > starts;
   }).flatMap((visit) => visit.participantIds));
   const rng = new XorShift32(`${CASINO_SPECTATOR_PRICING_VERSION}:event:${cycle}:participants`);
-  const eligibleAccountIds=tableId === "temerosa-old-maid"?OLD_MAID_REPLAY_ACCOUNT_IDS:MATCH_PAIRS_REPLAY_ACCOUNT_IDS;
-  const eligibleProfiles=profiles.filter((profile)=>eligibleAccountIds.has(profile.id));
-  const candidates = eligibleProfiles.filter((profile) => !busy.has(profile.id)).map((profile) => ({ profile, order: rng.next() }))
-    .sort((left, right) => left.order - right.order || compareText(left.profile.id, right.profile.id));
-  const fallback = eligibleProfiles.filter((profile) => !candidates.some((candidate) => candidate.profile.id === profile.id)).map((profile) => ({ profile, order: rng.next() }))
-    .sort((left, right) => left.order - right.order || compareText(left.profile.id, right.profile.id));
-  const participantIds = [...candidates, ...fallback].slice(0, needed).map((candidate) => candidate.profile.id).sort(compareText);
+  const eligibleProfiles=profiles;
+  const occurrence=Math.floor(cycle/EXHIBITION_TABLES.length);
+  const ordered=shuffleBag(eligibleProfiles,tableId,occurrence,needed);
+  const participantIds=[...ordered.filter((profile)=>!busy.has(profile.id)),...ordered.filter((profile)=>busy.has(profile.id))]
+    .slice(0,needed).map((profile)=>profile.id).sort(compareText);
+  void rng;
   if (participantIds.length !== needed) throw new Error("casino_market_insufficient_participants");
-  const matchId = `casino-spectator-exhibition/0.2:${cycle}`;
+  const matchId = `casino-spectator-exhibition/0.3:${cycle}`;
   const match: NpcMatch = Object.freeze({ matchId, visitId: `${matchId}:visit`, tableId, participantIds: Object.freeze(participantIds), startsAtSecondOfDay: 0, settlesAtSecondOfDay: 1, stake: 0, multiplier: 1 });
   return createMarket(match, undefined, profiles, now, opens, starts, settles);
 }
@@ -275,19 +268,19 @@ function pricedOutcomes(
   const byId = new Map(profiles.map((profile) => [profile.id, profile]));
   const participants = participantIds.map((id) => byId.get(id)).filter((profile): profile is NpcGamblingProfile => Boolean(profile));
   if (participants.length !== participantIds.length) throw new Error("casino_market_unknown_participant");
-  const cacheKey = `${CASINO_SPECTATOR_PRICING_VERSION}:${tableId}:${participantIds.join("+")}:${participants.map((profile) => tableId === "temerosa-match-pairs" ? profile.skills.matchPairsMemory : profile.skills.oldMaid).join(",")}`;
+  const cacheKey = `${CASINO_SPECTATOR_PRICING_VERSION}:${tableId}:${participantIds.join("+")}:${participants.map((profile) => marketSkill(profile,tableId)).join(",")}`;
   const cached = PRICING_CACHE.get(cacheKey);
   if (cached) return cached.map((outcome) => Object.freeze({ ...outcome, quote: Object.freeze({ ...outcome.quote, marketId }) }));
-  const outcomeIds = tableId === "temerosa-match-pairs" ? [...participantIds, "draw"] : [...participantIds];
+  const outcomeIds = tableId === "temerosa-old-maid" ? [...participantIds] : [...participantIds, "draw"];
   const counts = Object.fromEntries(outcomeIds.map((id) => [id, 1])) as Record<string, number>;
   const rng = new XorShift32(cacheKey);
   for (let sample = 0; sample < SAMPLE_COUNT; sample += 1) {
     const scores = participants.map((profile) => ({
       id: profile.id,
-      score: (tableId === "temerosa-match-pairs" ? profile.skills.matchPairsMemory : profile.skills.oldMaid)
-        + (rng.next() - .5) * (tableId === "temerosa-match-pairs" ? .9 : .72),
+      score: marketSkill(profile,tableId)
+        + (rng.next() - .5) * (tableId === "temerosa-match-pairs" ? .9 : tableId === "temerosa-old-maid" ? .72 : 1.05),
     }));
-    if (tableId === "temerosa-match-pairs") {
+    if (tableId !== "temerosa-old-maid") {
       const [left, right] = scores;
       const result = Math.abs(left!.score - right!.score) < .035 ? "draw" : left!.score > right!.score ? left!.id : right!.id;
       counts[result]! += 1;
@@ -367,11 +360,32 @@ function normalizedUtcSecond(clock: CasinoClock): number {
 }
 function compareText(left: string, right: string): number { return left < right ? -1 : left > right ? 1 : 0; }
 
-function replayAccountIds(legacyIds:ReadonlySet<string>):ReadonlySet<string>{
-  const ids=new Set<string>(legacyIds);
-  for(const legacyId of legacyIds){
-    const successor=TEMEROSA_LEGACY_NPC_SUCCESSORS[legacyId];
-    if(successor)ids.add(successor);
-  }
-  return ids;
+function marketSkill(profile:NpcGamblingProfile,tableId:CasinoSpectatorMarket["tableId"]):number{
+  if(tableId==="temerosa-match-pairs")return profile.skills.matchPairsMemory;
+  if(tableId==="temerosa-old-maid")return profile.skills.oldMaid;
+  return (profile.skills.pokerRead+profile.skills.pokerBluff)/2;
+}
+
+function marketTitle(tableId:CasinoSpectatorMarket["tableId"]):string{
+  if(tableId==="temerosa-match-pairs")return "짝맞추기 승자";
+  if(tableId==="temerosa-old-maid")return "도둑잡기 마지막 조커";
+  if(tableId==="indian-poker")return "인디언 포커 7라운드 승자";
+  return "파이브 카드 드로 3연전 승자";
+}
+
+function marketRulesLabel(tableId:CasinoSpectatorMarket["tableId"],count:number):string{
+  if(tableId==="temerosa-match-pairs")return "NPC 1대1 · 보통 · 12쌍";
+  if(tableId==="temerosa-old-maid")return `NPC ${count}인 · 마지막 조커`;
+  if(tableId==="indian-poker")return "NPC 1대1 · 7라운드";
+  return "NPC 4인 · 3연전 · 공동 1위 포함";
+}
+
+/** A rotating deterministic bag makes every eligible identity appear before the next bag repeats. */
+function shuffleBag(profiles:readonly NpcGamblingProfile[],tableId:CasinoSpectatorMarket["tableId"],occurrence:number,needed:number):readonly NpcGamblingProfile[]{
+  if(profiles.length===0)return [];
+  const cursor=occurrence*needed,bagIndex=Math.floor(cursor/profiles.length),offset=cursor%profiles.length;
+  const rank=(round:number)=>profiles.map((profile)=>({profile,order:new XorShift32(`${CASINO_SPECTATOR_PRICING_VERSION}:bag:${tableId}:${round}:${profile.id}`).next()}))
+    .sort((left,right)=>left.order-right.order||compareText(left.profile.id,right.profile.id)).map((entry)=>entry.profile);
+  const current=rank(bagIndex),next=rank(bagIndex+1);
+  return Object.freeze([...current.slice(offset),...next.slice(0,offset)]);
 }

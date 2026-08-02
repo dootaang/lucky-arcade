@@ -34,6 +34,7 @@ export interface FiveCardDrawScreenProps {
   beginner:boolean;onBeginner(value:boolean):void;onStart(opponents:readonly FiveCardDrawOpponentView[],stake:FiveCardDrawStake,targetHands:FiveCardDrawSeriesLength):void;
   opponentAvailability?:Readonly<Record<string,Readonly<{available:boolean;label:string}>>>;onOpponentSelectionChange?(ids:readonly string[]):void;
   opponentBalances?:Readonly<Record<string,number>>;
+  presentationOnly?:boolean;spectatorPlayer?:FiveCardDrawOpponentView;
   onAction(action:FiveCardDrawAction):void;onReset():void;onNextHand():void;onEndSeries():void;onReplaySeries():void;onAutoContinue(value:boolean):void;
   onInteractionPause?(paused:boolean):void;onExit():void;
 }
@@ -58,7 +59,7 @@ export function FiveCardDrawScreen(props:FiveCardDrawScreenProps):ReactElement {
   const state=queue.display,event=queue.event;
   const settled=!queue.busy&&Object.is(state,props.state);
   const guide=useMemo(()=>state.hands.player.length===5?analyzeFiveCardDrawGuide(state.hands.player):null,[state.hands.player]);
-  const playerActions=settled?legalPlayerBetActions(props.state):[];
+  const playerActions=settled&&!props.presentationOnly?legalPlayerBetActions(props.state):[];
   const setupOpponents=selectedIds.slice(0,playerCount-1).map((id)=>props.opponents.find((opponent)=>opponent.id===id)).filter((opponent):opponent is FiveCardDrawOpponentView=>Boolean(opponent));
   const setupSlots=SEAT_SLOTS[playerCount-1]??["top"];
   const flights=useMemo(()=>buildFlights(event,props.atlas),[event,props.atlas]);
@@ -139,7 +140,7 @@ export function FiveCardDrawScreen(props:FiveCardDrawScreenProps):ReactElement {
   }
   function toggle(card:string):void {if(!canSelectCards())return;setSelectedCards((current)=>{const next=new Set(current);if(next.has(card))next.delete(card);else if(next.size<3)next.add(card);return next;});}
   function exchange():void {props.onAction({type:"exchange",cardIds:[...selectedCards] as StandardCardId[]});setSelectedCards(new Set());setInspectedSeat(null);}
-  function canSelectCards():boolean {return settled&&props.state.phase==="drawing"&&props.state.currentActorId==="player";}
+  function canSelectCards():boolean {return !props.presentationOnly&&settled&&props.state.phase==="drawing"&&props.state.currentActorId==="player";}
 
   if(props.state.phase==="ready")return <main className="draw-poker-shell draw-poker-lobby">
     <header><button className="draw-icon-button" onClick={props.onExit} aria-label="카지노로 돌아가기"><IconArrowLeft/></button><div><span className="draw-eyebrow">TEMEROSA CASINO · DRAW POKER</span><h1>파이브 카드 드로 포커</h1></div><strong>{props.balance.toLocaleString("ko-KR")} P</strong></header>
@@ -226,20 +227,20 @@ export function FiveCardDrawScreen(props:FiveCardDrawScreenProps):ReactElement {
         <MuckPile count={muckCount} label="버린 패"/>
       </div>
 
-      <article className={`draw-seat draw-player${state.currentActorId==="player"?" is-active":""}${state.foldedSeatIds.includes("player")?" is-folded":""}${verdictVisible&&state.result?.winnerSeatIds.includes("player")?" is-winner":""}${event?.kind==="check"&&event.seatId==="player"?" is-checking":""}`} {...stageAnchor("seat:player")}>
+      <article className={`draw-seat draw-player${props.presentationOnly?" is-spectator-npc":""}${state.currentActorId==="player"?" is-active":""}${state.foldedSeatIds.includes("player")?" is-folded":""}${verdictVisible&&state.result?.winnerSeatIds.includes("player")?" is-winner":""}${event?.kind==="check"&&event.seatId==="player"?" is-checking":""}`} {...stageAnchor("seat:player")}>
         <ActionHalo active={state.currentActorId==="player"&&!state.foldedSeatIds.includes("player")}/>
-        <div className="draw-seat-title"><span>나</span><div><strong>플레이어{state.seatOrder[state.dealerIndex]==="player"&&<span className="draw-dealer-marker" title="이번 판 딜러">D</span>}</strong><small>{seatStatus(state,"player",event,verdictVisible,revealed.has("player"))}{seriesStreakLabel("player",props.series)}</small></div></div>
+        <div className="draw-seat-title">{props.presentationOnly&&props.spectatorPlayer?(props.spectatorPlayer.portraits?.neutral??props.spectatorPlayer.portrait?<img className="draw-portrait-image" src={props.spectatorPlayer.portraits?.neutral??props.spectatorPlayer.portrait} alt=""/>:<span>{props.spectatorPlayer.name.slice(0,1)}</span>):<span>나</span>}<div><strong>{props.presentationOnly?props.spectatorPlayer?.name??"관전 NPC":"플레이어"}{state.seatOrder[state.dealerIndex]==="player"&&<span className="draw-dealer-marker" title="이번 판 딜러">D</span>}</strong><small>{seatStatus(state,"player",event,verdictVisible,revealed.has("player"))}{seriesStreakLabel("player",props.series)}</small></div></div>
         <CardFan className={`draw-cards${event?.kind==="fold"&&event.seatId==="player"?" is-mucking":""}${event?.kind==="stand-pat"&&event.seatId==="player"?" is-standing-pat":""}`} count={5} anchor="hand:player">
           {(state.foldedSeatIds.includes("player")?[]:state.hands.player).map((card,cardIndex)=>{
             return <CardFanItem key={card} index={cardIndex} count={5} anchor={handSlotAnchor("player",cardIndex)} className={cardClassName(card,false,playerHighlight,arrivals,event)} {...arrivalStyle(card,arrivals)}>
-              <button aria-disabled={!settled} aria-pressed={selectedCards.has(card)} aria-label={`${standardCardLabel(card)}, ${cardIndex+1}번째 카드${selectedCards.has(card)?", 교환 선택됨":""}`} className={`draw-hand-card${canSelectCards()?" is-selectable":""}${props.beginner&&canSelectCards()&&guide?.discardCardIds.includes(card)?" is-recommended":""}`} onClick={()=>canSelectCards()?toggle(card):settled&&setInspectedSeat("player")}>
-                <StandardPlayingCard id={card} atlas={props.atlas} decorative/>
+              <button aria-disabled={!settled} aria-pressed={selectedCards.has(card)} aria-label={props.presentationOnly?`${props.spectatorPlayer?.name??"NPC"}의 비공개 카드`:`${standardCardLabel(card)}, ${cardIndex+1}번째 카드${selectedCards.has(card)?", 교환 선택됨":""}`} className={`draw-hand-card${canSelectCards()?" is-selectable":""}${props.beginner&&canSelectCards()&&guide?.discardCardIds.includes(card)?" is-recommended":""}`} onClick={()=>canSelectCards()?toggle(card):!props.presentationOnly&&settled&&setInspectedSeat("player")}>
+                {props.presentationOnly&&!revealed.has("player")?<PlayingCardBack/>:<StandardPlayingCard id={card} atlas={props.atlas} decorative/>}
                 {selectedCards.has(card)&&<span>교환</span>}
               </button>
             </CardFanItem>;
           })}
         </CardFan>
-        {!state.foldedSeatIds.includes("player")&&settled&&<button className="draw-inspect-button" type="button" onClick={()=>setInspectedSeat("player")}>패 크게 보기</button>}
+        {!props.presentationOnly&&!state.foldedSeatIds.includes("player")&&settled&&<button className="draw-inspect-button" type="button" onClick={()=>setInspectedSeat("player")}>패 크게 보기</button>}
         {state.phase==="complete"&&revealed.has("player")&&state.result?.values.player&&<HandReveal tier={handTier(state.result.values.player)} label={state.result.values.player.label}/>}
       </article>
 
@@ -247,10 +248,10 @@ export function FiveCardDrawScreen(props:FiveCardDrawScreenProps):ReactElement {
 
       <div className="draw-actions">
         {queue.busy&&<button className="draw-secondary draw-skip" onClick={queue.skip}>연출 건너뛰기</button>}
-        {settled&&state.phase==="drawing"&&state.currentActorId==="player"&&<button className="draw-primary" onClick={exchange}>{selectedCards.size===0?"그대로 승부":`${selectedCards.size}장 교환`}</button>}
+        {!props.presentationOnly&&settled&&state.phase==="drawing"&&state.currentActorId==="player"&&<button className="draw-primary" onClick={exchange}>{selectedCards.size===0?"그대로 승부":`${selectedCards.size}장 교환`}</button>}
         {playerActions.map((action)=><button key={action} className={action==="fold"?"draw-danger":"draw-primary"} onClick={()=>props.onAction({type:"bet",action})}>{actionLabel(action,props.state)}</button>)}
         {props.beginner&&playerActions.length>0&&<p className="draw-action-guide">{playerActions.map((action)=>betActionGuide(action,actionCost(action,props.state),action==="raise"&&props.state.currentBetUnits===2)).join(" · ")}</p>}
-        {settled&&state.phase==="complete"&&<SeriesResult
+        {!props.presentationOnly&&settled&&state.phase==="complete"&&<SeriesResult
           state={state} series={props.series} stats={props.seriesStats} autoContinue={props.autoContinue}
           onAutoContinue={props.onAutoContinue} onNext={props.onNextHand} onEnd={props.onEndSeries}
           onReplay={props.onReplaySeries} onReset={props.onReset}/>}

@@ -5,3 +5,4 @@ export * from "./guide.ts";
 export * from "./hand.ts";
 export * from "./npc.ts";
 export * from "./series.ts";
+export * from "./replay.ts";

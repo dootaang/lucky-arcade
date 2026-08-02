@@ -22,17 +22,18 @@ import {
 } from "@lucky-arcade/five-card-draw";
 import { FiveCardDrawScreen, type FiveCardDrawOpponentView } from "@lucky-arcade/five-card-draw/react";
 import { resultHash, XorShift32 } from "@lucky-arcade/engine";
-import { npcAccountId, type CasinoInternalAccountId } from "@lucky-arcade/casino-ledger";
+import { legacyCabinetNpcId, npcAccountId, type CasinoInternalAccountId } from "@lucky-arcade/casino-ledger";
 import type { GameWagerReceipt, MatchRecord } from "@lucky-arcade/persistence";
 import { useEffect, useRef, useState } from "react";
 import { loadPlayingCardAtlas } from "../../lib/playing-card-atlas.ts";
 import { loadTemerosaCasinoAssets } from "../../lib/temerosa-content.ts";
+import { loadTemerosaSeriesGameRoster, seriesGameAssetMap } from "../../lib/temerosa-series-game-roster.ts";
 import { appendMatchRecord, pruneMatchRecords } from "../../lib/database.ts";
 import { readWallet } from "../../lib/wallet.ts";
 import { casinoCounterpartyContexts } from "../../lib/casino-economy.ts";
 import { invalidateWager, listWagers, reserveWager, settleWager } from "../../lib/game-wager.ts";
 import { useCasinoOpponentAvailability } from "../casino-ledger/use-casino-opponent-availability.ts";
-import { createTemerosaFiveCardDrawOpponents } from "./temerosa-five-card-draw-opponents.ts";
+import { createTemerosaSeriesFiveCardDrawOpponents } from "./temerosa-five-card-draw-opponents.ts";
 import { TEMEROSA_FIVE_CARD_DRAW_LINES } from "./temerosa-five-card-draw-lines.ts";
 
 const STORAGE_KEY = `${FIVE_CARD_DRAW_TERMS_VERSION}:envelope`;
@@ -71,18 +72,20 @@ export default function FiveCardDrawView({ onExit }: { onExit(): void }) {
   useEffect(() => {
     let alive = true;
     void Promise.all([loadTemerosaCasinoAssets(), loadPlayingCardAtlas(), readWallet()]).then(async ([bundle, atlas, wallet]) => {
-      const opponents = createTemerosaFiveCardDrawOpponents(bundle.contentAssets).map((opponent): FiveCardDrawOpponentView => {
+      const fallback=Object.values(bundle.assets)[0];if(!fallback)throw new Error("five_card_draw_fallback_missing");
+      const seriesRoster=await loadTemerosaSeriesGameRoster(fallback),seriesAssets=seriesGameAssetMap(seriesRoster);
+      const opponents = createTemerosaSeriesFiveCardDrawOpponents(seriesRoster).map((opponent): FiveCardDrawOpponentView => {
         const portraits = Object.fromEntries(Object.entries(opponent.portraitAssetIds).map(([tell, assetId]) => {
-          const portrait = bundle.assets[assetId];
+          const portrait = seriesAssets[assetId];
           if (!portrait) throw new Error(`five_card_draw_portrait_missing:${assetId}`);
           return [tell, portrait];
         })) as NonNullable<FiveCardDrawOpponentView["portraits"]>;
         const detailPortraits = Object.fromEntries(Object.entries(opponent.portraitAssetIds).map(([tell, assetId]) => [
-          tell, bundle.detailAssets[assetId] ?? bundle.assets[assetId],
+          tell, seriesAssets[assetId],
         ])) as NonNullable<FiveCardDrawOpponentView["detailPortraits"]>;
         return { id: opponent.id, name: opponent.name, persona: opponent.persona, portraits, detailPortraits };
       });
-      if (opponents.length !== 30) throw new Error(`five_card_draw_opponent_count:${opponents.length}`);
+      if (opponents.length < 100) throw new Error(`five_card_draw_opponent_count:${opponents.length}`);
       const accountIds=opponents.map((opponent)=>npcAccountId(opponent.id)) as CasinoInternalAccountId[];
       const counterpartyContexts=await casinoCounterpartyContexts(accountIds);
       let restored = readEnvelope(opponents) ?? freshEnvelope(opponents);
@@ -294,6 +297,7 @@ export default function FiveCardDrawView({ onExit }: { onExit(): void }) {
   }
 
   if (!ready) return <main className="game-shell"><div className="game-loading">포커 테이블을 준비하고 있습니다…</div>{error && <p role="alert">{error}</p>}</main>;
+  const seriesLines=ready.opponents.flatMap((opponent)=>{const legacyId=legacyCabinetNpcId(opponent.id);return legacyId?TEMEROSA_FIVE_CARD_DRAW_LINES.filter((line)=>line.characterId===legacyId).map((line)=>({...line,id:`${opponent.id}:${line.event}`,characterId:opponent.id})):[];});
   return <FiveCardDrawScreen
     state={ready.envelope.state}
     opponents={ready.opponents}
@@ -301,7 +305,7 @@ export default function FiveCardDrawView({ onExit }: { onExit(): void }) {
     balance={balance}
     busy={busy}
     error={error}
-    lines={TEMEROSA_FIVE_CARD_DRAW_LINES}
+    lines={seriesLines}
     beginner={beginner}
     onBeginner={changeBeginner}
     onStart={start}

@@ -26,10 +26,11 @@ import { invalidateWager, listWagers, reserveWager, settleWager } from "../../li
 import { loadPlayingCardAtlas } from "../../lib/playing-card-atlas.ts";
 import { recoverSession } from "../../lib/session-recovery.ts";
 import { loadTemerosaCasinoAssets } from "../../lib/temerosa-content.ts";
+import { loadTemerosaSeriesGameRoster, seriesGameAssetMap } from "../../lib/temerosa-series-game-roster.ts";
 import { readWallet } from "../../lib/wallet.ts";
 import { summarizeOpponentRecords, type OpponentRecordSummary } from "../../lib/opponent-records.ts";
 import { useCasinoOpponentAvailability } from "../casino-ledger/use-casino-opponent-availability.ts";
-import { buildTemerosaIndianPokerCartridge } from "./temerosa-indian-poker-cartridge.ts";
+import { buildTemerosaSeriesIndianPokerCartridge } from "./temerosa-indian-poker-cartridge.ts";
 
 const CABINET_ID = "indian-poker";
 const SESSION = "indian-poker:heads-up-2";
@@ -57,11 +58,14 @@ export default function IndianPokerView({ onExit }: { onExit(): void }) {
   useEffect(() => {
     let alive = true;
     void Promise.all([loadTemerosaCasinoAssets(), loadPlayingCardAtlas(), readWallet()]).then(async ([bundle, atlas, wallet]) => {
-      const cartridge = buildTemerosaIndianPokerCartridge(bundle.contentAssets);
-      if (cartridge.characters.length !== 30) throw new Error(`indian_poker_opponent_count:${cartridge.characters.length}`);
+      const fallback=Object.values(bundle.assets)[0];if(!fallback)throw new Error("indian_poker_fallback_missing");
+      const seriesRoster=await loadTemerosaSeriesGameRoster(fallback);
+      const seriesAssets=seriesGameAssetMap(seriesRoster);
+      const cartridge = buildTemerosaSeriesIndianPokerCartridge(seriesRoster);
+      if (cartridge.characters.length < 100) throw new Error(`indian_poker_opponent_count:${cartridge.characters.length}`);
       for (const character of cartridge.characters) {
         for (const assetId of Object.values(character.portraits)) {
-          if (!bundle.assets[assetId]) throw new Error(`indian_poker_portrait_missing:${assetId}`);
+          if (!seriesAssets[assetId]) throw new Error(`indian_poker_portrait_missing:${assetId}`);
         }
       }
       const first = cartridge.characters[0];
@@ -120,8 +124,8 @@ export default function IndianPokerView({ onExit }: { onExit(): void }) {
       setReady({
         state,
         cartridge,
-        assets: bundle.assets,
-        thumbAssets: bundle.thumbAssets,
+        assets: seriesAssets,
+        thumbAssets: seriesAssets,
         atlas,
         multiplier: activeReceipt && validReceipt(activeReceipt) ? wagerMultiplierFromExposure(activeReceipt.stake, activeReceipt.reservedAmount) : 2,
       });
