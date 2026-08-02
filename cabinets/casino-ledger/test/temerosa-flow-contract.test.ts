@@ -94,7 +94,7 @@ describe("Temerosa flow ledger cutover",()=>{
   it("keeps series accounts while scheduling native spectator replays for the full roster",()=>{
     const second=casinoUtcSecondAtKstDay(TEMEROSA_FLOW_EPOCH_KST_DAY,12*3_600);
     const schedule=casinoSpectatorScheduleAt(TEMEROSA_FLOW_NPC_GAMBLING_PROFILES,{utcMinute:()=>Math.floor(second/60)},TEMEROSA_FLOW_NPC_LEDGER_CONTRACT);
-    const markets=[...(schedule.current?[schedule.current]:[]),...schedule.upcoming,...schedule.recent];
+    const markets=[...schedule.live,...schedule.upcoming,...schedule.recent];
     expect(markets.length).toBeGreaterThan(0);
     for(const market of markets){
       expect(market.participantIds.every((id)=>TEMEROSA_FLOW_NPC_GAMBLING_PROFILES.some((profile)=>profile.id===id))).toBe(true);

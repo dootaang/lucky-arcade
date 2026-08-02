@@ -4,12 +4,12 @@ import {
   assertCasinoMarketQuote,
   type CasinoMarketQuote,
 } from "@lucky-arcade/engine";
-import { casinoKstDayAtUtcSecond, casinoUtcSecondAtKstDay } from "./casino-time.ts";
+import { casinoUtcSecondAtKstDay } from "./casino-time.ts";
 import { casinoDayPlan, completedDayBalances } from "./engine.ts";
 import type { CasinoClock, CasinoTableId, NpcGamblingProfile, NpcLedgerContract, NpcMatch, NpcPresence, NpcSession } from "./contracts.ts";
 
-export const CASINO_SPECTATOR_MARKET_CONTRACT = "casino-spectator-market/0.3" as const;
-export const CASINO_SPECTATOR_PRICING_VERSION = "casino-spectator-pricing/0.3" as const;
+export const CASINO_SPECTATOR_MARKET_CONTRACT = "casino-spectator-market/0.4" as const;
+export const CASINO_SPECTATOR_PRICING_VERSION = "casino-spectator-pricing/0.4" as const;
 export const CASINO_SPECTATOR_TARGET_RETURN_BPS = 9_600;
 
 export type CasinoSpectatorMarketKind = "match-winner" | "joker-holder";
@@ -42,6 +42,7 @@ export interface CasinoSpectatorMarket {
 
 export interface CasinoSpectatorSchedule {
   current?: CasinoSpectatorMarket;
+  live: readonly CasinoSpectatorMarket[];
   upcoming: readonly CasinoSpectatorMarket[];
   recent: readonly CasinoSpectatorMarket[];
 }
@@ -49,10 +50,9 @@ export interface CasinoSpectatorSchedule {
 const SAMPLE_COUNT = 20_000;
 const MARKET_OPEN_SECONDS = 180;
 const MARKET_LOCK_SECONDS = 10;
-const MARKET_LOOKAHEAD_SECONDS = 6 * 3_600;
 const MARKET_HISTORY_SECONDS = 20 * 60;
 const HOUSE_RISK_LIMIT = 5_000;
-const EXHIBITION_CYCLE_SECONDS = 360;
+const EXHIBITION_CYCLE_SECONDS = 45;
 const EXHIBITION_CLOSE_OFFSET = 180;
 const EXHIBITION_START_OFFSET = 190;
 const EXHIBITION_SETTLE_OFFSET = 350;
@@ -60,10 +60,12 @@ const EXHIBITION_TABLES: readonly CasinoSpectatorMarket["tableId"][] = Object.fr
   "temerosa-match-pairs", "temerosa-old-maid", "indian-poker", "temerosa-five-card-draw",
 ]);
 export const CASINO_SPECTATOR_RECENT_SECONDS = 15 * 60;
-export const CASINO_SPECTATOR_RECENT_LIMIT = 3;
-export const CASINO_SPECTATOR_UPCOMING_LIMIT = 2;
+export const CASINO_SPECTATOR_LIVE_LIMIT = 8;
+export const CASINO_SPECTATOR_RECENT_LIMIT = 6;
+export const CASINO_SPECTATOR_UPCOMING_LIMIT = 4;
 const PRICING_CACHE = new Map<string, readonly CasinoSpectatorMarketOutcome[]>();
 const EXHIBITION_DAY_PLAN_CACHE = new Map<string,ReturnType<typeof casinoDayPlan>>();
+const EXHIBITION_ROSTER_CACHE = new Map<string,readonly NpcGamblingProfile[]>();
 
 /** Returns the current, recently settled, and next scheduled NPC-only markets. */
 export function casinoSpectatorMarketsAt(
@@ -76,9 +78,10 @@ export function casinoSpectatorMarketsAt(
   const now = normalizedUtcSecond(clock);
   const markets: CasinoSpectatorMarket[] = [];
   const currentCycle = Math.floor(now / EXHIBITION_CYCLE_SECONDS);
-  for (let cycle = currentCycle - 1; cycle <= currentCycle + 12; cycle += 1) {
+  const radius=Math.max(8,limit*2);
+  for (let cycle = Math.max(0,currentCycle-radius); cycle <= currentCycle + radius; cycle += 1) {
     const market = scheduledExhibitionMarket(profiles, contract, cycle, now);
-    if (market.settlesAtUtcSecond >= now - MARKET_HISTORY_SECONDS && market.opensAtUtcSecond <= now + MARKET_LOOKAHEAD_SECONDS) markets.push(market);
+    if (market.settlesAtUtcSecond >= now - MARKET_HISTORY_SECONDS) markets.push(market);
   }
   // Only exhibitions are listed here: each has a canonical cabinet replay.
   // Autonomous ledger matches remain available to the activity tape, but are
@@ -108,7 +111,10 @@ export function casinoSpectatorScheduleAt(
     CASINO_SPECTATOR_RECENT_SECONDS,
     CASINO_SPECTATOR_UPCOMING_LIMIT * EXHIBITION_CYCLE_SECONDS,
   );
-  const current = markets.find((market) => market.phase === "open" || market.phase === "locked");
+  const live = markets.filter((market) => market.phase === "open" || market.phase === "locked")
+    .sort((left,right)=>phaseOrder(left.phase)-phaseOrder(right.phase)||left.startsAtUtcSecond-right.startsAtUtcSecond||compareText(left.marketId,right.marketId))
+    .slice(0,CASINO_SPECTATOR_LIVE_LIMIT);
+  const current = live.find((market)=>market.phase==="open")??live[0];
   const upcoming = markets.filter((market) => market.phase === "upcoming")
     .sort((left, right) => left.startsAtUtcSecond - right.startsAtUtcSecond || compareText(left.marketId, right.marketId))
     .slice(0, CASINO_SPECTATOR_UPCOMING_LIMIT);
@@ -117,6 +123,7 @@ export function casinoSpectatorScheduleAt(
     .slice(0, CASINO_SPECTATOR_RECENT_LIMIT);
   return Object.freeze({
     ...(current ? { current } : {}),
+    live: Object.freeze(live),
     upcoming: Object.freeze(upcoming),
     recent: Object.freeze(recent),
   });
@@ -140,10 +147,12 @@ export function casinoSpectatorMarketByIdAt(
   profiles: readonly NpcGamblingProfile[], clock: CasinoClock, contract: NpcLedgerContract, marketId: string,
 ): CasinoSpectatorMarket | undefined {
   if (!marketId) return undefined;
-  const exhibition = /casino-spectator-exhibition\/0\.[123]:(\d+)$/.exec(marketId);
+  const exhibition = /casino-spectator-exhibition\/0\.4:(\d+)$/.exec(marketId);
   if (exhibition) {
     const cycle = Number(exhibition[1]);
-    return Number.isSafeInteger(cycle) ? scheduledExhibitionMarket(profiles, contract, cycle, normalizedUtcSecond(clock)) : undefined;
+    if(!Number.isSafeInteger(cycle))return undefined;
+    const recovered=scheduledExhibitionMarket(profiles,contract,cycle,normalizedUtcSecond(clock));
+    return recovered.marketId===marketId?recovered:undefined;
   }
   const match = /npc-ledger\/0\.9:(\d+):visit/.exec(marketId);
   if (!match) return undefined;
@@ -237,21 +246,9 @@ function scheduledExhibitionMarket(
   const settles = opens + EXHIBITION_SETTLE_OFFSET;
   const tableId = EXHIBITION_TABLES[cycle % EXHIBITION_TABLES.length]!;
   const needed = tableId === "temerosa-match-pairs" || tableId === "indian-poker" ? 2 : 4;
-  const dayIndex = Math.max(0, casinoKstDayAtUtcSecond(starts) - contract.epochKstDay);
-  const plan = exhibitionDayPlan(profiles,dayIndex,contract);
-  const busy = new Set(plan.visits.filter((visit) => {
-    const dayStart = casinoUtcSecondAtKstDay(contract.epochKstDay + dayIndex);
-    return dayStart + visit.startedAtSecondOfDay < settles && dayStart + visit.endsAtSecondOfDay > starts;
-  }).flatMap((visit) => visit.participantIds));
-  const rng = new XorShift32(`${CASINO_SPECTATOR_PRICING_VERSION}:event:${cycle}:participants`);
-  const eligibleProfiles=profiles;
-  const occurrence=Math.floor(cycle/EXHIBITION_TABLES.length);
-  const ordered=shuffleBag(eligibleProfiles,tableId,occurrence,needed);
-  const participantIds=[...ordered.filter((profile)=>!busy.has(profile.id)),...ordered.filter((profile)=>busy.has(profile.id))]
-    .slice(0,needed).map((profile)=>profile.id).sort(compareText);
-  void rng;
+  const participantIds=exhibitionParticipants(profiles,cycle,needed).map((profile)=>profile.id).sort(compareText);
   if (participantIds.length !== needed) throw new Error("casino_market_insufficient_participants");
-  const matchId = `casino-spectator-exhibition/0.3:${cycle}`;
+  const matchId = `casino-spectator-exhibition/0.4:${cycle}`;
   const match: NpcMatch = Object.freeze({ matchId, visitId: `${matchId}:visit`, tableId, participantIds: Object.freeze(participantIds), startsAtSecondOfDay: 0, settlesAtSecondOfDay: 1, stake: 0, multiplier: 1 });
   return createMarket(match, undefined, profiles, now, opens, starts, settles);
 }
@@ -387,12 +384,21 @@ function marketRulesLabel(tableId:CasinoSpectatorMarket["tableId"],count:number)
   return "NPC 4인 · 3연전 · 공동 1위 포함";
 }
 
-/** A rotating deterministic bag makes every eligible identity appear before the next bag repeats. */
-function shuffleBag(profiles:readonly NpcGamblingProfile[],tableId:CasinoSpectatorMarket["tableId"],occurrence:number,needed:number):readonly NpcGamblingProfile[]{
-  if(profiles.length===0)return [];
-  const cursor=occurrence*needed,bagIndex=Math.floor(cursor/profiles.length),offset=cursor%profiles.length;
-  const rank=(round:number)=>profiles.map((profile)=>({profile,order:new XorShift32(`${CASINO_SPECTATOR_PRICING_VERSION}:bag:${tableId}:${round}:${profile.id}`).next()}))
-    .sort((left,right)=>left.order-right.order||compareText(left.profile.id,right.profile.id)).map((entry)=>entry.profile);
-  const current=rank(bagIndex),next=rank(bagIndex+1);
-  return Object.freeze([...current.slice(offset),...next.slice(0,offset)]);
+/**
+ * Each 45-second fixture owns four positions on one frozen roster ring. Eight
+ * overlapping fixtures therefore consume at most 32 distinct identities.
+ * With the 1.3 roster this guarantees that an NPC cannot sit at two advertised
+ * tables at once without keeping mutable scheduling state or a server.
+ */
+function exhibitionParticipants(profiles:readonly NpcGamblingProfile[],cycle:number,needed:number):readonly NpcGamblingProfile[]{
+  if(profiles.length<needed)return [];
+  const cacheKey=`${CASINO_SPECTATOR_PRICING_VERSION}:${profiles.map((profile)=>profile.id).join("|")}`;
+  let ring=EXHIBITION_ROSTER_CACHE.get(cacheKey);
+  if(!ring){
+    ring=Object.freeze(profiles.map((profile)=>({profile,order:new XorShift32(`${CASINO_SPECTATOR_PRICING_VERSION}:roster:${profile.id}`).next()}))
+      .sort((left,right)=>left.order-right.order||compareText(left.profile.id,right.profile.id)).map((entry)=>entry.profile));
+    EXHIBITION_ROSTER_CACHE.set(cacheKey,ring);
+  }
+  const start=(cycle*4)%ring.length;
+  return Object.freeze(Array.from({length:needed},(_,index)=>ring[(start+index)%ring.length]!));
 }

@@ -160,7 +160,7 @@ export default function CasinoLedgerView({ userBalance, tables, onPlay, onBalanc
     const currentUtcSecond = clock.utcSecond();
     const { worldline, basePresences, settlements, profitPeriod, npcEconomyDetails } = renderSnapshot;
     const sideMarketSchedule = casinoSpectatorScheduleAt(profiles, clock, contract);
-    const sideMarkets = Object.freeze([...(sideMarketSchedule.current ? [sideMarketSchedule.current] : []), ...sideMarketSchedule.upcoming, ...sideMarketSchedule.recent]);
+    const sideMarkets = Object.freeze([...sideMarketSchedule.live, ...sideMarketSchedule.upcoming, ...sideMarketSchedule.recent]);
     const marketPresences = casinoSpectatorMarketPresencesAt(sideMarkets, currentUtcSecond);
     const marketIds = new Set(marketPresences.map((presence) => presence.npcId));
     const presences = Object.freeze([...basePresences.filter((presence) => !marketIds.has(presence.npcId)), ...marketPresences]);

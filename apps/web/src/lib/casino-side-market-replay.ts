@@ -60,7 +60,7 @@ export interface CasinoSideMarketResult {
 }
 
 export async function buildCasinoSideMarketReplay(market: CasinoSpectatorMarket, captureFrames = true): Promise<CasinoSideMarketReplay> {
-  if (!market.matchId.startsWith("casino-spectator-exhibition/0.3:")) throw new Error("side_market_replay_unsupported_match");
+  if (!/^casino-spectator-exhibition\/0\.[34]:/.test(market.matchId)) throw new Error("side_market_replay_unsupported_match");
   if (!supportsNativeSideMarketExperience(market.tableId)) throw new Error("side_market_native_experience_missing");
   const bundle = await loadTemerosaCasinoAssets();
   const fallback=Object.values(bundle.assets)[0];if(!fallback)throw new Error("side_market_portrait_fallback_missing");

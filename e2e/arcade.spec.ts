@@ -188,8 +188,15 @@ test("reserves, restores, and settles one integrated spectator market receipt", 
   await page.goto("/venues/temerosa-casino");
   const market = page.locator(".casino-side-market");
   await expect(market).toHaveClass(/phase-open/);
-  await expect(market.locator(".side-market-tabs button")).toHaveCount(3);
-  await expect(market.locator(".side-market-recent button")).toHaveCount(3);
+  await expect(market.locator(".side-market-tabs button")).toHaveCount(7);
+  await expect(market.getByRole("button", { name: "전체 대국 12", exact: true })).toBeVisible();
+  await expect(market.locator(".side-market-recent button")).toHaveCount(6);
+  await market.getByRole("button", { name: "전체 대국 12", exact: true }).click();
+  await expect(market.locator(".side-market-tabs button")).toHaveCount(12);
+  await market.getByRole("button", { name: "추천만 보기", exact: true }).click();
+  await expect(market.locator(".side-market-tabs button")).toHaveCount(7);
+  await market.locator('.side-market-tabs button[data-phase="open"]').filter({ hasText: "짝맞추기" }).first().click();
+  await expect(market).toHaveClass(/phase-open/);
   await market.locator(".side-market-outcomes button").first().click();
   await market.getByRole("button", { name: "베팅 확정", exact: true }).click();
   await expect(market.locator(".side-market-receipt")).toContainText("마감 대기");

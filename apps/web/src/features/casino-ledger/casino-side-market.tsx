@@ -26,7 +26,7 @@ export default function CasinoSideMarket({
   error?: string;
   onBet(market: CasinoSpectatorMarket, outcomeId: string, stake: PredictionStake, multiplier: WagerMultiplier): Promise<void>;
 }): React.ReactElement | null {
-  const liveSchedule = useMemo(() => Object.freeze([...(schedule.current ? [schedule.current] : []), ...schedule.upcoming]), [schedule.current, schedule.upcoming]);
+  const liveSchedule = useMemo(() => Object.freeze([...schedule.live, ...schedule.upcoming]), [schedule.live, schedule.upcoming]);
   const listedMarkets = useMemo(() => Object.freeze([...liveSchedule, ...schedule.recent]), [liveSchedule, schedule.recent]);
   const preferred = schedule.current ?? schedule.upcoming[0] ?? schedule.recent[0];
   const [marketId, setMarketId] = useState(preferred?.marketId ?? "");
@@ -37,6 +37,7 @@ export default function CasinoSideMarket({
   const [multiplier, setMultiplier] = useState<WagerMultiplier>(2);
   const [replayMarket, setReplayMarket] = useState<CasinoSpectatorMarket>();
   const [historyOpen, setHistoryOpen] = useState(false);
+  const [programmeOpen, setProgrammeOpen] = useState(false);
   const [offeredMarket, setOfferedMarket] = useState<CasinoSpectatorMarket>();
   const [settlementNotice, setSettlementNotice] = useState("");
   const previousWagerStatuses = useRef<ReadonlyMap<string, GameWagerReceipt["status"]> | undefined>(undefined);
@@ -86,6 +87,7 @@ export default function CasinoSideMarket({
   const canBet = Boolean(pricingReady && market?.phase === "open" && selected && !wager && exposure <= selected.quote.maxExposure && balance >= exposure && !busy);
   const marketLabel = market?.kind === "joker-holder" ? "마지막 조커" : "승자";
   if (!market) return null;
+  const programmeMarkets=programmeOpen?liveSchedule:liveSchedule.slice(0,7);
 
   const selectMarket = (next: CasinoSpectatorMarket) => { manualSelection.current = true; setMarketId(next.marketId); };
   return <section className={`casino-side-market phase-${market.phase} ca-glare`} aria-labelledby="side-market-heading">
@@ -95,10 +97,11 @@ export default function CasinoSideMarket({
     </header>
 
     <div className="side-market-programme" aria-label="관전 편성표">
-      <div className="side-market-tabs" aria-label="현재와 다음 편성">
-        {liveSchedule.map((candidate) => <button key={candidate.marketId} aria-pressed={candidate.marketId === market.marketId} onClick={() => selectMarket(candidate)}>
-          <span>{candidate === schedule.current ? candidate.phase === "open" ? "접수 중" : "LIVE" : kstTime(candidate.startsAtUtcSecond)}</span>
-          <strong>{candidate.title}</strong><small>{shortPhase(candidate, currentUtcSecond)}</small>
+      <div className="side-market-programme-head"><span>진행·접수 중 <b>{schedule.live.length}</b> · 다음 대국 <b>{schedule.upcoming.length}</b></span>{liveSchedule.length>7&&<button type="button" onClick={()=>setProgrammeOpen((value)=>!value)} aria-expanded={programmeOpen}>{programmeOpen?"추천만 보기":`전체 대국 ${liveSchedule.length}`}</button>}</div>
+      <div className="side-market-tabs" aria-label="진행 중과 다음 편성">
+        {programmeMarkets.map((candidate) => <button key={candidate.marketId} data-phase={candidate.phase} aria-pressed={candidate.marketId === market.marketId} onClick={() => selectMarket(candidate)}>
+          <span>{programmeBadge(candidate,currentUtcSecond)}</span>
+          <strong>{candidate.title}</strong><small>{shortPhase(candidate, currentUtcSecond)} · {candidate.participantIds.length}명</small>
         </button>)}
       </div>
       {schedule.recent.length > 0 && <div className="side-market-recent"><span>최근 결과 · 15분</span><div>{schedule.recent.map((candidate) => <button key={candidate.marketId} aria-pressed={candidate.marketId === market.marketId} onClick={() => selectMarket(candidate)}><b>{kstTime(candidate.startsAtUtcSecond)}</b> {candidate.title}<small>완료 · 다시 보기</small></button>)}</div></div>}
@@ -209,6 +212,12 @@ function phaseLabel(market: CasinoSpectatorMarket, now: number): string {
   if (market.phase === "open") return `${duration(market.closesAtUtcSecond - now)} 뒤 마감`;
   if (market.phase === "locked") return `대국 중 · ${duration(market.settlesAtUtcSecond - now)} 뒤 정산`;
   return "정산 완료 · 다시 보기 가능";
+}
+function programmeBadge(market:CasinoSpectatorMarket,now:number):string{
+  if(market.phase==="locked")return "LIVE";
+  if(market.phase==="open"&&market.closesAtUtcSecond-now<=60)return "마감 임박";
+  if(market.phase==="open")return "접수 중";
+  return kstTime(market.startsAtUtcSecond);
 }
 function shortPhase(market: CasinoSpectatorMarket, now: number): string { return market.phase === "settled" ? "완료" : market.phase === "locked" ? "대국 중" : market.phase === "open" ? `${duration(market.closesAtUtcSecond - now)} 남음` : `${duration(market.opensAtUtcSecond - now)} 뒤`; }
 function duration(seconds: number): string { const value = Math.max(0, seconds); return value < 60 ? `${value}초` : `${Math.ceil(value / 60)}분`; }
