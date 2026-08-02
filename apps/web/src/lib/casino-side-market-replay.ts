@@ -1,4 +1,4 @@
-import { CASINO_SPECTATOR_PRICING_VERSION, CASINO_SPECTATOR_TARGET_RETURN_BPS, TEMEROSA_FLOW_13_NPC_GAMBLING_PROFILES, legacyCabinetNpcId, type CasinoSpectatorMarket, type NpcGamblingProfile } from "@lucky-arcade/casino-ledger";
+import { CASINO_SPECTATOR_PRICING_VERSION, CASINO_SPECTATOR_TARGET_RETURN_BPS, TEMEROSA_FLOW_13_NPC_GAMBLING_PROFILES, type CasinoSpectatorMarket, type NpcGamblingProfile } from "@lucky-arcade/casino-ledger";
 import { CASINO_MARKET_QUOTE_CONTRACT, type CasinoMarketQuote } from "@lucky-arcade/engine";
 import { createIndianPokerSpectatorReplay, createTemerosaIndianPokerCartridge, type IndianPokerCharacter, type IndianPokerSpectatorReplay } from "@lucky-arcade/indian-poker";
 import { createFiveCardDrawSpectatorReplay, type FiveCardDrawOpponent, type FiveCardDrawSpectatorReplay } from "@lucky-arcade/five-card-draw";
@@ -104,7 +104,7 @@ async function buildReplay(market: CasinoSpectatorMarket): Promise<CasinoSideMar
   const seed = `${SIDE_MARKET_REPLAY_CONTRACT}:${market.matchId}`;
   if (market.tableId === "temerosa-match-pairs") {
     if (market.participantIds.length !== 2) throw new Error("side_market_replay_participant_count");
-    const participantIds = replayParticipantIds(market) as unknown as readonly [string, string];
+    const participantIds = market.participantIds as unknown as readonly [string, string];
     const opponents = createTemerosaSeriesMatchPairsOpponents(seriesRoster);
     const game = createMatchPairsSpectatorReplay({
       faces: TEMEROSA_MATCH_PAIRS_FACES,
@@ -145,7 +145,7 @@ async function buildReplay(market: CasinoSpectatorMarket): Promise<CasinoSideMar
   }
   if (market.tableId !== "temerosa-old-maid") throw new Error("side_market_native_experience_missing");
   if (market.participantIds.length !== 4) throw new Error("side_market_replay_participant_count");
-  const participantIds = replayParticipantIds(market) as unknown as readonly [string, string, string, string];
+  const participantIds = market.participantIds as unknown as readonly [string, string, string, string];
   const cartridge = seriesOldMaidCartridge(createTemerosaCasinoOldMaidCartridge(bundle.contentAssets),seriesRoster);
   const game = createOldMaidSpectatorReplay({ cartridge, seed, sessionId: `side-market:${market.marketId}`, participantIds });
   const winningOutcomeId=marketOutcomeId(market,participantIds,game.oddCardHolderCharacterId);
@@ -166,7 +166,7 @@ async function priceActualOutcomes(market: CasinoSpectatorMarket): Promise<reado
   const counts = Object.fromEntries(outcomeIds.map((id) => [id, 1])) as Record<string, number>;
   if (market.tableId === "temerosa-match-pairs") {
     if (market.participantIds.length !== 2) throw new Error("side_market_replay_participant_count");
-    const participantIds = replayParticipantIds(market) as unknown as readonly [string, string];
+    const participantIds = market.participantIds as unknown as readonly [string, string];
     const opponents = createTemerosaSeriesMatchPairsOpponents(seriesRoster);
     for (let sample = 0; sample < PRICING_SAMPLES; sample += 1) {
       const game = createMatchPairsSpectatorReplay({ faces: TEMEROSA_MATCH_PAIRS_FACES, opponents, packVersion: TEMEROSA_MATCH_PAIRS_PACK_VERSION,
@@ -176,7 +176,7 @@ async function priceActualOutcomes(market: CasinoSpectatorMarket): Promise<reado
     }
   } else if (market.tableId === "temerosa-old-maid") {
     if (market.participantIds.length !== 4) throw new Error("side_market_replay_participant_count");
-    const participantIds = replayParticipantIds(market) as unknown as readonly [string, string, string, string];
+    const participantIds = market.participantIds as unknown as readonly [string, string, string, string];
     const cartridge = seriesOldMaidCartridge(createTemerosaCasinoOldMaidCartridge(bundle.contentAssets),seriesRoster);
     for (let sample = 0; sample < PRICING_SAMPLES; sample += 1) {
       const game = createOldMaidSpectatorReplay({ cartridge, seed: `${CASINO_SPECTATOR_PRICING_VERSION}:${market.tableId}:${participantIds.join("+")}:${sample}`,
@@ -210,10 +210,6 @@ function probabilityBps(counts: readonly number[]): readonly number[] {
     .sort((left, right) => right.fraction - left.fraction || left.index - right.index);
   for (let cursor = 0; remainder > 0; cursor += 1, remainder -= 1) output[order[cursor % order.length]!.index]! += 1;
   return Object.freeze(output);
-}
-
-function replayParticipantIds(market:CasinoSpectatorMarket):readonly string[]{
-  return Object.freeze(market.participantIds.map((id)=>legacyCabinetNpcId(id)??id));
 }
 
 function marketOutcomeId(market:CasinoSpectatorMarket,replayIds:readonly string[],winningReplayId:string):string{

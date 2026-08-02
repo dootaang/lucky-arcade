@@ -63,6 +63,7 @@ export const CASINO_SPECTATOR_RECENT_SECONDS = 15 * 60;
 export const CASINO_SPECTATOR_RECENT_LIMIT = 3;
 export const CASINO_SPECTATOR_UPCOMING_LIMIT = 2;
 const PRICING_CACHE = new Map<string, readonly CasinoSpectatorMarketOutcome[]>();
+const EXHIBITION_DAY_PLAN_CACHE = new Map<string,ReturnType<typeof casinoDayPlan>>();
 
 /** Returns the current, recently settled, and next scheduled NPC-only markets. */
 export function casinoSpectatorMarketsAt(
@@ -126,10 +127,7 @@ export function casinoSpectatorMarketsForDay(
   profiles: readonly NpcGamblingProfile[], dayIndex: number, contract: NpcLedgerContract, nowUtcSecond: number,
 ): readonly CasinoSpectatorMarket[] {
   if (!Number.isSafeInteger(dayIndex) || dayIndex < 0 || !Number.isSafeInteger(nowUtcSecond)) throw new Error("casino_market_invalid_day");
-  const opening = dayIndex === 0
-    ? Object.freeze(Object.fromEntries(profiles.map((profile) => [profile.id, profile.openingBalance])))
-    : completedDayBalances(profiles, dayIndex - 1, contract);
-  const plan = casinoDayPlan(profiles, dayIndex, opening, contract);
+  const plan = exhibitionDayPlan(profiles,dayIndex,contract);
   const absoluteKstDay = contract.epochKstDay + dayIndex;
   return Object.freeze(plan.matches.flatMap((match) => {
     if (match.tableId !== "temerosa-match-pairs" && match.tableId !== "temerosa-old-maid") return [];
@@ -240,8 +238,7 @@ function scheduledExhibitionMarket(
   const tableId = EXHIBITION_TABLES[cycle % EXHIBITION_TABLES.length]!;
   const needed = tableId === "temerosa-match-pairs" || tableId === "indian-poker" ? 2 : 4;
   const dayIndex = Math.max(0, casinoKstDayAtUtcSecond(starts) - contract.epochKstDay);
-  const opening = dayIndex === 0 ? Object.freeze(Object.fromEntries(profiles.map((profile) => [profile.id, profile.openingBalance]))) : completedDayBalances(profiles, dayIndex - 1, contract);
-  const plan = casinoDayPlan(profiles, dayIndex, opening, contract);
+  const plan = exhibitionDayPlan(profiles,dayIndex,contract);
   const busy = new Set(plan.visits.filter((visit) => {
     const dayStart = casinoUtcSecondAtKstDay(contract.epochKstDay + dayIndex);
     return dayStart + visit.startedAtSecondOfDay < settles && dayStart + visit.endsAtSecondOfDay > starts;
@@ -272,7 +269,9 @@ function pricedOutcomes(
   const cached = PRICING_CACHE.get(cacheKey);
   if (cached) return cached.map((outcome) => Object.freeze({ ...outcome, quote: Object.freeze({ ...outcome.quote, marketId }) }));
   const outcomeIds = tableId === "temerosa-old-maid" ? [...participantIds] : [...participantIds, "draw"];
-  const counts = Object.fromEntries(outcomeIds.map((id) => [id, 1])) as Record<string, number>;
+  // Five pseudocounts keep every offered long-shot strictly priceable after
+  // integer basis-point rounding without materially moving a 20k sample.
+  const counts = Object.fromEntries(outcomeIds.map((id) => [id, 5])) as Record<string, number>;
   const rng = new XorShift32(cacheKey);
   for (let sample = 0; sample < SAMPLE_COUNT; sample += 1) {
     const scores = participants.map((profile) => ({
@@ -281,8 +280,9 @@ function pricedOutcomes(
         + (rng.next() - .5) * (tableId === "temerosa-match-pairs" ? .9 : tableId === "temerosa-old-maid" ? .72 : 1.05),
     }));
     if (tableId !== "temerosa-old-maid") {
-      const [left, right] = scores;
-      const result = Math.abs(left!.score - right!.score) < .035 ? "draw" : left!.score > right!.score ? left!.id : right!.id;
+      scores.sort((left,right)=>right.score-left.score||compareText(left.id,right.id));
+      const [first,second] = scores;
+      const result = Math.abs(first!.score - second!.score) < .035 ? "draw" : first!.id;
       counts[result]! += 1;
     } else {
       scores.sort((left, right) => right.score - left.score || compareText(left.id, right.id));
@@ -304,6 +304,13 @@ function pricedOutcomes(
   }));
   PRICING_CACHE.set(cacheKey, priced);
   return priced.map((outcome) => Object.freeze({ ...outcome, quote: Object.freeze({ ...outcome.quote, marketId }) }));
+}
+
+function exhibitionDayPlan(profiles:readonly NpcGamblingProfile[],dayIndex:number,contract:NpcLedgerContract):ReturnType<typeof casinoDayPlan>{
+  const key=`${contract.version}:${contract.epochKstDay}:${dayIndex}:${profiles.map((profile)=>profile.id).join("|")}`;
+  const cached=EXHIBITION_DAY_PLAN_CACHE.get(key);if(cached)return cached;
+  const opening=dayIndex===0?Object.freeze(Object.fromEntries(profiles.map((profile)=>[profile.id,profile.openingBalance]))):completedDayBalances(profiles,dayIndex-1,contract);
+  const plan=casinoDayPlan(profiles,dayIndex,opening,contract);EXHIBITION_DAY_PLAN_CACHE.set(key,plan);return plan;
 }
 
 function resultForMatch(match: NpcMatch, sessions: Readonly<Record<string, readonly NpcSession[]>>): string {
