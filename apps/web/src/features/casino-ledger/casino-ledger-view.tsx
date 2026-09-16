@@ -1,14 +1,7 @@
 import {
-  TEMEROSA_HOUSE_ACCOUNT_ID,
   casinoKstDayAtUtcMinute,
   casinoUtcSecondAtKstDay,
-  casinoPresenceAt,
-  casinoSpectatorMarketPresencesAt,
   casinoSpectatorMarketByIdAt,
-  casinoSpectatorScheduleAt,
-  npcLiveBalancesAt,
-  npcSessionSettlements,
-  recentNpcPlayEventsAt,
   temerosaCasinoLedgerAtUtcSecond,
   type CasinoTransaction,
   type NpcRoundSettlement,
@@ -19,14 +12,13 @@ import type { GameWagerReceipt, PredictionStake } from "@lucky-arcade/persistenc
 import CasinoLedgerPanel, { type CasinoLiveTable } from "@lucky-arcade/casino-ledger/react";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useState } from "react";
 import { casinoClockFromSample, deviceCasinoClockSample, rememberCasinoClockSecond, stabilizeCasinoClockSample, type CasinoClockSample } from "../../lib/casino-clock.ts";
-import { latestCasinoSettlementsAt, nextCasinoArrivalAt } from "../../lib/casino-feed.ts";
+import { nextCasinoArrivalAt } from "../../lib/casino-feed.ts";
 import { listCasinoTransactions, readPlayerCasinoProfitSince } from "../../lib/database.ts";
-import { casinoJournalSettlements } from "../../lib/casino-journal.ts";
-import { personalCasinoWorldlineAt } from "../../lib/casino-worldline.ts";
+import { queryCasinoRuntime } from "../../lib/casino-runtime-client.ts";
+import type { CasinoFloorSnapshot } from "../../lib/casino-runtime.ts";
 import { loadTemerosaCasinoManifest, temerosaContentUrl, type TemerosaManifest } from "../../lib/temerosa-content.ts";
 import { reconcileSideMarketWagers, reserveSideMarketWager } from "../../lib/side-market.ts";
 import CasinoSideMarket from "./casino-side-market.tsx";
-import { summarizeCasinoLedgerActivities } from "./casino-ledger-summary.ts";
 
 const LEGACY_PORTRAITS: Readonly<Record<string, string>> = Object.freeze({
   "temerosa:guest:nemo": temerosaContentUrl("0.8.0", "assets/margin/npc-nemo-neutral/sm.webp"),
@@ -41,6 +33,9 @@ export default function CasinoLedgerView({ userBalance, tables, onPlay, onBalanc
   const [loaded, setLoaded] = useState<{ sample: CasinoClockSample; manifest?: TemerosaManifest }>();
   const [userPeriodProfit, setUserPeriodProfit] = useState(0);
   const [journal, setJournal] = useState<readonly CasinoTransaction[]>([]);
+  const [journalLoaded, setJournalLoaded] = useState(false);
+  const [renderSnapshot, setRenderSnapshot] = useState<CasinoFloorSnapshot>();
+  const [runtimeError, setRuntimeError] = useState(false);
   const [sideWagers, setSideWagers] = useState<readonly GameWagerReceipt[]>([]);
   const [marketBusy, setMarketBusy] = useState(false);
   const [marketError, setMarketError] = useState<string>();
@@ -69,40 +64,32 @@ export default function CasinoLedgerView({ userBalance, tables, onPlay, onBalanc
   const ledger=useMemo(()=>currentUtcSecond===undefined?undefined:temerosaCasinoLedgerAtUtcSecond(currentUtcSecond),[settlementTick,currentUtcSecond===undefined]);
   const earliestProfitDay = ledger?.contract.profitHistory[0]?.kstDay ?? ledger?.contract.epochKstDay ?? 0;
   const profitStartKstDay = absoluteKstDay === undefined ? undefined : Math.max(earliestProfitDay, absoluteKstDay - 6);
-  const journalSettlements = useMemo(() => casinoJournalSettlements(journal), [journal]);
-  const renderSnapshot = useMemo(() => {
-    if (!ledger || settlementTick === undefined || absoluteKstDay === undefined || profitStartKstDay === undefined) return undefined;
-    const { profiles, contract } = ledger;
-    const snapshotSecond = settlementTick * 10;
-    const snapshotClock = fixedPresentationClock(snapshotSecond);
-    const worldline = personalCasinoWorldlineAt(profiles, snapshotClock, contract, journal);
-    const periodStartSecond = casinoUtcSecondAtKstDay(profitStartKstDay);
-    const todayStartSecond = casinoUtcSecondAtKstDay(absoluteKstDay);
-    const carriedProfits = contract.profitHistory.filter((entry) => entry.kstDay >= profitStartKstDay).map((entry) => entry.profits);
-    const activitySummary = summarizeCasinoLedgerActivities({ profiles, activities: worldline.activities, journalSettlements, carriedProfits, periodStartSecond, todayStartSecond });
-    const npcEconomyDetails = Object.freeze(Object.fromEntries(profiles.flatMap((profile) => worldline.npcExternalReserves[profile.id] === undefined ? [] : [[profile.id, Object.freeze({
-      externalReserve: worldline.npcExternalReserves[profile.id]!,
-      grossIncomeToday: worldline.npcGrossIncomeToday[profile.id] ?? 0,
-      casinoTopUpToday: worldline.npcCasinoTopUpsToday[profile.id] ?? 0,
-      wageredToday: activitySummary.wageredToday[profile.id] ?? 0,
-    })]])));
-    return Object.freeze({
-      worldline,
-      basePresences: casinoPresenceAt(profiles, snapshotClock, contract),
-      settlements: latestCasinoSettlementsAt(worldline.activities, journalSettlements, snapshotSecond),
-      profitPeriod: Object.freeze({ coveredDays: Math.max(1, Math.min(7, absoluteKstDay - profitStartKstDay + 1)), profits: activitySummary.profits }),
-      npcEconomyDetails,
-    });
-  }, [absoluteKstDay, journal, journalSettlements, ledger, profitStartKstDay, settlementTick]);
-  const loadNpcHistory=useCallback((npcId:string,days:number):readonly NpcRoundSettlement[]=>{
-    if(!clock||!ledger)return Object.freeze([]);
-    const startSecond=days===0?0:clock.utcSecond()-days*86_400;
-    const local=journalSettlements.filter((entry)=>entry.npcId===npcId&&entry.utcSecond>=startSecond);
-    if(npcId==="player:local"||npcId===TEMEROSA_HOUSE_ACCOUNT_ID)return local;
-    const worldline=personalCasinoWorldlineAt(ledger.profiles,clock,ledger.contract,journal);
-    const autonomous=worldline.activities.filter((entry)=>entry.npcId===npcId&&entry.utcSecond>=startSecond).flatMap((entry)=>npcSessionSettlements(entry.npcId,entry.utcSecond,entry.session));
-    return Object.freeze([...autonomous,...local].toSorted((left,right)=>right.utcSecond-left.utcSecond||left.roundId.localeCompare(right.roundId)));
-  },[clock,journal,journalSettlements,ledger]);
+  useEffect(() => {
+    if (!clock || !journalLoaded) return;
+    let alive = true, busy = false, failed = false;
+    const refresh = async () => {
+      if (!alive || busy || failed || document.visibilityState === "hidden") return;
+      busy = true;
+      try {
+        const snapshot = await queryCasinoRuntime("floor", { second: clock.utcSecond(), journal });
+        if (alive) { setRenderSnapshot(snapshot); setRuntimeError(false); }
+      } catch { failed = true; if (alive) setRuntimeError(true); }
+      finally { busy = false; }
+    };
+    void refresh();
+    const interval = window.setInterval(() => { void refresh(); }, 1_000);
+    const visible = () => { if (document.visibilityState === "visible") void refresh(); };
+    document.addEventListener("visibilitychange", visible);
+    return () => { alive = false; window.clearInterval(interval); document.removeEventListener("visibilitychange", visible); };
+  }, [clock, journal, journalLoaded]);
+  const loadNpcHistory=useCallback(async(npcId:string,days:number):Promise<readonly NpcRoundSettlement[]>=>{
+    if(!clock)return [];
+    return queryCasinoRuntime("history", { second: clock.utcSecond(), journal, npcId, days });
+  },[clock,journal]);
+  const updateJournal = useCallback((transactions: readonly CasinoTransaction[]) => {
+    setJournal((previous) => JSON.stringify(previous) === JSON.stringify(transactions) ? previous : transactions);
+    setJournalLoaded(true);
+  }, []);
   useEffect(() => {
     if (profitStartKstDay === undefined) return;
     let alive = true;
@@ -111,9 +98,9 @@ export default function CasinoLedgerView({ userBalance, tables, onPlay, onBalanc
   }, [profitStartKstDay, userBalance]);
   useEffect(() => {
     let alive = true;
-    void listCasinoTransactions().then((transactions) => { if (alive) setJournal(transactions); }).catch(() => { if (alive) setJournal([]); });
+    void listCasinoTransactions().then((transactions) => { if (alive) updateJournal(transactions); }).catch(() => { if (alive) updateJournal([]); });
     return () => { alive = false; };
-  }, [userBalance]);
+  }, [userBalance, updateJournal]);
   useEffect(() => {
     if (currentUtcSecond === undefined) return;
     let alive = true;
@@ -122,7 +109,7 @@ export default function CasinoLedgerView({ userBalance, tables, onPlay, onBalanc
       setSideWagers(result.wagers);
       onBalanceChange(result.walletBalance);
       const transactions = await listCasinoTransactions();
-      if (alive) setJournal(transactions);
+      if (alive) updateJournal(transactions);
     }).catch(() => { if (alive) setMarketError("예약된 관전 베팅을 정산하지 못했습니다. 잠시 뒤 다시 확인합니다."); });
     return () => { alive = false; };
   }, [settlementTick, currentUtcSecond === undefined, onBalanceChange]);
@@ -151,29 +138,24 @@ export default function CasinoLedgerView({ userBalance, tables, onPlay, onBalanc
     }));
   }, [clock, sideWagers,ledger]);
 
-  if (!loaded || !clock) return <section className="casino-ledger-loading ca-label" aria-label="카지노 원장 불러오는 중">원장 정리 중…</section>;
-  if(!ledger||!renderSnapshot)return null;
+  const portraits = useMemo(() => ledger ? portraitMap(loaded?.manifest, ledger.profiles) : LEGACY_PORTRAITS, [loaded, ledger?.profiles]);
+  if (!loaded || !clock || !ledger || !renderSnapshot) return <section className="casino-ledger-loading" aria-label="카지노 원장 불러오는 중">
+    <p>{runtimeError ? "카지노 기록을 불러오지 못했습니다. 게임은 이용할 수 있습니다." : "카지노 기록을 백그라운드에서 정리 중입니다. 게임은 먼저 이용할 수 있습니다."}</p>
+    <div>{tables.map((table) => <button key={table.id} onClick={() => onPlay(table.id)}>{table.title} 시작</button>)}</div>
+  </section>;
   try {
-    const {profiles,contract}=ledger;
+    const {profiles}=ledger;
     // Render the selected contract verbatim. The 1.2 contract has 99 four-series
     // runtime identities plus preserved Esther, Riel, and Magical Girl Nemo: 102.
     const currentUtcSecond = clock.utcSecond();
-    const { worldline, basePresences, settlements, profitPeriod, npcEconomyDetails } = renderSnapshot;
-    const sideMarketSchedule = casinoSpectatorScheduleAt(profiles, clock, contract);
-    const sideMarkets = Object.freeze([...sideMarketSchedule.live, ...sideMarketSchedule.upcoming, ...sideMarketSchedule.recent]);
-    const marketPresences = casinoSpectatorMarketPresencesAt(sideMarkets, currentUtcSecond);
-    const marketIds = new Set(marketPresences.map((presence) => presence.npcId));
-    const presences = Object.freeze([...basePresences.filter((presence) => !marketIds.has(presence.npcId)), ...marketPresences]);
-    const liveBalances = npcLiveBalancesAt(worldline.npcBalances, profiles, presences, clock);
-    const houseBalance = worldline.houseBalance;
-    const playEvents = recentNpcPlayEventsAt(profiles, clock, contract, 512);
+    const { settlements, profitPeriod, npcEconomyDetails, presences, liveBalances, houseBalance, playEvents, schedule: sideMarketSchedule } = renderSnapshot;
     const placeSideBet = async (market: CasinoSpectatorMarket, outcomeId: string, stake: PredictionStake, multiplier: WagerMultiplier) => {
       setMarketBusy(true); setMarketError(undefined);
       try {
         const result = await reserveSideMarketWager({ market, outcomeId, stake, multiplier });
         const reconciled = await reconcileSideMarketWagers(currentUtcSecond);
         setSideWagers(reconciled.wagers); onBalanceChange(result.walletBalance);
-        setJournal(await listCasinoTransactions());
+        updateJournal(await listCasinoTransactions());
       } catch (cause) {
         const code = cause instanceof Error ? cause.message : "";
         setMarketError(code === "game_outcome_already_wagered" ? "이 대국에는 이미 베팅했습니다." : code === "insufficient_points" ? "예약할 포인트가 부족합니다." : code === "side_market_closed" ? "방금 베팅 접수가 마감됐습니다." : code === "casino_counterparty_insufficient_points" ? "하우스 노출 한도에 도달해 이 베팅을 받을 수 없습니다." : "베팅을 예약하지 못했습니다.");
@@ -189,9 +171,9 @@ export default function CasinoLedgerView({ userBalance, tables, onPlay, onBalanc
       userSevenDayProfit={userPeriodProfit}
       houseBalance={houseBalance}
       economySummary={Object.freeze({
-        npcTopUpsToday:Object.values(worldline.npcCasinoTopUpsToday).reduce((sum,value)=>sum+value,0),
-        houseGamingProfitToday:worldline.houseGamingProfitToday,
-        houseOperatingExpensesToday:worldline.houseOperatingExpensesToday,
+        npcTopUpsToday:renderSnapshot.npcTopUpsToday,
+        houseGamingProfitToday:renderSnapshot.houseGamingProfitToday,
+        houseOperatingExpensesToday:renderSnapshot.houseOperatingExpensesToday,
         activeTableCount:new Set(presences.flatMap((presence)=>presence.tableId&&presence.phase!=="idle"?[presence.tableId]:[])).size,
         presentNpcCount:presences.filter((presence)=>presence.phase!=="idle").length,
       })}
@@ -199,7 +181,7 @@ export default function CasinoLedgerView({ userBalance, tables, onPlay, onBalanc
       profitPeriodDays={profitPeriod.coveredDays}
       settlements={settlements}
       playEvents={playEvents}
-      portraits={portraitMap(loaded.manifest,profiles)}
+      portraits={portraits}
       currentUtcSecond={currentUtcSecond}
       nextArrivalAt={nextCasinoArrivalAt(presences, currentUtcSecond)}
       clockSource={loaded.sample.source}
@@ -211,10 +193,6 @@ export default function CasinoLedgerView({ userBalance, tables, onPlay, onBalanc
   } catch {
     return <section className="casino-ledger-loading ca-label">원장을 정리하지 못했습니다. 게임 테이블은 그대로 이용할 수 있습니다.</section>;
   }
-}
-
-function fixedPresentationClock(utcSecond: number): { utcSecond(): number; utcMinute(): number } {
-  return { utcSecond: () => utcSecond, utcMinute: () => Math.floor(utcSecond / 60) };
 }
 
 function portraitMap(manifest: TemerosaManifest|undefined,profiles:readonly {id:string}[]): Readonly<Record<string, string>> {

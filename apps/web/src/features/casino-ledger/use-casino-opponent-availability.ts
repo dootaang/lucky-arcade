@@ -1,7 +1,8 @@
-import { casinoPresenceAt, casinoSpectatorMarketPresencesAt, casinoSpectatorMarketsAt, legacyCabinetNpcId, npcAvailability, temerosaCasinoLedgerAtUtcSecond } from "@lucky-arcade/casino-ledger";
+import { legacyCabinetNpcId, npcAvailability, temerosaCasinoLedgerAtUtcSecond, type NpcPresence } from "@lucky-arcade/casino-ledger";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { casinoClockFromSample, deviceCasinoClockSample, type CasinoClockSample } from "../../lib/casino-clock.ts";
 import { loadTemerosaCasinoManifest } from "../../lib/temerosa-content.ts";
+import { queryCasinoRuntime } from "../../lib/casino-runtime-client.ts";
 
 const HOLD_SECONDS = 120;
 
@@ -13,13 +14,13 @@ export interface OpponentAvailabilityView {
 
 interface HeldInvite { npcId: string; expiresAtUtcSecond: number; }
 
-export function useCasinoOpponentAvailability(scope: string): {
+export function useCasinoOpponentAvailability(scope: string, enabled = true): {
   opponents: Readonly<Record<string, OpponentAvailabilityView>>;
   holdOpponents(ids: readonly string[]): void;
   clearHolds(): void;
 } {
   const [sample, setSample] = useState<CasinoClockSample>();
-  const [revision, setRevision] = useState(0);
+  const [snapshot, setSnapshot] = useState<{ second: number; presences: readonly NpcPresence[] }>();
   const [held, setHeld] = useState<readonly HeldInvite[]>(() => readHolds(scope));
 
   useEffect(() => {
@@ -31,33 +32,41 @@ export function useCasinoOpponentAvailability(scope: string): {
 
   const clock = useMemo(() => sample ? casinoClockFromSample(sample) : undefined, [sample]);
   useEffect(() => {
-    if (!clock) return;
-    const refresh = () => setRevision((value) => value + 1);
-    const interval = window.setInterval(refresh, 1_000);
-    const visible = () => { if (document.visibilityState === "visible") refresh(); };
+    if (!clock || !enabled) return;
+    let alive = true, busy = false, failed = false;
+    const refresh = async () => {
+      if (!alive || busy || failed || document.visibilityState === "hidden") return;
+      busy = true;
+      const second = clock.utcSecond();
+      try {
+        const presences = await queryCasinoRuntime("presence", second);
+        if (alive) setSnapshot({ second, presences });
+      } catch { failed = true; /* Keep the last known schedule; never synchronously replay on failure. */ }
+      finally { busy = false; }
+    };
+    void refresh();
+    const interval = window.setInterval(() => { void refresh(); }, 5_000);
+    const visible = () => { if (document.visibilityState === "visible") void refresh(); };
     document.addEventListener("visibilitychange", visible);
-    return () => { window.clearInterval(interval); document.removeEventListener("visibilitychange", visible); };
-  }, [clock]);
+    return () => { alive = false; window.clearInterval(interval); document.removeEventListener("visibilitychange", visible); };
+  }, [clock, enabled]);
 
-  const now = clock?.utcSecond() ?? 0;
+  const now = snapshot?.second ?? clock?.utcSecond() ?? 0;
   useEffect(() => {
-    if (!clock) return;
+    if (!clock || !enabled) return;
     const active = held.filter((invite) => invite.expiresAtUtcSecond > now);
     if (active.length !== held.length) { setHeld(active); writeHolds(scope, active); }
-  }, [clock, held, now, revision, scope]);
+  }, [clock, held, now, enabled, scope]);
 
   const opponents = useMemo(() => {
     const ledger=temerosaCasinoLedgerAtUtcSecond(now);
-    if (!clock) {
+    if (!clock || !snapshot) {
       return Object.freeze(Object.fromEntries(ledger.profiles.map((profile) => [
         profile.id,
         Object.freeze({ available: false, label: "카지노 일정 확인 중" }),
       ])));
     }
-    const basePresences = casinoPresenceAt(ledger.profiles, clock, ledger.contract);
-    const marketPresences = casinoSpectatorMarketPresencesAt(casinoSpectatorMarketsAt(ledger.profiles, clock, ledger.contract, 4), now);
-    const marketIds = new Set(marketPresences.map((presence) => presence.npcId));
-    const publicAvailability = npcAvailability([...basePresences.filter((presence) => !marketIds.has(presence.npcId)), ...marketPresences]);
+    const publicAvailability = npcAvailability(snapshot.presences);
     const heldIds = new Set(held.filter((invite) => invite.expiresAtUtcSecond > now).map((invite) => invite.npcId));
     for(const profile of ledger.profiles){const legacyId=legacyCabinetNpcId(profile.id);if(legacyId&&heldIds.has(legacyId))heldIds.add(profile.id);}
     const resolved=Object.fromEntries(ledger.profiles.map((profile) => {
@@ -70,7 +79,7 @@ export function useCasinoOpponentAvailability(scope: string): {
     }));
     for(const profile of ledger.profiles){const legacyId=legacyCabinetNpcId(profile.id);if(legacyId)resolved[legacyId]=resolved[profile.id];}
     return Object.freeze(resolved);
-  }, [clock, held, now, revision]);
+  }, [clock, held, now, snapshot]);
 
   const holdOpponents = useCallback((ids: readonly string[]) => {
     if (!clock) return;

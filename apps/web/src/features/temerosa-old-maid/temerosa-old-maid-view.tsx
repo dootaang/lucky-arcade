@@ -18,7 +18,8 @@ const SESSION = "temerosa-old-maid:table-2";
 const COLLECTION = "temerosa-old-maid";
 
 export default function TemerosaOldMaidView({ onExit }: { onExit(): void }) {
-  const availability = useCasinoOpponentAvailability(SESSION);
+  const [gameStatus, setGameStatus] = useState<OldMaidState["status"] | null>(null);
+  const availability = useCasinoOpponentAvailability(SESSION, gameStatus === "ready" || gameStatus === "complete");
   const [ready, setReady] = useState<{ thumbAssets: Readonly<Record<string, string>>; assets: Readonly<Record<string, string>>; detailAssets: Readonly<Record<string, string>>; cartridge: OldMaidCartridge; state: OldMaidState | null } | null>(null);
   const [error, setError] = useState(false);
   const [matchSummary, setMatchSummary] = useState<MatchSummary | null>(null);
@@ -53,6 +54,7 @@ export default function TemerosaOldMaidView({ onExit }: { onExit(): void }) {
       }
       if (!alive) return;
       setReady({ thumbAssets: Object.freeze({...bundle.thumbAssets,...seriesAssets}), assets: Object.freeze({...bundle.assets,...seriesAssets}), detailAssets: Object.freeze({...bundle.detailAssets,...seriesAssets}), cartridge, state: recovered.state });
+      setGameStatus(recovered.state.status);
       setActivePrediction(predictions.find((prediction) => prediction.outcomeKey === currentOutcomeKey) ?? null);
       if (recovered.state.status === "complete") void loadMatchSummary(SESSION).then(setMatchSummary).catch(() => undefined);
     }).catch(() => { if (alive) setError(true); });
@@ -65,6 +67,7 @@ export default function TemerosaOldMaidView({ onExit }: { onExit(): void }) {
   }).catch(() => undefined); }, []);
 
   async function persist(previous: OldMaidState, next: OldMaidState, action: OldMaidAction, psychology: OldMaidPsychologySummary) {
+    setGameStatus(next.status);
     const cartridge = ready?.cartridge;
     if (!cartridge) throw new Error("temerosa_old_maid_not_ready");
     const receipt = makeReceipt(next.sequence, action, next.turn, resultHash(previous), next);

@@ -82,7 +82,7 @@ export interface CasinoLedgerPanelProps {
   presences: readonly NpcPresence[];
   tables: readonly CasinoLiveTable[];
   onPlay(id: string): void;
-  loadNpcHistory(npcId: string, days: number): readonly NpcRoundSettlement[];
+  loadNpcHistory(npcId: string, days: number): readonly NpcRoundSettlement[] | Promise<readonly NpcRoundSettlement[]>;
   /** Slotted between the tables and the ledger, so time-sensitive surfaces
       (the spectator market) sit above the archive without preceding the tables. */
   afterTables?: React.ReactNode;
@@ -131,7 +131,19 @@ export default function CasinoLedgerPanel({
   names.set("house:temerosa", "워어즈 · 하우스");
   const fullLeaderboard=casinoFullLeaderboard(publicProfiles,npcBalances,userBalance,leaderboardMode==="profit"?npcSevenDayProfits:undefined,userSevenDayProfit);
   const currentMinute=Math.floor(currentUtcSecond/60);
-  const selectedHistory=useMemo(()=>selectedNpcId?loadNpcHistory(selectedNpcId,recordDays):Object.freeze([]),[currentMinute,loadNpcHistory,recordDays,selectedNpcId]);
+  const [selectedHistory,setSelectedHistory]=useState<readonly NpcRoundSettlement[]>([]);
+  const [historyLoading,setHistoryLoading]=useState(false);
+  const [historyError,setHistoryError]=useState(false);
+  useEffect(()=>{
+    let alive=true;
+    setSelectedHistory([]);setHistoryError(false);
+    if(!selectedNpcId){setHistoryLoading(false);return;}
+    setHistoryLoading(true);
+    void Promise.resolve().then(()=>loadNpcHistory(selectedNpcId,recordDays)).then((history)=>{
+      if(alive)setSelectedHistory(history);
+    }).catch(()=>{if(alive)setHistoryError(true);}).finally(()=>{if(alive)setHistoryLoading(false);});
+    return()=>{alive=false;};
+  },[currentMinute,loadNpcHistory,recordDays,selectedNpcId]);
   const previousBalances = useRef(npcBalances);
   const [balanceMoves, setBalanceMoves] = useState<Readonly<Record<string, "rising" | "falling">>>({});
   const settlementGroups = useMemo(() => groupNpcRoundSettlements(settlements), [settlements]);
@@ -279,7 +291,7 @@ export default function CasinoLedgerPanel({
   </section>
   {recordRoomOpen&&<CasinoRecordRoom
     leaderboard={fullLeaderboard} leaderboardMode={leaderboardMode} profitLabel={profitLabel} selectedNpcId={selectedNpcId}
-    entries={selectedHistory} days={recordDays} names={names} portraits={portraits}
+    entries={selectedHistory} loading={historyLoading} error={historyError} days={recordDays} names={names} portraits={portraits}
     {...(selectedNpcId&&npcEconomyDetails?.[selectedNpcId]?{economy:npcEconomyDetails[selectedNpcId]}:{})}
     onSelect={setSelectedNpcId} onDays={setRecordDays} onBack={()=>setSelectedNpcId(undefined)}
     onClose={()=>{setRecordRoomOpen(false);setSelectedNpcId(undefined);}}
@@ -287,9 +299,10 @@ export default function CasinoLedgerPanel({
   </>;
 }
 
-function CasinoRecordRoom({leaderboard,leaderboardMode,profitLabel,selectedNpcId,entries,days,names,portraits,economy,onSelect,onDays,onBack,onClose}:{
+function CasinoRecordRoom({leaderboard,leaderboardMode,profitLabel,selectedNpcId,entries,loading,error,days,names,portraits,economy,onSelect,onDays,onBack,onClose}:{
   leaderboard:readonly CasinoLeaderboardEntry[];leaderboardMode:"profit"|"balance";profitLabel:string;selectedNpcId:string|undefined;
   entries:readonly NpcRoundSettlement[];days:0|1|7|30;names:ReadonlyMap<string,string>;portraits:Readonly<Record<string,string>>;
+  loading:boolean;error:boolean;
   economy?:Readonly<{externalReserve:number;grossIncomeToday:number;casinoTopUpToday:number;wageredToday:number}>;
   onSelect(id:string):void;onDays(days:0|1|7|30):void;onBack():void;onClose():void;
 }):React.ReactElement{
@@ -326,7 +339,9 @@ function CasinoRecordRoom({leaderboard,leaderboardMode,profitLabel,selectedNpcId
   const report=selectedNpcId?casinoNpcLedgerReport(selectedNpcId,filtered):undefined;
   const periodNet=selectedNpcId?casinoNpcLedgerReport(selectedNpcId,entries).net:0;
   return <div className="casino-record-backdrop" onMouseDown={(event)=>{if(event.currentTarget===event.target)onClose();}}>
-    <section className="casino-record-room" role="dialog" aria-modal="true" aria-labelledby="casino-record-title">
+    <section className="casino-record-room" role="dialog" aria-modal="true" aria-labelledby="casino-record-title" aria-busy={loading}>
+      {selectedNpcId && loading && <p role="status">전적을 불러오는 중…</p>}
+      {selectedNpcId && error && <p role="alert">전적을 불러오지 못했습니다. 잠시 후 다시 열어 주세요.</p>}
       <header><div>{selected?<button className="record-back" onClick={onBack}>← 전체 순위</button>:<span className="ca-label">CASINO ARCHIVE</span>}<h2 id="casino-record-title" className="ca-serif">{selected?<><CasinoPersonName qualifiedName={selected.name}/><span className="record-title-suffix">의 카지노 원장</span></>:"명예의 전당 전체 순위"}</h2></div><button className="record-close" onClick={onClose} aria-label="기록실 닫기">×</button></header>
       {!selected?<div className="record-ranking-wrap"><table className="record-ranking"><caption>{leaderboardMode==="profit"?`${profitLabel} 순위`:"현재 잔고 순위"}</caption><thead><tr><th>순위</th><th>이름</th><th>{leaderboardMode==="profit"?profitLabel:"잔고"}</th></tr></thead><tbody>{leaderboard.slice(0,rankingVisible).map((entry)=><tr key={`${entry.kind}:${entry.id}`} className={entry.kind==="user"?"is-user":""}><td className="ca-num">{entry.rank}</td><th scope="row"><button onClick={()=>onSelect(entry.kind==="user"?"player:local":entry.id)}>{entry.kind==="npc"&&<LedgerPortrait npcId={entry.id} name={entry.name} src={portraits[entry.id]} crowned={entry.rank===1}/>}<CasinoPersonName qualifiedName={entry.name}/></button></th><td className="ca-num">{leaderboardMode==="profit"?signedPoints(entry.periodProfit??0):`${entry.balance} P`}</td></tr>)}</tbody></table>{leaderboard.length>rankingVisible&&<button className="record-more" onClick={()=>setRankingVisible((value)=>value+30)}>30명 더 보기</button>}</div>
       :report&&<div className="npc-ledger-detail">

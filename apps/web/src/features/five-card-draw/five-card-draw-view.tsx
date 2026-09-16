@@ -55,8 +55,9 @@ interface Ready {
 }
 
 export default function FiveCardDrawView({ onExit }: { onExit(): void }) {
-  const availability = useCasinoOpponentAvailability(SESSION);
   const [ready, setReady] = useState<Ready | null>(null);
+  const availability = useCasinoOpponentAvailability(SESSION, ready?.envelope.state.phase === "ready"
+    || (ready?.envelope.state.phase === "complete" && (!ready.envelope.series || ready.envelope.series.status === "complete")));
   const [balance, setBalance] = useState(0);
   const [opponentBalances,setOpponentBalances]=useState<Readonly<Record<string,number>>>({});
   const [busy, setBusy] = useState(false);

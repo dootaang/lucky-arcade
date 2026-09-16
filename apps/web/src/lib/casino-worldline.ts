@@ -5,6 +5,7 @@ import {
   DEFAULT_HOUSE_OPERATING_COST_POLICY,
   casinoDayPlan,
   casinoDayPlanWithHouseOpening,
+  completedDayBalances,
   casinoKstDayAtUtcSecond,
   casinoSecondOfKstDayAtUtcSecond,
   casinoUtcSecondAtKstDay,
@@ -76,6 +77,13 @@ export function personalCasinoWorldlineAt(
   let houseGamingProfitToday=0,houseOperatingExpensesToday=0;
 
   for(let dayIndex=startDayIndex;dayIndex<=finalDayIndex;dayIndex+=1){
+    // Prime only the unmodified public branch, one completed day at a time.
+    // Its plan is still in the bounded plan cache from the previous iteration.
+    // Presence/tape can then reuse these tiny closes instead of replaying the
+    // entire epoch after the personal-worldline pass evicted its early plans.
+    if(startDayIndex===0&&uniqueTransactions.length===0&&profiles===contract.profiles&&isFlowLedgerContractVersion(contract.version)){
+      completedDayBalances(profiles,dayIndex-1,contract);
+    }
     const dayStart=casinoUtcSecondAtKstDay(contract.epochKstDay+dayIndex);
     const cutoff=dayIndex===finalDayIndex?casinoSecondOfKstDayAtUtcSecond(now):DAY_SECONDS-1;
     const dayTransactions=transactionDays.get(dayIndex)??[];

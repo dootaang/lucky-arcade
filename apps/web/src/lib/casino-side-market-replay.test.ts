@@ -3,10 +3,11 @@ import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { casinoSpectatorMarketByIdAt, casinoSpectatorMarketsAt, casinoUtcSecondAtKstDay, TEMEROSA_FLOW_13_NPC_GAMBLING_PROFILES, TEMEROSA_FLOW_13_NPC_LEDGER_CONTRACT } from "@lucky-arcade/casino-ledger";
 import { marketReturnBps } from "@lucky-arcade/engine";
 import { resolveCasinoSideMarketOffer, resolveCasinoSideMarketReplay, resolveCasinoSideMarketResult, supportsNativeSideMarketExperience } from "./casino-side-market-replay-client.ts";
+import type { ReplayWorkerRequest, ReplayWorkerResponse } from "./casino-side-market-replay.worker.ts";
 
 const originalFetch = globalThis.fetch;
 
-beforeAll(() => {
+beforeAll(async () => {
   vi.stubGlobal("fetch", async (input: string | URL | Request) => {
     const url = String(input instanceof Request ? input.url : input);
     const match = /\/content\/temerosa-margin\/([^/]+)\/manifest\.json/.exec(url);
@@ -15,8 +16,26 @@ beforeAll(() => {
     const body = readFileSync(match?`public/content/temerosa-margin/${match[1]}/manifest.json`:`public/content/temerosa-series-npcs/${series![1]}/manifest.json`, "utf8");
     return new Response(body, { status: 200, headers: { "content-type": "application/json", date: "Thu, 30 Jul 2026 12:00:00 GMT" } });
   });
+  // Node-only adapter exercises the real worker handler and structured-clone
+  // boundary. Production never falls back to main-thread replay computation.
+  let currentWorker: TestReplayWorker | undefined;
+  const scope = {
+    onmessage: undefined as ((event: MessageEvent<ReplayWorkerRequest>) => Promise<void>) | undefined,
+    postMessage: (response: ReplayWorkerResponse) => currentWorker?.onmessage?.({ data: structuredClone(response) } as MessageEvent<ReplayWorkerResponse>),
+  };
+  class TestReplayWorker {
+    onmessage: ((event: MessageEvent<ReplayWorkerResponse>) => void) | null = null;
+    onerror = null;
+    onmessageerror = null;
+    constructor() { currentWorker = this; }
+    postMessage(request: ReplayWorkerRequest) { void scope.onmessage!({ data: structuredClone(request) } as MessageEvent<ReplayWorkerRequest>); }
+    terminate() { if (currentWorker === this) currentWorker = undefined; }
+  }
+  vi.stubGlobal("self", scope);
+  await import("./casino-side-market-replay.worker.ts");
+  vi.stubGlobal("Worker", TestReplayWorker);
 });
-afterAll(() => { vi.stubGlobal("fetch", originalFetch); });
+afterAll(() => { vi.unstubAllGlobals(); vi.stubGlobal("fetch", originalFetch); });
 
 describe("canonical casino side-market replay", () => {
   it("derives both game results from completed cabinet reducer transcripts", async () => {

@@ -17,6 +17,8 @@ import type {
 const APPROACH_SECONDS = 12;
 const SETTLE_SECONDS = 6;
 const LEAVE_SECONDS = 8;
+// Only two plans (normally today/tomorrow) and bounded per-plan input variants.
+const INTERVAL_CACHES = new WeakMap<NpcLedgerContract,Map<CasinoDayPlan,Map<string,readonly NpcPresenceInterval[]>>>();
 
 export function npcPresenceIntervalsForDay(
   profile: NpcGamblingProfile,
@@ -34,6 +36,15 @@ export function npcPresenceIntervalsForDay(
     Object.fromEntries(contract.profiles.map((entry) => [entry.id, entry.id === profile.id ? openingBalance : entry.openingBalance])),
     contract,
   );
+  let plans=INTERVAL_CACHES.get(contract);
+  if(!plans){plans=new Map();INTERVAL_CACHES.set(contract,plans);}
+  let inputs=plans.get(plan);
+  if(!inputs)inputs=new Map();
+  plans.delete(plan);plans.set(plan,inputs);
+  while(plans.size>2)plans.delete(plans.keys().next().value!);
+  const key=JSON.stringify([absoluteDay,profile.id,openingBalance]);
+  const cached=inputs.get(key);
+  if(cached){inputs.delete(key);inputs.set(key,cached);return cached;}
   const allSessions = plan.sessions[profile.id] ?? [];
   const playing = plan.visits.filter((visit) => visit.participantIds.includes(profile.id)).map((visit) => {
     const sessions = allSessions.filter((session) => session.visitId === visit.visitId);
@@ -68,7 +79,10 @@ export function npcPresenceIntervalsForDay(
       role:"spectating" as const,
     });
   });
-  return Object.freeze([...playing,...spectating].toSorted((left,right)=>left.startedAtUtcSecond-right.startedAtUtcSecond||compareText(left.visit.visitId,right.visit.visitId)));
+  const intervals=Object.freeze([...playing,...spectating].toSorted((left,right)=>left.startedAtUtcSecond-right.startedAtUtcSecond||compareText(left.visit.visitId,right.visit.visitId)));
+  inputs.set(key,intervals);
+  while(inputs.size>256)inputs.delete(inputs.keys().next().value!);
+  return intervals;
 }
 
 export function casinoPresenceAt(

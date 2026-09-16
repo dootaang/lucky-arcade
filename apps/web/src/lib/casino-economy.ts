@@ -9,7 +9,7 @@ import {
 } from "@lucky-arcade/casino-ledger";
 import { casinoClockFromSample, deviceCasinoClockSample, rememberCasinoClockSecond, stabilizeCasinoClockSample } from "./casino-clock.ts";
 import { listCasinoTransactions } from "./database.ts";
-import { personalCasinoWorldlineAt } from "./casino-worldline.ts";
+import { queryCasinoRuntime } from "./casino-runtime-client.ts";
 import { loadTemerosaCasinoManifest } from "./temerosa-content.ts";
 
 export interface CasinoCounterpartyContext {
@@ -56,7 +56,7 @@ export async function casinoCounterpartyContexts(
   rememberCasinoClockSecond(casinoOccurredAtSecond);
   const journal = (await listCasinoTransactions()).filter((transaction) => transaction.occurredAtCasinoSecond <= casinoOccurredAtSecond);
   const ledger=temerosaCasinoLedgerAtUtcSecond(casinoOccurredAtSecond);
-  const worldline = personalCasinoWorldlineAt(ledger.profiles, clock, ledger.contract, journal);
+  const worldline = await queryCasinoRuntime("balances", { second: casinoOccurredAtSecond, journal });
 
   return Object.freeze(Object.fromEntries(accountIds.map((accountId) => {
     const localDelta = normalizedJournalDelta(journal,accountId,ledger.contract.version);

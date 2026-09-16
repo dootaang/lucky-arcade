@@ -46,8 +46,8 @@ interface Ready {
 }
 
 export default function IndianPokerView({ onExit }: { onExit(): void }) {
-  const availability = useCasinoOpponentAvailability(SESSION);
   const [ready, setReady] = useState<Ready | null>(null);
+  const availability = useCasinoOpponentAvailability(SESSION, ready?.state.status === "ready" || ready?.state.status === "complete");
   const [balance, setBalance] = useState(0);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");

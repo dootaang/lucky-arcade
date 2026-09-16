@@ -66,9 +66,18 @@ const FLOW_PVP_RAKE_BPS = 750;
 
 interface VisitIntent { npcId: string; second: number; ordinal: number; tableId: CasinoTableId }
 interface MatchDraft { matchId: string; visitId: string; tableId: CasinoTableId; participantIds: readonly string[]; startsAtSecondOfDay: number; settlesAtSecondOfDay: number }
-const DAY_PLAN_CACHES = new WeakMap<NpcLedgerContract,Map<string,CasinoDayPlan>>();
 interface FlowServiceState { nextDay:number; houseBalance:number; npcBalances:Record<string,number>; houseOpenings:number[] }
-const FLOW_SERVICE_STATE = new WeakMap<NpcLedgerContract,FlowServiceState>();
+type ClosingBalances = Readonly<Record<string,number>>;
+interface LedgerCache {
+  inputs: string;
+  plans: Map<string,CasinoDayPlan>;
+  histories: Map<string,Map<number,ClosingBalances>>;
+  flow?: FlowServiceState;
+}
+const LEDGER_CACHES = new WeakMap<NpcLedgerContract,LedgerCache>();
+// Retain small balance snapshots, never a full plan for every historical day.
+const MAX_HISTORY_INPUTS = 8;
+const MAX_CLOSING_CHECKPOINTS = 64;
 
 /** The v0.5 source of truth: a visit contains independently resolved real matches. */
 export function casinoDayPlan(
@@ -110,8 +119,8 @@ function buildCasinoDayPlan(
   balanceEvents: readonly NpcBalanceEvent[],
   houseOpeningBalance?: number,
 ): CasinoDayPlan {
-  const cacheKey=profiles===contract.profiles&&balanceEvents.length===0?`${contract.version}:${contract.seedVersion}:${housePolicyCacheKey(contract)}:${dayIndex}:${houseOpeningBalance??"legacy"}:${profiles.map((profile)=>openingBalances[profile.id]).join(",")}`:undefined;
-  const contractCache=cacheKey===undefined?undefined:dayPlanCacheFor(contract);
+  const cacheKey=balanceEvents.length===0?JSON.stringify([profiles,dayIndex,houseOpeningBalance,profiles.map((profile)=>openingBalances[profile.id])]):undefined;
+  const contractCache=cacheKey===undefined?undefined:ledgerCacheFor(contract).plans;
   const cached=cacheKey===undefined?undefined:contractCache!.get(cacheKey);
   if(cached){contractCache!.delete(cacheKey!);contractCache!.set(cacheKey!,cached);return cached;}
   const byId = new Map(profiles.map((profile) => [profile.id, profile]));
@@ -334,10 +343,11 @@ function houseMaximumRoundLiability(tableId:string,stake:Exclude<NpcStake,0>,mul
 }
 
 function canonicalFlowHouseOpening(contract:NpcLedgerContract,dayIndex:number):number{
-  let state=FLOW_SERVICE_STATE.get(contract);
+  const cache=ledgerCacheFor(contract);
+  let state=cache.flow;
   if(!state){
     state={nextDay:0,houseBalance:contract.houseOpeningBalance??150_000,npcBalances:openingBalances(contract.profiles),houseOpenings:[]};
-    FLOW_SERVICE_STATE.set(contract,state);
+    cache.flow=state;
   }
   if(state.houseOpenings[dayIndex]!==undefined)return state.houseOpenings[dayIndex]!;
   while(state.nextDay<=dayIndex){
@@ -365,11 +375,17 @@ function closeFlowHouseDay(opening:number,plan:CasinoDayPlan,contract:NpcLedgerC
 function flowHouseDeltaBetween(sessions:Readonly<Record<string,readonly NpcSession[]>>,after:number,through:number):number{
   return -Object.values(sessions).flat().filter((session)=>session.tableId!=="npc-income"&&session.secondOfDay>after&&session.secondOfDay<=through).reduce((sum,session)=>sum+session.delta,0);
 }
-function housePolicyCacheKey(contract:NpcLedgerContract):string{
-  const policy=contract.houseOperatingPolicy;
-  return policy===undefined?"legacy":[policy.baseFacilityCost,policy.activeTableHourCost,policy.perHundredRoundsCost,policy.positiveGamingRevenueRateBps,policy.protectedReserve,policy.settlementSecondOfDay].join(",");
+function ledgerCacheFor(contract:NpcLedgerContract):LedgerCache{
+  // Compare values as well as contract identity: callers can supply cloned or
+  // edited profiles, income, behavior and house-policy inputs under one contract.
+  const inputs=JSON.stringify([contract.version,contract.seedVersion,contract.epochKstDay,contract.profiles,contract.externalIncomeProfiles,contract.behaviors,contract.houseOpeningBalance,contract.houseOperatingPolicy]);
+  let cache=LEDGER_CACHES.get(contract);
+  if(!cache||cache.inputs!==inputs){
+    cache={inputs,plans:new Map(),histories:new Map()};
+    LEDGER_CACHES.set(contract,cache);
+  }
+  return cache;
 }
-function dayPlanCacheFor(contract:NpcLedgerContract):Map<string,CasinoDayPlan>{let cache=DAY_PLAN_CACHES.get(contract);if(!cache){cache=new Map();DAY_PLAN_CACHES.set(contract,cache);}return cache;}
 function cacheDayPlan(cache:Map<string,CasinoDayPlan>,key:string,plan:CasinoDayPlan):void{cache.set(key,plan);while(cache.size>16)cache.delete(cache.keys().next().value!);}
 
 export function casinoDaySessions(
@@ -450,7 +466,24 @@ export function completedDayBalances(
 ): Readonly<Record<string, number>> {
   if (!Number.isSafeInteger(dayIndex) || dayIndex < -1 || !Number.isSafeInteger(checkpointDayIndex) || checkpointDayIndex < -1 || checkpointDayIndex > dayIndex) throw new Error("npc_ledger_invalid_checkpoint_day");
   let balances = checkpointDayIndex >= 0 ? validateCheckpoint(profiles, checkpoint) : openingBalances(profiles);
-  for (let day = checkpointDayIndex + 1; day <= dayIndex; day += 1) balances = addDay(balances, casinoDayPlan(profiles, day, balances, contract).sessions, profiles);
+  if(dayIndex===checkpointDayIndex)return Object.freeze(balances);
+  const histories=ledgerCacheFor(contract).histories;
+  // Explicit checkpoints define a separate worldline, including their day and
+  // values. A later cached close can never seed a backward query.
+  const key=JSON.stringify([profiles,checkpointDayIndex,balances]);
+  let history=histories.get(key);
+  if(!history)history=new Map();
+  histories.delete(key);histories.set(key,history);
+  while(histories.size>MAX_HISTORY_INPUTS)histories.delete(histories.keys().next().value!);
+  let startDay=checkpointDayIndex;
+  for(const [day,closing] of history)if(day<=dayIndex&&day>startDay){startDay=day;balances=closing;}
+  for (let day = startDay + 1; day <= dayIndex; day += 1) {
+    balances = Object.freeze(addDay(balances, casinoDayPlan(profiles, day, balances, contract).sessions, profiles));
+    history.delete(day);history.set(day,balances);
+    while(history.size>MAX_CLOSING_CHECKPOINTS)history.delete(history.keys().next().value!);
+  }
+  // Touch the requested close even on a hit so frequently viewed dates survive.
+  history.delete(dayIndex);history.set(dayIndex,balances);
   return Object.freeze(balances);
 }
 

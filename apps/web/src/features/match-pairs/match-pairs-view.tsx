@@ -54,7 +54,8 @@ interface ReadyMatchPairs {
 }
 
 export default function MatchPairsView({ onExit }: { onExit(): void }) {
-  const availability = useCasinoOpponentAvailability(SESSION);
+  const [gameStatus, setGameStatus] = useState<MatchPairsState["status"] | null>(null);
+  const availability = useCasinoOpponentAvailability(SESSION, gameStatus === "ready" || gameStatus === "complete");
   const [ready, setReady] = useState<ReadyMatchPairs | null>(null);
   const [balance, setBalance] = useState(0);
   const [busy, setBusy] = useState(false);
@@ -112,6 +113,7 @@ export default function MatchPairsView({ onExit }: { onExit(): void }) {
       if (state.status === "complete") await recordMatch(state, opponents, restoredReceipt ?? pending ?? null, completionFor(state));
       if (!alive) return;
       stateRef.current = state;
+      setGameStatus(state.status);
       opponentsRef.current = opponents;
       setBalance(nextBalance);
       setOpponentRecords(summarizeOpponentRecords(await listMatchRecordsForSession(SESSION, 200)));
@@ -167,6 +169,7 @@ export default function MatchPairsView({ onExit }: { onExit(): void }) {
       const next = reduceMatchPairs(TEMEROSA_MATCH_PAIRS_FACES, opponents, prepared, action);
       await persistState(prepared, next, action, opponents);
       stateRef.current = next;
+      setGameStatus(next.status);
       availability.holdOpponents(selectedIds(next));
       setReady((value) => value ? { ...value, state: next, multiplier: input.multiplier } : value);
       setBusy(false);
@@ -181,6 +184,7 @@ export default function MatchPairsView({ onExit }: { onExit(): void }) {
   }
 
   async function persist(previous: MatchPairsState, next: MatchPairsState, action: MatchPairsAction): Promise<void> {
+    setGameStatus(next.status);
     const opponents = opponentsRef.current;
     await persistState(previous, next, action, opponents);
     stateRef.current = next;
