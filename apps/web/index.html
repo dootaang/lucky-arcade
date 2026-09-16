@@ -5,9 +5,56 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#0c0f14" />
     <title>럭키★오락실</title>
+    <!-- No image, font or JS dependency: this paints even while the entry module waits. -->
+    <style>
+      #app-startup{box-sizing:border-box;min-height:100vh;min-height:100dvh;display:grid;place-content:center;gap:16px;margin:0;padding:28px;background:#0c0f14;color:#f2ede1;font:16px/1.6 system-ui,sans-serif;text-align:center}
+      body:has(#app-startup){margin:0;background:#0c0f14}
+      #app-startup h1{margin:0;font-size:24px;color:#f3bd55}
+      #app-startup p{max-width:32rem;margin:0}
+      #app-startup-ring{box-sizing:border-box;width:36px;height:36px;margin:0 auto;border:3px solid #5b4526;border-top-color:#f3bd55;border-radius:50%;animation:startup-spin 1s linear infinite}
+      #app-startup[data-failed] #app-startup-ring{animation:none;border-color:#f3bd55}
+      #app-startup a{display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box;min-height:44px;padding:8px 18px;border:1px solid #f3bd55;border-radius:10px;color:#f2ede1;text-decoration:none}
+      #app-startup a:focus-visible{outline:2px solid #f3bd55;outline-offset:4px}
+      @keyframes startup-spin{to{transform:rotate(360deg)}}
+      @media(prefers-reduced-motion:reduce){#app-startup-ring{animation:none}}
+    </style>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <main id="app-startup">
+        <span id="app-startup-ring" aria-hidden="true"></span>
+        <h1>럭키 오락실</h1>
+        <p id="app-startup-message" role="status" aria-live="polite">럭키 오락실을 불러오고 있습니다.</p>
+        <div id="app-startup-actions" hidden><a href="">다시 불러오기</a></div>
+        <noscript>사이트를 이용하려면 브라우저에서 JavaScript를 켜 주세요.</noscript>
+      </main>
+    </div>
+    <script>
+      (() => {
+        const show = (message, failed) => {
+          const panel = document.getElementById("app-startup");
+          if (!panel) return;
+          document.getElementById("app-startup-message").textContent = message;
+          document.getElementById("app-startup-actions").hidden = false;
+          if (failed) panel.dataset.failed = "true";
+        };
+        const slow = setTimeout(() => show("예상보다 시간이 걸리고 있습니다. 연결 상태를 확인해 주세요.", false), 15000);
+        const failed = () => {
+          clearTimeout(slow);
+          show("화면을 불러오지 못했습니다. 연결 상태를 확인한 뒤 다시 불러와 주세요.", true);
+        };
+        const scriptFailed = (event) => {
+          if (event instanceof ErrorEvent || event.target instanceof HTMLScriptElement) failed();
+        };
+        window.addEventListener("error", scriptFailed, true);
+        window.addEventListener("unhandledrejection", failed);
+        window.addEventListener("arcade:ready", () => {
+          clearTimeout(slow);
+          window.removeEventListener("error", scriptFailed, true);
+          window.removeEventListener("unhandledrejection", failed);
+        }, { once: true });
+      })();
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

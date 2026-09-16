@@ -1,4 +1,4 @@
-import { StrictMode } from "react";
+import { StrictMode, useEffect } from "react";
 import { createRoot } from "react-dom/client";
 import { createBrowserRouter, RouterProvider } from "react-router";
 import { Home } from "./routes/home.tsx";
@@ -7,6 +7,10 @@ import { AdminPreviewRoute } from "./routes/admin-preview-route.tsx";
 import "@lucky-arcade/ui/tokens.css";
 import "@lucky-arcade/ui/casino.css";
 import "./styles.css";
+
+function AppRouteError() {
+  return <main className="blocked-cabinet"><h1>화면을 불러오지 못했습니다.</h1><p>연결 상태를 확인한 뒤 다시 시도해 주세요. 저장된 기록은 지우지 않습니다.</p><button onClick={() => window.location.reload()}>다시 시도</button><a href="/">로비로 돌아가기</a></main>;
+}
 
 const router = createBrowserRouter([
   { path: "/", Component: Home },
@@ -25,7 +29,11 @@ const router = createBrowserRouter([
     { path: "/dev/cabinets/:cabinetId", element: <CabinetRoute privatePreview /> },
   ] : []),
   { path: "*", Component: Home },
-]);
+].map((route) => ({ ...route, errorElement: <AppRouteError /> })));
+function App() {
+  useEffect(() => { window.dispatchEvent(new Event("arcade:ready")); }, []);
+  return <RouterProvider router={router} />;
+}
 const root = document.getElementById("root");
 if (!root) throw new Error("root_element_missing");
-createRoot(root).render(<StrictMode><RouterProvider router={router} /></StrictMode>);
+createRoot(root).render(<StrictMode><App /></StrictMode>);

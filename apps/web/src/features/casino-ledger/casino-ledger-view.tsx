@@ -19,6 +19,7 @@ import type { CasinoFloorSnapshot } from "../../lib/casino-runtime.ts";
 import { loadTemerosaCasinoManifest, temerosaContentUrl, type TemerosaManifest } from "../../lib/temerosa-content.ts";
 import { reconcileSideMarketWagers, reserveSideMarketWager } from "../../lib/side-market.ts";
 import CasinoSideMarket from "./casino-side-market.tsx";
+import { CasinoLoading } from "../../components/casino-loading.tsx";
 
 const LEGACY_PORTRAITS: Readonly<Record<string, string>> = Object.freeze({
   "temerosa:guest:nemo": temerosaContentUrl("0.8.0", "assets/margin/npc-nemo-neutral/sm.webp"),
@@ -36,6 +37,8 @@ export default function CasinoLedgerView({ userBalance, tables, onPlay, onBalanc
   const [journalLoaded, setJournalLoaded] = useState(false);
   const [renderSnapshot, setRenderSnapshot] = useState<CasinoFloorSnapshot>();
   const [runtimeError, setRuntimeError] = useState(false);
+  const [runtimeAttempt, setRuntimeAttempt] = useState(0);
+  const retryRuntime = () => { setRuntimeError(false); setRuntimeAttempt((attempt) => attempt + 1); };
   const [sideWagers, setSideWagers] = useState<readonly GameWagerReceipt[]>([]);
   const [marketBusy, setMarketBusy] = useState(false);
   const [marketError, setMarketError] = useState<string>();
@@ -81,7 +84,7 @@ export default function CasinoLedgerView({ userBalance, tables, onPlay, onBalanc
     const visible = () => { if (document.visibilityState === "visible") void refresh(); };
     document.addEventListener("visibilitychange", visible);
     return () => { alive = false; window.clearInterval(interval); document.removeEventListener("visibilitychange", visible); };
-  }, [clock, journal, journalLoaded]);
+  }, [clock, journal, journalLoaded, runtimeAttempt]);
   const loadNpcHistory=useCallback(async(npcId:string,days:number):Promise<readonly NpcRoundSettlement[]>=>{
     if(!clock)return [];
     return queryCasinoRuntime("history", { second: clock.utcSecond(), journal, npcId, days });
@@ -139,10 +142,7 @@ export default function CasinoLedgerView({ userBalance, tables, onPlay, onBalanc
   }, [clock, sideWagers,ledger]);
 
   const portraits = useMemo(() => ledger ? portraitMap(loaded?.manifest, ledger.profiles) : LEGACY_PORTRAITS, [loaded, ledger?.profiles]);
-  if (!loaded || !clock || !ledger || !renderSnapshot) return <section className="casino-ledger-loading" aria-label="카지노 원장 불러오는 중">
-    <p>{runtimeError ? "카지노 기록을 불러오지 못했습니다. 게임은 이용할 수 있습니다." : "카지노 기록을 백그라운드에서 정리 중입니다. 게임은 먼저 이용할 수 있습니다."}</p>
-    <div>{tables.map((table) => <button key={table.id} onClick={() => onPlay(table.id)}>{table.title} 시작</button>)}</div>
-  </section>;
+  if (!loaded || !clock || !ledger || !renderSnapshot) return <CasinoLoading phase={runtimeError ? "error" : "records"} tables={tables} onPlay={onPlay} onRetry={retryRuntime} />;
   try {
     const {profiles}=ledger;
     // Render the selected contract verbatim. The 1.2 contract has 99 four-series
@@ -162,7 +162,7 @@ export default function CasinoLedgerView({ userBalance, tables, onPlay, onBalanc
       } finally { setMarketBusy(false); }
     };
     const sideMarket = <CasinoSideMarket schedule={sideMarketSchedule} ticketMarkets={ticketMarkets} wagers={sideWagers} balance={userBalance} npcPeriodProfits={profitPeriod.profits} currentUtcSecond={currentUtcSecond} busy={marketBusy} {...(marketError ? { error: marketError } : {})} onBet={placeSideBet} />;
-    return <><CasinoLedgerPanel
+    return <>{runtimeError && <CasinoLoading phase="error" onRetry={retryRuntime} />}<CasinoLedgerPanel
       afterTables={sideMarket}
       profiles={profiles}
       npcBalances={liveBalances}
@@ -191,7 +191,7 @@ export default function CasinoLedgerView({ userBalance, tables, onPlay, onBalanc
       loadNpcHistory={loadNpcHistory}
     /></>;
   } catch {
-    return <section className="casino-ledger-loading ca-label">원장을 정리하지 못했습니다. 게임 테이블은 그대로 이용할 수 있습니다.</section>;
+    return <CasinoLoading phase="error" tables={tables} onPlay={onPlay} onRetry={() => window.location.reload()} />;
   }
 }
 

@@ -11,6 +11,7 @@ import { NumberTicker } from "@lucky-arcade/ui/number-ticker";
 import { VenueMarquee } from "@lucky-arcade/ui/venue-marquee";
 import type { CasinoTableId } from "@lucky-arcade/casino-ledger";
 import { getPublicVenue, getVenueForCabinet, listPublicVenues, type VenueManifest } from "../venues/registry.ts";
+import { CasinoLoading, CasinoLoadingBoundary } from "../components/casino-loading.tsx";
 
 const CasinoLedgerView = lazy(async () => {
   const [{ default: View }, { CasinoLedgerPortraitProvider }, { resolveTemerosaSeriesNpcPortrait }] = await Promise.all([
@@ -133,6 +134,13 @@ function VenueFloor({ venue, balance, onPlay, onPreview, onBalanceChange }: { ve
   });
   const playable = tables.filter((table) => table.status === "open");
   const preparing = tables.filter((table) => table.status !== "open" && table.status !== "vip");
+  const liveTables = playable.map(({ entry }) => ({
+    id: entry.manifest.id as CasinoTableId,
+    title: entry.manifest.title.replace("테메로세 ", ""),
+    suit: TABLE_SUITS[entry.manifest.id] ?? "♠",
+    entryLabel: "시작",
+    meta: `${entry.manifest.estimatedMinutes.min}~${entry.manifest.estimatedMinutes.max}분 · ${entry.manifest.entry === "wager" ? `${entry.manifest.wagerTiers?.[0] ?? 0} P부터` : "포인트 없이 시작"}`,
+  }));
   return <section className="casino-floor" aria-labelledby="floor-heading">
     <span className="floor-backdrop ca-tableau" aria-hidden="true" />
     <span className="ca-spotlight" aria-hidden="true" />
@@ -143,13 +151,11 @@ function VenueFloor({ venue, balance, onPlay, onPreview, onBalanceChange }: { ve
       <img className="floor-hero-art" src={FLOOR_HERO_ART} alt="" width={960} height={540} loading="eager" fetchPriority="high" aria-hidden="true" onError={(event) => { event.currentTarget.hidden = true; }} />
       <span className="eyebrow">여백의 카지노 플로어</span><h2 id="floor-heading" className="ca-serif">테이블을 골라주세요</h2><p>현재 실제로 운영 중인 테이블만 입장할 수 있습니다.</p>
     </header>
-    <Suspense fallback={<section className="casino-ledger-loading ca-label">원장 정리 중…</section>}><CasinoLedgerView userBalance={balance} onBalanceChange={onBalanceChange} onPlay={onPlay} tables={playable.map(({ entry }) => ({
-      id: entry.manifest.id as CasinoTableId,
-      title: entry.manifest.title.replace("테메로세 ", ""),
-      suit: TABLE_SUITS[entry.manifest.id] ?? "♠",
-      entryLabel: "시작",
-      meta: `${entry.manifest.estimatedMinutes.min}~${entry.manifest.estimatedMinutes.max}분 · ${entry.manifest.entry === "wager" ? `${entry.manifest.wagerTiers?.[0] ?? 0} P부터` : "포인트 없이 시작"}`,
-    }))} /></Suspense>
+    <CasinoLoadingBoundary tables={liveTables} onPlay={onPlay}>
+      <Suspense fallback={<CasinoLoading phase="screen" tables={liveTables} onPlay={onPlay} />}>
+        <CasinoLedgerView userBalance={balance} onBalanceChange={onBalanceChange} onPlay={onPlay} tables={liveTables} />
+      </Suspense>
+    </CasinoLoadingBoundary>
     {/* Eleven rooms that cannot be entered took more height than the six that
         can. They stay one line until someone asks for them. */}
     <Suspense fallback={<section className="vip-door">위층 입장 기록 확인 중…</section>}><VipDoor balance={balance} onBalanceChange={onBalanceChange} onPlay={onPlay} /></Suspense>
