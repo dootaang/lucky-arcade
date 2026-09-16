@@ -17,8 +17,8 @@ describe("public cabinet visibility", () => {
 
   it("lists every built-in implementation as open or admin-preview", () => {
     const builtIns = listBuiltInCabinets(true);
-    expect(builtIns).toHaveLength(16);
-    for (const entry of builtIns) expect(getVenueTableForCabinet(entry.manifest.id)?.status).toMatch(/^(open|admin-preview)$/);
+    expect(builtIns).toHaveLength(17);
+    for (const entry of builtIns) expect(getVenueTableForCabinet(entry.manifest.id)?.status).toMatch(/^(open|admin-preview|vip)$/);
   });
 
   it("keeps hidden cabinets out of resume and lookup UI", () => {

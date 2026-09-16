@@ -17,6 +17,11 @@ type CabinetView = LazyExoticComponent<ComponentType<CabinetViewContext>>;
 
 const registrations: readonly WebCabinetRegistration[] = [
   {
+    manifest: { id: "temerosa-vip-blackjack", version: "temerosa-vip-blackjack/0.1", title: "VIP 블랙잭", description: "위층. 박니은이 딜하는 블랙잭.", requiredCapabilities: [], sessionKind: "instant", launchKind: "built-in", resumeLabel: "VIP 룸으로 돌아가기", estimatedMinutes: { min: 1, max: 2 }, entry: "wager", wagerTiers: [200, 500, 1000] },
+    openingRank: null, badge: "위층",
+    load: async () => { const module = await import("../features/vip-blackjack/vip-blackjack-view.tsx"); return { default: module.default }; },
+  },
+  {
     manifest: {
       id: "temerosa-video-poker", version: "video-poker/0.1", title: "테메로세 비디오 포커",
       description: "카드 다섯 장에서 홀드를 고르고 한 번 교환하는 Jacks or Better.", requiredCapabilities: [],

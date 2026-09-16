@@ -6,7 +6,8 @@ export const CASINO_CARD_STAKES = [10, 50, 200] as const;
 export const HIGH_LOW_RETURN_MULTIPLIERS = [1.1, 1.6, 2.2, 3.2, 4.5] as const;
 
 export type CasinoCardGameId = "high-low" | "blackjack" | "doubt" | "one-card" | "texas-holdem";
-export type CasinoCardStake = (typeof CASINO_CARD_STAKES)[number];
+export const VIP_BLACKJACK_STAKES = [200, 500, 1000] as const;
+export type CasinoCardStake = (typeof CASINO_CARD_STAKES)[number] | (typeof VIP_BLACKJACK_STAKES)[number];
 export type CasinoCardStatus = "ready" | "playing" | "round-result" | "complete";
 export type CasinoCardOutcome = "win" | "loss" | "push" | null;
 export type CasinoSeatId = "player" | "cpu-1" | "cpu-2" | "cpu-3";

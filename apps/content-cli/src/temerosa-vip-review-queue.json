@@ -1,0 +1,392 @@
+{
+  "contract": "temerosa-vip-review-queue/0.1",
+  "sourceKey": "creator-vip-nieun",
+  "characterId": "nieun",
+  "policy": {
+    "crop": false,
+    "thumb": false,
+    "gallery": false,
+    "vipOnly": true,
+    "emotionSlots": false,
+    "bacikalExcluded": true
+  },
+  "items": [
+    {
+      "sortIndex": 1,
+      "sha256": "b197b82d5f03efaa3431038be69566e348ad5c51fd890310724a268fe78ad04f",
+      "originalName": "9cde94d39b284a5b8101f4d9ce7c362c.png",
+      "expressionGroup": "other",
+      "backgroundNote": "black",
+      "reviewStatus": "approved",
+      "approvedUses": [
+        "host-art"
+      ],
+      "reviewEvidence": "2026-09-16 owner approved all 29 source portraits for VIP-only lazy-loaded host-art; visual post-review remains pending",
+      "postImplementationReview": "pending"
+    },
+    {
+      "sortIndex": 2,
+      "sha256": "43b7da5e068ec8ab50930478065384b95cc62db1a6e27942dc2fced31532df90",
+      "originalName": "image-08097b92021943d3a051ae65f37fa57d.png",
+      "expressionGroup": "sulky",
+      "backgroundNote": null,
+      "reviewStatus": "approved",
+      "approvedUses": [
+        "host-art"
+      ],
+      "reviewEvidence": "2026-09-16 owner approved all 29 source portraits for VIP-only lazy-loaded host-art; visual post-review remains pending",
+      "postImplementationReview": "pending"
+    },
+    {
+      "sortIndex": 3,
+      "sha256": "f9455934133cdfa7ba20170fd1433199ce8d38548020177a3782838118a7a324",
+      "originalName": "image-102f11ea60d64367aeb3efa815caea80.png",
+      "expressionGroup": "back",
+      "backgroundNote": null,
+      "reviewStatus": "approved",
+      "approvedUses": [
+        "host-art"
+      ],
+      "reviewEvidence": "2026-09-16 owner approved all 29 source portraits for VIP-only lazy-loaded host-art; visual post-review remains pending",
+      "postImplementationReview": "pending"
+    },
+    {
+      "sortIndex": 4,
+      "sha256": "9fbc2226ddf66946c6794bb6d1f1152a04c8c577296a86d5863c3b16a1522169",
+      "originalName": "image-127ff03059b041d99816e1898bb4eba5.png",
+      "expressionGroup": "sulky",
+      "backgroundNote": null,
+      "reviewStatus": "approved",
+      "approvedUses": [
+        "host-art"
+      ],
+      "reviewEvidence": "2026-09-16 owner approved all 29 source portraits for VIP-only lazy-loaded host-art; visual post-review remains pending",
+      "postImplementationReview": "pending"
+    },
+    {
+      "sortIndex": 5,
+      "sha256": "ec747ca51edfbd93161d21b37f379b563ab2f4c21c39f28a1199b1c792a35dee",
+      "originalName": "image-169b6120e3e94451a099bfdbc42dc4ad.png",
+      "expressionGroup": "flustered",
+      "backgroundNote": null,
+      "reviewStatus": "approved",
+      "approvedUses": [
+        "host-art"
+      ],
+      "reviewEvidence": "2026-09-16 owner approved all 29 source portraits for VIP-only lazy-loaded host-art; visual post-review remains pending",
+      "postImplementationReview": "pending"
+    },
+    {
+      "sortIndex": 6,
+      "sha256": "b0de9cdaeef6a59c5885a946d3c586485d3d9170264ac14d583acfbb92c25249",
+      "originalName": "image-1a9f39bf38bb456db206b65414e95fe9.png",
+      "expressionGroup": "sulky",
+      "backgroundNote": null,
+      "reviewStatus": "approved",
+      "approvedUses": [
+        "host-art"
+      ],
+      "reviewEvidence": "2026-09-16 owner approved all 29 source portraits for VIP-only lazy-loaded host-art; visual post-review remains pending",
+      "postImplementationReview": "pending"
+    },
+    {
+      "sortIndex": 7,
+      "sha256": "d6067d902fc67516a3466fed170c6bbd19ee6eba99db8e2675946cac218b6239",
+      "originalName": "image-1c6d468f43a6497d8c2c0e1f4c74e4fb.png",
+      "expressionGroup": "flustered",
+      "backgroundNote": null,
+      "reviewStatus": "approved",
+      "approvedUses": [
+        "host-art"
+      ],
+      "reviewEvidence": "2026-09-16 owner approved all 29 source portraits for VIP-only lazy-loaded host-art; visual post-review remains pending",
+      "postImplementationReview": "pending"
+    },
+    {
+      "sortIndex": 8,
+      "sha256": "3c537dddf2ec227d0dcab9c8f6359b00481aa544c42fef9ce7c13ea74ebecc21",
+      "originalName": "image-24ca1dfffb6248119cc975dc2c8cda87.png",
+      "expressionGroup": "flustered",
+      "backgroundNote": null,
+      "reviewStatus": "approved",
+      "approvedUses": [
+        "host-art"
+      ],
+      "reviewEvidence": "2026-09-16 owner approved all 29 source portraits for VIP-only lazy-loaded host-art; visual post-review remains pending",
+      "postImplementationReview": "pending"
+    },
+    {
+      "sortIndex": 9,
+      "sha256": "6f3fe34b4b9f4a4852df4b88e5733593c7b9ba7dd5ca250378f62f188b9e0a9b",
+      "originalName": "image-2ae832eb59464fc4a01d81031271acba.png",
+      "expressionGroup": "other",
+      "backgroundNote": null,
+      "reviewStatus": "approved",
+      "approvedUses": [
+        "host-art"
+      ],
+      "reviewEvidence": "2026-09-16 owner approved all 29 source portraits for VIP-only lazy-loaded host-art; visual post-review remains pending",
+      "postImplementationReview": "pending"
+    },
+    {
+      "sortIndex": 10,
+      "sha256": "4d3cf6bf67aa7c90413761cca2854b5cd15b3e7291c82e00a1f13d356693f230",
+      "originalName": "image-2ded0466777e420ab24c307766efb292.png",
+      "expressionGroup": "flustered",
+      "backgroundNote": "gray",
+      "reviewStatus": "approved",
+      "approvedUses": [
+        "host-art"
+      ],
+      "reviewEvidence": "2026-09-16 owner approved all 29 source portraits for VIP-only lazy-loaded host-art; visual post-review remains pending",
+      "postImplementationReview": "pending"
+    },
+    {
+      "sortIndex": 11,
+      "sha256": "13c29bb69cc95f1484fbefb5b2540f26a584138e01fed0b991c838e63b1c78bf",
+      "originalName": "image-3b690fd0cd9947fea377ed0b0b120b37.png",
+      "expressionGroup": "flustered",
+      "backgroundNote": null,
+      "reviewStatus": "approved",
+      "approvedUses": [
+        "host-art"
+      ],
+      "reviewEvidence": "2026-09-16 owner approved all 29 source portraits for VIP-only lazy-loaded host-art; visual post-review remains pending",
+      "postImplementationReview": "pending"
+    },
+    {
+      "sortIndex": 12,
+      "sha256": "3307aa6cdcde318a9967965aa9ef2f005dbb14495b756dc8fd6f4a862e8a7a6f",
+      "originalName": "image-401873700f344e209bf160f5bb0c77bb.png",
+      "expressionGroup": "smug",
+      "backgroundNote": null,
+      "reviewStatus": "approved",
+      "approvedUses": [
+        "host-art"
+      ],
+      "reviewEvidence": "2026-09-16 owner approved all 29 source portraits for VIP-only lazy-loaded host-art; visual post-review remains pending",
+      "postImplementationReview": "pending"
+    },
+    {
+      "sortIndex": 13,
+      "sha256": "770d13c3d6c81646ded9fab63defb22f187ba5569ac14819223c0238426bd675",
+      "originalName": "image-4372d93da3a54403b0de78ea3b501495.png",
+      "expressionGroup": "weary",
+      "backgroundNote": null,
+      "reviewStatus": "approved",
+      "approvedUses": [
+        "host-art"
+      ],
+      "reviewEvidence": "2026-09-16 owner approved all 29 source portraits for VIP-only lazy-loaded host-art; visual post-review remains pending",
+      "postImplementationReview": "pending"
+    },
+    {
+      "sortIndex": 14,
+      "sha256": "31c7b1b815b08352b97f9618e56be48d5f92f3f21a3dd01f00082b6cc5eb7c32",
+      "originalName": "image-4820be16a5c349928f04e4a5846f6b76.png",
+      "expressionGroup": "back",
+      "backgroundNote": null,
+      "reviewStatus": "approved",
+      "approvedUses": [
+        "host-art"
+      ],
+      "reviewEvidence": "2026-09-16 owner approved all 29 source portraits for VIP-only lazy-loaded host-art; visual post-review remains pending",
+      "postImplementationReview": "pending"
+    },
+    {
+      "sortIndex": 15,
+      "sha256": "7a2304e0766b34aca54b2076a18302d25f015f599c94d16dd579c1c7fe8ca6bb",
+      "originalName": "image-4d1e8ddfef754168a4db45d909a78ce4.png",
+      "expressionGroup": "weary",
+      "backgroundNote": null,
+      "reviewStatus": "approved",
+      "approvedUses": [
+        "host-art"
+      ],
+      "reviewEvidence": "2026-09-16 owner approved all 29 source portraits for VIP-only lazy-loaded host-art; visual post-review remains pending",
+      "postImplementationReview": "pending"
+    },
+    {
+      "sortIndex": 16,
+      "sha256": "32c2918f3fe37dc65bc2ef378f0d55265dc27962967dd5aa50022bc010a9ec12",
+      "originalName": "image-57efd7f5964c462c9ce39103fde88385.png",
+      "expressionGroup": "sulky",
+      "backgroundNote": null,
+      "reviewStatus": "approved",
+      "approvedUses": [
+        "host-art"
+      ],
+      "reviewEvidence": "2026-09-16 owner approved all 29 source portraits for VIP-only lazy-loaded host-art; visual post-review remains pending",
+      "postImplementationReview": "pending"
+    },
+    {
+      "sortIndex": 17,
+      "sha256": "988c2aab0cf6d218968444ebc02ab4cf8f7092a4f4e5c79cce25785638a59fb7",
+      "originalName": "image-66c76ade95d44982a37f506477aa7800.png",
+      "expressionGroup": "sulky",
+      "backgroundNote": null,
+      "reviewStatus": "approved",
+      "approvedUses": [
+        "host-art"
+      ],
+      "reviewEvidence": "2026-09-16 owner approved all 29 source portraits for VIP-only lazy-loaded host-art; visual post-review remains pending",
+      "postImplementationReview": "pending"
+    },
+    {
+      "sortIndex": 18,
+      "sha256": "7273097ad02cfe755491cb837f37c815a9ec496510e4c1cb68c0f7b26ff1c8a2",
+      "originalName": "image-68e76fa1eed843efb83800b2f57a7d01.png",
+      "expressionGroup": "sulky",
+      "backgroundNote": null,
+      "reviewStatus": "approved",
+      "approvedUses": [
+        "host-art"
+      ],
+      "reviewEvidence": "2026-09-16 owner approved all 29 source portraits for VIP-only lazy-loaded host-art; visual post-review remains pending",
+      "postImplementationReview": "pending"
+    },
+    {
+      "sortIndex": 19,
+      "sha256": "e5bb7b9b7f76819a5605432fc1cd4df46a548ce2895fe862569cdcebbab19a86",
+      "originalName": "image-7095ce65766c49989d59bb5e964aa467.png",
+      "expressionGroup": "weary",
+      "backgroundNote": "yellow",
+      "reviewStatus": "approved",
+      "approvedUses": [
+        "host-art"
+      ],
+      "reviewEvidence": "2026-09-16 owner approved all 29 source portraits for VIP-only lazy-loaded host-art; visual post-review remains pending",
+      "postImplementationReview": "pending"
+    },
+    {
+      "sortIndex": 20,
+      "sha256": "65a435960342ae32e83fbd64d6df3a66c80ca8327852823f85a9ad783e447c1b",
+      "originalName": "image-80308a6f4c0f48d2ab63c2a65b821353.png",
+      "expressionGroup": "sulky",
+      "backgroundNote": null,
+      "reviewStatus": "approved",
+      "approvedUses": [
+        "host-art"
+      ],
+      "reviewEvidence": "2026-09-16 owner approved all 29 source portraits for VIP-only lazy-loaded host-art; visual post-review remains pending",
+      "postImplementationReview": "pending"
+    },
+    {
+      "sortIndex": 21,
+      "sha256": "92f4f5584e934a2fa2bb5b6fdee4b8e33dec92f49993f3b5a0072efa11ef9d60",
+      "originalName": "image-9f34afd37fa849589946db1968630002.png",
+      "expressionGroup": "flustered",
+      "backgroundNote": null,
+      "reviewStatus": "approved",
+      "approvedUses": [
+        "host-art"
+      ],
+      "reviewEvidence": "2026-09-16 owner approved all 29 source portraits for VIP-only lazy-loaded host-art; visual post-review remains pending",
+      "postImplementationReview": "pending"
+    },
+    {
+      "sortIndex": 22,
+      "sha256": "22ca03be5b10f408ef3449ec525bd671ab2c668c82a537e67436ad23da633547",
+      "originalName": "image-a1df3559d3a047c7854183da05510d3c.png",
+      "expressionGroup": "flustered",
+      "backgroundNote": null,
+      "reviewStatus": "approved",
+      "approvedUses": [
+        "host-art"
+      ],
+      "reviewEvidence": "2026-09-16 owner approved all 29 source portraits for VIP-only lazy-loaded host-art; visual post-review remains pending",
+      "postImplementationReview": "pending"
+    },
+    {
+      "sortIndex": 23,
+      "sha256": "3622059b621f366469fa71cc367b63872867724f42f8879b0c905b6be06404dd",
+      "originalName": "image-a42f824e1afa411c93d5e272a4047668.png",
+      "expressionGroup": "back",
+      "backgroundNote": null,
+      "reviewStatus": "approved",
+      "approvedUses": [
+        "host-art"
+      ],
+      "reviewEvidence": "2026-09-16 owner approved all 29 source portraits for VIP-only lazy-loaded host-art; visual post-review remains pending",
+      "postImplementationReview": "pending"
+    },
+    {
+      "sortIndex": 24,
+      "sha256": "c33e592a87542c66fcaaddb90a2a33f45a158c4e0bc3cbcecaa9c458c5f484e8",
+      "originalName": "image-a9faf488e58e453c835908f3918bb511.png",
+      "expressionGroup": "sulky",
+      "backgroundNote": null,
+      "reviewStatus": "approved",
+      "approvedUses": [
+        "host-art"
+      ],
+      "reviewEvidence": "2026-09-16 owner approved all 29 source portraits for VIP-only lazy-loaded host-art; visual post-review remains pending",
+      "postImplementationReview": "pending"
+    },
+    {
+      "sortIndex": 25,
+      "sha256": "81f63eafda35644719871cd2fb00f4028c5c7792fdcae2d25e088bc561d98520",
+      "originalName": "image-b2507c73366c40899528e2e1468638fe.png",
+      "expressionGroup": "smug",
+      "backgroundNote": null,
+      "reviewStatus": "approved",
+      "approvedUses": [
+        "host-art"
+      ],
+      "reviewEvidence": "2026-09-16 owner approved all 29 source portraits for VIP-only lazy-loaded host-art; visual post-review remains pending",
+      "postImplementationReview": "pending"
+    },
+    {
+      "sortIndex": 26,
+      "sha256": "ca8300d82430b81d016874cfa839ec3cf19a54bb9f129893f9f5916ce0f07690",
+      "originalName": "image-bd40609ebe91440684c64b4dde6e153a.png",
+      "expressionGroup": "weary",
+      "backgroundNote": "dark-gray",
+      "reviewStatus": "approved",
+      "approvedUses": [
+        "host-art"
+      ],
+      "reviewEvidence": "2026-09-16 owner approved all 29 source portraits for VIP-only lazy-loaded host-art; visual post-review remains pending",
+      "postImplementationReview": "pending"
+    },
+    {
+      "sortIndex": 27,
+      "sha256": "7230b0641d9c50174598fcfcf9ed5eedf14cc20e2b10e7d242cb8e748cbd6636",
+      "originalName": "image-cea81d6ed99c47049dd57931df9fdc40.png",
+      "expressionGroup": "flustered",
+      "backgroundNote": null,
+      "reviewStatus": "approved",
+      "approvedUses": [
+        "host-art"
+      ],
+      "reviewEvidence": "2026-09-16 owner approved all 29 source portraits for VIP-only lazy-loaded host-art; visual post-review remains pending",
+      "postImplementationReview": "pending"
+    },
+    {
+      "sortIndex": 28,
+      "sha256": "de29901c8d266b44c24fda54da0aa35a86a7d058059e86d5da06f2e5ef862b41",
+      "originalName": "image-e52ccde1f2534e1fa80a24c6649f2001.png",
+      "expressionGroup": "flustered",
+      "backgroundNote": null,
+      "reviewStatus": "approved",
+      "approvedUses": [
+        "host-art"
+      ],
+      "reviewEvidence": "2026-09-16 owner approved all 29 source portraits for VIP-only lazy-loaded host-art; visual post-review remains pending",
+      "postImplementationReview": "pending"
+    },
+    {
+      "sortIndex": 29,
+      "sha256": "59b3389bdc4a9de034aa015434858cc7e9370a5f36c229afc1178f32092b5238",
+      "originalName": "image-ebc55f5f47d243c1a4f8529535308c83.png",
+      "expressionGroup": "flustered",
+      "backgroundNote": "red",
+      "reviewStatus": "approved",
+      "approvedUses": [
+        "host-art"
+      ],
+      "reviewEvidence": "2026-09-16 owner approved all 29 source portraits for VIP-only lazy-loaded host-art; visual post-review remains pending",
+      "postImplementationReview": "pending"
+    }
+  ]
+}

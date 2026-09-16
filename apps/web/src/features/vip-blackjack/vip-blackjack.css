@@ -1,0 +1,47 @@
+.vip-room { min-height: 100dvh; padding: 1rem; background: var(--ca-void); color: var(--text, #f4eee2); }
+.vip-room-header { display: flex; align-items: center; gap: 1rem; padding: .25rem 0 1rem; }
+.vip-room-header h1 { flex: 1; margin: 0; font-size: clamp(1.1rem, 2.3vw, 1.75rem); }
+.vip-room-header strong { color: var(--ca-gold-bright); font-variant-numeric: tabular-nums; }
+.vip-room button { min-height: 44px; padding: .6rem 1rem; border: 1px solid var(--ca-gold-deep); border-radius: .55rem; background: var(--ca-raised); color: inherit; cursor: pointer; }
+.vip-room button:disabled { opacity: .5; cursor: not-allowed; }
+.vip-room button:focus-visible { outline: 3px solid var(--ca-gold-bright); outline-offset: 3px; }
+.vip-room .vip-primary, .vip-room button[aria-pressed=true] { color: var(--ca-ink); background: var(--ca-gold); }
+.vip-room-layout { display: grid; grid-template-columns: minmax(280px, 38%) minmax(0, 1fr); gap: clamp(1rem, 3vw, 3rem); max-width: 1560px; margin: auto; }
+.vip-host-art { height: calc(100dvh - 100px); min-height: 360px; margin: 0; position: relative; contain: layout paint; display: grid; place-items: center; }
+.vip-host-art img { grid-area: 1 / 1; height: 100%; width: 100%; object-fit: contain; }
+.vip-host-art .vip-host-next { position: absolute; inset: 0; opacity: 0; transition: opacity 200ms ease; }
+.vip-host-art .vip-host-next.is-loaded { opacity: 1; }
+.vip-host-art figcaption { position: absolute; padding: 1rem; text-align: center; }
+.vip-table { min-width: 0; padding: clamp(.8rem, 2vw, 2rem); align-self: center; border: 1px solid var(--ca-gold-deep); border-radius: 1.4rem; background: color-mix(in srgb, var(--ca-felt) 32%, var(--ca-surface)); }
+.vip-speech { min-height: 6.5rem; border-bottom: 1px solid var(--ca-gold-deep); margin-bottom: 1rem; }
+.vip-speech strong { color: var(--ca-gold-bright); }
+.vip-speech p { white-space: pre-line; line-height: 1.65; margin: .5rem 0 1rem; }
+.vip-stakes > div, .vip-actions { display: flex; flex-wrap: wrap; gap: .65rem; }
+.vip-stakes button { flex: 1; }
+.vip-stakes strong, .vip-stakes small { display: block; }
+.vip-stakes small { margin-top: .3rem; font-size: .8rem; }
+.vip-stakes p, .vip-rules p { line-height: 1.6; }
+.vip-hand h2 { font-size: 1rem; margin: .5rem 0; }
+.vip-hand > div { display: flex; flex-wrap: wrap; gap: .4rem; }
+.vip-playing-card { width: clamp(60px, 7vw, 110px); flex: 0 0 auto; animation: vip-deal 280ms both ease-out; }
+.vip-playing-card > * { width: 100%; }
+.vip-table-rule { color: var(--ca-gold-deep); font: 700 1.8rem var(--ca-display); margin: .45rem 0; }
+.vip-result { display: flex; flex-wrap: wrap; align-items: center; gap: .8rem; }
+.vip-result strong { color: var(--ca-gold-bright); }
+.vip-rules { margin-top: 1.2rem; }
+.vip-rules summary { min-height: 44px; cursor: pointer; }
+.vip-error { border-left: 3px solid var(--ca-falling); padding: .6rem; }
+.vip-error button { display: block; margin-top: .5rem; }
+@keyframes vip-deal { from { opacity: 0; transform: translateY(-15px) rotateY(65deg); } to { opacity: 1; transform: none; } }
+@media (max-width: 899px) {
+  .vip-room { padding: .65rem; }
+  .vip-room-layout { grid-template-columns: minmax(0, 1fr); gap: .75rem; }
+  .vip-host-art { height: 55dvh; min-height: 240px; }
+  .vip-room-header { flex-wrap: wrap; gap: .6rem; }
+  .vip-playing-card { width: clamp(60px, 17vw, 100px); }
+  .vip-table { padding: .85rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .vip-host-art .vip-host-next { transition: none; }
+  .vip-playing-card { animation: none; }
+}

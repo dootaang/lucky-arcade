@@ -118,6 +118,7 @@ function VenueCard({ venue, eager, onEnter }: { venue: VenueManifest; eager: boo
   return <article className="venue-card"><picture className="venue-art"><source media="(max-width: 600px)" srcSet={venue.heroImage.sm.src} width={venue.heroImage.sm.width} height={venue.heroImage.sm.height} /><img src={venue.heroImage.md.src} width={venue.heroImage.md.width} height={venue.heroImage.md.height} alt={venue.heroImage.alt} loading={eager ? "eager" : "lazy"} fetchPriority={eager ? "high" : "auto"} onError={(event) => { event.currentTarget.hidden = true; }} /></picture><div className="venue-card-copy"><span className="eyebrow">Open Venue</span><h3>{venue.title}</h3><p>{venue.tagline}</p><button onClick={onEnter}>{venue.entryLabel}<IconPlayerPlay size={18} /></button></div></article>;
 }
 
+const VipDoor = lazy(() => import("../features/vip-blackjack/vip-door.tsx"));
 const plannedTables = [{ group: "교환소", title: "알제의 교환소" }] as const;
 
 const FLOOR_HERO_ART = "/content/temerosa-casino-floor/0.1.0/assets/floor-mist-basin/md.webp";
@@ -131,7 +132,7 @@ function VenueFloor({ venue, balance, onPlay, onPreview, onBalanceChange }: { ve
     return entry ? [{ entry, status: table.status }] : [];
   });
   const playable = tables.filter((table) => table.status === "open");
-  const preparing = tables.filter((table) => table.status !== "open");
+  const preparing = tables.filter((table) => table.status !== "open" && table.status !== "vip");
   return <section className="casino-floor" aria-labelledby="floor-heading">
     <span className="floor-backdrop ca-tableau" aria-hidden="true" />
     <span className="ca-spotlight" aria-hidden="true" />
@@ -151,6 +152,7 @@ function VenueFloor({ venue, balance, onPlay, onPreview, onBalanceChange }: { ve
     }))} /></Suspense>
     {/* Eleven rooms that cannot be entered took more height than the six that
         can. They stay one line until someone asks for them. */}
+    <Suspense fallback={<section className="vip-door">위층 입장 기록 확인 중…</section>}><VipDoor balance={balance} onBalanceChange={onBalanceChange} onPlay={onPlay} /></Suspense>
     <details className="table-locked">
       <summary className="table-locked-divider ca-label">
         개장 준비 중 <b>{preparing.length + plannedTables.length}</b>

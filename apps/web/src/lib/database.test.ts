@@ -47,6 +47,45 @@ describe.sequential("point wallet and spectator predictions", () => {
     await server?.close();
   });
 
+  it.each(["fresh", "v9 with game-wagers", "v9 without game-wagers"])("creates the session/status wager index for %s", async (path) => {
+    const result = await page.evaluate(async (path) => {
+      if (path !== "fresh") await new Promise<void>((resolve, reject) => {
+        const opening = indexedDB.open("lucky-arcade", 9);
+        opening.onupgradeneeded = () => {
+          if (path !== "v9 with game-wagers") return;
+          const wagers = opening.result.createObjectStore("game-wagers", { keyPath: "wagerId" });
+          wagers.createIndex("by-outcome-key", "outcomeKey", { unique: true });
+          wagers.createIndex("by-session-id", "sessionId");
+          wagers.createIndex("by-created-at", "createdAt");
+          for (const status of ["reserved", "settled"]) wagers.add({ wagerId: status, outcomeKey: status, sessionId: "legacy", status });
+        };
+        opening.onerror = () => reject(opening.error);
+        opening.onsuccess = () => { opening.result.close(); resolve(); };
+      });
+      const database = await new Function("return import('/src/lib/database.ts')")();
+      await database.readWallet();
+      return new Promise<{ version: number; keyPath: string | string[]; unique: boolean; reserved: IDBValidKey[]; count: number }>((resolve, reject) => {
+        const opening = indexedDB.open("lucky-arcade");
+        opening.onerror = () => reject(opening.error);
+        opening.onsuccess = () => {
+          const db = opening.result, tx = db.transaction("game-wagers", "readonly");
+          const wagers = tx.objectStore("game-wagers"), index = wagers.index("by-session-status");
+          const reserved = index.getAllKeys(IDBKeyRange.only(["legacy", "reserved"])), count = wagers.count();
+          tx.onerror = () => { db.close(); reject(tx.error); };
+          tx.oncomplete = () => {
+            db.close();
+            resolve({ version: db.version, keyPath: index.keyPath, unique: index.unique, reserved: reserved.result, count: count.result });
+          };
+        };
+      });
+    }, path);
+    expect(result).toEqual({
+      version: 10, keyPath: ["sessionId", "status"], unique: false,
+      reserved: path === "v9 with game-wagers" ? ["reserved"] : [],
+      count: path === "v9 with game-wagers" ? 2 : 0,
+    });
+  });
+
   it("preserves a legacy 100 balance and medal grant one-to-one", async () => {
     await page.evaluate(() => new Promise<void>((resolve, reject) => {
       const opening = indexedDB.open("lucky-arcade", 5);
@@ -64,7 +103,7 @@ describe.sequential("point wallet and spectator predictions", () => {
       const wallet = await database.readWallet();
       const duplicate = await database.grantCompletionPoints({ sessionId: "legacy-session", sequence: 7, cabinetId: "old-maid", spectated: false });
       const contract = await new Promise<string>((resolve, reject) => {
-        const opening = indexedDB.open("lucky-arcade", 9);
+        const opening = indexedDB.open("lucky-arcade");
         opening.onerror = () => reject(opening.error);
         opening.onsuccess = () => {
           const db = opening.result;
@@ -250,7 +289,7 @@ describe.sequential("point wallet and spectator predictions", () => {
       const database = await new Function("return import('/src/lib/database.ts')")();
       await database.readWallet();
       await new Promise<void>((resolve, reject) => {
-        const opening = indexedDB.open("lucky-arcade", 9);
+        const opening = indexedDB.open("lucky-arcade");
         opening.onerror = () => reject(opening.error);
         opening.onsuccess = () => {
           const db = opening.result;
@@ -454,7 +493,7 @@ async function seedWallet(target: Page, balance: number): Promise<void> {
     const database = await new Function("return import('/src/lib/database.ts')")();
     await database.readWallet();
     await new Promise<void>((resolve, reject) => {
-      const opening = indexedDB.open("lucky-arcade", 9);
+      const opening = indexedDB.open("lucky-arcade");
       opening.onerror = () => reject(opening.error);
       opening.onsuccess = () => {
         const db = opening.result;

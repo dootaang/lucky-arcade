@@ -12,7 +12,7 @@ export function AdminPreviewRoute() {
   const { cabinetId = "" } = useParams<{ cabinetId: string }>();
   const venue = getVenueForCabinet(cabinetId);
   const table = getVenueTableForCabinet(cabinetId);
-  const registration = table && table.status !== "open" ? getCabinetRegistration(cabinetId, true) : undefined;
+  const registration = table && table.status !== "open" && table.status !== "vip" ? getCabinetRegistration(cabinetId, true) : undefined;
   const storageKey = `lucky-arcade:admin-preview:${cabinetId}`;
   const [unlocked, setUnlocked] = useState(() => readUnlock(storageKey));
   const [password, setPassword] = useState("");

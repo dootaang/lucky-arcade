@@ -4,6 +4,7 @@ import {
   TEMEROSA_HOUSE_ACCOUNT_ID,
   assertCasinoTransaction,
   createCollectionPurchaseTransaction,
+  createVipMembershipPurchaseTransaction,
   createFreePlayRewardTransaction,
   reserveCasinoEscrow,
   settleCasinoEscrow,
@@ -35,10 +36,16 @@ import type {
   WalletSnapshot,
 } from "@lucky-arcade/persistence";
 import { selectCollectionFace } from "./collection-rules.ts";
+import {
+  PUBLIC_WAGER_CABINET_IDS, VIP_MEMBERSHIP_PRICE, VIP_REQUIRED_PUBLIC_WAGERS, VIP_TERMS,
+  canAffordVipStake, isVipCabinet, isVipStake, vipCompTier, emitVipChange,
+  type VipMembership, type VipComp, type VipCompTier, type VipStatus,
+  type VipMembershipPurchaseResult, type VipFirstEntryResult,
+} from "./vip.ts";
 
 const DATABASE = "lucky-arcade";
-const VERSION = 9;
-const STORES = { cards: "cards", sources: "sources", sessions: "sessions", actions: "actions", recent: "recent", matches: "matches", wallet: "wallet", grants: "grants", collection: "collection", wagers: "wagers", gameWagers: "game-wagers", casinoTransactions: "casino-transactions", favoriteVotes: "favorite-votes" } as const;
+const VERSION = 10;
+const STORES = { cards: "cards", sources: "sources", sessions: "sessions", actions: "actions", recent: "recent", matches: "matches", wallet: "wallet", grants: "grants", collection: "collection", wagers: "wagers", gameWagers: "game-wagers", casinoTransactions: "casino-transactions", favoriteVotes: "favorite-votes", vip: "vip" } as const;
 const INITIAL_POINT_BALANCE = 0;
 const COLLECTION_COST = 12;
 const DEFAULT_COMPLETION_REWARD = 5;
@@ -400,7 +407,7 @@ export async function listSpectatorPredictions(): Promise<SpectatorPrediction[]>
 export async function reserveGameWager(input: ReserveGameWagerInput): Promise<GameWagerTransactionResult> {
   assertGameWagerReservation(input);
   const db = await openDatabase();
-  const transaction = db.transaction([STORES.wallet, STORES.gameWagers, STORES.casinoTransactions], "readwrite");
+  const transaction = db.transaction([STORES.wallet, STORES.gameWagers, STORES.casinoTransactions, STORES.vip], "readwrite");
   const completion = complete(transaction);
   try {
     const wallets = transaction.objectStore(STORES.wallet);
@@ -409,6 +416,16 @@ export async function reserveGameWager(input: ReserveGameWagerInput): Promise<Ga
     const existingId = await request<IDBValidKey | undefined>(wagers.index("by-outcome-key").getKey(input.outcomeKey));
     if (existingId !== undefined) throw new Error("game_outcome_already_wagered");
     const wallet = await request<PointWalletSnapshot | undefined>(wallets.get("wallet")) ?? newWallet();
+    if (isVipCabinet(input.cabinetId)) {
+      const membership = await request<VipMembership | undefined>(transaction.objectStore(STORES.vip).get("vip:membership"));
+      if (!membership) throw new Error("vip_membership_required");
+      if (!isVipStake(input.stake)) throw new Error("vip_invalid_stake");
+      if (input.termsVersion !== VIP_TERMS[input.cabinetId]) throw new Error("vip_invalid_terms");
+      if (input.reservedAmount !== input.stake) throw new Error("vip_invalid_multiplier");
+      if (input.counterpartyAccountId !== TEMEROSA_HOUSE_ACCOUNT_ID) throw new Error("vip_house_required");
+      if (!canAffordVipStake(wallet.balance, input.stake)) throw new Error("vip_floor_below_minimum");
+      if (await hasReservedVipWager(wagers, input.sessionId)) throw new Error("vip_wager_in_progress");
+    }
     if (wallet.balance < input.reservedAmount) throw new Error("insufficient_points");
     const now = new Date().toISOString();
     const nextWallet: PointWalletSnapshot = { ...wallet, balance: wallet.balance - input.reservedAmount, updatedAt: now };
@@ -525,6 +542,21 @@ export async function listGameWagers(sessionId?: string): Promise<GameWagerRecei
   return records.filter((wager) => wager?.contract === "game-wager/0.1").sort((left, right) => right.createdAt.localeCompare(left.createdAt));
 }
 
+/** VIP resume is bounded: at most one active receipt and the snapshot's receipt, not the session history. */
+export async function readVipRecoveryWagers(sessionId: string, currentWagerId: string | null): Promise<GameWagerReceipt[]> {
+  const db = await openDatabase(), transaction = db.transaction(STORES.gameWagers, "readonly");
+  const completion = complete(transaction), store = transaction.objectStore(STORES.gameWagers);
+  try {
+    const active = await request<GameWagerReceipt[]>(store.index("by-session-status").getAll([sessionId, "reserved"], 2));
+    const current = currentWagerId ? await request<GameWagerReceipt | undefined>(store.get(currentWagerId)) : undefined;
+    await completion;
+    if (active.length > 1) throw new Error("vip_recovery_conflict");
+    const records = current && !active.some((item) => item.wagerId === current.wagerId) ? [...active, current] : active;
+    if (records.some((item) => item.contract !== "game-wager/0.1" || item.sessionId !== sessionId || !isVipCabinet(item.cabinetId))) throw new Error("vip_recovery_conflict");
+    return records;
+  } finally { db.close(); }
+}
+
 export async function appendCasinoTransaction(transaction: CasinoTransaction): Promise<void> {
   assertCasinoTransaction(transaction);
   const db=await openDatabase(),tx=db.transaction(STORES.casinoTransactions,"readwrite");
@@ -599,6 +631,112 @@ export async function openCollectionItem(id: string, allFaceIds: readonly string
   await complete(transaction); db.close(); return { wallet: nextWallet, collection: nextCollection, unlockedFaceId };
 }
 
+interface VipEligibility {
+  id: "vip:eligibility";
+  contract: "vip-eligibility/0.1";
+  completedPublicWagers: number;
+  publicWins: number;
+}
+function isCompletedPublicWager(wager: GameWagerReceipt): boolean {
+  return wager.contract === "game-wager/0.1" && wager.status === "settled"
+    && wager.reservedAmount > 0 && PUBLIC_WAGER_CABINET_IDS.some((id) => id === wager.cabinetId);
+}
+function newVipComp(): VipComp {
+  return { id: "vip:comp", contract: "vip-comp/0.1", wageredTotal: 0, tierReached: 0,
+    pendingTiers: [], acknowledgedTiers: [], updatedAt: new Date(0).toISOString() };
+}
+async function readVipEligibility(transaction: IDBTransaction): Promise<VipEligibility> {
+  const store = transaction.objectStore(STORES.vip);
+  const existing = await request<VipEligibility | undefined>(store.get("vip:eligibility"));
+  if (existing) return existing;
+  const summary: VipEligibility = { id: "vip:eligibility", contract: "vip-eligibility/0.1", completedPublicWagers: 0, publicWins: 0 };
+  // One streaming bootstrap for v9 receipts. The persisted aggregate makes floor reads O(1).
+  await new Promise<void>((resolve, reject) => {
+    const cursorRequest = transaction.objectStore(STORES.gameWagers).openCursor();
+    cursorRequest.onerror = () => reject(cursorRequest.error);
+    cursorRequest.onsuccess = () => {
+      const cursor = cursorRequest.result;
+      if (!cursor) { resolve(); return; }
+      const wager = cursor.value as GameWagerReceipt;
+      if (isCompletedPublicWager(wager)) {
+        summary.completedPublicWagers++;
+        summary.publicWins += Number(wager.settlementCredit > wager.reservedAmount);
+      }
+      cursor.continue();
+    };
+  });
+  store.put(summary);
+  return summary;
+}
+async function withVipTransaction<T>(stores: string[], action: (transaction: IDBTransaction) => Promise<T>): Promise<T> {
+  const db = await openDatabase();
+  const transaction = db.transaction(stores, "readwrite");
+  const completion = complete(transaction);
+  try {
+    const result = await action(transaction);
+    await completion;
+    return result;
+  } catch (error) {
+    await abort(transaction, completion);
+    throw error;
+  } finally { db.close(); }
+}
+export function readVipStatus(): Promise<VipStatus> {
+  return withVipTransaction([STORES.vip, STORES.gameWagers], async (transaction) => {
+    const store = transaction.objectStore(STORES.vip);
+    const membership = await request<VipMembership | undefined>(store.get("vip:membership")) ?? null;
+    const comp = await request<VipComp | undefined>(store.get("vip:comp")) ?? newVipComp();
+    const eligibility = await readVipEligibility(transaction);
+    return { membership, comp, completedPublicWagers: eligibility.completedPublicWagers,
+      publicWinRate: eligibility.completedPublicWagers === 0 ? 0 : eligibility.publicWins / eligibility.completedPublicWagers };
+  });
+}
+export async function purchaseVipMembership(casinoOccurredAtSecond: number): Promise<VipMembershipPurchaseResult> {
+  // Validate the transaction before opening IDB; callers resolve external casino context beforehand.
+  const purchase = createVipMembershipPurchaseTransaction({ transactionId: "vip:membership", occurredAtCasinoSecond: casinoOccurredAtSecond, amount: VIP_MEMBERSHIP_PRICE });
+  const result = await withVipTransaction([STORES.vip, STORES.wallet, STORES.casinoTransactions, STORES.gameWagers], async (transaction) => {
+    const store = transaction.objectStore(STORES.vip), wallets = transaction.objectStore(STORES.wallet);
+    if (await request(store.get("vip:membership"))) throw new Error("vip_membership_exists");
+    const eligibility = await readVipEligibility(transaction);
+    if (eligibility.completedPublicWagers < VIP_REQUIRED_PUBLIC_WAGERS) throw new Error("vip_membership_prerequisite");
+    const wallet = await request<PointWalletSnapshot | undefined>(wallets.get("wallet")) ?? newWallet();
+    if (wallet.balance < VIP_MEMBERSHIP_PRICE) throw new Error("insufficient_points");
+    const now = new Date().toISOString();
+    const nextWallet = { ...wallet, balance: wallet.balance - VIP_MEMBERSHIP_PRICE, updatedAt: now };
+    const membership: VipMembership = { id: "vip:membership", contract: "vip-membership/0.1", purchasedAt: now,
+      casinoOccurredAtSecond, price: VIP_MEMBERSHIP_PRICE, transactionId: "vip:membership" };
+    wallets.put(nextWallet);
+    store.add(membership);
+    transaction.objectStore(STORES.casinoTransactions).add(purchase);
+    return { wallet: nextWallet, membership };
+  });
+  emitVipChange();
+  return result;
+}
+export function markVipFirstEntry(): Promise<VipFirstEntryResult> {
+  return withVipTransaction([STORES.vip], async (transaction) => {
+    const store = transaction.objectStore(STORES.vip);
+    const membership = await request<VipMembership | undefined>(store.get("vip:membership"));
+    if (!membership) throw new Error("vip_membership_required");
+    if (membership.firstEntryAt !== undefined) return { membership, firstEntry: false };
+    const updated = { ...membership, firstEntryAt: new Date().toISOString() };
+    store.put(updated);
+    return { membership: updated, firstEntry: true };
+  });
+}
+export function acknowledgeVipComp(tier: VipCompTier): Promise<VipComp> {
+  return withVipTransaction([STORES.vip], async (transaction) => {
+    const store = transaction.objectStore(STORES.vip);
+    const comp = await request<VipComp | undefined>(store.get("vip:comp")) ?? newVipComp();
+    if (!Number.isInteger(tier) || tier < 1 || tier > 4 || tier > comp.tierReached) throw new Error("vip_comp_tier_not_reached");
+    if (comp.acknowledgedTiers.includes(tier)) return comp;
+    const updated: VipComp = { ...comp, pendingTiers: comp.pendingTiers.filter((pending) => pending !== tier),
+      acknowledgedTiers: [...comp.acknowledgedTiers, tier].sort((a, b) => a - b), updatedAt: new Date().toISOString() };
+    store.put(updated);
+    return updated;
+  });
+}
+
 function openDatabase(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
     const opening = indexedDB.open(DATABASE, VERSION);
@@ -611,12 +749,14 @@ function openDatabase(): Promise<IDBDatabase> {
       if (!db.objectStoreNames.contains(STORES.wallet)) db.createObjectStore(STORES.wallet, { keyPath: "id" });
       if (!db.objectStoreNames.contains(STORES.grants)) db.createObjectStore(STORES.grants, { keyPath: "sessionId" });
       if (!db.objectStoreNames.contains(STORES.collection)) db.createObjectStore(STORES.collection, { keyPath: "id" });
+      if (!db.objectStoreNames.contains(STORES.vip)) db.createObjectStore(STORES.vip, { keyPath: "id" });
       const wagers = db.objectStoreNames.contains(STORES.wagers) ? opening.transaction!.objectStore(STORES.wagers) : db.createObjectStore(STORES.wagers, { keyPath: "predictionId" });
       if (!wagers.indexNames.contains("by-outcome-key")) wagers.createIndex("by-outcome-key", "outcomeKey", { unique: true });
       if (!wagers.indexNames.contains("by-created-at")) wagers.createIndex("by-created-at", "createdAt");
       const gameWagers = db.objectStoreNames.contains(STORES.gameWagers) ? opening.transaction!.objectStore(STORES.gameWagers) : db.createObjectStore(STORES.gameWagers, { keyPath: "wagerId" });
       if (!gameWagers.indexNames.contains("by-outcome-key")) gameWagers.createIndex("by-outcome-key", "outcomeKey", { unique: true });
       if (!gameWagers.indexNames.contains("by-session-id")) gameWagers.createIndex("by-session-id", "sessionId");
+      if (!gameWagers.indexNames.contains("by-session-status")) gameWagers.createIndex("by-session-status", ["sessionId", "status"]);
       if (!gameWagers.indexNames.contains("by-created-at")) gameWagers.createIndex("by-created-at", "createdAt");
       const casinoTransactions=db.objectStoreNames.contains(STORES.casinoTransactions)?opening.transaction!.objectStore(STORES.casinoTransactions):db.createObjectStore(STORES.casinoTransactions,{keyPath:"transactionId"});
       if(!casinoTransactions.indexNames.contains("by-idempotency-key"))casinoTransactions.createIndex("by-idempotency-key","idempotencyKey",{unique:true});
@@ -700,12 +840,25 @@ function predictionReservation(prediction:SpectatorPrediction){return reserveCas
 function predictionSettlementSecond(prediction:SpectatorPrediction):number{const elapsed=Math.max(0,Math.floor((Date.now()-Date.parse(prediction.createdAt))/1_000));return prediction.casinoOccurredAtSecond!+elapsed;}
 function isPositiveInteger(value: number): boolean { return Number.isSafeInteger(value) && value > 0; }
 function isNonNegativeInteger(value: number): boolean { return Number.isSafeInteger(value) && value >= 0; }
+function hasReservedVipWager(wagers: IDBObjectStore, sessionId: string): Promise<boolean> {
+  return new Promise((resolve, reject) => {
+    const cursorRequest = wagers.index("by-session-status").openCursor(IDBKeyRange.only([sessionId, "reserved"]));
+    cursorRequest.onerror = () => reject(cursorRequest.error ?? new Error("indexeddb_cursor_failed"));
+    cursorRequest.onsuccess = () => {
+      const cursor = cursorRequest.result;
+      if (!cursor) { resolve(false); return; }
+      const wager = cursor.value as GameWagerReceipt;
+      if (wager.status === "reserved" && isVipCabinet(wager.cabinetId)) { resolve(true); return; }
+      cursor.continue();
+    };
+  });
+}
 async function finishGameWager(
   wagerId: string,
   finish: (wager: GameWagerReceipt, wallet: PointWalletSnapshot, now: string, transaction: IDBTransaction) => GameWagerTransactionResult,
 ): Promise<GameWagerTransactionResult> {
   const db = await openDatabase();
-  const transaction = db.transaction([STORES.wallet, STORES.gameWagers, STORES.casinoTransactions], "readwrite");
+  const transaction = db.transaction([STORES.wallet, STORES.gameWagers, STORES.casinoTransactions, STORES.vip], "readwrite");
   const completion = complete(transaction);
   try {
     const wallets = transaction.objectStore(STORES.wallet), wagers = transaction.objectStore(STORES.gameWagers);
@@ -713,10 +866,31 @@ async function finishGameWager(
     if (!wager || wager.contract !== "game-wager/0.1") throw new Error("game_wager_not_found");
     const wallet = await request<PointWalletSnapshot | undefined>(wallets.get("wallet")) ?? newWallet();
     const result = finish(wager, wallet, new Date().toISOString(), transaction);
+    // The durable receipt transition is the deduplication key, including A → B → A replays.
+    if (wager.status === "reserved" && result.wager.status === "settled") {
+      const vip = transaction.objectStore(STORES.vip);
+      if (isCompletedPublicWager(result.wager)) {
+        // Bootstrap before writing the new settlement so it cannot be counted twice.
+        const eligibility = await readVipEligibility(transaction);
+        vip.put({ ...eligibility, completedPublicWagers: eligibility.completedPublicWagers + 1,
+          publicWins: eligibility.publicWins + Number(result.wager.settlementCredit > result.wager.reservedAmount) });
+      }
+      if (isVipCabinet(wager.cabinetId)) {
+        const comp = await request<VipComp | undefined>(vip.get("vip:comp")) ?? newVipComp();
+        const wageredTotal = comp.wageredTotal + wager.stake;
+        if (!Number.isSafeInteger(wageredTotal)) throw new Error("vip_comp_overflow");
+        const tierReached = vipCompTier(wageredTotal);
+        const pendingTiers = [...comp.pendingTiers];
+        for (let tier = comp.tierReached + 1; tier <= tierReached; tier++) pendingTiers.push(tier as VipCompTier);
+        vip.put({ ...comp, wageredTotal, tierReached, pendingTiers, updatedAt: result.wager.settledAt! } satisfies VipComp);
+      }
+    }
     wallets.put(result.wallet);
     wagers.put(result.wager);
     await completion;
     db.close();
+    if (wager.status === "reserved" && result.wager.status === "settled"
+      && (isCompletedPublicWager(result.wager) || isVipCabinet(result.wager.cabinetId))) emitVipChange();
     return result;
   } catch (error) {
     await abort(transaction, completion);

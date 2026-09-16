@@ -218,7 +218,8 @@ function applyHouseDay(opening:number,absoluteDay:number,cutoff:number,plan:Casi
   return {balance,gamingProfit,operatingExpenses,curtailedOperatingExpenses};
 }
 function freezeWorldline(dayIndex:number,npcBalances:Record<string,number>,activities:NpcActivity[],houseBalance:number,houseGamingProfit:number,houseOperatingExpenses:number,houseCurtailedOperatingExpenses:number,houseGamingProfitToday:number,houseOperatingExpensesToday:number,npcExternalReserves:Record<string,number>,npcGrossIncomeToday:Record<string,number>,npcCasinoTopUpsToday:Record<string,number>,checkpointDayIndex=-1,replayedDayCount=0):PersonalCasinoWorldline{return Object.freeze({dayIndex,checkpointDayIndex,replayedDayCount,npcBalances:Object.freeze({...npcBalances}),activities:Object.freeze(activities),houseBalance,houseGamingProfit,houseOperatingExpenses,houseCurtailedOperatingExpenses,houseGamingProfitToday,houseOperatingExpensesToday,npcExternalReserves:Object.freeze({...npcExternalReserves}),npcGrossIncomeToday:Object.freeze({...npcGrossIncomeToday}),npcCasinoTopUpsToday:Object.freeze({...npcCasinoTopUpsToday})});}
-function isHouseGamingTransaction(transaction:CasinoTransaction):boolean{return Boolean(transaction.tableId&&(transaction.tableId==="temerosa-slot"||transaction.tableId==="temerosa-high-low"||transaction.tableId==="temerosa-blackjack"));}
+export function isVipHouseGame(tableId:string):boolean{return tableId==="temerosa-vip-blackjack";}
+function isHouseGamingTransaction(transaction:CasinoTransaction):boolean{return Boolean(transaction.tableId&&(transaction.tableId==="temerosa-slot"||transaction.tableId==="temerosa-high-low"||transaction.tableId==="temerosa-blackjack"||isVipHouseGame(transaction.tableId)));}
 function compareText(left:string,right:string):number{return left<right?-1:left>right?1:0;}
 
 /** IndexedDB enforces these identities, but replay also defends imported or restored journals. */

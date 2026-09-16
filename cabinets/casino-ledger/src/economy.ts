@@ -35,6 +35,7 @@ export type CasinoTransactionKind =
   | "free-play-reward"
   | "house-operating-expense"
   | "collection-purchase"
+  | "vip-membership-purchase"
   | "capital-injection"
   | "legacy-migration";
 
@@ -256,6 +257,20 @@ export function createCollectionPurchaseTransaction(input: { transactionId: stri
     occurredAtCasinoSecond: input.occurredAtCasinoSecond,
     kind: "collection-purchase",
     matchId: input.collectionId,
+    postings: [
+      { accountId: LOCAL_PLAYER_ACCOUNT_ID, delta: -input.amount },
+      { accountId: TEMEROSA_HOUSE_ACCOUNT_ID, delta: input.amount },
+    ],
+  });
+}
+
+export function createVipMembershipPurchaseTransaction(input: { transactionId: string; occurredAtCasinoSecond: number; amount: number }): CasinoTransaction {
+  if (!Number.isSafeInteger(input.amount) || input.amount <= 0) throw new Error("vip_membership_purchase_invalid");
+  return createCasinoTransaction({
+    transactionId: input.transactionId,
+    idempotencyKey: input.transactionId,
+    occurredAtCasinoSecond: input.occurredAtCasinoSecond,
+    kind: "vip-membership-purchase",
     postings: [
       { accountId: LOCAL_PLAYER_ACCOUNT_ID, delta: -input.amount },
       { accountId: TEMEROSA_HOUSE_ACCOUNT_ID, delta: input.amount },

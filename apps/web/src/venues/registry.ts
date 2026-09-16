@@ -25,7 +25,7 @@ export interface VenueManifest {
   tables: readonly VenueTableManifest[];
 }
 
-export type VenueTableStatus = "open" | "preparing" | "admin-preview";
+export type VenueTableStatus = "open" | "preparing" | "admin-preview" | "vip";
 
 export interface VenueTableManifest {
   cabinetId: string;
@@ -56,6 +56,7 @@ const venues: readonly VenueManifest[] = [
       { cabinetId: "indian-poker", status: "open" },
       { cabinetId: "temerosa-high-low", status: "open" },
       { cabinetId: "temerosa-five-card-draw", status: "open" },
+      { cabinetId: "temerosa-vip-blackjack", status: "vip" },
       { cabinetId: "temerosa-blackjack", status: "admin-preview" },
       { cabinetId: "temerosa-doubt", status: "admin-preview" },
       { cabinetId: "temerosa-one-card", status: "admin-preview" },

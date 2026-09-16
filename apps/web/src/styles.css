@@ -221,3 +221,12 @@ html[data-theme="light"] { color-scheme:light; --canvas:#f5f4ef; --surface:#fff;
   .favorite-marathon-shell .favorite-choice small { font-size: 0.65rem; }
   .favorite-marathon-shell .versus-mark { left: calc(100% + 0.175rem); }
 }
+/* VIP door is a small, image-free entry; room CSS and artwork stay in its lazy chunk. */
+.casino-floor > .vip-door { grid-column: 1; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem; padding: 1.25rem; min-height: 0; border: 1px solid var(--ca-gold-deep); background: var(--ca-surface); border-radius: 1rem; }
+.vip-door h3 { margin: 0 0 .5rem; }
+.vip-door p { margin: .4rem 0; }
+.vip-door-line { white-space: pre-line; line-height: 1.6; }
+.vip-door button, .vip-purchase-dialog button { min-height: 44px; padding: .6rem 1rem; }
+.vip-purchase-dialog { max-width: min(28rem, calc(100vw - 2rem)); border: 1px solid var(--ca-gold-deep); border-radius: 1rem; background: var(--ca-surface); color: inherit; padding: 1.5rem; }
+.vip-purchase-dialog::backdrop { background: #0009; }
+.vip-purchase-dialog button + button { margin-left: .75rem; }

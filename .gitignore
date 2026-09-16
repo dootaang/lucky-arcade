@@ -28,3 +28,9 @@ playwright-report/
 # Raw image-generation output. Content assets only enter the repo through the
 # content:temerosa:* pipeline as webp with a manifest (sha256 + reviewEvidence).
 /output/
+
+# VIP room working docs (owner decision 2026-09-16: keep local, do not commit)
+docs/HANDOFF-CLAUDE-CODE-2026-09-16.md
+docs/TEMEROSA-VIP-ROOM-NIEUN-HOST-CONCEPT-2026-09-16.md
+docs/TEMEROSA-VIP-BLACKJACK-NIEUN-DIALOGUE.md
+docs/TEMEROSA-VIP-*.local.md
