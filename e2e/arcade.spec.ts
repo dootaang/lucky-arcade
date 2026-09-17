@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { readFileSync } from "node:fs";
 
 const entries = Array.from({ length: 4 }, (_, index) => [
   { id: `start-${index}`, name: `입구 ${index}`, keys: [`시작-${index}`], content: `중간-${index}`, enabled: true },
@@ -509,7 +510,7 @@ test("keeps implemented preview games visible but blocks their direct public URL
 
 test("unlocks every wager preview with trial points instead of the real wallet", async ({ page }, testInfo) => {
   test.skip(testInfo.project.metadata.mobile === true);
-  const unlock = "6b767bbc518ec7f3dcb0ec8ec30539a7a3e7cef27d495272ea203fff0f598f34";
+  const unlock = readFileSync("apps/web/src/routes/admin-preview-route.tsx", "utf8").match(/const PASSWORD_SHA256 = "([a-f0-9]+)"/)![1]!;
   await page.goto("/preview/temerosa-blackjack");
   await page.evaluate((value) => sessionStorage.setItem("lucky-arcade:admin-preview:temerosa-blackjack", value), unlock);
   await page.reload();

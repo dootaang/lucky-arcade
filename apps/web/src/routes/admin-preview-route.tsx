@@ -4,7 +4,7 @@ import { useNavigate, useParams } from "react-router";
 import { CabinetHost, getCabinetRegistration } from "../cabinets/registry.tsx";
 import { getVenueForCabinet, getVenueTableForCabinet } from "../venues/registry.ts";
 
-const PASSWORD_SHA256 = "6b767bbc518ec7f3dcb0ec8ec30539a7a3e7cef27d495272ea203fff0f598f34";
+const PASSWORD_SHA256 = "39609a8b27f3ae8fd3a5ebc2126e6f5ea21505f194c823128f865af27ef53c54";
 const MAX_ATTEMPTS = 5;
 
 export function AdminPreviewRoute() {
