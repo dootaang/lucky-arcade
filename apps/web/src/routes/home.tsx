@@ -158,7 +158,7 @@ function VenueFloor({ venue, balance, onPlay, onPreview, onBalanceChange }: { ve
     </CasinoLoadingBoundary>
     {/* Eleven rooms that cannot be entered took more height than the six that
         can. They stay one line until someone asks for them. */}
-    <Suspense fallback={<section className="vip-door">위층 입장 기록 확인 중…</section>}><VipDoor balance={balance} onBalanceChange={onBalanceChange} onPlay={onPlay} /></Suspense>
+    <Suspense fallback={<section className="vip-door">위층 입장 기록 확인 중…</section>}><VipDoor balance={balance} onBalanceChange={onBalanceChange} onPlay={onPlay} onPreview={onPreview} /></Suspense>
     <details className="table-locked">
       <summary className="table-locked-divider ca-label">
         개장 준비 중 <b>{preparing.length + plannedTables.length}</b>

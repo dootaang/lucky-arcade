@@ -3,7 +3,7 @@ import { readVipStatus, purchaseVipMembership, subscribeVipChanges, type VipStat
 import { VIP_DOOR_LINES } from "./vip-door-lines.generated.ts";
 
 /** Deliberately no VIP art, dialogue bundle, roster or economic polling import here. */
-export default function VipDoor({ balance, onBalanceChange, onPlay }: { balance: number; onBalanceChange(value: number): void; onPlay(id: string): void }) {
+export default function VipDoor({ balance, onBalanceChange, onPlay, onPreview }: { balance: number; onBalanceChange(value: number): void; onPlay(id: string): void; onPreview(id: string): void }) {
   const [status, setStatus] = useState<VipStatus | null>(null), [busy, setBusy] = useState(false), [error, setError] = useState("");
   const [purchased, setPurchased] = useState(false); const dialog = useRef<HTMLDialogElement>(null), trigger = useRef<HTMLButtonElement>(null);
   useEffect(() => {
@@ -28,6 +28,7 @@ export default function VipDoor({ balance, onBalanceChange, onPlay }: { balance:
     <div><h3 className="ca-serif">위층 · VIP 룸</h3><p className="vip-door-line">{member && !purchased ? "박니은의 블랙잭 테이블" : VIP_DOOR_LINES.find((line) => line.event === (purchased ? "door-purchase" : "door-locked"))?.text}</p></div>
     <div><p>{member ? "영구 회원권 보유" : status ? `공개 유료 테이블 완주 ${Math.min(20, status.completedPublicWagers)}/20` : "입장 기록 확인 중…"}</p>{!member && <p>회원권 1,000 P · 일회성 구매</p>}
       {member ? <button onClick={() => onPlay("temerosa-vip-blackjack")}>입장</button> : <button ref={trigger} disabled={!eligible || balance < 1000 || busy} onClick={() => dialog.current?.showModal()}>{eligible && balance < 1000 ? "포인트 부족" : "회원권 구매 · 1,000 P"}</button>}
+      <button className="admin-preview-entry" onClick={() => onPreview("temerosa-vip-blackjack")}>관리자 시험 입장</button>
     </div>
     {error && <p role="alert">{error}</p>}
     <dialog ref={dialog} className="vip-purchase-dialog" aria-labelledby="vip-purchase-title" onClose={() => trigger.current?.focus()}>

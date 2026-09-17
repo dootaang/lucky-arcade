@@ -12,7 +12,7 @@ export function AdminPreviewRoute() {
   const { cabinetId = "" } = useParams<{ cabinetId: string }>();
   const venue = getVenueForCabinet(cabinetId);
   const table = getVenueTableForCabinet(cabinetId);
-  const registration = table && table.status !== "open" && table.status !== "vip" ? getCabinetRegistration(cabinetId, true) : undefined;
+  const registration = table && table.status !== "open" ? getCabinetRegistration(cabinetId, true) : undefined;
   const storageKey = `lucky-arcade:admin-preview:${cabinetId}`;
   const [unlocked, setUnlocked] = useState(() => readUnlock(storageKey));
   const [password, setPassword] = useState("");
@@ -45,7 +45,7 @@ export function AdminPreviewRoute() {
       <IconLock size={34} aria-hidden="true" />
       <span className="eyebrow">ADMIN PREVIEW</span>
       <h1>{registration.manifest.title}</h1>
-      <p>정식 개장 전에 구현 상태를 확인하는 관리자 시험판입니다. 판돈 게임은 실제 지갑 대신 시험 포인트를 사용합니다.</p>
+      <p>{table?.status === "vip" ? "회원권과 완주 조건 없이 입장하는 VIP 관리자 시험판입니다." : "정식 개장 전에 구현 상태를 확인하는 관리자 시험판입니다."} 판돈 게임은 실제 지갑 대신 시험 포인트를 사용합니다.</p>
       <label>관리자 비밀번호<input type="password" value={password} autoComplete="current-password" onChange={(event) => setPassword(event.target.value)} disabled={busy || attempts >= MAX_ATTEMPTS} autoFocus /></label>
       {error && <p className="admin-preview-error" role="alert">{error}</p>}
       <div><button type="button" onClick={() => navigate(venue ? `/venues/${venue.id}` : "/")}>돌아가기</button><button type="submit" disabled={!password || busy || attempts >= MAX_ATTEMPTS}>{busy ? "확인 중…" : "시험 입장"}</button></div>

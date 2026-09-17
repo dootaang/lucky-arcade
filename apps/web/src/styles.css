@@ -244,6 +244,7 @@ html[data-theme="light"] { color-scheme:light; --canvas:#f5f4ef; --surface:#fff;
 .vip-door p { margin: .4rem 0; }
 .vip-door-line { white-space: pre-line; line-height: 1.6; }
 .vip-door button, .vip-purchase-dialog button { min-height: 44px; padding: .6rem 1rem; }
+.vip-door .admin-preview-entry { display: block; margin-top: .65rem; }
 .vip-purchase-dialog { max-width: min(28rem, calc(100vw - 2rem)); border: 1px solid var(--ca-gold-deep); border-radius: 1rem; background: var(--ca-surface); color: inherit; padding: 1.5rem; }
 .vip-purchase-dialog::backdrop { background: #0009; }
 .vip-purchase-dialog button + button { margin-left: .75rem; }
